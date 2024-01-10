@@ -4,9 +4,8 @@
 
 package frc.robot.subsystems.drive;
 
-import org.littletonrobotics.junction.AutoLog;
-
 import edu.wpi.first.math.geometry.Rotation2d;
+import org.littletonrobotics.junction.AutoLog;
 
 /** Hardware interface for swerve modules */
 public interface ModuleIO {
@@ -15,13 +14,15 @@ public interface ModuleIO {
     public double drivePositionR = 0.0;
     public double driveVelocityRPS = 0.0;
     public double driveAppliedVolts = 0.0;
-    public double[] driveCurrentAmps = new double[]{};
+    public double[] driveCurrentAmps = new double[] {};
 
     public Rotation2d azimuthAbsolutePosition = new Rotation2d();
     public Rotation2d azimuthPosition = new Rotation2d();
-    public double azimuthPositionRPS = 0.0;
+    public double azimuthVelocityRPS = 0.0;
     public double azimuthAppliedVolts = 0.0;
-    public double[] azimuthCurrentAmps = new double[]{};
+    public double[] azimuthCurrentAmps = new double[] {};
+
+    // TODO add 250hz odometry inputs later
   }
 
   /** Update the hardware inputs for a module */
@@ -34,7 +35,7 @@ public interface ModuleIO {
   public default void setAzimuthVolts(double volts) {}
 
   /** Enable closed loop control for the module's drive velocity */
-  public default void setVelocity(double metersPerSecond) {}
+  public default void setVelocity(double velocityMetersPerSecond) {}
 
   /** Enable closed loop control for the module's azimuth position */
   public default void setAngle(double angleRad) {}
