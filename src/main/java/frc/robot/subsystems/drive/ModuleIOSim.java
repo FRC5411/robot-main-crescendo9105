@@ -24,9 +24,9 @@ public class ModuleIOSim implements ModuleIO {
   private double azimuthAppliedVolts = 0.0;
 
   // TODO Tune sim values as needed
-  private PIDController driveController = new PIDController(0.0, 0.0, 0.0);
-  private PIDController azimuthController = new PIDController(0.0, 0.0, 0.0);
-  private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
+  private PIDController driveController = new PIDController(0.1, 0.0, 0.0);
+  private PIDController azimuthController = new PIDController(10.0, 0.0, 0.0);
+  private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.13);
   private SimpleMotorFeedforward azimuthFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
 
   public ModuleIOSim(int module) {}
