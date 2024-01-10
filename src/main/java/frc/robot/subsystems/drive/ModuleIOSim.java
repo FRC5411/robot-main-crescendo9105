@@ -4,6 +4,9 @@
 
 package frc.robot.subsystems.drive;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -12,12 +15,19 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 public class ModuleIOSim implements ModuleIO {
   private final double LOOP_PERIOD_S = 0.02;
 
+  // TODO Update values to reflect real hardare as needed
   private DCMotorSim driveMotor = new DCMotorSim(DCMotor.getNEO(1), 6.75, 0.025);
   private DCMotorSim azimuthMotor = new DCMotorSim(DCMotor.getNEO(1), 150.0 / 7.0, 0.004);
 
   private final Rotation2d INITIAL_ABSOLUTE_ANGLE = new Rotation2d(Math.random() * 2.0 * Math.PI);
   private double driveAppliedVolts = 0.0;
   private double azimuthAppliedVolts = 0.0;
+
+  // TODO Tune sim values as needed
+  private PIDController driveController = new PIDController(0.0, 0.0, 0.0);
+  private PIDController azimuthController = new PIDController(0.0, 0.0, 0.0);
+  private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
+  private SimpleMotorFeedforward azimuthFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
 
   public ModuleIOSim() {}
 
@@ -31,7 +41,8 @@ public class ModuleIOSim implements ModuleIO {
     inputs.driveAppliedVolts = driveAppliedVolts;
     inputs.driveCurrentAmps = new double[] {Math.abs(driveMotor.getCurrentDrawAmps())};
 
-    inputs.azimuthAbsolutePosition = new Rotation2d(azimuthMotor.getAngularPositionRad()).plus(INITIAL_ABSOLUTE_ANGLE);
+    inputs.azimuthAbsolutePosition =
+        new Rotation2d(azimuthMotor.getAngularPositionRad()).plus(INITIAL_ABSOLUTE_ANGLE);
     inputs.azimuthPosition = new Rotation2d(azimuthMotor.getAngularPositionRad());
     inputs.azimuthVelocityRPS = azimuthMotor.getAngularVelocityRadPerSec();
     inputs.azimuthAppliedVolts = azimuthAppliedVolts;
@@ -41,14 +52,28 @@ public class ModuleIOSim implements ModuleIO {
   }
 
   @Override
-  public void setDriveVolts(double volts) {}
+  public void setDriveVolts(double volts) {
+    driveAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+    driveMotor.setInputVoltage(driveAppliedVolts);
+  }
 
   @Override
-  public void setAzimuthVolts(double volts) {}
+  public void setAzimuthVolts(double volts) {
+    azimuthAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+    azimuthMotor.setInputVoltage(azimuthAppliedVolts);
+  }
 
   @Override
-  public void setVelocity(double velocityMPS) {}
+  public void setVelocity(double velocityMPS) {
+    setDriveVolts(
+        driveController.calculate(driveMotor.getAngularVelocityRadPerSec(), velocityMPS)
+            + driveFeedforward.calculate(velocityMPS));
+  }
 
   @Override
-  public void setAngle(double angleR) {}
+  public void setAngle(double angleR) {
+    setAzimuthVolts(
+        azimuthController.calculate(azimuthMotor.getAngularPositionRad(), angleR)
+            + azimuthFeedforward.calculate(Math.signum(azimuthController.getPositionError())));
+  }
 }
