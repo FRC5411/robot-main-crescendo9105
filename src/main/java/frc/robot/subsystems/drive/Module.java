@@ -85,4 +85,42 @@ public class Module {
     velocitySetpoint = null;
     angleSetpoint = null;
   }
+
+  /** Sets the module's IdleMode */
+  public void setBrake(boolean shouldBrake) {
+    moduleIO.setDriveBrake(shouldBrake);
+    moduleIO.setAzimuthBrake(shouldBrake);
+  }
+
+  /** Get the current angle of the azimuth */
+  public Rotation2d getAngle() {
+    if (azimuthRelativeOffset == null) {
+      return new Rotation2d();
+    } else {
+      // Add the calculated offset to the relative encoder's reading
+      return moduleIOInputs.azimuthPosition.plus(azimuthRelativeOffset);
+    }
+  }
+
+  /** Get the distance travelled by the drive motor */
+  public double getPositionM() {
+    return moduleIOInputs.drivePositionR * WHEEL_RADIUS_M;
+  }
+
+  /** Get the velocity of the drive motor */
+  public double getVelocityMPS() {
+    return moduleIOInputs.driveVelocityRPS * WHEEL_RADIUS_M;
+  }
+
+  /** Get the module's distance and angle */
+  public SwerveModulePosition getModulePosition() {
+    return new SwerveModulePosition(getPositionM(), getAngle());
+  }
+
+  /** Get the module's state */
+  public SwerveModuleState getModuleState() {
+    return new SwerveModuleState(getVelocityMPS(), getAngle());
+  }
+
+  // TODO Add threaded odometry getters
 }
