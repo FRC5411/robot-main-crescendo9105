@@ -26,6 +26,17 @@ public class ModuleIOSim implements ModuleIO {
     driveMotor.update(LOOP_PERIOD_S);
     azimuthMotor.update(LOOP_PERIOD_S);
 
+    inputs.drivePositionR = driveMotor.getAngularPositionRad();
+    inputs.driveVelocityRPS = driveMotor.getAngularVelocityRadPerSec();
+    inputs.driveAppliedVolts = driveAppliedVolts;
+    inputs.driveCurrentAmps = new double[] {Math.abs(driveMotor.getCurrentDrawAmps())};
+
+    inputs.azimuthAbsolutePosition = new Rotation2d(azimuthMotor.getAngularPositionRad()).plus(INITIAL_ABSOLUTE_ANGLE);
+    inputs.azimuthPosition = new Rotation2d(azimuthMotor.getAngularPositionRad());
+    inputs.azimuthVelocityRPS = azimuthMotor.getAngularVelocityRadPerSec();
+    inputs.azimuthAppliedVolts = azimuthAppliedVolts;
+    inputs.azimuthCurrentAmps = new double[] {Math.abs(azimuthMotor.getCurrentDrawAmps())};
+
     // TODO Add 250hz odometry
   }
 
