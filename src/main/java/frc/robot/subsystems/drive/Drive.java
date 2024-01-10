@@ -4,6 +4,11 @@
 
 package frc.robot.subsystems.drive;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.pathfinding.Pathfinding;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PathPlannerLogging;
+import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -14,6 +19,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -53,7 +59,30 @@ public class Drive extends SubsystemBase {
     modules[3] = new Module(moduleFL, 3);
     gyroIO = gyro;
 
-    // TODO Configure PathPlanner here
+    // Configure PathPlanner
+    AutoBuilder.configureHolonomic(
+        this::getPosition,
+        this::setPose,
+        () -> KINEMATICS.toChassisSpeeds(getModuleStates()),
+        this::runSwerve,
+        new HolonomicPathFollowerConfig(
+            MAX_LINEAR_SPEED_MPS, DRIVEBASE_RADIUS_M, new ReplanningConfig()),
+        () ->
+            DriverStation.getAlliance().isPresent()
+                && DriverStation.getAlliance().get() == Alliance.Red,
+        this);
+    Pathfinding.setPathfinder(new LocalADStarAK());
+    PathPlannerLogging.setLogActivePathCallback(
+        (activePath) -> {
+          Logger.recordOutput(
+              "Drive/Odometry/Trajectory",
+              activePath.toArray(new Pose2d[activePath.size()])); // Autolog the trajectory
+        });
+    PathPlannerLogging.setLogTargetPoseCallback(
+        (targetPose) -> {
+          Logger.recordOutput(
+              "Drive/Odometry/TrajectorySetpoint", targetPose); // Auto log the target setpoint
+        });
   }
 
   @Override
