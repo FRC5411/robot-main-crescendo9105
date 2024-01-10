@@ -6,13 +6,14 @@ package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import org.littletonrobotics.junction.Logger;
 
 /** Swerve module wrapper */
 public class Module {
   // TODO Double check wheel radius
-  private static final double WHEEL_RADIUS_M = Units.inchesToMeters(3.0);
+  private final double WHEEL_RADIUS_M = Units.inchesToMeters(3.0);
   public static final double ODOMETRY_FREQUENCY = 250.0;
   private final int MODULE_ID;
 
@@ -61,5 +62,27 @@ public class Module {
     }
 
     // TODO Calculate deltas for odometry
+  }
+
+  /** Sets the module's state */
+  public SwerveModuleState setDesiredState(SwerveModuleState desiredState) {
+    // TODO Update for get angle
+    var optimizedState = SwerveModuleState.optimize(desiredState, new Rotation2d());
+
+    // Controllers run in IO, which is called in periodic
+    velocitySetpoint = optimizedState.speedMetersPerSecond;
+    angleSetpoint = optimizedState.angle;
+
+    return optimizedState;
+  }
+
+  /** Disables all motor outputs */
+  public void stop() {
+    moduleIO.setDriveVolts(0.0);
+    moduleIO.setAzimuthVolts(0.0);
+
+    // null prevents controllers from running
+    velocitySetpoint = null;
+    angleSetpoint = null;
   }
 }
