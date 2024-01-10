@@ -107,6 +107,9 @@ public class ModuleIOSparkMax implements ModuleIO {
     azimuthEncoder.setMeasurementPeriod(10);
     azimuthEncoder.setAverageDepth(2);
 
+    driveMotor.setIdleMode(IdleMode.kBrake);
+    azimuthMotor.setIdleMode(IdleMode.kCoast);
+
     // TODO Investigate why this is set to 0 after being set to 250
     driveMotor.setCANTimeout(0);
     azimuthMotor.setCANTimeout(0);

@@ -25,7 +25,8 @@ public class Module {
 
   private Rotation2d azimuthRelativeOffset = null;
   private double lastPositionM = 0.0;
-  private SwerveModulePosition[] positionDeltas = new SwerveModulePosition[] {}; // Change since last cycle
+  private SwerveModulePosition[] positionDeltas =
+      new SwerveModulePosition[] {}; // Change since last cycle
 
   /** Creates a new swerve module */
   public Module(ModuleIO io, int id) {
@@ -66,14 +67,18 @@ public class Module {
         Math.min(
             moduleIOInputs.odometryDrivePositionR.length,
             moduleIOInputs.odometryAzimuthPositions.length);
-    positionDeltas = new SwerveModulePosition[deltaCount]; // Array resets every loop to account for varying frames
+    positionDeltas =
+        new SwerveModulePosition
+            [deltaCount]; // Array resets every loop to account for varying frames
     for (int i = 0; i < deltaCount; i++) {
       double positionM = moduleIOInputs.odometryDrivePositionR[i] * WHEEL_RADIUS_M;
       Rotation2d angle =
           moduleIOInputs.odometryAzimuthPositions[i].plus(
               azimuthRelativeOffset != null ? azimuthRelativeOffset : new Rotation2d());
-              
-      positionDeltas[i] = new SwerveModulePosition(positionM - lastPositionM, angle); // Update position from odometry
+
+      positionDeltas[i] =
+          new SwerveModulePosition(
+              positionM - lastPositionM, angle); // Update position from odometry
       lastPositionM = positionM;
     }
   }

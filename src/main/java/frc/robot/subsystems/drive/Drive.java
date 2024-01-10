@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Twist2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -16,6 +17,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /** Swerve drive */
@@ -23,10 +25,10 @@ public class Drive extends SubsystemBase {
   // TODO Adjust values as needed
   private final double TRACK_WIDTH_X_M = Units.inchesToMeters(26.0);
   private final double TRACK_WIDTH_Y_M = Units.inchesToMeters(26.0);
-  // private final double DRIVEBASE_RADIUS_M =
-  //     Math.hypot(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0);
-  // private final double MAX_SPEED_MPS = Units.feetToMeters(14.0);
-  // private final double MAX_ANGULAR_SPEED_MPS = MAX_SPEED_MPS / DRIVEBASE_RADIUS_M;
+  private final double DRIVEBASE_RADIUS_M =
+      Math.hypot(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0);
+  private final double MAX_LINEAR_SPEED_MPS = Units.feetToMeters(14.0);
+  private final double MAX_ANGULAR_SPEED_MPS = MAX_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS_M;
 
   private final SwerveDriveKinematics KINEMATICS = getKinematics();
 
@@ -73,15 +75,21 @@ public class Drive extends SubsystemBase {
     if (DriverStation.isDisabled()) {
       for (var module : modules) {
         module.stop();
-        module.setBrake(true); // Apply brakes if disabled (Remember autonomous in the LGI lol)
       }
       // Log empty states
       Logger.recordOutput("Drive/SwerveStates/Setpoints", new SwerveModuleState[] {});
       Logger.recordOutput("Drive/SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
     }
+    if (DriverStation.isEStopped()) {
+      for (var module : modules) {
+        module.stop();
+        module.setBrake(true); // Apply brakes if disabled (Remember autonomous in the LGI lol)
+      }
+    }
 
     // Calculate current pose from deltas
-    int deltaCount = gyroIOInputs.connected ? gyroIOInputs.odometryYawPositions.length : Integer.MAX_VALUE;
+    int deltaCount =
+        gyroIOInputs.connected ? gyroIOInputs.odometryYawPositions.length : Integer.MAX_VALUE;
     for (int i = 0; i < 4; i++) {
       deltaCount = Math.min(deltaCount, modules[i].getModuleDeltas().length);
     }
@@ -90,7 +98,7 @@ public class Drive extends SubsystemBase {
       // Get wheel deltas
       SwerveModulePosition[] wheelDeltas = new SwerveModulePosition[4];
       for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-        wheelDeltas[moduleIndex] = modules[moduleIndex].getModuleDeltas()[moduleIndex]; 
+        wheelDeltas[moduleIndex] = modules[moduleIndex].getModuleDeltas()[moduleIndex];
       }
 
       // Twist is the motion of the robot (x, y, theta) since the last cycle
@@ -106,8 +114,70 @@ public class Drive extends SubsystemBase {
     }
   }
 
-  // TODO Add the rest of the getter and setter methods
+  /** Runs the swerve drive based on speeds */
+  public void runSwerve(ChassisSpeeds speeds) {
+    // Calculates setpoint states from inputs
+    ChassisSpeeds discreteSpeeds =
+        ChassisSpeeds.discretize(speeds, 0.02); // Compensate for translational skew when rotating
+    SwerveModuleState[] setpointStates = KINEMATICS.toSwerveModuleStates(discreteSpeeds);
+    SwerveDriveKinematics.desaturateWheelSpeeds(
+        setpointStates, MAX_LINEAR_SPEED_MPS); // Normalize speeds
 
+    // Set and log the optimized states
+    SwerveModuleState[] optimizedSetpointStates = new SwerveModuleState[4];
+    for (int i = 0; i < 4; i++) {
+      optimizedSetpointStates[i] =
+          modules[i].setDesiredState(
+              setpointStates[i]); // setDesiredState returns the optimized state
+    }
+
+    Logger.recordOutput("Drive/SwerveStates/Setpoints", setpointStates);
+    Logger.recordOutput("Drive/SwerveStates/SetpointsOptimized", optimizedSetpointStates);
+  }
+
+  /** Stops the drive */
+  public void stop() {
+    runSwerve(new ChassisSpeeds());
+  }
+
+  /** Set the pose of the robot */
+  public void setPose(Pose2d pose) {
+    currentPose = pose;
+  }
+
+  /** Gets the drive's measured state (module azimuth angles and drive velocities) */
+  @AutoLogOutput(key = "Drive/SwerveState/Measured")
+  private SwerveModuleState[] getModuleStates() {
+    SwerveModuleState[] states = new SwerveModuleState[4];
+    for (int i = 0; i < 4; i++) {
+      states[i] = modules[i].getModuleState();
+    }
+
+    return states;
+  }
+
+  // TODO Update this to use a pose estimator
+  /** Gets the pose of the robot */
+  @AutoLogOutput(key = "Drive/Odometry/Pose")
+  public Pose2d getPosition() {
+    return currentPose;
+  }
+
+  /** Gets the rotation of the robot */
+  @AutoLogOutput(key = "Drive/Odometry/Rotation")
+  public Rotation2d getRotation() {
+    return currentPose.getRotation();
+  }
+
+  public double getMaxLinearSpeedMPS() {
+    return MAX_LINEAR_SPEED_MPS;
+  }
+
+  public double getMaxAngularSpeedMPS() {
+    return MAX_ANGULAR_SPEED_MPS;
+  }
+
+  /** Gets the kinematics of the drivetrain */
   public SwerveDriveKinematics getKinematics() {
     return new SwerveDriveKinematics(
         new Translation2d[] {
