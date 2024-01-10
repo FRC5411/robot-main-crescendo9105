@@ -12,7 +12,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 public interface GyroIO {
   @AutoLog
   public static class GyroIOInputs {
-    public boolean connect = false;
+    public boolean connected = false;
     public Rotation2d yawPosition = new Rotation2d();
     public double yawVelocityRPS = 0.0;
 
