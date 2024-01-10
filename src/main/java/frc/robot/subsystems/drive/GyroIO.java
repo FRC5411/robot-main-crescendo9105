@@ -4,5 +4,21 @@
 
 package frc.robot.subsystems.drive;
 
+import org.littletonrobotics.junction.AutoLog;
+
+import edu.wpi.first.math.geometry.Rotation2d;
+
 /** Hardware interface for gyros */
-public interface GyroIO {}
+public interface GyroIO {
+  @AutoLog
+  public static class GyroIOInputs {
+    public boolean connect = false;
+    public Rotation2d yawPosition = new Rotation2d();
+    public double yawVelocityRPS = 0.0;
+
+    // TODO Add 250hz odometry inputs later
+  }
+
+  /** Update the inputs for gyro */
+  public default void updateInputs(GyroIOInputs inputs) {}
+}

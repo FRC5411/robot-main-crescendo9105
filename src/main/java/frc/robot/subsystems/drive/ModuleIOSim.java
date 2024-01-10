@@ -72,6 +72,7 @@ public class ModuleIOSim implements ModuleIO {
 
   @Override
   public void setAngle(double angleR) {
+    // Feedforward will help drive the motor based on the PID error
     setAzimuthVolts(
         azimuthController.calculate(azimuthMotor.getAngularPositionRad(), angleR)
             + azimuthFeedforward.calculate(Math.signum(azimuthController.getPositionError())));
