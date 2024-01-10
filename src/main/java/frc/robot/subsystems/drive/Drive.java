@@ -6,8 +6,9 @@ package frc.robot.subsystems.drive;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+/** Swerve drive */
 public class Drive extends SubsystemBase {
-  /** Creates a new Drive. */
+  /** Creates a new swerve Drive. */
   public Drive() {}
 
   @Override
