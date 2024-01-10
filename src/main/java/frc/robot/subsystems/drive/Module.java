@@ -4,11 +4,10 @@
 
 package frc.robot.subsystems.drive;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
+import org.littletonrobotics.junction.Logger;
 
 /** Swerve module wrapper */
 public class Module {
@@ -33,7 +32,10 @@ public class Module {
     MODULE_ID = id;
   }
 
-  /** Update inputs without running periodic logic; Odometry updates need to be properly thread locked */
+  /**
+   * Update inputs without running periodic logic; Odometry updates need to be properly thread
+   * locked
+   */
   public void updateInputs() {
     moduleIO.updateInputs(moduleIOInputs);
   }
@@ -41,5 +43,23 @@ public class Module {
   /** Called in subsystem periodic */
   public void periodic() {
     Logger.processInputs("Drive/Module" + Integer.toString(MODULE_ID), moduleIOInputs);
+
+    // Reset relative encoder on first cycle
+    if (azimuthRelativeOffset == null
+        && moduleIOInputs.azimuthAbsolutePosition.getRadians() != 0.0) {
+      azimuthRelativeOffset =
+          moduleIOInputs.azimuthAbsolutePosition.minus(moduleIOInputs.azimuthPosition);
+    }
+
+    // Run closed loop control for azimuth
+    if (angleSetpoint != null) {
+      moduleIO.setAngle(angleSetpoint.getRadians());
+
+      // TODO See if we can optimize the velocity setpoint to increase as the wheel moves
+      //      closer to its goal
+      moduleIO.setVelocity(velocitySetpoint);
+    }
+
+    // TODO Calculate deltas for odometry
   }
 }
