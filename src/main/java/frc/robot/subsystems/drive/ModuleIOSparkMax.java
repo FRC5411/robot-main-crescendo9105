@@ -111,6 +111,9 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveController = driveMotor.getPIDController();
     azimuthController = azimuthMotor.getPIDController();
 
+    driveController.setFeedbackDevice(driveEncoder);
+    azimuthController.setFeedbackDevice(azimuthEncoder);
+
     // TODO Tune PID gains
     driveController.setP(0.0);
     driveController.setI(0.0);
@@ -121,6 +124,8 @@ public class ModuleIOSparkMax implements ModuleIO {
     azimuthController.setI(0.0);
     azimuthController.setD(0.0);
     azimuthController.setFF(0.0);
+
+    azimuthController.setOutputRange(-Math.PI, Math.PI);
 
     driveFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
     azimuthFeedforward = new SimpleMotorFeedforward(0.0, 0.0);

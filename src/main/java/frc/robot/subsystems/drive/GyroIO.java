@@ -4,9 +4,8 @@
 
 package frc.robot.subsystems.drive;
 
-import org.littletonrobotics.junction.AutoLog;
-
 import edu.wpi.first.math.geometry.Rotation2d;
+import org.littletonrobotics.junction.AutoLog;
 
 /** Hardware interface for gyros */
 public interface GyroIO {

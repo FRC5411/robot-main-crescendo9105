@@ -9,7 +9,6 @@ import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 
@@ -26,7 +25,7 @@ public class GyroIOPigeon2 implements GyroIO {
     gyro.getConfigurator().apply(new Pigeon2Configuration());
     gyro.getConfigurator().setYaw(0.0);
 
-    yaw.setUpdateFrequency(250.0);
+    yaw.setUpdateFrequency(Module.ODOMETRY_FREQUENCY);
     yawVelocity.setUpdateFrequency(100.0);
 
     // TODO Add odometry queue
