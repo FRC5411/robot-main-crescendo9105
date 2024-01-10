@@ -8,6 +8,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
@@ -16,6 +17,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
+import java.util.Queue;
 
 /** An SDS MK4i L3 swerve module */
 public class ModuleIOSparkMax implements ModuleIO {
@@ -37,6 +39,9 @@ public class ModuleIOSparkMax implements ModuleIO {
   private SparkPIDController azimuthController;
   private SimpleMotorFeedforward driveFeedforward;
   private SimpleMotorFeedforward azimuthFeedforward;
+
+  private Queue<Double> drivePositionQueue;
+  private Queue<Double> azimuthPositionQueue;
 
   public ModuleIOSparkMax(int module) {
     // TODO Update devices and offsets as needed
@@ -106,7 +111,16 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveMotor.setCANTimeout(0);
     azimuthMotor.setCANTimeout(0);
 
-    // TODO Add threaded odometry stuff here
+    // Set CAN Frame frequency to what's specified
+    driveMotor.setPeriodicFramePeriod(
+        PeriodicFrame.kStatus2, (int) (1000.0 / Module.ODOMETRY_FREQUENCY));
+    azimuthMotor.setPeriodicFramePeriod(
+        PeriodicFrame.kStatus2, (int) (1000.0 / Module.ODOMETRY_FREQUENCY));
+    // Have queues listen for getPosition signals
+    drivePositionQueue =
+        SparkMaxOdometryThread.getInstance().registerSignal(driveEncoder::getPosition);
+    azimuthPositionQueue =
+        SparkMaxOdometryThread.getInstance().registerSignal(azimuthEncoder::getPosition);
 
     driveController = driveMotor.getPIDController();
     azimuthController = azimuthMotor.getPIDController();
@@ -158,7 +172,18 @@ public class ModuleIOSparkMax implements ModuleIO {
     inputs.azimuthAppliedVolts = azimuthMotor.getAppliedOutput() * azimuthMotor.getBusVoltage();
     inputs.azimuthCurrentAmps = new double[] {azimuthMotor.getOutputCurrent()};
 
-    // TODO Add threaded odometry values
+    // Take odometry signals that have added up in the queue to an array, log the array
+    inputs.odometryDrivePositionR =
+        drivePositionQueue.stream()
+            .mapToDouble((Double value) -> Units.rotationsToRadians(value) / DRIVE_GEAR_RATIO)
+            .toArray();
+    inputs.odometryAzimuthPositions =
+        azimuthPositionQueue.stream()
+            .map((Double value) -> Rotation2d.fromRotations(value / AZIMUTH_GEAR_RATIO))
+            .toArray(Rotation2d[]::new); // Store the azimuth positions as a Rotation2d
+    // Clear the odometry queue for the next cycle
+    drivePositionQueue.clear();
+    azimuthPositionQueue.clear();
   }
 
   @Override

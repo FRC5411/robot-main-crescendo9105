@@ -25,7 +25,7 @@ public class Module {
 
   private Rotation2d azimuthRelativeOffset = null;
   private double lastPositionM = 0.0;
-  private SwerveModulePosition[] modulePositions = new SwerveModulePosition[] {};
+  private SwerveModulePosition[] positionDeltas = new SwerveModulePosition[] {}; // Change since last cycle
 
   /** Creates a new swerve module */
   public Module(ModuleIO io, int id) {
@@ -61,13 +61,27 @@ public class Module {
       moduleIO.setVelocity(velocitySetpoint);
     }
 
-    // TODO Calculate deltas for odometry
+    // Calculate deltas (change) from odometry
+    int deltaCount = // deltaCount based on how many frames were captured
+        Math.min(
+            moduleIOInputs.odometryDrivePositionR.length,
+            moduleIOInputs.odometryAzimuthPositions.length);
+    positionDeltas = new SwerveModulePosition[deltaCount]; // Array resets every loop to account for varying frames
+    for (int i = 0; i < deltaCount; i++) {
+      double positionM = moduleIOInputs.odometryDrivePositionR[i] * WHEEL_RADIUS_M;
+      Rotation2d angle =
+          moduleIOInputs.odometryAzimuthPositions[i].plus(
+              azimuthRelativeOffset != null ? azimuthRelativeOffset : new Rotation2d());
+              
+      positionDeltas[i] = new SwerveModulePosition(positionM - lastPositionM, angle); // Update position from odometry
+      lastPositionM = positionM;
+    }
   }
 
   /** Sets the module's state */
   public SwerveModuleState setDesiredState(SwerveModuleState desiredState) {
     // TODO Update for get angle
-    var optimizedState = SwerveModuleState.optimize(desiredState, new Rotation2d());
+    var optimizedState = SwerveModuleState.optimize(desiredState, getAngle());
 
     // Controllers run in IO, which is called in periodic
     velocitySetpoint = optimizedState.speedMetersPerSecond;
@@ -124,5 +138,8 @@ public class Module {
     return new SwerveModuleState(getVelocityMPS(), getAngle());
   }
 
-  // TODO Add threaded odometry getters
+  /** Get the module position deltas from this cycle */
+  public SwerveModulePosition[] getModuleDeltas() {
+    return positionDeltas;
+  }
 }

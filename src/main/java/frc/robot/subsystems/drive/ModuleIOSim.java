@@ -29,7 +29,7 @@ public class ModuleIOSim implements ModuleIO {
   private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
   private SimpleMotorFeedforward azimuthFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
 
-  public ModuleIOSim() {}
+  public ModuleIOSim(int module) {}
 
   @Override
   public void updateInputs(ModuleIOInputs inputs) {
@@ -48,7 +48,8 @@ public class ModuleIOSim implements ModuleIO {
     inputs.azimuthAppliedVolts = azimuthAppliedVolts;
     inputs.azimuthCurrentAmps = new double[] {Math.abs(azimuthMotor.getCurrentDrawAmps())};
 
-    // TODO Add 250hz odometry
+    inputs.odometryDrivePositionR = new double[] {inputs.drivePositionR};
+    inputs.odometryAzimuthPositions = new Rotation2d[] {inputs.azimuthPosition};
   }
 
   @Override

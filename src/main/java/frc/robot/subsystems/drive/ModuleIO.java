@@ -22,7 +22,8 @@ public interface ModuleIO {
     public double azimuthAppliedVolts = 0.0;
     public double[] azimuthCurrentAmps = new double[] {};
 
-    // TODO add 250hz odometry inputs later
+    public double[] odometryDrivePositionR = new double[] {};
+    public Rotation2d[] odometryAzimuthPositions = new Rotation2d[] {};
   }
 
   /** Update the hardware inputs for a module */
