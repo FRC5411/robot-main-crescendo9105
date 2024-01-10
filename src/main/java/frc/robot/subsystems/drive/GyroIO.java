@@ -15,7 +15,7 @@ public interface GyroIO {
     public Rotation2d yawPosition = new Rotation2d();
     public double yawVelocityRPS = 0.0;
 
-    // TODO Add 250hz odometry inputs later
+    public Rotation2d[] odometryYawPositions = new Rotation2d[] {};
   }
 
   /** Update the inputs for gyro */
