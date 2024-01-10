@@ -5,10 +5,14 @@
 package frc.robot.subsystems.drive;
 
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
@@ -31,6 +35,8 @@ public class ModuleIOSparkMax implements ModuleIO {
 
   private SparkPIDController driveController;
   private SparkPIDController azimuthController;
+  private SimpleMotorFeedforward driveFeedforward;
+  private SimpleMotorFeedforward azimuthFeedforward;
 
   public ModuleIOSparkMax(int module) {
     // TODO Update devices and offsets as needed
@@ -116,6 +122,9 @@ public class ModuleIOSparkMax implements ModuleIO {
     azimuthController.setD(0.0);
     azimuthController.setFF(0.0);
 
+    driveFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
+    azimuthFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
+
     driveMotor.burnFlash();
     azimuthMotor.burnFlash();
   }
@@ -128,7 +137,7 @@ public class ModuleIOSparkMax implements ModuleIO {
     inputs.driveAppliedVolts = driveMotor.getAppliedOutput() * driveMotor.getBusVoltage();
     inputs.driveCurrentAmps = new double[] {driveMotor.getOutputCurrent()};
 
-    // TODO Verify that this works lmao
+    // TODO Verify that this abs pos telemetry works lmao
     inputs.azimuthAbsolutePosition =
         new Rotation2d(
                 angleEncoder.getSupplyVoltage().getValueAsDouble()
@@ -148,20 +157,53 @@ public class ModuleIOSparkMax implements ModuleIO {
   }
 
   @Override
-  public void setDriveVolts(double volts) {}
+  public void setDriveVolts(double volts) {
+    double clampedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+    driveMotor.setVoltage(clampedVolts);
+  }
 
   @Override
-  public void setAzimuthVolts(double volts) {}
+  public void setAzimuthVolts(double volts) {
+    double clampedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+    azimuthMotor.setVoltage(clampedVolts);
+  }
+
+  // TODO Figure out what Anshul's PID gibberish means, cause rn I don't understand it lol
+  @Override
+  public void setVelocity(double velocityMPS) {
+    driveController.setReference(
+        velocityMPS,
+        ControlType.kVelocity,
+        0,
+        driveFeedforward.calculate(velocityMPS),
+        SparkPIDController.ArbFFUnits.kVoltage);
+  }
 
   @Override
-  public void setVelocity(double velocityMetersPerSecond) {}
+  public void setAngle(double angleR) {
+    azimuthController.setReference(
+        angleR,
+        ControlType.kPosition,
+        0,
+        azimuthFeedforward.calculate(Math.signum(angleR - azimuthEncoder.getPosition())),
+        SparkPIDController.ArbFFUnits.kVoltage);
+  }
 
   @Override
-  public void setAngle(double angleRad) {}
+  public void setDriveBrake(boolean isBrake) {
+    if (isBrake) {
+      driveMotor.setIdleMode(IdleMode.kBrake);
+    } else {
+      driveMotor.setIdleMode(IdleMode.kCoast);
+    }
+  }
 
   @Override
-  public void setDriveBrake(boolean isBrake) {}
-
-  @Override
-  public void setAzimuthBrake(boolean isBrake) {}
+  public void setAzimuthBrake(boolean isBrake) {
+    if (isBrake) {
+      azimuthMotor.setIdleMode(IdleMode.kBrake);
+    } else {
+      azimuthMotor.setIdleMode(IdleMode.kCoast);
+    }
+  }
 }
