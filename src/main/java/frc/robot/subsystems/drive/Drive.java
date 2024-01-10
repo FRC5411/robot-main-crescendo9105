@@ -4,15 +4,90 @@
 
 package frc.robot.subsystems.drive;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import org.littletonrobotics.junction.Logger;
 
 /** Swerve drive */
 public class Drive extends SubsystemBase {
+  // TODO Adjust values as needed
+  private final double TRACK_WIDTH_X_M = Units.inchesToMeters(26.0);
+  private final double TRACK_WIDTH_Y_M = Units.inchesToMeters(26.0);
+  private final double DRIVEBASE_RADIUS_M =
+      Math.hypot(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0);
+  private final double MAX_SPEED_MPS = Units.feetToMeters(14.0);
+  private final double MAX_ANGULAR_SPEED_MPS = MAX_SPEED_MPS / DRIVEBASE_RADIUS_M;
+
+  private final SwerveDriveKinematics KINEMATICS = getKinematics();
+
+  public static final Lock odometryLock = new ReentrantLock();
+
+  private GyroIO gyroIO;
+  private GyroIOInputsAutoLogged gyroIOInputs = new GyroIOInputsAutoLogged();
+
+  private Module[] modules = new Module[4]; // FL FR BL BR
+
+  private Pose2d lastPose = new Pose2d();
+  private Rotation2d lastGyroRotation = new Rotation2d();
+
+  // TODO Add poseEstimator
+
   /** Creates a new swerve Drive. */
-  public Drive() {}
+  public Drive(
+      ModuleIO moduleFL, ModuleIO moduleFR, ModuleIO moduleBL, ModuleIO moduleBR, GyroIO gyro) {
+    modules[0] = new Module(moduleFL, 0);
+    modules[1] = new Module(moduleFL, 1);
+    modules[2] = new Module(moduleFL, 2);
+    modules[3] = new Module(moduleFL, 3);
+    gyroIO = gyro;
+
+    // TODO Configure PathPlanner here
+  }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    // Lock odometry while reading data to logger
+    odometryLock.lock();
+    gyroIO.updateInputs(gyroIOInputs);
+    for (var module : modules) {
+      module.updateInputs();
+    }
+    // Now unlock odometry since data has been logged
+    odometryLock.unlock();
+    Logger.processInputs("Drive/Gyro", gyroIOInputs);
+
+    for (var module : modules) {
+      module.periodic();
+    }
+
+    if (DriverStation.isDisabled()) {
+      for (var module : modules) {
+        module.stop();
+        module.setBrake(true); // Apply brakes if disabled (Remember autonomous in the LGI lol)
+      }
+      // Log empty states
+      Logger.recordOutput("Drive/SwerveStates/Setpoints", new SwerveModuleState[] {});
+      Logger.recordOutput("Drive/SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
+    }
+
+    // int deltaCount = gyroIOInputs.connected ?
+  }
+
+  public SwerveDriveKinematics getKinematics() {
+    return new SwerveDriveKinematics(
+        new Translation2d[] {
+          new Translation2d(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0),
+          new Translation2d(TRACK_WIDTH_X_M / 2.0, -TRACK_WIDTH_Y_M / 2.0),
+          new Translation2d(-TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0),
+          new Translation2d(-TRACK_WIDTH_X_M / 2.0, -TRACK_WIDTH_Y_M / 2.0)
+        });
   }
 }

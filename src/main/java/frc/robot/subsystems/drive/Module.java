@@ -76,6 +76,8 @@ public class Module {
     return optimizedState;
   }
 
+  // TODO Add characterization methods
+
   /** Disables all motor outputs */
   public void stop() {
     moduleIO.setDriveVolts(0.0);
