@@ -62,7 +62,8 @@ public class RobotContainer {
         break;
     }
 
-    NamedCommands.registerCommand("Print Hello", new PrintCommand("Hello"));
+    NamedCommands.registerCommand(
+        "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));
 
     AUTO_CHOOSER =
         new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
@@ -93,6 +94,6 @@ public class RobotContainer {
   }
 
   public Command getAutonomousCommand() {
-    return new PrintCommand("No autonomous configured");
+    return AUTO_CHOOSER.get();
   }
 }

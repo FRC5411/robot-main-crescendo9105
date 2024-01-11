@@ -144,6 +144,8 @@ public class Drive extends SubsystemBase {
       currentPose = currentPose.exp(twist);
     }
 
+    // TODO Fuse vision with 250hz odometry
+
     poseEstimator.update(lastGyroRotation, getModulePositions());
     Logger.recordOutput("Drive/Odometry/EstimatedPosition", poseEstimator.getEstimatedPosition());
   }
@@ -207,7 +209,6 @@ public class Drive extends SubsystemBase {
     return positions;
   }
 
-  // TODO Update this to use a pose estimator
   /** Gets the pose of the robot */
   @AutoLogOutput(key = "Drive/Odometry/Pose")
   public Pose2d getPosition() {
