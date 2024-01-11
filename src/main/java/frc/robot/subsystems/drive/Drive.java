@@ -209,6 +209,7 @@ public class Drive extends SubsystemBase {
     return positions;
   }
 
+  // TODO Fuse 250hz odometry with vision
   /** Gets the pose of the robot */
   @AutoLogOutput(key = "Drive/Odometry/Pose")
   public Pose2d getPosition() {
