@@ -9,6 +9,7 @@ import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -48,7 +49,8 @@ public class Drive extends SubsystemBase {
   private Pose2d currentPose = new Pose2d();
   private Rotation2d lastGyroRotation = new Rotation2d();
 
-  // TODO Add poseEstimator
+  private SwerveDrivePoseEstimator poseEstimator =
+      new SwerveDrivePoseEstimator(KINEMATICS, lastGyroRotation, getModulePositions(), currentPose);
 
   /** Creates a new swerve Drive. */
   public Drive(
@@ -141,6 +143,9 @@ public class Drive extends SubsystemBase {
       // Apply the change since last sample to current pose
       currentPose = currentPose.exp(twist);
     }
+
+    poseEstimator.update(lastGyroRotation, getModulePositions());
+    Logger.recordOutput("Drive/Odometry/EstimatedPosition", poseEstimator.getEstimatedPosition());
   }
 
   /** Runs the swerve drive based on speeds */
@@ -174,6 +179,11 @@ public class Drive extends SubsystemBase {
     currentPose = pose;
   }
 
+  /** Add a vision measurement for the poseEstimator */
+  public void addVisionMeasurement(Pose2d visionMeasurement, double timestampS) {
+    poseEstimator.addVisionMeasurement(visionMeasurement, timestampS);
+  }
+
   /** Gets the drive's measured state (module azimuth angles and drive velocities) */
   @AutoLogOutput(key = "Drive/SwerveStates/Measured")
   private SwerveModuleState[] getModuleStates() {
@@ -183,6 +193,18 @@ public class Drive extends SubsystemBase {
     }
 
     return states;
+  }
+
+  /** Gets the swerve module's positions */
+  @AutoLogOutput(key = "Drive/ModulePositions")
+  public SwerveModulePosition[] getModulePositions() {
+    SwerveModulePosition[] positions = new SwerveModulePosition[4];
+    for (int i = 0; i < 4; i++) {
+      positions[i] =
+          modules[i] != null ? modules[i].getModulePosition() : new SwerveModulePosition();
+    }
+
+    return positions;
   }
 
   // TODO Update this to use a pose estimator
