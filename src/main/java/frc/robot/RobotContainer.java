@@ -13,7 +13,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import frc.robot.commands.SwerveCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -26,7 +26,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   private Drive robotDrive;
 
-  private CommandXboxController pilotController = new CommandXboxController(0);
+  // private CommandXboxController pilotController = new CommandXboxController(0);
+  private CommandPS4Controller pilotController = new CommandPS4Controller(0);
 
   private final LoggedDashboardChooser<Command> AUTO_CHOOSER;
 
@@ -49,6 +50,7 @@ public class RobotContainer {
                 new ModuleIOSim(2),
                 new ModuleIOSim(3),
                 new GyroIO() {});
+        break;
       default:
         robotDrive =
             new Drive(
@@ -57,6 +59,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new GyroIO() {});
+        break;
     }
 
     NamedCommands.registerCommand("Print Hello", new PrintCommand("Hello"));
@@ -74,11 +77,11 @@ public class RobotContainer {
         SwerveCommands.swerveDrive(
             robotDrive,
             () -> pilotController.getLeftX(),
-            () -> pilotController.getLeftY(),
+            () -> -pilotController.getLeftY(),
             () -> pilotController.getRightX()));
     // Reset heading
     pilotController
-        .b()
+        .triangle()
         .onTrue(
             Commands.runOnce(
                     () ->

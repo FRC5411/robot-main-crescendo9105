@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems.drive;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -28,10 +30,24 @@ public class Module {
   private SwerveModulePosition[] positionDeltas =
       new SwerveModulePosition[] {}; // Change since last cycle
 
+  /* ------------------------------------------------- */
+
+  private PIDController driveController = new PIDController(0.1, 0.0, 0.0);
+  private PIDController azimuthController = new PIDController(10.0, 0.0, 0.0);
+  private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.13);
+
+  /* ------------------------------------------------- */
+
   /** Creates a new swerve module */
   public Module(ModuleIO io, int id) {
     moduleIO = io;
     MODULE_ID = id;
+
+    /* ------------------------------------------------- */
+
+    azimuthController.enableContinuousInput(-Math.PI, Math.PI);
+
+    /* ------------------------------------------------- */
   }
 
   /**
@@ -53,14 +69,33 @@ public class Module {
           moduleIOInputs.azimuthAbsolutePosition.minus(moduleIOInputs.azimuthPosition);
     }
 
-    // Run closed loop control for azimuth
-    if (angleSetpoint != null) {
-      moduleIO.setAngle(angleSetpoint.getRadians());
+    // // Run closed loop control for azimuth
+    // if (angleSetpoint != null) {
+    //   moduleIO.setAngle(angleSetpoint.getRadians());
 
-      // TODO See if we can optimize the velocity setpoint to increase as the wheel moves
-      //      closer to its goal
-      moduleIO.setVelocity(velocitySetpoint);
+    //   // TODO See if we can optimize the velocity setpoint to increase as the wheel moves
+    //   //      closer to its goal
+    //   moduleIO.setVelocity(velocitySetpoint);
+    // }
+
+    /* ------------------------------------------------- */
+
+    if (angleSetpoint != null) {
+      moduleIO.setAzimuthVolts(
+          azimuthController.calculate(getAngle().getRadians(), angleSetpoint.getRadians()));
+
+      if (velocitySetpoint != null) {
+        double adjustedVelocitySetpoint =
+            velocitySetpoint * Math.cos(azimuthController.getPositionError());
+
+        double velocityRPS = adjustedVelocitySetpoint / WHEEL_RADIUS_M;
+        moduleIO.setDriveVolts(
+            driveFeedforward.calculate(velocityRPS)
+                + driveController.calculate(moduleIOInputs.driveVelocityRPS, velocityRPS));
+      }
     }
+
+    /* ------------------------------------------------- */
 
     // Calculate deltas (change) from odometry
     int deltaCount = // deltaCount based on how many frames were captured

@@ -54,9 +54,9 @@ public class Drive extends SubsystemBase {
   public Drive(
       ModuleIO moduleFL, ModuleIO moduleFR, ModuleIO moduleBL, ModuleIO moduleBR, GyroIO gyro) {
     modules[0] = new Module(moduleFL, 0);
-    modules[1] = new Module(moduleFL, 1);
-    modules[2] = new Module(moduleFL, 2);
-    modules[3] = new Module(moduleFL, 3);
+    modules[1] = new Module(moduleFR, 1);
+    modules[2] = new Module(moduleBL, 2);
+    modules[3] = new Module(moduleBR, 3);
     gyroIO = gyro;
 
     // Configure PathPlanner
@@ -127,7 +127,7 @@ public class Drive extends SubsystemBase {
       // Get wheel deltas
       SwerveModulePosition[] wheelDeltas = new SwerveModulePosition[4];
       for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-        wheelDeltas[moduleIndex] = modules[moduleIndex].getModuleDeltas()[moduleIndex];
+        wheelDeltas[moduleIndex] = modules[moduleIndex].getModuleDeltas()[deltaIndex];
       }
 
       // Twist is the motion of the robot (x, y, theta) since the last cycle
@@ -175,7 +175,7 @@ public class Drive extends SubsystemBase {
   }
 
   /** Gets the drive's measured state (module azimuth angles and drive velocities) */
-  @AutoLogOutput(key = "Drive/SwerveState/Measured")
+  @AutoLogOutput(key = "Drive/SwerveStates/Measured")
   private SwerveModuleState[] getModuleStates() {
     SwerveModuleState[] states = new SwerveModuleState[4];
     for (int i = 0; i < 4; i++) {

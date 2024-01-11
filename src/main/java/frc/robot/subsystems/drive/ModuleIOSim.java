@@ -65,10 +65,10 @@ public class ModuleIOSim implements ModuleIO {
   }
 
   @Override
-  public void setVelocity(double velocityMPS) {
+  public void setVelocity(double velocityRPS) {
     setDriveVolts(
-        driveController.calculate(driveMotor.getAngularVelocityRadPerSec(), velocityMPS)
-            + driveFeedforward.calculate(velocityMPS));
+        driveController.calculate(driveMotor.getAngularVelocityRadPerSec(), velocityRPS)
+            + driveFeedforward.calculate(velocityRPS));
   }
 
   @Override
