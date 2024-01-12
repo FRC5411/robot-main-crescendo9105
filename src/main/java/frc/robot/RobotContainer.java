@@ -9,13 +9,14 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.pathfinding.Pathfinding;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import frc.robot.commands.SwerveCommands;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
@@ -28,8 +29,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   private Drive robotDrive;
 
-  private CommandXboxController pilotController = new CommandXboxController(0);
-  // private CommandPS4Controller pilotController = new CommandPS4Controller(0);
+  // private CommandXboxController pilotController = new CommandXboxController(0);
+  private CommandPS4Controller pilotController = new CommandPS4Controller(0);
 
   private final LoggedDashboardChooser<Command> AUTO_CHOOSER;
 
@@ -71,6 +72,7 @@ public class RobotContainer {
         new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
 
     AUTO_CHOOSER.addDefaultOption("Print Hello", new PrintCommand("Hello"));
+    AUTO_CHOOSER.addOption("Pathfind", getExamplePathfindCommand());
 
     configureButtonBindings();
   }
@@ -84,7 +86,7 @@ public class RobotContainer {
             () -> pilotController.getRightX()));
     // Reset heading
     pilotController
-        .b()
+        .triangle()
         .onTrue(
             Commands.runOnce(
                     () ->
@@ -93,28 +95,22 @@ public class RobotContainer {
                                 robotDrive.getPosition().getTranslation(), new Rotation2d())),
                     robotDrive)
                 .ignoringDisable(true)); // Reset even when disabled
-    // pilotController
-    //     .square()
-    //     .onTrue(new PrintCommand("Running pathFind
-    // command").andThen(getExamplePathfindCommand()))
-    //     .onFalse(new InstantCommand());
-    // AUTO_CHOOSER.addOption(
-    //     "Pathfind",
-    //     AutoBuilder.pathfindToPose(
-    //         new Pose2d(3, 1, Rotation2d.fromDegrees(180)),
-    //         new PathConstraints(
-    //             3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720))));
   }
 
   public Command getExamplePathfindCommand() {
-    Pose2d targetPose = new Pose2d(3, 1, Rotation2d.fromDegrees(180));
+    Pose2d targetPose = new Pose2d(4.0, 1.0, Rotation2d.fromDegrees(0.0));
 
     PathConstraints constraints =
         new PathConstraints(3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
 
     Command pathFindingCommand = AutoBuilder.pathfindToPose(targetPose, constraints, 0.0, 0.0);
 
-    return pathFindingCommand;
+    return Commands.print(
+            "PATHFINDER: isNewPathAvailable - "
+                + Pathfinding.isNewPathAvailable()
+                + "\nPATHFINDER: isPathfindingConfigured - "
+                + AutoBuilder.isPathfindingConfigured())
+        .andThen(pathFindingCommand);
   }
 
   public Command getAutonomousCommand() {

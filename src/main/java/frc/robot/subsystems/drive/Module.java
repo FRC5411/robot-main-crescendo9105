@@ -73,7 +73,6 @@ public class Module {
     // if (angleSetpoint != null) {
     //   moduleIO.setAngle(angleSetpoint.getRadians());
 
-    //   // TODO See if we can optimize the velocity setpoint to increase as the wheel moves
     //   //      closer to its goal
     //   moduleIO.setVelocity(velocitySetpoint);
     // }
