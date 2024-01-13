@@ -30,9 +30,9 @@ import org.littletonrobotics.junction.Logger;
 /** Swerve drive */
 public class Drive extends SubsystemBase {
   // TODO Adjust values as needed
-  private static final double TRACK_WIDTH_X_M = Units.inchesToMeters(26.0);
-  private static final double TRACK_WIDTH_Y_M = Units.inchesToMeters(26.0);
-  public static final double DRIVEBASE_RADIUS_M =
+  private final double TRACK_WIDTH_X_M = Units.inchesToMeters(26.0);
+  private final double TRACK_WIDTH_Y_M = Units.inchesToMeters(26.0);
+  private final double DRIVEBASE_RADIUS_M =
       Math.hypot(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0);
   private final double MAX_LINEAR_SPEED_MPS = Units.feetToMeters(14.0);
   private final double MAX_ANGULAR_SPEED_MPS = MAX_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS_M;
@@ -68,7 +68,7 @@ public class Drive extends SubsystemBase {
         () -> KINEMATICS.toChassisSpeeds(getModuleStates()),
         this::runSwerve,
         new HolonomicPathFollowerConfig(
-            MAX_LINEAR_SPEED_MPS, DRIVEBASE_RADIUS_M, new ReplanningConfig()),
+            MAX_LINEAR_SPEED_MPS, DRIVEBASE_RADIUS_M, new ReplanningConfig(true, true)),
         () ->
             DriverStation.getAlliance().isPresent()
                 && DriverStation.getAlliance().get() == Alliance.Red,
