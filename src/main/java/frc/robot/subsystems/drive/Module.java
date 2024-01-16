@@ -10,6 +10,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import frc.robot.Constants;
+import frc.robot.utils.LoggedTunableNumber;
 import org.littletonrobotics.junction.Logger;
 
 /** Swerve module wrapper */
@@ -30,24 +32,52 @@ public class Module {
   private SwerveModulePosition[] positionDeltas =
       new SwerveModulePosition[] {}; // Change since last cycle
 
-  /* ------------------------------------------------- */
+  private PIDController driveController;
+  private PIDController azimuthController;
+  private SimpleMotorFeedforward driveFeedforward;
 
-  private PIDController driveController = new PIDController(0.1, 0.0, 0.0);
-  private PIDController azimuthController = new PIDController(10.0, 0.0, 0.0);
-  private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.13);
+  private LoggedTunableNumber driveControllerP =
+      new LoggedTunableNumber("Drive/Module/DriveP", 0.0);
+  private LoggedTunableNumber driveControllerI =
+      new LoggedTunableNumber("Drive/Module/DriveI", 0.0);
+  private LoggedTunableNumber driveControllerD =
+      new LoggedTunableNumber("Drive/Module/DriveD", 0.0);
 
-  /* ------------------------------------------------- */
-
+  private LoggedTunableNumber azimuthControllerP =
+      new LoggedTunableNumber("Drive/Module/AzimuthP", 0.0);
+  private LoggedTunableNumber azimuthControllerI =
+      new LoggedTunableNumber("Drive/Module/AzimuthI", 0.0);
+  private LoggedTunableNumber azimuthControllerD =
+      new LoggedTunableNumber("Drive/Module/AzimuthD", 0.0);
   /** Creates a new swerve module */
   public Module(ModuleIO io, int id) {
     moduleIO = io;
     MODULE_ID = id;
 
-    /* ------------------------------------------------- */
+    switch (Constants.currentMode) {
+      case REAL:
+        driveController = new PIDController(0.0, 0.0, 0.0);
+        azimuthController = new PIDController(0.0, 0.0, 0.0);
+        driveFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
+        break;
+      case REPLAY:
+        driveController = new PIDController(0.05, 0.0, 0.0);
+        azimuthController = new PIDController(7.0, 0.0, 0.0);
+        driveFeedforward = new SimpleMotorFeedforward(0.1, 0.13);
+        break;
+      case SIM:
+        driveController = new PIDController(0.1, 0.0, 0.0);
+        azimuthController = new PIDController(10.0, 0.0, 0.0);
+        driveFeedforward = new SimpleMotorFeedforward(0.0, 0.13);
+        break;
+      default:
+        driveController = new PIDController(0.0, 0.0, 0.0);
+        azimuthController = new PIDController(0.0, 0.0, 0.0);
+        driveFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
+        break;
+    }
 
     azimuthController.enableContinuousInput(-Math.PI, Math.PI);
-
-    /* ------------------------------------------------- */
   }
 
   /**
@@ -69,16 +99,7 @@ public class Module {
           moduleIOInputs.azimuthAbsolutePosition.minus(moduleIOInputs.azimuthPosition);
     }
 
-    // // Run closed loop control for azimuth
-    // if (angleSetpoint != null) {
-    //   moduleIO.setAngle(angleSetpoint.getRadians());
-
-    //   //      closer to its goal
-    //   moduleIO.setVelocity(velocitySetpoint);
-    // }
-
-    /* ------------------------------------------------- */
-
+    // Run setpoints for modules
     if (angleSetpoint != null) {
       moduleIO.setAzimuthVolts(
           azimuthController.calculate(getAngle().getRadians(), angleSetpoint.getRadians()));
@@ -93,8 +114,6 @@ public class Module {
                 + driveController.calculate(moduleIOInputs.driveVelocityRPS, velocityRPS));
       }
     }
-
-    /* ------------------------------------------------- */
 
     // Calculate deltas (change) from odometry
     int deltaCount = // deltaCount based on how many frames were captured
@@ -114,6 +133,21 @@ public class Module {
           new SwerveModulePosition(
               positionM - lastPositionM, angle); // Update position from odometry
       lastPositionM = positionM;
+    }
+
+    if (driveControllerP.hasChanged(hashCode())
+        || driveControllerI.hasChanged(hashCode())
+        || driveControllerD.hasChanged(hashCode())) {
+      driveController.setP(driveControllerP.get());
+      driveController.setI(driveControllerI.get());
+      driveController.setD(driveControllerD.get());
+    }
+    if (azimuthControllerP.hasChanged(hashCode())
+        || azimuthControllerI.hasChanged(hashCode())
+        || azimuthControllerD.hasChanged(hashCode())) {
+      azimuthController.setP(azimuthControllerP.get());
+      azimuthController.setI(azimuthControllerI.get());
+      azimuthController.setD(azimuthControllerD.get());
     }
   }
 

@@ -5,10 +5,12 @@
 package frc.robot.subsystems.drive;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -21,7 +23,12 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -52,6 +59,12 @@ public class Drive extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(KINEMATICS, lastGyroRotation, getModulePositions(), currentPose);
 
+  private Field2d field = new Field2d();
+  private FieldObject2d obstacle = field.getObject("obstacle");
+
+  private List<Pair<Translation2d, Translation2d>> obstacles =
+      new ArrayList<Pair<Translation2d, Translation2d>>();
+
   /** Creates a new swerve Drive. */
   public Drive(
       ModuleIO moduleFL, ModuleIO moduleFR, ModuleIO moduleBL, ModuleIO moduleBR, GyroIO gyro) {
@@ -60,6 +73,18 @@ public class Drive extends SubsystemBase {
     modules[2] = new Module(moduleBL, 2);
     modules[3] = new Module(moduleBR, 3);
     gyroIO = gyro;
+
+    SmartDashboard.putData("Field", field);
+    field.setRobotPose(getPosition());
+    obstacle.setPose(new Pose2d());
+
+    obstacles.add(
+        new Pair<Translation2d, Translation2d>(
+            new Translation2d(obstacle.getPose().getX(), obstacle.getPose().getY()),
+            new Translation2d(obstacle.getPose().getX() + 1.0, obstacle.getPose().getY() + 1.0)));
+
+    SmartDashboard.putNumber("PathfindX", 0.0);
+    SmartDashboard.putNumber("PathfindY", 0.0);
 
     // Configure PathPlanner
     AutoBuilder.configureHolonomic(
@@ -148,6 +173,22 @@ public class Drive extends SubsystemBase {
 
     poseEstimator.update(lastGyroRotation, getModulePositions());
     Logger.recordOutput("Drive/Odometry/EstimatedPosition", poseEstimator.getEstimatedPosition());
+
+    // Update pathfinder dynamic obstacles
+    obstacles.set(
+        0,
+        new Pair<Translation2d, Translation2d>(
+            new Translation2d(obstacle.getPose().getX(), obstacle.getPose().getY()),
+            new Translation2d(obstacle.getPose().getX() + 1.0, obstacle.getPose().getY() + 1.0)));
+
+    field.setRobotPose(getPosition());
+    Pathfinding.setDynamicObstacles(
+        obstacles, new Translation2d(getPosition().getX(), getPosition().getY()));
+
+    Logger.recordOutput(
+        "Drive/PathFinder/ObstaclePT1", new Pose2d(obstacles.get(0).getFirst(), new Rotation2d()));
+    Logger.recordOutput(
+        "Drive/PathFinder/ObstaclePT2", new Pose2d(obstacles.get(0).getSecond(), new Rotation2d()));
   }
 
   /** Runs the swerve drive based on speeds */
@@ -184,6 +225,22 @@ public class Drive extends SubsystemBase {
   /** Add a vision measurement for the poseEstimator */
   public void addVisionMeasurement(Pose2d visionMeasurement, double timestampS) {
     poseEstimator.addVisionMeasurement(visionMeasurement, timestampS);
+  }
+
+  /** Get PathFinder constraints */
+  public PathConstraints getPathConstraints() {
+    return new PathConstraints(3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+  }
+
+  /** Gets the PathFinder setpoint, you can set the setpoint in SmartDashboard */
+  @AutoLogOutput(key = "Drive/PathFinder/Setpoint")
+  public Pose2d getPathFinderSetpoint() {
+    // System.out.println("getPathFinderSetpoint");
+
+    return new Pose2d(
+        SmartDashboard.getNumber("PathfindX", 0.0),
+        SmartDashboard.getNumber("PathfindY", 0.0),
+        new Rotation2d());
   }
 
   /** Gets the drive's measured state (module azimuth angles and drive velocities) */

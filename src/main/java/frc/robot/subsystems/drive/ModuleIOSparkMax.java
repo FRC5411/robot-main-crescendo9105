@@ -8,7 +8,6 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
@@ -16,7 +15,6 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.RobotController;
 import java.util.Queue;
 
 /** An SDS MK4i L3 swerve module */
@@ -51,7 +49,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         azimuthMotor = new CANSparkMax(21, MotorType.kBrushless);
 
         angleEncoder = new CANcoder(31);
-        angleOffset = new Rotation2d(0.0);
+        angleOffset = Rotation2d.fromRotations(0.108643);
 
         break;
       case 1:
@@ -59,7 +57,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         azimuthMotor = new CANSparkMax(22, MotorType.kBrushless);
 
         angleEncoder = new CANcoder(32);
-        angleOffset = new Rotation2d(0.0);
+        angleOffset = Rotation2d.fromRotations(0.321533);
 
         break;
       case 2:
@@ -67,7 +65,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         azimuthMotor = new CANSparkMax(23, MotorType.kBrushless);
 
         angleEncoder = new CANcoder(33);
-        angleOffset = new Rotation2d(0.0);
+        angleOffset = Rotation2d.fromRotations(-0.149658);
 
         break;
       case 3:
@@ -75,7 +73,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         azimuthMotor = new CANSparkMax(24, MotorType.kBrushless);
 
         angleEncoder = new CANcoder(34);
-        angleOffset = new Rotation2d(0.0);
+        angleOffset = Rotation2d.fromRotations(-0.005859);
 
         break;
       default:
@@ -88,8 +86,8 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveMotor.restoreFactoryDefaults();
     azimuthMotor.restoreFactoryDefaults();
 
-    driveMotor.setCANTimeout(250);
-    azimuthMotor.setCANTimeout(250);
+    // driveMotor.setCANTimeout(250);
+    // azimuthMotor.setCANTimeout(250);
 
     driveMotor.setInverted(false);
     azimuthMotor.setInverted(IS_AZIMUTH_INVERTED);
@@ -111,19 +109,19 @@ public class ModuleIOSparkMax implements ModuleIO {
     azimuthMotor.setIdleMode(IdleMode.kCoast);
 
     // TODO Investigate why this is set to 0 after being set to 250
-    driveMotor.setCANTimeout(0);
-    azimuthMotor.setCANTimeout(0);
+    // driveMotor.setCANTimeout(0);
+    // azimuthMotor.setCANTimeout(0);
 
-    // Set CAN Frame frequency to what's specified
-    driveMotor.setPeriodicFramePeriod(
-        PeriodicFrame.kStatus2, (int) (1000.0 / Module.ODOMETRY_FREQUENCY));
-    azimuthMotor.setPeriodicFramePeriod(
-        PeriodicFrame.kStatus2, (int) (1000.0 / Module.ODOMETRY_FREQUENCY));
-    // Have queues listen for getPosition signals
-    drivePositionQueue =
-        SparkMaxOdometryThread.getInstance().registerSignal(driveEncoder::getPosition);
-    azimuthPositionQueue =
-        SparkMaxOdometryThread.getInstance().registerSignal(azimuthEncoder::getPosition);
+    // // Set CAN Frame frequency to what's specified
+    // driveMotor.setPeriodicFramePeriod(
+    //     PeriodicFrame.kStatus2, (int) (1000.0 / Module.ODOMETRY_FREQUENCY));
+    // azimuthMotor.setPeriodicFramePeriod(
+    //     PeriodicFrame.kStatus2, (int) (1000.0 / Module.ODOMETRY_FREQUENCY));
+    // // Have queues listen for getPosition signals
+    // drivePositionQueue =
+    //     SparkMaxOdometryThread.getInstance().registerSignal(driveEncoder::getPosition);
+    // azimuthPositionQueue =
+    //     SparkMaxOdometryThread.getInstance().registerSignal(azimuthEncoder::getPosition);
 
     driveController = driveMotor.getPIDController();
     azimuthController = azimuthMotor.getPIDController();
@@ -149,6 +147,8 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     driveMotor.burnFlash();
     azimuthMotor.burnFlash();
+
+    azimuthEncoder.setPosition(angleOffset.getRotations()); // Set to absolute
   }
 
   @Override
@@ -160,13 +160,15 @@ public class ModuleIOSparkMax implements ModuleIO {
     inputs.driveCurrentAmps = new double[] {driveMotor.getOutputCurrent()};
 
     // TODO Verify that this abs pos telemetry works lmao
+    // inputs.azimuthAbsolutePosition =
+    //     new Rotation2d(
+    //             angleEncoder.getSupplyVoltage().getValueAsDouble()
+    //                 / RobotController.getVoltage5V()
+    //                 * 2.0
+    //                 * Math.PI)
+    //         .minus(angleOffset);
     inputs.azimuthAbsolutePosition =
-        new Rotation2d(
-                angleEncoder.getSupplyVoltage().getValueAsDouble()
-                    / RobotController.getVoltage5V()
-                    * 2.0
-                    * Math.PI)
-            .minus(angleOffset);
+        Rotation2d.fromRotations(angleEncoder.getAbsolutePosition().getValueAsDouble());
     inputs.azimuthPosition =
         Rotation2d.fromRotations(azimuthEncoder.getPosition() / AZIMUTH_GEAR_RATIO);
     inputs.azimuthVelocityRPS =
@@ -175,18 +177,21 @@ public class ModuleIOSparkMax implements ModuleIO {
     inputs.azimuthAppliedVolts = azimuthMotor.getAppliedOutput() * azimuthMotor.getBusVoltage();
     inputs.azimuthCurrentAmps = new double[] {azimuthMotor.getOutputCurrent()};
 
-    // Take odometry signals that have added up in the queue to an array, log the array
-    inputs.odometryDrivePositionR =
-        drivePositionQueue.stream()
-            .mapToDouble((Double value) -> Units.rotationsToRadians(value) / DRIVE_GEAR_RATIO)
-            .toArray();
-    inputs.odometryAzimuthPositions =
-        azimuthPositionQueue.stream()
-            .map((Double value) -> Rotation2d.fromRotations(value / AZIMUTH_GEAR_RATIO))
-            .toArray(Rotation2d[]::new); // Store the azimuth positions as a Rotation2d
-    // Clear the odometry queue for the next cycle
-    drivePositionQueue.clear();
-    azimuthPositionQueue.clear();
+    // // Take odometry signals that have added up in the queue to an array, log the array
+    // inputs.odometryDrivePositionR =
+    //     drivePositionQueue.stream()
+    //         .mapToDouble((Double value) -> Units.rotationsToRadians(value) / DRIVE_GEAR_RATIO)
+    //         .toArray();
+    // inputs.odometryAzimuthPositions =
+    //     azimuthPositionQueue.stream()
+    //         .map((Double value) -> Rotation2d.fromRotations(value / AZIMUTH_GEAR_RATIO))
+    //         .toArray(Rotation2d[]::new); // Store the azimuth positions as a Rotation2d
+    // // Clear the odometry queue for the next cycle
+    // drivePositionQueue.clear();
+    // azimuthPositionQueue.clear();
+
+    inputs.odometryDrivePositionR = new double[] {inputs.drivePositionR};
+    inputs.odometryAzimuthPositions = new Rotation2d[] {inputs.azimuthPosition};
   }
 
   @Override
