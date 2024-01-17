@@ -76,7 +76,7 @@ public class RobotContainer {
   private void configureButtonBindings() {
     robotDrive.setDefaultCommand(
         SwerveCommands.swerveDrive(
-          // FIXME Figure out why joysticks are being goofy
+            // FIXME Figure out why joysticks are being goofy
             robotDrive,
             () -> -pilotController.getLeftY(),
             () -> -pilotController.getLeftX(),

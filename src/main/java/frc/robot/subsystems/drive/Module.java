@@ -58,7 +58,7 @@ public class Module {
       case REAL:
         driveController = new PIDController(0.0, 0.0, 0.0);
         azimuthController = new PIDController(0.0, 0.0, 0.0);
-        driveFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
+        driveFeedforward = new SimpleMotorFeedforward(0.2, 0.0);
         break;
       case REPLAY:
         driveController = new PIDController(0.05, 0.0, 0.0);
