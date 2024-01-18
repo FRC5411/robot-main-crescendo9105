@@ -36,8 +36,8 @@ public class ModuleIOSim implements ModuleIO {
     driveMotor.update(LOOP_PERIOD_S);
     azimuthMotor.update(LOOP_PERIOD_S);
 
-    inputs.drivePositionR = driveMotor.getAngularPositionRad();
-    inputs.driveVelocityRPS = driveMotor.getAngularVelocityRadPerSec();
+    inputs.drivePositionM = driveMotor.getAngularPositionRad();
+    inputs.driveVelocityMPS = driveMotor.getAngularVelocityRadPerSec();
     inputs.driveAppliedVolts = driveAppliedVolts;
     inputs.driveCurrentAmps = new double[] {Math.abs(driveMotor.getCurrentDrawAmps())};
 
@@ -48,7 +48,7 @@ public class ModuleIOSim implements ModuleIO {
     inputs.azimuthAppliedVolts = azimuthAppliedVolts;
     inputs.azimuthCurrentAmps = new double[] {Math.abs(azimuthMotor.getCurrentDrawAmps())};
 
-    inputs.odometryDrivePositionR = new double[] {inputs.drivePositionR};
+    inputs.odometryDrivePositionR = new double[] {inputs.drivePositionM};
     inputs.odometryAzimuthPositions = new Rotation2d[] {inputs.azimuthPosition};
   }
 

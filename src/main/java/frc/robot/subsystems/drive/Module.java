@@ -37,18 +37,19 @@ public class Module {
   private SimpleMotorFeedforward driveFeedforward;
 
   private LoggedTunableNumber driveControllerP =
-      new LoggedTunableNumber("Drive/Module/DriveP", 0.0);
+      new LoggedTunableNumber("Drive/Module/DriveP", 0.02);
   private LoggedTunableNumber driveControllerI =
       new LoggedTunableNumber("Drive/Module/DriveI", 0.0);
   private LoggedTunableNumber driveControllerD =
       new LoggedTunableNumber("Drive/Module/DriveD", 0.0);
 
   private LoggedTunableNumber azimuthControllerP =
-      new LoggedTunableNumber("Drive/Module/AzimuthP", 0.0);
+      new LoggedTunableNumber("Drive/Module/AzimuthP", 2.8);
   private LoggedTunableNumber azimuthControllerI =
       new LoggedTunableNumber("Drive/Module/AzimuthI", 0.0);
   private LoggedTunableNumber azimuthControllerD =
-      new LoggedTunableNumber("Drive/Module/AzimuthD", 0.0);
+      new LoggedTunableNumber("Drive/Module/AzimuthD", 0.00001);
+
   /** Creates a new swerve module */
   public Module(ModuleIO io, int id) {
     moduleIO = io;
@@ -56,9 +57,9 @@ public class Module {
 
     switch (Constants.currentMode) {
       case REAL:
-        driveController = new PIDController(0.0, 0.0, 0.0);
-        azimuthController = new PIDController(0.0, 0.0, 0.0);
-        driveFeedforward = new SimpleMotorFeedforward(0.2, 0.0);
+        driveController = new PIDController(0.02, 0.0, 0.0);
+        azimuthController = new PIDController(2.8, 0.0, 0.00001);
+        driveFeedforward = new SimpleMotorFeedforward(0.0, 0.21);
         break;
       case REPLAY:
         driveController = new PIDController(0.05, 0.0, 0.0);
@@ -108,10 +109,10 @@ public class Module {
         double adjustedVelocitySetpoint =
             velocitySetpoint * Math.cos(azimuthController.getPositionError());
 
-        double velocityRPS = adjustedVelocitySetpoint / WHEEL_RADIUS_M;
+        double velocityMPS = adjustedVelocitySetpoint / WHEEL_RADIUS_M;
         moduleIO.setDriveVolts(
-            driveFeedforward.calculate(velocityRPS)
-                + driveController.calculate(moduleIOInputs.driveVelocityRPS, velocityRPS));
+            driveFeedforward.calculate(velocityMPS)
+                + driveController.calculate(moduleIOInputs.driveVelocityMPS, velocityMPS));
       }
     }
 
@@ -149,6 +150,11 @@ public class Module {
       azimuthController.setI(azimuthControllerI.get());
       azimuthController.setD(azimuthControllerD.get());
     }
+  }
+
+  // TODO Remove after testing
+  public void setVolts(double volts) {
+    moduleIO.setDriveVolts(volts);
   }
 
   /** Sets the module's state */
@@ -193,12 +199,12 @@ public class Module {
 
   /** Get the distance travelled by the drive motor */
   public double getPositionM() {
-    return moduleIOInputs.drivePositionR * WHEEL_RADIUS_M;
+    return moduleIOInputs.drivePositionM;
   }
 
   /** Get the velocity of the drive motor */
   public double getVelocityMPS() {
-    return moduleIOInputs.driveVelocityRPS * WHEEL_RADIUS_M;
+    return moduleIOInputs.driveVelocityMPS;
   }
 
   /** Get the module's distance and angle */

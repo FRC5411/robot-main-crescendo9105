@@ -69,6 +69,26 @@ public class RobotContainer {
         new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
 
     AUTO_CHOOSER.addDefaultOption("Print Hello", new PrintCommand("Hello"));
+    AUTO_CHOOSER.addOption(
+        "12V Drive Test",
+        Commands.runOnce(
+                () -> {
+                  robotDrive.setDriveVolts(12.0);
+                },
+                robotDrive)
+            .repeatedly()
+            .withTimeout(10.0));
+    AUTO_CHOOSER.addOption(
+        "6V Drive Test",
+        Commands.runOnce(
+                () -> {
+                  robotDrive.setDriveVolts(6.0);
+                },
+                robotDrive)
+            .repeatedly()
+            .withTimeout(10.0));
+
+    
 
     configureButtonBindings();
   }

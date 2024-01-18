@@ -191,6 +191,12 @@ public class Drive extends SubsystemBase {
         "Drive/PathFinder/ObstaclePT2", new Pose2d(obstacles.get(0).getSecond(), new Rotation2d()));
   }
 
+  public void setDriveVolts(double volts) {
+    for (Module module : modules) {
+      module.setVolts(volts);
+    }
+  }
+
   /** Runs the swerve drive based on speeds */
   public void runSwerve(ChassisSpeeds speeds) {
     // Calculates setpoint states from inputs
