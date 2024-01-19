@@ -223,6 +223,11 @@ public class Drive extends SubsystemBase {
     runSwerve(new ChassisSpeeds());
   }
 
+  public void resetPose() {
+    currentPose = new Pose2d();
+    poseEstimator.resetPosition(gyroIOInputs.yawPosition, getModulePositions(), new Pose2d());
+  }
+
   /** Set the pose of the robot */
   public void setPose(Pose2d pose) {
     currentPose = pose;

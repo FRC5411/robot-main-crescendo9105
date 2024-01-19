@@ -185,9 +185,9 @@ public class ModuleIOSparkMax implements ModuleIO {
     inputs.azimuthCurrentAmps = new double[] {azimuthMotor.getOutputCurrent()};
 
     // Take odometry signals that have added up in the queue to an array, log the array
-    inputs.odometryDrivePositionR =
+    inputs.odometryDrivePositionM =
         drivePositionQueue.stream()
-            .mapToDouble((Double value) -> Units.rotationsToRadians(value) / DRIVE_GEAR_RATIO)
+            .mapToDouble((Double value) -> value * CIRCUMFRENCE_METERS / DRIVE_GEAR_RATIO)
             .toArray();
     inputs.odometryAzimuthPositions =
         azimuthPositionQueue.stream()

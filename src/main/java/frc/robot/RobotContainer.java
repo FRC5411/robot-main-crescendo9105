@@ -88,8 +88,6 @@ public class RobotContainer {
             .repeatedly()
             .withTimeout(10.0));
 
-    
-
     configureButtonBindings();
   }
 
@@ -98,9 +96,9 @@ public class RobotContainer {
         SwerveCommands.swerveDrive(
             // FIXME Figure out why joysticks are being goofy
             robotDrive,
-            () -> -pilotController.getLeftY(),
-            () -> -pilotController.getLeftX(),
-            () -> pilotController.getRightX()));
+            () -> -0.5 * pilotController.getLeftY(),
+            () -> -0.5 * pilotController.getLeftX(),
+            () -> 0.1 * pilotController.getRightX()));
     // Reset heading
     pilotController
         .y()
@@ -112,6 +110,7 @@ public class RobotContainer {
                                 robotDrive.getPosition().getTranslation(), new Rotation2d())),
                     robotDrive)
                 .ignoringDisable(true)); // Reset even when disabled
+    pilotController.a().onTrue(Commands.runOnce(robotDrive::resetPose, robotDrive));
     // pilotController
     //     .a()
     //     .whileTrue(

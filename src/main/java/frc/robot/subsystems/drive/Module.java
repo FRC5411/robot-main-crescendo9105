@@ -119,13 +119,13 @@ public class Module {
     // Calculate deltas (change) from odometry
     int deltaCount = // deltaCount based on how many frames were captured
         Math.min(
-            moduleIOInputs.odometryDrivePositionR.length,
+            moduleIOInputs.odometryDrivePositionM.length,
             moduleIOInputs.odometryAzimuthPositions.length);
     positionDeltas =
         new SwerveModulePosition
             [deltaCount]; // Array resets every loop to account for varying frames
     for (int i = 0; i < deltaCount; i++) {
-      double positionM = moduleIOInputs.odometryDrivePositionR[i] * WHEEL_RADIUS_M;
+      double positionM = moduleIOInputs.odometryDrivePositionM[i] * WHEEL_RADIUS_M;
       Rotation2d angle =
           moduleIOInputs.odometryAzimuthPositions[i].plus(
               azimuthRelativeOffset != null ? azimuthRelativeOffset : new Rotation2d());

@@ -22,7 +22,7 @@ public interface ModuleIO {
     public double azimuthAppliedVolts = 0.0;
     public double[] azimuthCurrentAmps = new double[] {};
 
-    public double[] odometryDrivePositionR = new double[] {};
+    public double[] odometryDrivePositionM = new double[] {};
     public Rotation2d[] odometryAzimuthPositions = new Rotation2d[] {};
   }
 
