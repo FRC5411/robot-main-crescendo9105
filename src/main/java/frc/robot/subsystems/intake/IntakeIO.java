@@ -7,8 +7,8 @@ package frc.robot.subsystems.intake;
 import org.littletonrobotics.junction.AutoLog;
 
 import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Power;
 import edu.wpi.first.units.Temperature;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
@@ -20,7 +20,7 @@ public interface IntakeIO {
     public Measure<Angle> angle = null;
     public Measure<Velocity<Angle>> velocity = null;
     public Measure<Voltage> appliedVolts = null;
-    public Measure<Power> appliedCurrent = null;
+    public Measure<Current> appliedCurrent = null;
     public Measure<Temperature> temperature = null;
   }
 
