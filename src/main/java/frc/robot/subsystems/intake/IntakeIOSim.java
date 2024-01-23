@@ -5,4 +5,6 @@
 package frc.robot.subsystems.intake;
 
 /** Class to represent the intake mechanism in simulation */
-public class IntakeIOSim implements IntakeIO {}
+public class IntakeIOSim implements IntakeIO {
+  public IntakeIOSim() {}
+}
