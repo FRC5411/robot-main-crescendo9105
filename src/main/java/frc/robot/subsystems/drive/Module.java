@@ -24,8 +24,8 @@ public class Module {
   private ModuleIO moduleIO;
   private ModuleIOInputsAutoLogged moduleIOInputs = new ModuleIOInputsAutoLogged();
 
-  private Double velocitySetpoint = null;
-  private Rotation2d angleSetpoint = null;
+  private Double velocitySetpoint = Double.valueOf(0);
+  private Rotation2d angleSetpoint = new Rotation2d();
 
   private Rotation2d azimuthRelativeOffset = null;
   private double lastPositionM = 0.0;
@@ -58,7 +58,7 @@ public class Module {
     switch (Constants.currentMode) {
       case REAL:
         driveController = new PIDController(0.02, 0.0, 0.0);
-        azimuthController = new PIDController(2.8, 0.0, 0.00001);
+        azimuthController = new PIDController(3.1, 0.0, 0.00001);
         driveFeedforward = new SimpleMotorFeedforward(0.0, 0.21);
         break;
       case REPLAY:

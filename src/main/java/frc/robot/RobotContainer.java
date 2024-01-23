@@ -87,6 +87,11 @@ public class RobotContainer {
                 robotDrive)
             .repeatedly()
             .withTimeout(10.0));
+    AUTO_CHOOSER.addOption(
+        "Run Auton",
+        Commands.runOnce(() -> robotDrive.setPose(new Pose2d()))
+            .andThen(Commands.run(() -> robotDrive.setDriveVolts(2), robotDrive).withTimeout(2)));
+    // AUTO_CHOOSER.addOption("Straight 1 Meter", getAutonomousCommand());
 
     configureButtonBindings();
   }
@@ -96,9 +101,9 @@ public class RobotContainer {
         SwerveCommands.swerveDrive(
             // FIXME Figure out why joysticks are being goofy
             robotDrive,
-            () -> -0.5 * pilotController.getLeftY(),
-            () -> -0.5 * pilotController.getLeftX(),
-            () -> 0.1 * pilotController.getRightX()));
+            () -> pilotController.getLeftY(),
+            () -> pilotController.getLeftX(),
+            () -> pilotController.getRightX()));
     // Reset heading
     pilotController
         .y()
