@@ -10,13 +10,13 @@ public class ShooterWheelSimIO implements ShooterWheelIO {
     private FlywheelSim flywheelMotorLeft = 
         new FlywheelSim(
             DCMotor.getNEO(1), 
-            1,
+            ShooterWheelConstants.gearing,
             0,
             VecBuilder.fill( 0.1 ) );
     private FlywheelSim flywheelMotorRight = 
         new FlywheelSim(
             DCMotor.getNEO(1),
-            1,
+            ShooterWheelConstants.gearing,
             0, 
             VecBuilder.fill( 0.1 ) );
 
