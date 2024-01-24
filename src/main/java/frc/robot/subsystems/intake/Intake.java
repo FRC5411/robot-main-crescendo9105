@@ -33,7 +33,7 @@ public class Intake extends SubsystemBase {
   private LoggedTunableNumber feedbackV =
       new LoggedTunableNumber("Intake/Tuning/V", intakeFeedback.getConstraints().maxVelocity);
 
-  private Double feedbackSetpointRPM = null;
+  private Double velocitySetpointRPM = null;
 
   /** Creates a new Intake. */
   public Intake(IntakeIO io) {
@@ -49,10 +49,10 @@ public class Intake extends SubsystemBase {
       stopMotor();
     }
 
-    if (feedbackSetpointRPM != null) {
+    if (velocitySetpointRPM != null) {
       var motorOutput =
-          (intakeFeedback.calculate(inputs.velocityRPM, feedbackSetpointRPM)
-                  + intakeFeedforward.calculate(feedbackSetpointRPM))
+          (intakeFeedback.calculate(inputs.velocityRPM, velocitySetpointRPM)
+                  + intakeFeedforward.calculate(velocitySetpointRPM))
               * 12.0; // Multiply by 12 since output is volts
 
       Logger.recordOutput("Intake/Controller/Output", motorOutput);
@@ -81,9 +81,9 @@ public class Intake extends SubsystemBase {
 
   /** Sets the desired velocity in RPM */
   public void setVelocity(double desiredVelocityRPM) {
-    feedbackSetpointRPM = desiredVelocityRPM;
+    velocitySetpointRPM = desiredVelocityRPM;
 
-    Logger.recordOutput("Intake/Controller/Setpoint", feedbackSetpointRPM);
+    Logger.recordOutput("Intake/Controller/Setpoint", velocitySetpointRPM);
   }
 
   /** Stops the motor */
