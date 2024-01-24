@@ -4,14 +4,13 @@
 
 package frc.robot.subsystems.intake;
 
-import org.littletonrobotics.junction.AutoLog;
-
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Temperature;
 import edu.wpi.first.units.Velocity;
 import edu.wpi.first.units.Voltage;
+import org.littletonrobotics.junction.AutoLog;
 
 /** Interface for representing the hardware */
 public interface IntakeIO {

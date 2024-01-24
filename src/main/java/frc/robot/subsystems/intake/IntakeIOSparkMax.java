@@ -4,10 +4,9 @@
 
 package frc.robot.subsystems.intake;
 
+import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Units;
@@ -19,6 +18,7 @@ public class IntakeIOSparkMax implements IntakeIO {
   private CANSparkMax intakeMotor = new CANSparkMax(40, MotorType.kBrushless);
   private RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
 
+  /** Create a new hardware implementation of the intake */
   public IntakeIOSparkMax() {
     intakeMotor.clearFaults();
     intakeMotor.restoreFactoryDefaults();
