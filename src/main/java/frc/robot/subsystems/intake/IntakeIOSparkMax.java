@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.intake;
 
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -25,6 +26,7 @@ public class IntakeIOSparkMax implements IntakeIO {
 
     intakeMotor.setSmartCurrentLimit(40);
     intakeMotor.enableVoltageCompensation(12.0);
+    intakeMotor.setIdleMode(IdleMode.kCoast);
 
     intakeEncoder.setPosition(0.0);
 
