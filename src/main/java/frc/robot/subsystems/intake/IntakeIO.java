@@ -4,28 +4,22 @@
 
 package frc.robot.subsystems.intake;
 
-import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Current;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Temperature;
-import edu.wpi.first.units.Velocity;
-import edu.wpi.first.units.Voltage;
 import org.littletonrobotics.junction.AutoLog;
 
 /** Interface for representing the hardware */
 public interface IntakeIO {
   @AutoLog
   public static class IntakeIOInputs {
-    public Measure<Angle> angle = null;
-    public Measure<Velocity<Angle>> velocity = null;
-    public Measure<Voltage> appliedVolts = null;
-    public Measure<Current> appliedCurrent = null;
-    public Measure<Temperature> temperature = null;
+    public double angleRotations = 0.0;
+    public double velocityRPM = 0.0;
+    public double appliedVolts = 0.0;
+    public double[] appliedCurrentAmps = new double[] {0.0};
+    public double[] temperatureCelsius = new double[] {0.0};
   }
 
   /** Update the inputs from the sensors */
   public default void updateInputs(IntakeIOInputs inputs) {}
 
   /** Set the volts of the intake motor */
-  public default void setVolts(Measure<Voltage> volts) {}
+  public default void setVolts(double volts) {}
 }

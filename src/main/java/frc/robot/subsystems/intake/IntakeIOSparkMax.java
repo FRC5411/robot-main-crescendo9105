@@ -9,9 +9,6 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Voltage;
 
 /** Class to interact with the physical intake structure */
 public class IntakeIOSparkMax implements IntakeIO {
@@ -35,16 +32,16 @@ public class IntakeIOSparkMax implements IntakeIO {
 
   @Override
   public void updateInputs(IntakeIOInputs inputs) {
-    inputs.angle = Units.Rotations.of(intakeEncoder.getPosition());
-    inputs.velocity = Units.RPM.of(intakeEncoder.getVelocity());
-    inputs.appliedVolts = Units.Volts.of(intakeMotor.getBusVoltage());
-    inputs.appliedCurrent = Units.Amps.of(intakeMotor.getOutputCurrent());
-    inputs.temperature = Units.Celsius.of(intakeMotor.getMotorTemperature());
+    inputs.angleRotations = intakeEncoder.getPosition();
+    inputs.velocityRPM = intakeEncoder.getVelocity();
+    inputs.appliedVolts = intakeMotor.getBusVoltage();
+    inputs.appliedCurrentAmps = new double[] {intakeMotor.getOutputCurrent()};
+    inputs.temperatureCelsius = new double[] {intakeMotor.getMotorTemperature()};
   }
 
   @Override
-  public void setVolts(Measure<Voltage> volts) {
-    var adjustedVolts = MathUtil.clamp(volts.magnitude(), -12.0, 12.0);
+  public void setVolts(double volts) {
+    var adjustedVolts = MathUtil.clamp(volts, -12.0, 12.0);
     intakeMotor.setVoltage(adjustedVolts);
   }
 }

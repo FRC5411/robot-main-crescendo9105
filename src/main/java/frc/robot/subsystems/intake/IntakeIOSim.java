@@ -9,7 +9,6 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
@@ -31,19 +30,18 @@ public class IntakeIOSim implements IntakeIO {
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(intakeMotor.getCurrentDrawAmps()));
 
-    inputs.angle = Units.Rotations.of(0.0); // Flywheel sim doesn't have pose methods
-    inputs.velocity = Units.RPM.of(intakeMotor.getAngularVelocityRPM());
+    inputs.angleRotations = 0.0; // Flywheel sim doesn't have pose methods
+    inputs.velocityRPM = intakeMotor.getAngularVelocityRPM();
     inputs.appliedVolts =
-        Units.Volts.of(
-            BatterySim.calculateDefaultBatteryLoadedVoltage(
-                intakeMotor.getCurrentDrawAmps())); // Might be broken lol
-    inputs.appliedCurrent = Units.Amps.of(intakeMotor.getCurrentDrawAmps());
-    inputs.temperature = Units.Celsius.of(0.0);
+        BatterySim.calculateDefaultBatteryLoadedVoltage(
+            intakeMotor.getCurrentDrawAmps()); // Might be broken lol
+    inputs.appliedCurrentAmps = new double[] {intakeMotor.getCurrentDrawAmps()};
+    inputs.temperatureCelsius = new double[] {0.0};
   }
 
   @Override
-  public void setVolts(Measure<Voltage> volts) {
-    var adjustedVolts = MathUtil.clamp(volts.magnitude(), -12.0, 12.0);
+  public void setVolts(double volts) {
+    var adjustedVolts = MathUtil.clamp(volts, -12.0, 12.0);
     intakeMotor.setInputVoltage(adjustedVolts);
   }
 }

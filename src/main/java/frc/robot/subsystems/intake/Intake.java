@@ -7,11 +7,6 @@ package frc.robot.subsystems.intake;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Units;
-import edu.wpi.first.units.Velocity;
-import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.LoggedTunableNumber;
@@ -38,7 +33,7 @@ public class Intake extends SubsystemBase {
   private LoggedTunableNumber feedbackV =
       new LoggedTunableNumber("Intake/Tuning/V", intakeFeedback.getConstraints().maxVelocity);
 
-  private Measure<Velocity<Angle>> feedbackSetpoint = null;
+  private Double feedbackSetpointRPM = null;
 
   /** Creates a new Intake. */
   public Intake(IntakeIO io) {
@@ -54,14 +49,14 @@ public class Intake extends SubsystemBase {
       stopMotor();
     }
 
-    if (feedbackSetpoint != null) {
+    if (feedbackSetpointRPM != null) {
       var motorOutput =
-          (intakeFeedback.calculate(inputs.velocity.magnitude(), feedbackSetpoint.magnitude())
-                  + intakeFeedforward.calculate(feedbackSetpoint.magnitude()))
+          (intakeFeedback.calculate(inputs.velocityRPM, feedbackSetpointRPM)
+                  + intakeFeedforward.calculate(feedbackSetpointRPM))
               * 12.0; // Multiply by 12 since output is volts
 
       Logger.recordOutput("Intake/Controller/Output", motorOutput);
-      io.setVolts(Units.Volts.of(motorOutput));
+      io.setVolts(motorOutput);
     }
 
     updateTunableNumbers();
@@ -85,26 +80,26 @@ public class Intake extends SubsystemBase {
   }
 
   /** Sets the desired velocity in RPM */
-  public void setVelocity(Measure<Velocity<Angle>> desiredVelocity) {
-    feedbackSetpoint = desiredVelocity;
+  public void setVelocity(double desiredVelocityRPM) {
+    feedbackSetpointRPM = desiredVelocityRPM;
 
-    Logger.recordOutput("Intake/Controller/Setpoint", desiredVelocity);
+    Logger.recordOutput("Intake/Controller/Setpoint", feedbackSetpointRPM);
   }
 
   /** Stops the motor */
   public void stopMotor() {
-    io.setVolts(Units.Volts.of(0.0));
+    io.setVolts(0.0);
   }
 
   /** Returns the intake motor's velocity */
   @AutoLogOutput(key = "Intake/Velocity")
-  public Measure<Velocity<Angle>> getVelocity() {
-    return inputs.velocity;
+  public double getVelocity() {
+    return inputs.velocityRPM;
   }
 
   /** Returns the bus voltage from the intake */
   @AutoLogOutput(key = "Intake/AppliedVolts")
-  public Measure<Voltage> getAppliedVolts() {
-    return inputs.appliedVolts;
+  public double[] getAppliedVolts() {
+    return inputs.appliedCurrentAmps;
   }
 }
