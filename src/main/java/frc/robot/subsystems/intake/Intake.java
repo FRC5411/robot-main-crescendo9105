@@ -29,15 +29,18 @@ public class Intake extends SubsystemBase {
   private LoggedTunableNumber feedbackD =
       new LoggedTunableNumber("Intake/Tuning/D", intakeFeedback.getD());
   private LoggedTunableNumber feedbackA =
-      new LoggedTunableNumber("Intake/Tuning/A", intakeFeedback.getConstraints().maxAcceleration);
+      new LoggedTunableNumber(
+          "Intake/Tuning/Accel", intakeFeedback.getConstraints().maxAcceleration);
   private LoggedTunableNumber feedbackV =
-      new LoggedTunableNumber("Intake/Tuning/V", intakeFeedback.getConstraints().maxVelocity);
+      new LoggedTunableNumber("Intake/Tuning/Vel", intakeFeedback.getConstraints().maxVelocity);
 
   private Double velocitySetpointRPM = null;
 
   /** Creates a new Intake. */
   public Intake(IntakeIO io) {
     this.io = io;
+
+    intakeFeedback.setTolerance(50.0, 100.0);
   }
 
   @Override
@@ -52,8 +55,7 @@ public class Intake extends SubsystemBase {
     if (velocitySetpointRPM != null) {
       var motorOutput =
           (intakeFeedback.calculate(inputs.velocityRPM, velocitySetpointRPM)
-                  + intakeFeedforward.calculate(velocitySetpointRPM))
-              * 12.0; // Multiply by 12 since output is volts
+              + intakeFeedforward.calculate(velocitySetpointRPM));
 
       Logger.recordOutput("Intake/Controller/Output", motorOutput);
       io.setVolts(motorOutput);
@@ -101,5 +103,17 @@ public class Intake extends SubsystemBase {
   @AutoLogOutput(key = "Intake/AppliedVolts")
   public double[] getAppliedVolts() {
     return inputs.appliedCurrentAmps;
+  }
+
+  /** Returns if the controller is at the setpoint */
+  @AutoLogOutput(key = "Intake/Controller/AtSetpoint")
+  public boolean isAtSetpoint() {
+    return intakeFeedback.atSetpoint();
+  }
+
+  /** Returns the controller's velocity error */
+  @AutoLogOutput(key = "Intake/Controller/VelocityError")
+  public double getFeedbackError() {
+    return intakeFeedback.getVelocityError();
   }
 }

@@ -34,11 +34,15 @@ public class RobotContainer {
 
   private CommandXboxController pilotController = new CommandXboxController(0);
 
-  private final LoggedDashboardChooser<Command> AUTO_CHOOSER =
-      new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
+  private LoggedDashboardChooser<Command> autoChooser;
 
   public RobotContainer() {
     initializeSubsystems();
+
+    // AutoBuilder is configured when Drive is initialized, thus chooser must be instantiated after
+    // initializeSubsystems()
+    autoChooser =
+        new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
 
     configureAutonomous();
 
@@ -89,7 +93,7 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "Intake", Commands.run(() -> robotIntake.setVelocity(1), robotIntake));
 
-    AUTO_CHOOSER.addDefaultOption("Print Hello", new PrintCommand("Hello"));
+    autoChooser.addDefaultOption("Print Hello", new PrintCommand("Hello"));
   }
 
   /** Configure controllers */
@@ -121,12 +125,22 @@ public class RobotContainer {
     /* Run intake (NEO) at half speed */
     pilotController
         .b()
-        .whileTrue(IntakeCommands.runIntake(robotIntake, 5676.0 / 2.0))
+        //        .whileTrue(IntakeCommands.runIntake(robotIntake, 5676.0 / 2.0))
+        .whileTrue(IntakeCommands.runIntake(robotIntake, 1500.0))
         .whileFalse(IntakeCommands.stopIntake(robotIntake));
+
+    /* Print commands for debugging purposes */
+    pilotController
+        .b()
+        .whileTrue(Commands.print("B Button | whileTrue"))
+        .whileFalse(Commands.print("B Button | whileFalse"));
+    pilotController.a().whileTrue(Commands.print("A Button | whileTrue"));
+    pilotController.y().whileTrue(Commands.print("Y Button | whileTrue"));
+    pilotController.x().whileTrue(Commands.print("X Button | whileTrue"));
   }
 
   /** Returns the selected autonomous */
   public Command getAutonomousCommand() {
-    return AUTO_CHOOSER.get();
+    return autoChooser.get();
   }
 }
