@@ -18,7 +18,7 @@ import org.littletonrobotics.junction.Logger;
 public class Module {
   // TODO Double check wheel radius
   private final double WHEEL_RADIUS_M = Units.inchesToMeters(3.0);
-  public static final double ODOMETRY_FREQUENCY = 250.0;
+  public static final double ODOMETRY_FREQUENCY = 200.0;
   private final int MODULE_ID;
 
   private ModuleIO moduleIO;
@@ -31,6 +31,7 @@ public class Module {
   private double lastPositionM = 0.0;
   private SwerveModulePosition[] positionDeltas =
       new SwerveModulePosition[] {}; // Change since last cycle
+  private SwerveModulePosition[] odometryPositions = new SwerveModulePosition[] {};
 
   private PIDController driveController;
   private PIDController azimuthController;
@@ -116,24 +117,34 @@ public class Module {
       }
     }
 
-    // Calculate deltas (change) from odometry
-    int deltaCount = // deltaCount based on how many frames were captured
-        Math.min(
-            moduleIOInputs.odometryDrivePositionM.length,
-            moduleIOInputs.odometryAzimuthPositions.length);
-    positionDeltas =
-        new SwerveModulePosition
-            [deltaCount]; // Array resets every loop to account for varying frames
-    for (int i = 0; i < deltaCount; i++) {
-      double positionM = moduleIOInputs.odometryDrivePositionM[i] * WHEEL_RADIUS_M;
+    // // Calculate deltas (change) from odometry
+    // int deltaCount = // deltaCount based on how many frames were captured
+    //     Math.min(
+    //         moduleIOInputs.odometryDrivePositionM.length,
+    //         moduleIOInputs.odometryAzimuthPositions.length);
+    // positionDeltas =
+    //     new SwerveModulePosition
+    //         [deltaCount]; // Array resets every loop to account for varying frames
+    // for (int i = 0; i < deltaCount; i++) {
+    //   double positionM = moduleIOInputs.odometryDrivePositionM[i] * WHEEL_RADIUS_M;
+    //   Rotation2d angle =
+    //       moduleIOInputs.odometryAzimuthPositions[i].plus(
+    //           azimuthRelativeOffset != null ? azimuthRelativeOffset : new Rotation2d());
+
+    //   positionDeltas[i] =
+    //       new SwerveModulePosition(
+    //           positionM - lastPositionM, angle); // Update position from odometry
+    //   lastPositionM = positionM;
+    // }
+    // Calculate positions for odometry
+    int sampleCount = moduleIOInputs.odometryTimestamps.length; // All signals are sampled together
+    odometryPositions = new SwerveModulePosition[sampleCount];
+    for (int i = 0; i < sampleCount; i++) {
+      double positionMeters = moduleIOInputs.odometryDrivePositionM[i];
       Rotation2d angle =
           moduleIOInputs.odometryAzimuthPositions[i].plus(
               azimuthRelativeOffset != null ? azimuthRelativeOffset : new Rotation2d());
-
-      positionDeltas[i] =
-          new SwerveModulePosition(
-              positionM - lastPositionM, angle); // Update position from odometry
-      lastPositionM = positionM;
+      odometryPositions[i] = new SwerveModulePosition(positionMeters, angle);
     }
 
     if (driveControllerP.hasChanged(hashCode())
@@ -220,5 +231,14 @@ public class Module {
   /** Get the module position deltas from this cycle */
   public SwerveModulePosition[] getModuleDeltas() {
     return positionDeltas;
+  }
+
+  /** Returns the timestamps of the samples recieved this cycle */
+  public double[] getOdometryTimestamps() {
+    return moduleIOInputs.odometryTimestamps;
+  }
+
+  public SwerveModulePosition[] getOdometryPositions() {
+    return odometryPositions;
   }
 }

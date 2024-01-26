@@ -20,6 +20,7 @@ public class GyroIOPigeon2 implements GyroIO {
   private StatusSignal<Double> yaw = gyro.getYaw();
   private StatusSignal<Double> yawVelocity = gyro.getAngularVelocityZWorld();
 
+  private Queue<Double> odometryTimestampQueue;
   private Queue<Double> yawPositionQueue;
 
   public GyroIOPigeon2(boolean phoenixDrive) {
@@ -33,8 +34,10 @@ public class GyroIOPigeon2 implements GyroIO {
 
     // Add yaw odometry to different queues based on drivebase type
     if (phoenixDrive) {
+      odometryTimestampQueue = PhoenixOdometryThread.getInstance().makeTimestampQueue();
       yawPositionQueue = PhoenixOdometryThread.getInstance().registerSignal(gyro, gyro.getYaw());
     } else {
+      odometryTimestampQueue = SparkMaxOdometryThread.getInstance().makeTimestampQueue();
       yawPositionQueue =
           SparkMaxOdometryThread.getInstance()
               .registerSignal(() -> gyro.getYaw().getValueAsDouble());
@@ -50,11 +53,14 @@ public class GyroIOPigeon2 implements GyroIO {
 
     // Read odometry and add it to a queue, then add readings to an array to be processed by the
     // logger
+    inputs.odometryTimestamps =
+        odometryTimestampQueue.stream().mapToDouble((Double value) -> value).toArray();
     inputs.odometryYawPositions =
         yawPositionQueue.stream()
             .map((Double value) -> Rotation2d.fromDegrees(value)) // Map data from queue to ->
             .toArray(Rotation2d[]::new); // this array
     // Clear the queue for the next cycle
+    odometryTimestampQueue.clear();
     yawPositionQueue.clear();
   }
 }

@@ -9,6 +9,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
 /** A simulated swerve module */
@@ -48,6 +49,7 @@ public class ModuleIOSim implements ModuleIO {
     inputs.azimuthAppliedVolts = azimuthAppliedVolts;
     inputs.azimuthCurrentAmps = new double[] {Math.abs(azimuthMotor.getCurrentDrawAmps())};
 
+    inputs.odometryTimestamps = new double[] {Timer.getFPGATimestamp()};
     inputs.odometryDrivePositionM = new double[] {inputs.drivePositionM};
     inputs.odometryAzimuthPositions = new Rotation2d[] {inputs.azimuthPosition};
   }

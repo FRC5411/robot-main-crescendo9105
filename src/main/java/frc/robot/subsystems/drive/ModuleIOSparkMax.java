@@ -40,6 +40,7 @@ public class ModuleIOSparkMax implements ModuleIO {
   private SimpleMotorFeedforward driveFeedforward;
   private SimpleMotorFeedforward azimuthFeedforward;
 
+  private Queue<Double> odometryTimestampQueue;
   private Queue<Double> drivePositionQueue;
   private Queue<Double> azimuthPositionQueue;
 
@@ -122,6 +123,7 @@ public class ModuleIOSparkMax implements ModuleIO {
     azimuthMotor.setPeriodicFramePeriod(
         PeriodicFrame.kStatus2, (int) (1000.0 / Module.ODOMETRY_FREQUENCY));
     // Have queues listen for getPosition signals
+    odometryTimestampQueue = SparkMaxOdometryThread.getInstance().makeTimestampQueue();
     drivePositionQueue =
         SparkMaxOdometryThread.getInstance().registerSignal(driveEncoder::getPosition);
     azimuthPositionQueue =
@@ -185,6 +187,8 @@ public class ModuleIOSparkMax implements ModuleIO {
     inputs.azimuthCurrentAmps = new double[] {azimuthMotor.getOutputCurrent()};
 
     // Take odometry signals that have added up in the queue to an array, log the array
+    inputs.odometryTimestamps =
+        odometryTimestampQueue.stream().mapToDouble((Double value) -> value).toArray();
     inputs.odometryDrivePositionM =
         drivePositionQueue.stream()
             .mapToDouble((Double value) -> value * CIRCUMFRENCE_METERS / DRIVE_GEAR_RATIO)
@@ -194,6 +198,7 @@ public class ModuleIOSparkMax implements ModuleIO {
             .map((Double value) -> Rotation2d.fromRotations(value / AZIMUTH_GEAR_RATIO))
             .toArray(Rotation2d[]::new); // Store the azimuth positions as a Rotation2d
     // Clear the odometry queue for the next cycle
+    odometryTimestampQueue.clear();
     drivePositionQueue.clear();
     azimuthPositionQueue.clear();
 

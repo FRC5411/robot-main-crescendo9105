@@ -55,6 +55,13 @@ public class Drive extends SubsystemBase {
 
   private Pose2d currentPose = new Pose2d();
   private Rotation2d lastGyroRotation = new Rotation2d();
+  private SwerveModulePosition[] lastModulePositions = // For delta tracking
+      new SwerveModulePosition[] {
+        new SwerveModulePosition(),
+        new SwerveModulePosition(),
+        new SwerveModulePosition(),
+        new SwerveModulePosition()
+      };
 
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(KINEMATICS, lastGyroRotation, getModulePositions(), currentPose);
@@ -85,6 +92,9 @@ public class Drive extends SubsystemBase {
 
     SmartDashboard.putNumber("PathfindX", 0.0);
     SmartDashboard.putNumber("PathfindY", 0.0);
+
+    SparkMaxOdometryThread.getInstance().start();
+    PhoenixOdometryThread.getInstance().start();
 
     // Configure PathPlanner
     AutoBuilder.configureHolonomic(
@@ -143,35 +153,72 @@ public class Drive extends SubsystemBase {
       }
     }
 
-    // Calculate current pose from deltas
-    int deltaCount =
-        gyroIOInputs.connected ? gyroIOInputs.odometryYawPositions.length : Integer.MAX_VALUE;
-    for (int i = 0; i < 4; i++) {
-      deltaCount = Math.min(deltaCount, modules[i].getModuleDeltas().length);
-    }
-    // Iterate through all of the deltas for this cycle
-    for (int deltaIndex = 0; deltaIndex < deltaCount; deltaIndex++) {
-      // Get wheel deltas
-      SwerveModulePosition[] wheelDeltas = new SwerveModulePosition[4];
+    // // Calculate current pose from deltas
+    // int deltaCount =
+    //     gyroIOInputs.connected ? gyroIOInputs.odometryYawPositions.length : Integer.MAX_VALUE;
+    // for (int i = 0; i < 4; i++) {
+    //   deltaCount = Math.min(deltaCount, modules[i].getModuleDeltas().length);
+    // }
+    // // Iterate through all of the deltas for this cycle
+    // for (int deltaIndex = 0; deltaIndex < deltaCount; deltaIndex++) {
+    //   // Get wheel deltas
+    //   SwerveModulePosition[] wheelDeltas = new SwerveModulePosition[4];
+    //   for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
+    //     wheelDeltas[moduleIndex] = modules[moduleIndex].getModuleDeltas()[deltaIndex];
+    //   }
+
+    //   // Twist is the motion of the robot (x, y, theta) since the last cycle
+    //   var twist = KINEMATICS.toTwist2d(wheelDeltas);
+    //   if (gyroIOInputs.connected) {
+    //     // If gyro is connected, replace the estimated theta with gyro yaw
+    //     Rotation2d gyroRotation = gyroIOInputs.odometryYawPositions[deltaIndex];
+    //     twist = new Twist2d(twist.dx, twist.dy,
+    // gyroRotation.minus(lastGyroRotation).getRadians());
+    //     lastGyroRotation = gyroRotation;
+    //   }
+    //   // Apply the change since last sample to current pose
+    //   currentPose = currentPose.exp(twist);
+    // }
+    // Update odometry
+    double[] sampleTimestamps =
+        modules[0].getOdometryTimestamps(); // All signals are sampled together
+    int sampleCount = sampleTimestamps.length;
+    for (int i = 0; i < sampleCount; i++) {
+      // Read wheel positions and deltas from each module
+      SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
+      SwerveModulePosition[] moduleDeltas = new SwerveModulePosition[4];
       for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-        wheelDeltas[moduleIndex] = modules[moduleIndex].getModuleDeltas()[deltaIndex];
+        modulePositions[moduleIndex] = modules[moduleIndex].getOdometryPositions()[i];
+        moduleDeltas[moduleIndex] =
+            new SwerveModulePosition(
+                modulePositions[moduleIndex].distanceMeters
+                    - lastModulePositions[moduleIndex].distanceMeters,
+                modulePositions[moduleIndex].angle);
+        lastModulePositions[moduleIndex] = modulePositions[moduleIndex];
       }
 
-      // Twist is the motion of the robot (x, y, theta) since the last cycle
-      var twist = KINEMATICS.toTwist2d(wheelDeltas);
+      // Update gyro angle
       if (gyroIOInputs.connected) {
-        // If gyro is connected, replace the estimated theta with gyro yaw
-        Rotation2d gyroRotation = gyroIOInputs.odometryYawPositions[deltaIndex];
-        twist = new Twist2d(twist.dx, twist.dy, gyroRotation.minus(lastGyroRotation).getRadians());
-        lastGyroRotation = gyroRotation;
+        // Use the real gyro angle
+        lastGyroRotation = gyroIOInputs.odometryYawPositions[i];
+      } else {
+        // Use the angle delta from the kinematics and module deltas
+        Twist2d twist = KINEMATICS.toTwist2d(moduleDeltas);
+        lastGyroRotation = lastGyroRotation.plus(new Rotation2d(twist.dtheta));
       }
-      // Apply the change since last sample to current pose
-      currentPose = currentPose.exp(twist);
+
+      for (int j = 0; j < 4; j++) {
+        Logger.recordOutput(
+            "Drive/ModulePositions/DistanceMeters" + j, modulePositions[j].distanceMeters);
+      }
+      Logger.recordOutput("Drive/ModulePositions/SampleTimestamp", sampleTimestamps[i]);
+      Logger.recordOutput("Drive/ModulePositions/Deltas", moduleDeltas);
+
+      // Apply update
+      poseEstimator.updateWithTime(sampleTimestamps[i], lastGyroRotation, modulePositions);
     }
 
-    // TODO Fuse vision with 250hz odometry
-
-    poseEstimator.update(lastGyroRotation, getModulePositions());
+    // poseEstimator.update(lastGyroRotation, getModulePositions());
     Logger.recordOutput("Drive/Odometry/EstimatedPosition", poseEstimator.getEstimatedPosition());
 
     // Update pathfinder dynamic obstacles
