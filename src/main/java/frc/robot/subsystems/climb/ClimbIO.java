@@ -11,13 +11,13 @@ public interface ClimbIO {
   /** Climb subsystem sensor data, positions relative to facing front of drive */
   @AutoLog
   public static class ClimbIOInputs {
-    public double leftPositionRadians = 0.0;
+    public double leftAngleRadians = 0.0;
     public double leftVelocityRPS = 0.0;
     public double leftAppliedVolts = 0.0;
     public double[] leftCurrentAmps = new double[] {0.0};
     public double[] leftTemperatureCelsius = new double[] {0.0};
 
-    public double rightPositionRadians = 0.0;
+    public double rightAngleRadians = 0.0;
     public double rightVelocityRPS = 0.0;
     public double rightAppliedVolts = 0.0;
     public double[] rightCurrentAmps = new double[] {0.0};
