@@ -4,7 +4,5 @@
 
 package frc.robot.subsystems.shooter.indexer;
 
-import frc.robot.subsystems.shooter.angler.AnglerIO;
-
 /** Class to represent the indexer in simulation */
-public class IndexerIOSim implements AnglerIO {}
+public class IndexerIOSim implements IndexerIO {}
