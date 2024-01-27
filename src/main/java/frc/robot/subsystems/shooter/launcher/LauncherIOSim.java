@@ -5,4 +5,4 @@
 package frc.robot.subsystems.shooter.launcher;
 
 /** Class to represent the launcher in simulation */
-public class LauncherIOSim {}
+public class LauncherIOSim implements LauncherIO {}

@@ -5,4 +5,4 @@
 package frc.robot.subsystems.shooter.angler;
 
 /** Class to represent the angler in simulation */
-public class AnglerIOSim {}
+public class AnglerIOSim implements AnglerIO {}
