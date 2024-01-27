@@ -7,8 +7,10 @@ package frc.robot.subsystems.climb;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.LoggedTunableNumber;
+import org.littletonrobotics.junction.Logger;
 
 /** Climb subsystem */
 public class Climb extends SubsystemBase {
@@ -49,6 +51,9 @@ public class Climb extends SubsystemBase {
       new LoggedTunableNumber(
           "Climb/Tuning/Right/Vel", rightClimbFeedback.getConstraints().maxVelocity);
 
+  private double leftAngleSetpointRadians = 0.0;
+  private double rightAngleSetpointRadians = 0.0;
+
   /** Creates a new Climb. */
   public Climb(ClimbIO io) {
     this.io = io;
@@ -59,6 +64,53 @@ public class Climb extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    io.updateInputs(inputs);
+    Logger.processInputs("Climb/Inputs", inputs);
+
+    if (DriverStation.isDisabled()) {
+      stopMotors();
+    }
+
+    updateTunableNumbers();
+  }
+
+  /** Checks if tunable numbers have changed, if so update controllers */
+  private void updateTunableNumbers() {
+    // hashCode() updates when class is changed (I think)
+    if (leftFeedbackP.hasChanged(hashCode())
+        || leftFeedbackI.hasChanged(hashCode())
+        || leftFeedbackD.hasChanged(hashCode())) {
+      leftClimbFeedback.setP(leftFeedbackP.get());
+      leftClimbFeedback.setI(leftFeedbackI.get());
+      leftClimbFeedback.setD(leftFeedbackD.get());
+    }
+    if (leftFeedbackA.hasChanged(hashCode()) || leftFeedbackV.hasChanged(hashCode())) {
+      var newConstraints =
+          new TrapezoidProfile.Constraints(leftFeedbackA.get(), leftFeedbackV.get());
+
+      leftClimbFeedback.setConstraints(newConstraints);
+    }
+
+    if (rightFeedbackP.hasChanged(hashCode())
+        || rightFeedbackI.hasChanged(hashCode())
+        || rightFeedbackD.hasChanged(hashCode())) {
+      rightClimbFeedback.setP(rightFeedbackP.get());
+      rightClimbFeedback.setI(rightFeedbackI.get());
+      rightClimbFeedback.setD(rightFeedbackD.get());
+    }
+    if (rightFeedbackA.hasChanged(hashCode()) || rightFeedbackV.hasChanged(hashCode())) {
+      var newConstraints =
+          new TrapezoidProfile.Constraints(rightFeedbackA.get(), rightFeedbackV.get());
+
+      rightClimbFeedback.setConstraints(newConstraints);
+    }
+  }
+
+  /** Stops both motors */
+  public void stopMotors() {
+    leftAngleSetpointRadians = 0.0;
+    rightAngleSetpointRadians = 0.0;
+
+    io.setVolts(0.0, 0.0);
   }
 }
