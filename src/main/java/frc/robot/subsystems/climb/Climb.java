@@ -10,6 +10,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.LoggedTunableNumber;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /** Climb subsystem */
@@ -59,7 +60,7 @@ public class Climb extends SubsystemBase {
     this.io = io;
 
     leftClimbFeedback.setTolerance(0.2);
-    rightClimbFeedback.setTolerance(0.0);
+    rightClimbFeedback.setTolerance(0.2);
   }
 
   @Override
@@ -135,9 +136,9 @@ public class Climb extends SubsystemBase {
   }
 
   /** Sets the desired position in Radians */
-  public void setAngle(double leftDesiredAngleRadianss, double rightDesiredAngleRadianss) {
-    leftAngleSetpointRadians = leftDesiredAngleRadianss;
-    rightAngleSetpointRadians = rightDesiredAngleRadianss;
+  public void setAngle(double leftDesiredAngleRadians, double rightDesiredAngleRadians) {
+    leftAngleSetpointRadians = leftDesiredAngleRadians;
+    rightAngleSetpointRadians = rightDesiredAngleRadians;
 
     Logger.recordOutput("Climb/Controller/leftSetpoint", leftAngleSetpointRadians);
     Logger.recordOutput("Climb/Controller/rightSetpoint", rightAngleSetpointRadians);
@@ -150,5 +151,41 @@ public class Climb extends SubsystemBase {
 
     io.setLeftVolts(0.0);
     io.setRightVolts(0.0);
+  }
+
+  /** Returns the error of the left feedback */
+  @AutoLogOutput(key = "Climb/Controller/Left/Error")
+  public double getLeftError() {
+    return leftClimbFeedback.getPositionError();
+  }
+
+  /** Returns the error of the right feedback */
+  @AutoLogOutput(key = "Climb/Controller/Right/Setpoint")
+  public double getRightError() {
+    return rightClimbFeedback.getPositionError();
+  }
+
+  /** Returns the setpoint of the left feedback */
+  @AutoLogOutput(key = "Climb/Controller/Left/Setpoint")
+  public double getLeftSetpoint() {
+    return leftClimbFeedback.getSetpoint().position;
+  }
+
+  /** Returns the setpoint of the right feedback */
+  @AutoLogOutput(key = "Climb/Controller/Right/Setpoint")
+  public double getRightSetpoint() {
+    return rightClimbFeedback.getSetpoint().position;
+  }
+
+  /** Returns if the left feedback is at the setpoint */
+  @AutoLogOutput(key = "Climb/Controller/Left/isAtSetpoint")
+  public boolean isLeftAtSetpoint() {
+    return leftClimbFeedback.atSetpoint();
+  }
+
+  /** Returns if the right feedback is at the setpoint */
+  @AutoLogOutput(key = "Climb/Controller/Right/Setpoint")
+  public boolean isRightAtSetpoint() {
+    return rightClimbFeedback.atSetpoint();
   }
 }
