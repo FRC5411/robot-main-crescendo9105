@@ -79,11 +79,12 @@ public class Vision extends SubsystemBase {
   }
 
   public Vector<N3> createVisionVector(Limelight cam) {
-    // TODO: Fix magic numbers
+    final double kStdDev = 3.8;
+    final int kStdDevLast = 10000000;
     return VecBuilder.fill(
-        3.8 * getNorm(),
-        (cam.getTarget().getX() < 3.46) ? 3.8 * getNorm() : 5.6 * getNorm(),
-        10000000);
+      kStdDev * getNorm(),
+      kStdDev * getNorm(),
+      kStdDevLast);
   }
 
   @Override
@@ -93,9 +94,9 @@ public class Vision extends SubsystemBase {
     rightLimelight.periodic();
 
     // TODO: Add these to AK
-    // backLimelight.getPose().minus(leftLimelight.getPose()).getTranslation().getX());
-    // backLimelight.getPose().minus(rightLimelight.getPose()).getTranslation().getX());
-    // backLimelight.getPose().minus(leftLimelight.getPose()).getTranslation().getY());
-    // backLimelight.getPose().minus(rightLimelight.getPose()).getTranslation().getY());
+    backLimelight.getPose().minus(leftLimelight.getPose()).getTranslation().getX();
+    backLimelight.getPose().minus(rightLimelight.getPose()).getTranslation().getX();
+    backLimelight.getPose().minus(leftLimelight.getPose()).getTranslation().getY();
+    backLimelight.getPose().minus(rightLimelight.getPose()).getTranslation().getY();
   }
 }

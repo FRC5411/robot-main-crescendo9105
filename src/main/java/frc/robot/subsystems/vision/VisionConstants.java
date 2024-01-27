@@ -6,7 +6,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 
 public class VisionConstants {
   public static class LL {
-    public static final String centerLLNT = "limelight-limeone";
+    public static final String centerLLNT = "limelight-center";
     public static final String leftLLNT = "limelight-left";
     public static final String rightLLNT = "limelight-right";
 
