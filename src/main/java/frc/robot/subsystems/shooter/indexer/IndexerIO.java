@@ -8,6 +8,7 @@ import org.littletonrobotics.junction.AutoLog;
 
 /** Interface for representing the hardware */
 public interface IndexerIO {
+  /** Indexer sensor data */
   @AutoLog
   public static class IndexerIOInputs {
     public double angleRadians = 0.0;

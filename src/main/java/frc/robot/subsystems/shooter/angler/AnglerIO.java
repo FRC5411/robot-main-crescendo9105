@@ -8,6 +8,7 @@ import org.littletonrobotics.junction.AutoLog;
 
 /** Interface for representing the hardware */
 public interface AnglerIO {
+  /** Angler sensor data */
   @AutoLog
   public static class AnglerIOInputs {
     public double angleRadians = 0.0;
