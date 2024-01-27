@@ -103,8 +103,8 @@ public class RobotContainer {
         SwerveCommands.swerveDrive(
             // FIXME Figure out why joysticks are being goofy
             robotDrive,
-            () -> pilotController.getLeftY(),
-            () -> pilotController.getLeftX(),
+            () -> -pilotController.getLeftY(),
+            () -> -pilotController.getLeftX(),
             () -> pilotController.getRightX()));
 
     /* Reset drive heading | Debugging */

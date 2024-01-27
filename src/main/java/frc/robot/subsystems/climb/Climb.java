@@ -6,9 +6,11 @@ package frc.robot.subsystems.climb;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.climb.ClimbVisualizer.climbSide;
 import frc.robot.utils.LoggedTunableNumber;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -54,6 +56,9 @@ public class Climb extends SubsystemBase {
 
   private Double leftAngleSetpointRadians = null;
   private Double rightAngleSetpointRadians = null;
+
+  private ClimbVisualizer leftVisualizer = new ClimbVisualizer(climbSide.LEFT);
+  private ClimbVisualizer rightVisualizer = new ClimbVisualizer(climbSide.RIGHT);
 
   /** Creates a new Climb. */
   public Climb(ClimbIO io) {
@@ -101,6 +106,9 @@ public class Climb extends SubsystemBase {
     }
 
     updateTunableNumbers();
+
+    leftVisualizer.updateClimbAngle(Rotation2d.fromRadians(inputs.leftAngleRadians));
+    rightVisualizer.updateClimbAngle(Rotation2d.fromRadians(inputs.rightAngleRadians));
   }
 
   /** Checks if tunable numbers have changed, if so update controllers */

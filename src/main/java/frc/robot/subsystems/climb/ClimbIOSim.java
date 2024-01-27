@@ -16,10 +16,10 @@ public class ClimbIOSim implements ClimbIO {
   // TODO Update args as needed
   private SingleJointedArmSim leftMotor =
       new SingleJointedArmSim(
-          DCMotor.getNEO(1), 1.0, 1.0, Units.inchesToMeters(12.5), 0.0, 0.0, true, 0.0);
+          DCMotor.getNEO(1), 125.0, 0.005, Units.inchesToMeters(12.5), 0.0, 0.0, true, 0.0);
   private SingleJointedArmSim rightMotor =
       new SingleJointedArmSim(
-          DCMotor.getNEO(1), 1.0, 1.0, Units.inchesToMeters(12.5), 0.0, 0.0, true, 0.0);
+          DCMotor.getNEO(1), 125.0, 0.005, Units.inchesToMeters(12.5), 0.0, 0.0, true, 0.0);
 
   private double leftAppliedVolts = 0.0;
   private double rightAppliedVolts = 0.0;
