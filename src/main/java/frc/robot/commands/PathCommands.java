@@ -11,7 +11,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import frc.robot.subsystems.drive.Drive;
 
-/** Add your docs here. */
+/** Class to hold all of the path commands */
 public class PathCommands {
   private PathConstraints constraints =
       new PathConstraints(3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
@@ -19,6 +19,7 @@ public class PathCommands {
 
   private Drive robotDrive;
 
+  /** Initialize path commands */
   public PathCommands(Drive drive) {
     robotDrive = drive;
   }

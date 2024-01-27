@@ -135,7 +135,7 @@ public class Climb extends SubsystemBase {
   }
 
   /** Sets the desired position in Radians */
-  public void setVelocity(double leftDesiredAngleRadianss, double rightDesiredAngleRadianss) {
+  public void setAngle(double leftDesiredAngleRadianss, double rightDesiredAngleRadianss) {
     leftAngleSetpointRadians = leftDesiredAngleRadianss;
     rightAngleSetpointRadians = rightDesiredAngleRadianss;
 
