@@ -8,6 +8,7 @@ import org.littletonrobotics.junction.AutoLog;
 
 /** Interface for representing the hardware */
 public interface IntakeIO {
+  /** Intake subsystem sensor data */
   @AutoLog
   public static class IntakeIOInputs {
     public double angleRotations = 0.0;
