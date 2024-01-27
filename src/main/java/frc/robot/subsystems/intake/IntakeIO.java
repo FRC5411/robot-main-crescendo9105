@@ -21,6 +21,6 @@ public interface IntakeIO {
   /** Update the inputs from the sensors */
   public default void updateInputs(IntakeIOInputs inputs) {}
 
-  /** Set the volts of the intake motor */
+  /** Set the volts for the intake motor */
   public default void setVolts(double volts) {}
 }
