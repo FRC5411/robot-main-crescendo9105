@@ -206,6 +206,7 @@ public class Drive extends SubsystemBase {
         Twist2d twist = KINEMATICS.toTwist2d(moduleDeltas);
         lastGyroRotation = lastGyroRotation.plus(new Rotation2d(twist.dtheta));
       }
+      Logger.recordOutput("Drive/Gyro/HAAAAA", lastGyroRotation.getDegrees());
 
       for (int j = 0; j < 4; j++) {
         Logger.recordOutput(
