@@ -14,8 +14,12 @@ public class ClimbIOSim implements ClimbIO {
   private double LOOP_PERIOD_S = 0.02;
 
   // TODO Update args as needed
-  private SingleJointedArmSim leftMotor = new SingleJointedArmSim(DCMotor.getNEO(1), 1.0, 1.0, Units.inchesToMeters(12.5), 0.0, 0.0, true, 0.0);
-  private SingleJointedArmSim rightMotor = new SingleJointedArmSim(DCMotor.getNEO(1), 1.0, 1.0, Units.inchesToMeters(12.5), 0.0, 0.0, true, 0.0);
+  private SingleJointedArmSim leftMotor =
+      new SingleJointedArmSim(
+          DCMotor.getNEO(1), 1.0, 1.0, Units.inchesToMeters(12.5), 0.0, 0.0, true, 0.0);
+  private SingleJointedArmSim rightMotor =
+      new SingleJointedArmSim(
+          DCMotor.getNEO(1), 1.0, 1.0, Units.inchesToMeters(12.5), 0.0, 0.0, true, 0.0);
 
   private double leftAppliedVolts = 0.0;
   private double rightAppliedVolts = 0.0;
@@ -27,7 +31,7 @@ public class ClimbIOSim implements ClimbIO {
   public void updateInputs(ClimbIOInputs inputs) {
     leftMotor.update(LOOP_PERIOD_S);
     rightMotor.update(LOOP_PERIOD_S);
-    
+
     inputs.leftAngleRadians = leftMotor.getAngleRads();
     inputs.leftVelocityRPS = leftMotor.getVelocityRadPerSec();
     inputs.leftAppliedVolts = leftAppliedVolts;
@@ -43,7 +47,7 @@ public class ClimbIOSim implements ClimbIO {
 
   @Override
   public void setVolts(double leftVolts, double rightVolts) {
-    leftAppliedVolts = MathUtil.clamp(leftVolts, -12.0 , 12.0);
+    leftAppliedVolts = MathUtil.clamp(leftVolts, -12.0, 12.0);
     rightAppliedVolts = MathUtil.clamp(rightVolts, -12.0, 12.0);
 
     leftMotor.setInputVoltage(leftVolts);

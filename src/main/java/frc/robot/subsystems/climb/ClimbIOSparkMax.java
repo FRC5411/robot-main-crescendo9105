@@ -4,11 +4,10 @@
 
 package frc.robot.subsystems.climb;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
-
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
 
 /** Class to interact with the physical climb structure */
@@ -52,7 +51,7 @@ public class ClimbIOSparkMax implements ClimbIO {
     inputs.leftAppliedVolts = leftAppliedVolts;
     inputs.leftCurrentAmps = new double[] {leftMotor.getOutputCurrent()};
     inputs.leftTemperatureCelsius = new double[] {leftMotor.getMotorTemperature()};
-    
+
     inputs.rightAngleRadians = rightEncoder.getPosition();
     inputs.rightVelocityRPS = rightEncoder.getVelocity();
     inputs.rightAppliedVolts = rightAppliedVolts;
