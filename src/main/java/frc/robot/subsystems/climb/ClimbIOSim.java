@@ -7,6 +7,8 @@ package frc.robot.subsystems.climb;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 /** Class to represent the mechanism in simulation */
@@ -16,10 +18,10 @@ public class ClimbIOSim implements ClimbIO {
   // TODO Update args as needed
   private SingleJointedArmSim leftMotor =
       new SingleJointedArmSim(
-          DCMotor.getNEO(1), 125.0, 0.005, Units.inchesToMeters(12.5), 0.0, 0.0, true, 0.0);
+          DCMotor.getNEO(1), 125.0, 0.005, Units.inchesToMeters(12.5), 0.0, 2.0, true, 0.0);
   private SingleJointedArmSim rightMotor =
       new SingleJointedArmSim(
-          DCMotor.getNEO(1), 125.0, 0.005, Units.inchesToMeters(12.5), 0.0, 0.0, true, 0.0);
+          DCMotor.getNEO(1), 125.0, 0.005, Units.inchesToMeters(12.5), 0.0, 2.0, true, 0.0);
 
   private double leftAppliedVolts = 0.0;
   private double rightAppliedVolts = 0.0;
@@ -31,6 +33,11 @@ public class ClimbIOSim implements ClimbIO {
   public void updateInputs(ClimbIOInputs inputs) {
     leftMotor.update(LOOP_PERIOD_S);
     rightMotor.update(LOOP_PERIOD_S);
+
+    RoboRioSim.setVInVoltage(
+        BatterySim.calculateDefaultBatteryLoadedVoltage(leftMotor.getCurrentDrawAmps()));
+    RoboRioSim.setVInVoltage(
+        BatterySim.calculateDefaultBatteryLoadedVoltage(rightMotor.getCurrentDrawAmps()));
 
     inputs.leftAngleRadians = leftMotor.getAngleRads();
     inputs.leftVelocityRPS = leftMotor.getVelocityRadPerSec();
@@ -50,6 +57,7 @@ public class ClimbIOSim implements ClimbIO {
     leftAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
 
     leftMotor.setInputVoltage(leftAppliedVolts);
+    leftMotor.setInput(leftAppliedVolts / 12.0);
   }
 
   @Override
@@ -57,5 +65,6 @@ public class ClimbIOSim implements ClimbIO {
     rightAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
 
     rightMotor.setInputVoltage(rightAppliedVolts);
+    rightMotor.setInput(rightAppliedVolts / 12.0);
   }
 }

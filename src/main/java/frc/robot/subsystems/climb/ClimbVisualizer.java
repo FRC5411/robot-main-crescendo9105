@@ -27,13 +27,14 @@ public class ClimbVisualizer {
   private MechanismLigament2d climbArm =
       climbPivot.append(
           new MechanismLigament2d(
-              "climbArm", Units.inchesToMeters(12.5), 0, 3.0, new Color8Bit(Color.kWhite)));
+              "climbArm", Units.inchesToMeters(12.5), 0, 6.0, new Color8Bit(Color.kWhite)));
 
   /** Creates a new visual for the climb */
   public ClimbVisualizer(climbSide arm) {
     NAME = arm;
 
     climbTower.setColor(new Color8Bit(Color.kAqua));
+    climbTower.setLineWeight(5.0);
 
     Logger.recordOutput("Climb/" + NAME, climbMechanism);
   }
