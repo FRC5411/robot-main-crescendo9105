@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import frc.robot.util.ScrewArmController;
 import frc.robot.util.ScrewArmKinematics;
 
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
@@ -27,7 +28,6 @@ public class ScrewArmSim implements ScrewArmIO{
             Math.toRadians(15), 
             VecBuilder.fill(0));
 
-    private ProfiledPIDController screwArmPIDController;
     private Rotation2d screwArmSetpointAngle = new Rotation2d();
     private Rotation2d screwArmAngle = new Rotation2d();
     private double appliedVolts = 0;
@@ -50,9 +50,12 @@ public class ScrewArmSim implements ScrewArmIO{
                 Rotation2d.fromDegrees(15) ).getRadians(),
               10, new Color8Bit(0, 255, 0) ) );
 
+    private final ScrewArmController screwArmController;
+
     public ScrewArmSim() {
-        screwArmPIDController = new ProfiledPIDController(
-            0, 0, 0, new TrapezoidProfile.Constraints(0, 0));
+        screwArmController = new ScrewArmController( 
+            () -> screwArmAngle, this::setScrewArmVolts, 
+            new ProfiledPIDController(0, 0, 0, null, 0));
     }
 
     @Override
@@ -81,27 +84,17 @@ public class ScrewArmSim implements ScrewArmIO{
 
     @Override
     public void setGoal(Rotation2d goal) {
-        screwArmPIDController.setGoal( goal.getDegrees() );
+        screwArmSetpointAngle = goal;
+        screwArmController.setGoal( screwArmSetpointAngle );
     }
 
     @Override
     public void initPID(Rotation2d measure) {
-        screwArmPIDController.reset( screwArmAngle.getDegrees() );
+        screwArmController.reset( new TrapezoidProfile.State(measure.getDegrees(), 0) );
     }
 
     @Override
     public void executePID(Rotation2d goal) {
-        double PID = 
-            screwArmPIDController.calculate( screwArmAngle.getDegrees() ) 
-            * ScrewArmKinematics.scaleVoltage(
-                Rotation2d.fromDegrees(
-                    screwArmPIDController.getSetpoint().position ) );
-
-        double FF = 
-            Math.signum(screwArmPIDController.getSetpoint().velocity) * ScrewArmConstants.kScrewArmKS
-            + ScrewArmConstants.kScrewArmKG * ScrewArmKinematics.getGravityVector(
-                Rotation2d.fromDegrees( screwArmPIDController.getSetpoint().position ) );
-
-        setScrewArmVolts(PID + FF);
+        screwArmController.executePID(goal);
     }
 }
