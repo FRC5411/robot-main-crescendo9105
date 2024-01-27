@@ -51,8 +51,8 @@ public class Climb extends SubsystemBase {
       new LoggedTunableNumber(
           "Climb/Tuning/Right/Vel", rightClimbFeedback.getConstraints().maxVelocity);
 
-  private double leftAngleSetpointRadians = 0.0;
-  private double rightAngleSetpointRadians = 0.0;
+  private Double leftAngleSetpointRadians = null;
+  private Double rightAngleSetpointRadians = null;
 
   /** Creates a new Climb. */
   public Climb(ClimbIO io) {
@@ -69,6 +69,34 @@ public class Climb extends SubsystemBase {
 
     if (DriverStation.isDisabled()) {
       stopMotors();
+    }
+
+    if (leftAngleSetpointRadians != null) {
+      var leftFeedbackOutput =
+          leftClimbFeedback.calculate(inputs.leftAngleRadians, leftAngleSetpointRadians);
+      // TODO Need to add angle offset
+      var leftFeedforwardOutput =
+          leftClimbFeedforward.calculate(
+              inputs.leftAngleRadians, leftClimbFeedback.getSetpoint().velocity);
+
+      Logger.recordOutput("Climb/Controller/leftFeedbackOutput", leftFeedbackOutput);
+      Logger.recordOutput("Climb/Controller/leftFeedforwardOutput", leftFeedforwardOutput);
+
+      io.setLeftVolts((leftFeedbackOutput + leftFeedforwardOutput) * 12.0);
+    }
+
+    if (rightAngleSetpointRadians != null) {
+      var rightFeedbackOutput =
+          rightClimbFeedback.calculate(inputs.rightAngleRadians, rightAngleSetpointRadians);
+      // TODO Need to add angle offset
+      var rightFeedforwardOutput =
+          rightClimbFeedforward.calculate(
+              inputs.rightAngleRadians, rightClimbFeedback.getSetpoint().velocity);
+
+      Logger.recordOutput("Climb/Controller/rightFeedbackOutput", rightFeedbackOutput);
+      Logger.recordOutput("Climb/Controller/rightFeedforwardOutput", rightFeedforwardOutput);
+
+      io.setRightVolts((rightFeedbackOutput + rightFeedforwardOutput) * 12.0);
     }
 
     updateTunableNumbers();
@@ -106,11 +134,21 @@ public class Climb extends SubsystemBase {
     }
   }
 
+  /** Sets the desired position in Radians */
+  public void setVelocity(double leftDesiredAngleRadianss, double rightDesiredAngleRadianss) {
+    leftAngleSetpointRadians = leftDesiredAngleRadianss;
+    rightAngleSetpointRadians = rightDesiredAngleRadianss;
+
+    Logger.recordOutput("Climb/Controller/leftSetpoint", leftAngleSetpointRadians);
+    Logger.recordOutput("Climb/Controller/rightSetpoint", rightAngleSetpointRadians);
+  }
+
   /** Stops both motors */
   public void stopMotors() {
     leftAngleSetpointRadians = 0.0;
     rightAngleSetpointRadians = 0.0;
 
-    io.setVolts(0.0, 0.0);
+    io.setLeftVolts(0.0);
+    io.setRightVolts(0.0);
   }
 }

@@ -26,6 +26,9 @@ public interface ClimbIO {
   /** Update the inputs from the sensors */
   public default void updateInputs(ClimbIOInputs inputs) {}
 
-  /** Set the volts for the climb motors */
-  public default void setVolts(double leftVolts, double rightVolts) {}
+  /** Set the volts for the left motor */
+  public default void setLeftVolts(double volts) {}
+
+  /** Set the volts for the right motor */
+  public default void setRightVolts(double volts) {}
 }

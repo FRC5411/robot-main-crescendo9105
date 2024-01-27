@@ -60,11 +60,16 @@ public class ClimbIOSparkMax implements ClimbIO {
   }
 
   @Override
-  public void setVolts(double leftVolts, double rightVolts) {
-    leftAppliedVolts = MathUtil.clamp(leftVolts, -12.0, 12.0);
-    rightAppliedVolts = MathUtil.clamp(rightVolts, -12.0, 12.0);
+  public void setLeftVolts(double volts) {
+    leftAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
 
     leftMotor.set(leftAppliedVolts);
+  }
+
+  @Override
+  public void setRightVolts(double volts) {
+    rightAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+
     rightMotor.set(rightAppliedVolts);
   }
 }

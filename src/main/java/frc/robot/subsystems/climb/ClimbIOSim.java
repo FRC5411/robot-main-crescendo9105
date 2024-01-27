@@ -46,11 +46,16 @@ public class ClimbIOSim implements ClimbIO {
   }
 
   @Override
-  public void setVolts(double leftVolts, double rightVolts) {
-    leftAppliedVolts = MathUtil.clamp(leftVolts, -12.0, 12.0);
-    rightAppliedVolts = MathUtil.clamp(rightVolts, -12.0, 12.0);
+  public void setLeftVolts(double volts) {
+    leftAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
 
-    leftMotor.setInputVoltage(leftVolts);
-    rightMotor.setInputVoltage(rightVolts);
+    leftMotor.setInputVoltage(leftAppliedVolts);
+  }
+
+  @Override
+  public void setRightVolts(double volts) {
+    rightAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+
+    rightMotor.setInputVoltage(rightAppliedVolts);
   }
 }
