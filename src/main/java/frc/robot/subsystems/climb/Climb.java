@@ -6,6 +6,7 @@ package frc.robot.subsystems.climb;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+/** Climb subsystem */
 public class Climb extends SubsystemBase {
   /** Creates a new Climb. */
   public Climb() {}
