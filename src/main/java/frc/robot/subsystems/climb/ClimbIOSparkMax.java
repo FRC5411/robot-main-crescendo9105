@@ -9,6 +9,8 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
+import edu.wpi.first.math.MathUtil;
+
 /** Class to interact with the physical climb structure */
 public class ClimbIOSparkMax implements ClimbIO {
   // TODO Adjust values as needed
@@ -17,6 +19,9 @@ public class ClimbIOSparkMax implements ClimbIO {
 
   private RelativeEncoder leftEncoder = leftMotor.getEncoder();
   private RelativeEncoder rightEncoder = rightMotor.getEncoder();
+
+  private double leftAppliedVolts = 0.0;
+  private double rightAppliedVolts = 0.0;
 
   /** Create a new hardware implementation of the climb */
   public ClimbIOSparkMax() {
@@ -40,8 +45,27 @@ public class ClimbIOSparkMax implements ClimbIO {
   }
 
   @Override
-  public void updateInputs(ClimbIOInputs inputs) {}
+  public void updateInputs(ClimbIOInputs inputs) {
+    // TODO Add conversion factors as needed
+    inputs.leftAngleRadians = leftEncoder.getPosition();
+    inputs.leftVelocityRPS = leftEncoder.getVelocity();
+    inputs.leftAppliedVolts = leftAppliedVolts;
+    inputs.leftCurrentAmps = new double[] {leftMotor.getOutputCurrent()};
+    inputs.leftTemperatureCelsius = new double[] {leftMotor.getMotorTemperature()};
+    
+    inputs.rightAngleRadians = rightEncoder.getPosition();
+    inputs.rightVelocityRPS = rightEncoder.getVelocity();
+    inputs.rightAppliedVolts = rightAppliedVolts;
+    inputs.rightCurrentAmps = new double[] {rightMotor.getOutputCurrent()};
+    inputs.rightTemperatureCelsius = new double[] {rightMotor.getMotorTemperature()};
+  }
 
   @Override
-  public void setVolts(double leftVolts, double rightVolts) {}
+  public void setVolts(double leftVolts, double rightVolts) {
+    var leftAdjustedVolts = MathUtil.clamp(leftVolts, -12.0, 12.0);
+    var rightAdjustedVolts = MathUtil.clamp(rightVolts, -12.0, 12.0);
+
+    leftMotor.set(leftAdjustedVolts);
+    rightMotor.set(rightAdjustedVolts);
+  }
 }
