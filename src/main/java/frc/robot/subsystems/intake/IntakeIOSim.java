@@ -40,7 +40,7 @@ public class IntakeIOSim implements IntakeIO {
   public void setVolts(double volts) {
     var adjustedVolts = MathUtil.clamp(volts, -12.0, 12.0);
     intakeMotor.setInputVoltage(adjustedVolts);
-    intakeMotor.setInput(adjustedVolts / 12.0);
+    // intakeMotor.setInput(adjustedVolts / 12.0);
     // System.out.println("\nIntake/IntakeIOSim setVolts - adjustedVolts: " + adjustedVolts);
   }
 }
