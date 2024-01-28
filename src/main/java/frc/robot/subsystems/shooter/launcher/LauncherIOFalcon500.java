@@ -5,4 +5,4 @@
 package frc.robot.subsystems.shooter.launcher;
 
 /** Class to interact with the physical launcher */
-public class LauncherIOSparkMax implements LauncherIO {}
+public class LauncherIOFalcon500 implements LauncherIO {}
