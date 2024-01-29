@@ -189,6 +189,8 @@ public class Drive extends SubsystemBase {
         "Drive/PathFinder/ObstaclePT1", new Pose2d(obstacles.get(0).getFirst(), new Rotation2d()));
     Logger.recordOutput(
         "Drive/PathFinder/ObstaclePT2", new Pose2d(obstacles.get(0).getSecond(), new Rotation2d()));
+
+    currentPose = poseEstimator.getEstimatedPosition();
   }
 
   public void setDriveVolts(double volts) {

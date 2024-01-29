@@ -4,11 +4,10 @@
 
 package frc.robot.subsystems.shooter.angler;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
-
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
 
 /** Class to interact with the physical angler */
@@ -20,7 +19,7 @@ public class AnglerIOSparkMax implements AnglerIO {
   private double appliedVolts = 0.0;
 
   /** Create a new hardware implementation of the angler */
-  public AnglerIOSparkMax () {
+  public AnglerIOSparkMax() {
     anglerMotor.clearFaults();
     anglerMotor.restoreFactoryDefaults();
 

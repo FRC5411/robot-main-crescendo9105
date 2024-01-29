@@ -14,8 +14,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.ClimbCommands;
-import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.SwerveCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
@@ -132,17 +130,17 @@ public class RobotContainer {
     pilotController.a().onTrue(Commands.runOnce(robotDrive::resetPose, robotDrive));
 
     /* Run intake (NEO) at half speed */
-    pilotController
-        .b()
-        //        .whileTrue(IntakeCommands.runIntake(robotIntake, 5676.0 / 2.0))
-        .whileTrue(IntakeCommands.runIntake(robotIntake, 1500.0))
-        .whileFalse(IntakeCommands.stopIntake(robotIntake));
+    // pilotController
+    //     .b()
+    //     //        .whileTrue(IntakeCommands.runIntake(robotIntake, 5676.0 / 2.0))
+    //     .whileTrue(IntakeCommands.runIntake(robotIntake, 1500.0))
+    //     .whileFalse(IntakeCommands.stopIntake(robotIntake));
 
     /* Set climb to angle */
-    pilotController
-        .a()
-        .whileTrue(ClimbCommands.setAngle(robotClimb, 1.0, 1.0))
-        .whileFalse(ClimbCommands.setAngle(robotClimb, 0.0, 0.0));
+    // pilotController
+    //     .a()
+    //     .whileTrue(ClimbCommands.setAngle(robotClimb, 1.0, 1.0))
+    //     .whileFalse(ClimbCommands.setAngle(robotClimb, 0.0, 0.0));
 
     /* Print commands for debugging purposes */
     pilotController
