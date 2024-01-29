@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter.Flywheel;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -46,7 +47,7 @@ public class ShooterWheelSimIO implements ShooterWheelIO {
   @Override
   public void setFlywheelsVolts(double volts) {
     appliedVolts = volts;
-    flywheelMotor.setInputVoltage(volts);
+    flywheelMotor.setInputVoltage( MathUtil.clamp( volts, -12, 12 ));
   }
 
   @Override

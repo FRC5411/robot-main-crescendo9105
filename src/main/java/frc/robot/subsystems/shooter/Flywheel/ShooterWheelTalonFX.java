@@ -13,10 +13,10 @@ public class ShooterWheelTalonFX implements ShooterWheelIO {
   private TalonFX flywheelMotor;
 
   private double flywheelVelocitySetpointMPS = 0;
-  private double velocityRateLimit = 0.5;
+  private double velocityRateLimit;
 
   private VelocityVoltage flywheelVelocity = new VelocityVoltage(0.0);
-  private SlewRateLimiter velocityRateLimiter = new SlewRateLimiter(0.5);
+  private SlewRateLimiter velocityRateLimiter;;
 
   public ShooterWheelTalonFX(
       int motorID, boolean invert, PIDController velocity, 
