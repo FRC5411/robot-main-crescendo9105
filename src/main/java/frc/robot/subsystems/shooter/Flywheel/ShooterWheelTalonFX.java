@@ -1,77 +1,78 @@
 package frc.robot.subsystems.shooter.Flywheel;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 
 public class ShooterWheelTalonFX implements ShooterWheelIO {
-  private TalonFX flywheelMotorLeft = new TalonFX(ShooterWheelConstants.kLeftMotorID);
-  private TalonFX flywheelMotorRight = new TalonFX(ShooterWheelConstants.kRightMotorID);
+  private TalonFX flywheelMotor;
 
-  private double flywheelVelocitySetpointMPSLeft = 0;
-  private double flywheelRateLimitLeft = 0.5;
+  private double flywheelVelocitySetpointMPS = 0;
+  private double velocityRateLimit = 0.5;
 
-  private double flywheelVelocitySetpointMPSRight = 0;
-  private double flywheelRateLimitRight = 0.5;
+  private VelocityVoltage flywheelVelocity = new VelocityVoltage(0.0);
+  private SlewRateLimiter velocityRateLimiter = new SlewRateLimiter(0.5);
 
-  private VelocityVoltage flywheelVelocityLeft = new VelocityVoltage(0.0);
-  private SlewRateLimiter flywheelRateLimiterLeft = new SlewRateLimiter(0.5);
-
-  private VelocityVoltage flywheelVelocityRight = new VelocityVoltage(0.0);
-  private SlewRateLimiter flywheelRateLimiterRight = new SlewRateLimiter(0.5);
-
-  public ShooterWheelTalonFX() {
-    flywheelMotorLeft.setInverted(true);
-    flywheelMotorRight.setInverted(false);
+  public ShooterWheelTalonFX(
+      int motorID, boolean invert, PIDController velocity, 
+      SimpleMotorFeedforward velocityFeedforward, double flywheelRateLimit) {
+      configMotor(motorID, invert, velocity, velocityFeedforward);
+      this.velocityRateLimit = flywheelRateLimit;
+      this.velocityRateLimiter = new SlewRateLimiter(this.velocityRateLimit);
   }
 
   @Override
   public void updateInputs(ShooterWheelIOInputs inputs) {
-    inputs.flywheelVelocityMPSLeft = 
-      flywheelMotorLeft.getVelocity().getValueAsDouble() * ShooterWheelConstants.kCircumferenceM;
-    inputs.flywheelAppliedVoltsLeft = flywheelMotorLeft.getMotorVoltage().getValueAsDouble();
-    inputs.flywheelCurrentAmpsLeft = new double[] { flywheelMotorLeft.getStatorCurrent().getValueAsDouble() };
-    inputs.flywheelVelocityMPSLeftSetpoint = flywheelVelocitySetpointMPSLeft;
-
-    inputs.flywheelVelocityMPSRight = 
-      flywheelMotorRight.getVelocity().getValueAsDouble() * ShooterWheelConstants.kCircumferenceM;
-    inputs.flywheelAppliedVoltsRight = flywheelMotorRight.getMotorVoltage().getValueAsDouble();
-    inputs.flywheelCurrentAmpsRight = new double[] { flywheelMotorRight.getStatorCurrent().getValueAsDouble() } ;
-    inputs.flywheelVelocityMPSRightSetpoint = flywheelVelocitySetpointMPSRight;
+    inputs.flywheelVelocityMPS = 
+      flywheelMotor.getVelocity().getValueAsDouble() * ShooterWheelConstants.kCircumferenceM;
+    inputs.flywheelAppliedVolts = flywheelMotor.getMotorVoltage().getValueAsDouble();
+    inputs.flywheelCurrentAmps = new double[] { flywheelMotor.getStatorCurrent().getValueAsDouble() };
+    inputs.flywheelVelocityMPSSetpoint = flywheelVelocitySetpointMPS;
   }
 
   @Override
-  public void setFlywheelsVoltsLeft(double volts) {
-      flywheelMotorLeft.setVoltage(volts);
+  public void setFlywheelsVolts(double volts) {
+      flywheelMotor.setVoltage(volts);
   }
 
   @Override
-  public void setFlywheelsVoltsRight(double volts) {
-    flywheelMotorRight.setVoltage(volts);
-  }
-
-  @Override
-  public void setFlywheelsVelocityLeft(double velocityMPS) {
-    double newVelocityMPS = flywheelRateLimiterLeft.calculate(velocityMPS);
+  public void setFlywheelsVelocity(double velocityMPS) {
+    double newVelocityMPS = velocityRateLimiter.calculate(velocityMPS);
     double acceleration = 0;
-    if(newVelocityMPS != velocityMPS) acceleration = flywheelRateLimitLeft;
-    flywheelVelocitySetpointMPSLeft = velocityMPS;
-    flywheelMotorLeft.setControl(
-      flywheelVelocityLeft.withVelocity( 
-        flywheelVelocitySetpointMPSLeft / ShooterWheelConstants.kCircumferenceM )
+    if(newVelocityMPS != velocityMPS) acceleration = velocityRateLimit;
+    flywheelVelocitySetpointMPS = velocityMPS;
+    flywheelMotor.setControl(
+      flywheelVelocity.withVelocity( 
+        flywheelVelocitySetpointMPS / ShooterWheelConstants.kCircumferenceM )
       .withAcceleration(acceleration) );
   }
 
-  @Override
-  public void setFlywheelsVelocityRight(double velocityMPS) {
-    double newVelocityMPS = flywheelRateLimiterRight.calculate(velocityMPS);
-    double acceleration = 0;
-    if(newVelocityMPS != velocityMPS) acceleration = flywheelRateLimitRight;
-    flywheelVelocitySetpointMPSRight = velocityMPS;
-    flywheelMotorRight.setControl(
-      flywheelVelocityRight.withVelocity( 
-        flywheelVelocitySetpointMPSRight / ShooterWheelConstants.kCircumferenceM )
-      .withAcceleration(acceleration) );
+  public void configMotor(int id, boolean invert, PIDController velocity, SimpleMotorFeedforward velocityFeedforward) {
+    flywheelMotor = new TalonFX(id);
+    TalonFXConfiguration configs = new TalonFXConfiguration();
+    configs.Slot0.kP = velocity.getP();
+    configs.Slot0.kI = velocity.getI();
+    configs.Slot0.kD = velocity.getD();
+
+    configs.Slot0.kS = velocityFeedforward.ks;
+    configs.Slot0.kV = velocityFeedforward.kv;
+    configs.Slot0.kA = velocityFeedforward.ka;
+
+    configs.CurrentLimits.StatorCurrentLimitEnable = true;
+    configs.CurrentLimits.StatorCurrentLimit = 40;
+    configs.CurrentLimits.SupplyCurrentLimitEnable = true;
+    configs.CurrentLimits.SupplyCurrentLimit = 40;
+
+    configs.Voltage.PeakForwardVoltage = 12;
+    configs.Voltage.PeakReverseVoltage = -12;
+
+    configs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    flywheelMotor.setInverted(true);
+    flywheelMotor.getConfigurator().apply(configs);
   }
 }

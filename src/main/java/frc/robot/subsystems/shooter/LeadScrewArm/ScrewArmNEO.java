@@ -21,8 +21,8 @@ public class ScrewArmNEO implements ScrewArmIO {
 
   public ScrewArmController screwArmController;
 
-  public ScrewArmNEO() {
-    configScrewArmMotor();
+  public ScrewArmNEO(int id) {
+    configScrewArmMotor(id);
     this.screwArmPivotEncoder = new DutyCycleEncoder(ScrewArmConstants.kEncoderID);
 
     screwArmController =
@@ -71,8 +71,8 @@ public class ScrewArmNEO implements ScrewArmIO {
     return screwArmController.atGoal();
   }
 
-  public void configScrewArmMotor() {
-    screwArmMotor = new CANSparkMax(1, MotorType.kBrushless);
+  public void configScrewArmMotor(int id) {
+    screwArmMotor = new CANSparkMax(id, MotorType.kBrushless);
     screwArmMotor.restoreFactoryDefaults();
     screwArmMotor.clearFaults();
     screwArmMotor.setSmartCurrentLimit(40);

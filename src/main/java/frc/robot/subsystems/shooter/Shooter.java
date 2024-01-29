@@ -13,9 +13,6 @@ import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmIO;
 import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmSim;
 
 public class Shooter extends SubsystemBase {
-  private ShooterWheelIO shooterWheel = new ShooterWheelSimIO();
-  private IndexerIO indexer = new IndexerSim();
-  private ScrewArmIO screwArm = new ScrewArmSim();
 
   public Shooter() {
     

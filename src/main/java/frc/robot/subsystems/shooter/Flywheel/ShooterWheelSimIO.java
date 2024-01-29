@@ -8,86 +8,56 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
 public class ShooterWheelSimIO implements ShooterWheelIO {
-  private FlywheelSim flywheelMotorLeft =
-      new FlywheelSim(DCMotor.getNEO(1), 
-      ShooterWheelConstants.kGearing, 
-      ShooterWheelConstants.kJKgMetersSquared, 
-      VecBuilder.fill(0.1));
-  private FlywheelSim flywheelMotorRight =
+  private FlywheelSim flywheelMotor =
       new FlywheelSim(DCMotor.getNEO(1), 
       ShooterWheelConstants.kGearing, 
       ShooterWheelConstants.kJKgMetersSquared, 
       VecBuilder.fill(0.1));
 
-  private double flywheelAppliedVoltsLeft = 0;
-  private double flywheelVelocityMeasuredMPSLeft = 0;
-  private double flywheelVelocitySetpointMPSLeft = 0;
+  private double appliedVolts = 0;
+  private double velocityMeasuredMPS = 0;
+  private double velocitySetpointMPS = 0;
+  private double velocityRateLimit = 0.5;
 
-  private double flywheelAppliedVoltsRight = 0;
-  private double flywheelVelocityMeasuredMPSRight = 0;
-  private double flywheelVelocitySetpointMPSRight = 0;
+  PIDController velocityController;
+  SimpleMotorFeedforward velocityFeedforward;
+  SlewRateLimiter velocityRateLimiter;
 
-  PIDController flywheelPIDLeft = new PIDController(0.1, 0, 0);
-  SimpleMotorFeedforward flywheelFeedforwardLeft = new SimpleMotorFeedforward(0.0, 0.1, 0.05);
-  SlewRateLimiter flywheelRateLimiterLeft = new SlewRateLimiter(ShooterWheelConstants.kFlywheelRateLimitLeft);
-
-  PIDController flywheelPIDRight = new PIDController(0.1, 0, 0);
-  SimpleMotorFeedforward flywheelFeedforwardRight = new SimpleMotorFeedforward(0.0, 0.1, 0.05);
-  SlewRateLimiter flywheelRateLimiterRight = new SlewRateLimiter(ShooterWheelConstants.kFlywheelRateLimitRight);
+  public ShooterWheelSimIO(
+    PIDController flywheelPID, SimpleMotorFeedforward flywheelFeedforward, double flywheelRateLimit) {
+    this.velocityController = flywheelPID;
+    this.velocityFeedforward = flywheelFeedforward;
+    this.velocityRateLimit = flywheelRateLimit;
+    this.velocityRateLimiter = new SlewRateLimiter(this.velocityRateLimit);
+  }
 
   @Override
   public void updateInputs(ShooterWheelIOInputs inputs) {
-    flywheelVelocityMeasuredMPSLeft =
-        (flywheelMotorLeft.getAngularVelocityRPM() * ShooterWheelConstants.kCircumferenceM) / 60;
-    inputs.flywheelVelocityMPSLeft = flywheelVelocityMeasuredMPSLeft;
-    inputs.flywheelAppliedVoltsLeft = flywheelAppliedVoltsLeft;
-    inputs.flywheelCurrentAmpsLeft = new double[] {flywheelMotorLeft.getCurrentDrawAmps()};
-    inputs.flywheelVelocityMPSLeftSetpoint = flywheelVelocitySetpointMPSLeft;
+    velocityMeasuredMPS =
+        (flywheelMotor.getAngularVelocityRPM() * ShooterWheelConstants.kCircumferenceM) / 60;
+    inputs.flywheelVelocityMPS = velocityMeasuredMPS;
+    inputs.flywheelAppliedVolts = appliedVolts;
+    inputs.flywheelCurrentAmps = new double[] {flywheelMotor.getCurrentDrawAmps()};
+    inputs.flywheelVelocityMPSSetpoint = velocitySetpointMPS;
 
-    flywheelVelocityMeasuredMPSRight =
-        (flywheelMotorRight.getAngularVelocityRPM() * ShooterWheelConstants.kCircumferenceM) / 60;
-    inputs.flywheelVelocityMPSRight = flywheelVelocityMeasuredMPSRight;
-    inputs.flywheelAppliedVoltsRight = flywheelAppliedVoltsRight;
-    inputs.flywheelCurrentAmpsRight = new double[] {flywheelMotorRight.getCurrentDrawAmps()};
-    inputs.flywheelVelocityMPSRightSetpoint = flywheelVelocitySetpointMPSRight;
-
-    flywheelMotorLeft.update(0.02);
-    flywheelMotorRight.update(0.02);
+    flywheelMotor.update(0.2);
   }
 
   @Override
-  public void setFlywheelsVoltsLeft(double volts) {
-    flywheelAppliedVoltsLeft = volts;
-    flywheelMotorLeft.setInputVoltage(volts);
+  public void setFlywheelsVolts(double volts) {
+    appliedVolts = volts;
+    flywheelMotor.setInputVoltage(volts);
   }
 
   @Override
-  public void setFlywheelsVoltsRight(double volts) {
-    flywheelAppliedVoltsRight = volts;
-    flywheelMotorRight.setInputVoltage(volts);
-  }
-
-  @Override
-  public void setFlywheelsVelocityLeft(double velocityMPS) {
-    double velocityMPSLimited = flywheelRateLimiterLeft.calculate(velocityMPS);
-    flywheelVelocitySetpointMPSLeft = velocityMPS;
-    double PID = flywheelPIDLeft.calculate(flywheelVelocityMeasuredMPSLeft, velocityMPS);
+  public void setFlywheelsVelocity(double velocityMPS) {
+    double velocityMPSLimited = velocityRateLimiter.calculate(velocityMPS);
+    velocitySetpointMPS = velocityMPS;
+    double PID = velocityController.calculate(velocityMeasuredMPS, velocityMPS);
     if (velocityMPSLimited - velocityMPS > 1e-1)
-      PID += flywheelFeedforwardLeft.calculate(velocityMPS, ShooterWheelConstants.kFlywheelRateLimitLeft);
-    else PID += flywheelFeedforwardLeft.calculate(velocityMPS);
+      PID += velocityFeedforward.calculate(velocityMPS, ShooterWheelConstants.kFlywheelRateLimit);
+    else PID += velocityFeedforward.calculate(velocityMPS);
 
-    setFlywheelsVoltsLeft(PID);
-  }
-
-  @Override
-  public void setFlywheelsVelocityRight(double velocityMPS) {
-    double velocityMPSLimited = flywheelRateLimiterRight.calculate(velocityMPS);
-    flywheelVelocitySetpointMPSRight = velocityMPS;
-    double PID = flywheelPIDRight.calculate(flywheelVelocityMeasuredMPSRight, velocityMPS);
-    if (velocityMPSLimited - velocityMPS > 1e-1)
-      PID += flywheelFeedforwardRight.calculate(velocityMPS, ShooterWheelConstants.kFlywheelRateLimitRight);
-    else PID += flywheelFeedforwardRight.calculate(velocityMPS);
-
-    setFlywheelsVoltsLeft(PID);
+    setFlywheelsVolts(PID);
   }
 }

@@ -17,6 +17,5 @@ public class ShooterWheelConstants {
   public static double kSLeft = 0.0;
   public static double kVLeft = 0.0;
   public static double kALeft = 0.0;
-  public static double kFlywheelRateLimitLeft = 0.5;
-  public static double kFlywheelRateLimitRight = 0.5;
+  public static double kFlywheelRateLimit = 0.5;
 }
