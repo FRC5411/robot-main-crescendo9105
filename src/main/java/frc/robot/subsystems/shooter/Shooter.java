@@ -5,10 +5,21 @@
 package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.shooter.Flywheel.ShooterWheelIO;
+import frc.robot.subsystems.shooter.Flywheel.ShooterWheelSimIO;
+import frc.robot.subsystems.shooter.Indexer.IndexerIO;
+import frc.robot.subsystems.shooter.Indexer.IndexerSim;
+import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmIO;
+import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmSim;
 
 public class Shooter extends SubsystemBase {
-  /** Creates a new Shooter. */
-  public Shooter() {}
+  private ShooterWheelIO shooterWheel = new ShooterWheelSimIO();
+  private IndexerIO indexer = new IndexerSim();
+  private ScrewArmIO screwArm = new ScrewArmSim();
+
+  public Shooter() {
+    
+  }
 
   @Override
   public void periodic() {
