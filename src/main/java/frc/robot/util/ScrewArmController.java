@@ -15,21 +15,21 @@ public class ScrewArmController {
   public final ProfiledPIDController controller;
 
   public ScrewArmController(
-      Supplier<Rotation2d> measureSupplier,
-      Consumer<Double> voltageConsumer) {
+      Supplier<Rotation2d> measureSupplier, Consumer<Double> voltageConsumer) {
     this.measureSupplier = measureSupplier;
     this.voltageConsumer = voltageConsumer;
-    this.controller = (RobotBase.isReal()) ? 
-      new ProfiledPIDController(
-        ScrewArmConstants.kP, 
-        ScrewArmConstants.kI, 
-        ScrewArmConstants.kD, 
-        ScrewArmConstants.kConstraints) :
-      new ProfiledPIDController(
-        ScrewArmConstants.kSimP, 
-        ScrewArmConstants.kSimI, 
-        ScrewArmConstants.kSimD, 
-        ScrewArmConstants.kSimConstraints);
+    this.controller =
+        (RobotBase.isReal())
+            ? new ProfiledPIDController(
+                ScrewArmConstants.kP,
+                ScrewArmConstants.kI,
+                ScrewArmConstants.kD,
+                ScrewArmConstants.kConstraints)
+            : new ProfiledPIDController(
+                ScrewArmConstants.kSimP,
+                ScrewArmConstants.kSimI,
+                ScrewArmConstants.kSimD,
+                ScrewArmConstants.kSimConstraints);
   }
 
   public ScrewArmController(
@@ -42,10 +42,11 @@ public class ScrewArmController {
   }
 
   public void setGoal(Rotation2d goal) {
-    controller.setGoal( MathUtil.clamp(
-      goal.getDegrees(),
-      ScrewArmConstants.kMinAngle.getDegrees(),
-      ScrewArmConstants.kMaxAngle.getDegrees() ) );
+    controller.setGoal(
+        MathUtil.clamp(
+            goal.getDegrees(),
+            ScrewArmConstants.kMinAngle.getDegrees(),
+            ScrewArmConstants.kMaxAngle.getDegrees()));
   }
 
   public void reset(TrapezoidProfile.State state) {
@@ -60,12 +61,12 @@ public class ScrewArmController {
 
     double FF =
         Math.signum(controller.getSetpoint().velocity) * ScrewArmConstants.kS
-        // kG will always be 0 because of the gas shocks
+            // kG will always be 0 because of the gas shocks
             + ScrewArmConstants.kG
                 * ScrewArmKinematics.getGravityUnitVector(
                     Rotation2d.fromDegrees(controller.getSetpoint().position));
 
-    voltageConsumer.accept( MathUtil.clamp(PID + FF, 12, -12) );
+    voltageConsumer.accept(MathUtil.clamp(PID + FF, 12, -12));
   }
 
   public boolean atGoal() {

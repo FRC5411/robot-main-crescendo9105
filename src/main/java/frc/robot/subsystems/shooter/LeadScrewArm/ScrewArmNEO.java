@@ -4,11 +4,9 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
-
 import frc.robot.util.ScrewArmController;
 
 public class ScrewArmNEO implements ScrewArmIO {
@@ -25,10 +23,7 @@ public class ScrewArmNEO implements ScrewArmIO {
     configScrewArmMotor(id);
     this.screwArmPivotEncoder = new DutyCycleEncoder(ScrewArmConstants.kEncoderID);
 
-    screwArmController =
-        new ScrewArmController(
-            () -> screwArmAngle,
-            this::setScrewArmVolts);
+    screwArmController = new ScrewArmController(() -> screwArmAngle, this::setScrewArmVolts);
   }
 
   @Override
@@ -53,17 +48,17 @@ public class ScrewArmNEO implements ScrewArmIO {
   @Override
   public void setGoal(Rotation2d goal) {
     screwArmSetpointAngle = goal;
-    screwArmController.setGoal( screwArmSetpointAngle );
+    screwArmController.setGoal(screwArmSetpointAngle);
   }
 
   @Override
   public void initPID() {
-    screwArmController.reset( new TrapezoidProfile.State( screwArmAngle.getDegrees(), 0 ) );
+    screwArmController.reset(new TrapezoidProfile.State(screwArmAngle.getDegrees(), 0));
   }
 
   @Override
   public void executePID() {
-    screwArmController.executePIDClamped( screwArmSetpointAngle );
+    screwArmController.executePIDClamped(screwArmSetpointAngle);
   }
 
   @Override

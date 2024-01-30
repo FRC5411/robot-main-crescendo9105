@@ -9,7 +9,8 @@ public class Indexer550 implements IndexerIO {
 
   public Indexer550() {
     indexerLeft = new CANSparkMax(IndexerConstants.kMotorIDLeft, CANSparkMax.MotorType.kBrushless);
-    indexerRight = new CANSparkMax(IndexerConstants.kMotorIDRight, CANSparkMax.MotorType.kBrushless);
+    indexerRight =
+        new CANSparkMax(IndexerConstants.kMotorIDRight, CANSparkMax.MotorType.kBrushless);
 
     configIndexMotor(indexerLeft);
     configIndexMotor(indexerRight);

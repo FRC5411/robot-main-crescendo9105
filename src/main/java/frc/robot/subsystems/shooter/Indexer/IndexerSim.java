@@ -5,9 +5,11 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
 public class IndexerSim implements IndexerIO {
   private DCMotorSim indexerMotorLeft =
-      new DCMotorSim(DCMotor.getNEO(1), IndexerConstants.kGearing, IndexerConstants.kJKGMetersSquared);
+      new DCMotorSim(
+          DCMotor.getNEO(1), IndexerConstants.kGearing, IndexerConstants.kJKGMetersSquared);
   private DCMotorSim indexerMotorRight =
-      new DCMotorSim(DCMotor.getNEO(1), IndexerConstants.kGearing, IndexerConstants.kJKGMetersSquared);
+      new DCMotorSim(
+          DCMotor.getNEO(1), IndexerConstants.kGearing, IndexerConstants.kJKGMetersSquared);
 
   public double indexerAppliedVoltsLeft = 0;
   public double indexerAppliedVoltsRight = 0;

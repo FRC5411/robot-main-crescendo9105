@@ -4,13 +4,11 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.util.ScrewArmController;
 import frc.robot.util.ScrewArmKinematics;
@@ -20,13 +18,13 @@ public class ScrewArmSim implements ScrewArmIO {
       new SingleJointedArmSim(
           DCMotor.getNEO(1),
           1.0,
-          0,
+          1,
           ScrewArmConstants.kPivotLength,
           Math.toRadians(15),
           Math.toRadians(70),
           false,
           Math.toRadians(15),
-          VecBuilder.fill(0));
+          VecBuilder.fill(0.5));
 
   private Rotation2d screwArmSetpointAngle = new Rotation2d();
   private Rotation2d screwArmAngle = new Rotation2d();
@@ -54,10 +52,7 @@ public class ScrewArmSim implements ScrewArmIO {
   private final ScrewArmController screwArmController;
 
   public ScrewArmSim() {
-    screwArmController =
-        new ScrewArmController(
-            () -> screwArmAngle,
-            this::setScrewArmVolts);
+    screwArmController = new ScrewArmController(() -> screwArmAngle, this::setScrewArmVolts);
   }
 
   @Override
@@ -88,17 +83,17 @@ public class ScrewArmSim implements ScrewArmIO {
   @Override
   public void setGoal(Rotation2d goal) {
     screwArmSetpointAngle = goal;
-    screwArmController.setGoal( screwArmSetpointAngle );
+    screwArmController.setGoal(screwArmSetpointAngle);
   }
 
   @Override
   public void initPID() {
-    screwArmController.reset( new TrapezoidProfile.State( screwArmAngle.getDegrees(), 0) );
+    screwArmController.reset(new TrapezoidProfile.State(screwArmAngle.getDegrees(), 0));
   }
 
   @Override
   public void executePID() {
-    screwArmController.executePIDClamped( screwArmSetpointAngle );
+    screwArmController.executePIDClamped(screwArmSetpointAngle);
   }
 
   @Override

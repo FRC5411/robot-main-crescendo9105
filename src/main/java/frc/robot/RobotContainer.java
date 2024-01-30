@@ -23,10 +23,12 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
+import frc.robot.subsystems.shooter.Shooter;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
   private Drive robotDrive;
+  private Shooter robotShooter;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
   // private CommandPS4Controller pilotController = new CommandPS4Controller(0);
@@ -63,6 +65,8 @@ public class RobotContainer {
                 new GyroIO() {});
         break;
     }
+
+    robotShooter = new Shooter();
 
     NamedCommands.registerCommand(
         "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));

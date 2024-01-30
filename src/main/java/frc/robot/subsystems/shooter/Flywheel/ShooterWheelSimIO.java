@@ -10,10 +10,11 @@ import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
 public class ShooterWheelSimIO implements ShooterWheelIO {
   private FlywheelSim flywheelMotor =
-      new FlywheelSim(DCMotor.getNEO(1), 
-      ShooterWheelConstants.kGearing, 
-      ShooterWheelConstants.kJKgMetersSquared, 
-      VecBuilder.fill(0.1));
+      new FlywheelSim(
+          DCMotor.getNEO(1),
+          ShooterWheelConstants.kGearing,
+          ShooterWheelConstants.kJKgMetersSquared,
+          VecBuilder.fill(0.1));
 
   private double appliedVolts = 0;
   private double velocityMeasuredMPS = 0;
@@ -25,7 +26,9 @@ public class ShooterWheelSimIO implements ShooterWheelIO {
   SlewRateLimiter velocityRateLimiter;
 
   public ShooterWheelSimIO(
-    PIDController flywheelPID, SimpleMotorFeedforward flywheelFeedforward, double flywheelRateLimit) {
+      PIDController flywheelPID,
+      SimpleMotorFeedforward flywheelFeedforward,
+      double flywheelRateLimit) {
     this.velocityController = flywheelPID;
     this.velocityFeedforward = flywheelFeedforward;
     this.velocityRateLimit = flywheelRateLimit;
@@ -47,7 +50,7 @@ public class ShooterWheelSimIO implements ShooterWheelIO {
   @Override
   public void setFlywheelsVolts(double volts) {
     appliedVolts = volts;
-    flywheelMotor.setInputVoltage( MathUtil.clamp( volts, -12, 12 ));
+    flywheelMotor.setInputVoltage(MathUtil.clamp(volts, -12, 12));
   }
 
   @Override

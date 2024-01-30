@@ -4,10 +4,6 @@
 
 package frc.robot.subsystems.shooter;
 
-import java.util.function.DoubleSupplier;
-
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -31,6 +27,8 @@ import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmIO;
 import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmInputsAutoLogged;
 import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmNEO;
 import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmSim;
+import java.util.function.DoubleSupplier;
+import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
   private ShooterWheelIO shooterWheelTop;
@@ -38,6 +36,7 @@ public class Shooter extends SubsystemBase {
   private IndexerIO indexerIO;
   private ScrewArmIO screwArmIO;
 
+  // Placeholder subsystems with no functionality, just used to satisfy command requirements
   private Subsystem shooterWheelSub = new Subsystem() {};
   private Subsystem indexerSub = new Subsystem() {};
   private Subsystem screwArmSub = new Subsystem() {};
@@ -47,58 +46,53 @@ public class Shooter extends SubsystemBase {
 
   private double indexerVoltage = 0;
 
-  private ShooterWheelIOInputsAutoLogged shooterWheelIOInputsAutoLogged = new ShooterWheelIOInputsAutoLogged();
+  private ShooterWheelIOInputsAutoLogged shooterWheelIOInputsAutoLogged =
+      new ShooterWheelIOInputsAutoLogged();
   private ScrewArmInputsAutoLogged screwArmInputsAutoLogged = new ScrewArmInputsAutoLogged();
   private IndexerIOInputsAutoLogged indexerIOInputsAutoLogged = new IndexerIOInputsAutoLogged();
 
   public Shooter() {
-    if(RobotBase.isReal()) {
-      shooterWheelTop = new ShooterWheelTalonFX(
-        ShooterWheelConstants.kTopMotorID, false,
-        new PIDController(
-          ShooterWheelConstants.kP,
-          ShooterWheelConstants.kI,
-          ShooterWheelConstants.kD),
-        new SimpleMotorFeedforward(
-          ShooterWheelConstants.kS,
-          ShooterWheelConstants.kV,
-          ShooterWheelConstants.kA),
-        ShooterWheelConstants.kFlywheelRateLimit);
-      shooterWheelBottom = new ShooterWheelTalonFX(
-        ShooterWheelConstants.kBottomMotorID, false,
-        new PIDController(
-          ShooterWheelConstants.kP,
-          ShooterWheelConstants.kI,
-          ShooterWheelConstants.kD),
-        new SimpleMotorFeedforward(
-          ShooterWheelConstants.kS,
-          ShooterWheelConstants.kV,
-          ShooterWheelConstants.kA),
-        ShooterWheelConstants.kFlywheelRateLimit);
+    if (RobotBase.isReal()) {
+      shooterWheelTop =
+          new ShooterWheelTalonFX(
+              ShooterWheelConstants.kTopMotorID,
+              false,
+              new PIDController(
+                  ShooterWheelConstants.kP, ShooterWheelConstants.kI, ShooterWheelConstants.kD),
+              new SimpleMotorFeedforward(
+                  ShooterWheelConstants.kS, ShooterWheelConstants.kV, ShooterWheelConstants.kA),
+              ShooterWheelConstants.kFlywheelRateLimit);
+      shooterWheelBottom =
+          new ShooterWheelTalonFX(
+              ShooterWheelConstants.kBottomMotorID,
+              false,
+              new PIDController(
+                  ShooterWheelConstants.kP, ShooterWheelConstants.kI, ShooterWheelConstants.kD),
+              new SimpleMotorFeedforward(
+                  ShooterWheelConstants.kS, ShooterWheelConstants.kV, ShooterWheelConstants.kA),
+              ShooterWheelConstants.kFlywheelRateLimit);
 
       indexerIO = new Indexer550();
       screwArmIO = new ScrewArmNEO(ScrewArmConstants.kMotorID);
-    } else if(RobotBase.isSimulation()) {
-      shooterWheelTop = new ShooterWheelSimIO(
-        new PIDController(
-          ShooterWheelConstants.kSimP,
-          ShooterWheelConstants.kSimI,
-          ShooterWheelConstants.kSimD),
-        new SimpleMotorFeedforward(
-          ShooterWheelConstants.kS,
-          ShooterWheelConstants.kV,
-          ShooterWheelConstants.kA),
-        ShooterWheelConstants.kFlywheelRateLimit);
-      shooterWheelBottom = new ShooterWheelSimIO(
-        new PIDController(
-          ShooterWheelConstants.kSimP,
-          ShooterWheelConstants.kSimI,
-          ShooterWheelConstants.kSimD),
-        new SimpleMotorFeedforward(
-          ShooterWheelConstants.kS,
-          ShooterWheelConstants.kV,
-          ShooterWheelConstants.kA),
-        ShooterWheelConstants.kFlywheelRateLimit);
+    } else if (RobotBase.isSimulation()) {
+      shooterWheelTop =
+          new ShooterWheelSimIO(
+              new PIDController(
+                  ShooterWheelConstants.kSimP,
+                  ShooterWheelConstants.kSimI,
+                  ShooterWheelConstants.kSimD),
+              new SimpleMotorFeedforward(
+                  ShooterWheelConstants.kS, ShooterWheelConstants.kV, ShooterWheelConstants.kA),
+              ShooterWheelConstants.kFlywheelRateLimit);
+      shooterWheelBottom =
+          new ShooterWheelSimIO(
+              new PIDController(
+                  ShooterWheelConstants.kSimP,
+                  ShooterWheelConstants.kSimI,
+                  ShooterWheelConstants.kSimD),
+              new SimpleMotorFeedforward(
+                  ShooterWheelConstants.kS, ShooterWheelConstants.kV, ShooterWheelConstants.kA),
+              ShooterWheelConstants.kFlywheelRateLimit);
 
       indexerIO = new IndexerSim();
       screwArmIO = new ScrewArmSim();
@@ -109,67 +103,68 @@ public class Shooter extends SubsystemBase {
       screwArmIO = new ScrewArmIO() {};
     }
 
-    shooterWheelSub.setDefaultCommand( shooterVelocityCommand( 
-      () -> topVelocityMPS, 
-      () -> bottomVelocityMPS ) );
+    shooterWheelSub.setDefaultCommand(
+        shooterVelocityCommand(() -> topVelocityMPS, () -> bottomVelocityMPS));
 
+    screwArmSub.setDefaultCommand(anglerPositionCommand());
 
-    screwArmSub.setDefaultCommand( anglerPositionCommand() );
-
-    indexerSub.setDefaultCommand( indexerVoltageCommand( () -> indexerVoltage ) );
+    indexerSub.setDefaultCommand(indexerVoltageCommand(() -> indexerVoltage));
   }
 
   public Command setShooterSetpoints(
-      double topVelocityMPSSetpoint, double bottomVelocityMPSSetpoint, 
-      Rotation2d screwAngleSetpoint, double indexerVoltageSetpoint) {
+      double topVelocityMPSSetpoint,
+      double bottomVelocityMPSSetpoint,
+      Rotation2d screwAngleSetpoint,
+      double indexerVoltageSetpoint) {
     return new InstantCommand(
-      () -> {
-        topVelocityMPS = topVelocityMPSSetpoint;
-        bottomVelocityMPS = bottomVelocityMPSSetpoint;
+        () -> {
+          topVelocityMPS = topVelocityMPSSetpoint;
+          bottomVelocityMPS = bottomVelocityMPSSetpoint;
 
-        screwArmIO.setGoal(screwAngleSetpoint);
-        screwArmIO.initPID();
+          screwArmIO.setGoal(screwAngleSetpoint);
+          screwArmIO.initPID();
 
-        indexerVoltage = indexerVoltageSetpoint;
-      }, 
-      this);
+          indexerVoltage = indexerVoltageSetpoint;
+        },
+        this);
   }
 
   public Command setIndexerVoltage(double volts) {
-    return new InstantCommand( () -> indexerVoltage = 12, this);
+    return new InstantCommand(() -> indexerVoltage = 12, this);
   }
 
-  public Command shooterVelocityCommand(DoubleSupplier topVelocityMPS, DoubleSupplier bottomVelocityMPS) {
+  public Command shooterVelocityCommand(
+      DoubleSupplier topVelocityMPS, DoubleSupplier bottomVelocityMPS) {
     return new FunctionalCommand(
-      () -> {}, 
-      () -> {
-        shooterWheelTop.setFlywheelsVelocity(topVelocityMPS.getAsDouble());
-        shooterWheelBottom.setFlywheelsVelocity(bottomVelocityMPS.getAsDouble());
-      },
-      (interrupted) -> {
-        shooterWheelTop.setFlywheelsVolts(0);
-        shooterWheelBottom.setFlywheelsVolts(0);
-      },
-      () -> false, 
-      shooterWheelSub);
+        () -> {},
+        () -> {
+          shooterWheelTop.setFlywheelsVelocity(topVelocityMPS.getAsDouble());
+          shooterWheelBottom.setFlywheelsVelocity(bottomVelocityMPS.getAsDouble());
+        },
+        (interrupted) -> {
+          shooterWheelTop.setFlywheelsVolts(0);
+          shooterWheelBottom.setFlywheelsVolts(0);
+        },
+        () -> false,
+        shooterWheelSub);
   }
 
   public Command anglerPositionCommand() {
     return new FunctionalCommand(
-      () -> screwArmIO.initPID(), 
-      () -> screwArmIO.executePID(),
-      (interrupted) -> screwArmIO.setScrewArmVolts(0),
-      () -> false, 
-      screwArmSub);
+        () -> screwArmIO.initPID(),
+        () -> screwArmIO.executePID(),
+        (interrupted) -> screwArmIO.setScrewArmVolts(0),
+        () -> false,
+        screwArmSub);
   }
 
   public Command indexerVoltageCommand(DoubleSupplier voltage) {
     return new FunctionalCommand(
-      () -> {}, 
-      () -> indexerIO.setIndexerVolts(voltage.getAsDouble()),
-      (interrupted) -> indexerIO.setIndexerVolts(0),
-      () -> false,
-      indexerSub);
+        () -> {},
+        () -> indexerIO.setIndexerVolts(voltage.getAsDouble()),
+        (interrupted) -> indexerIO.setIndexerVolts(0),
+        () -> false,
+        indexerSub);
   }
 
   @Override

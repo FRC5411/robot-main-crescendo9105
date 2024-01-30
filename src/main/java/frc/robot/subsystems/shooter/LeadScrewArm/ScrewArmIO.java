@@ -28,5 +28,7 @@ public interface ScrewArmIO {
   public default void executePID() {}
 
   // Dangerous, but don't know an alternative
-  public default boolean atGoal() { return false; }
+  public default boolean atGoal() {
+    return false;
+  }
 }
