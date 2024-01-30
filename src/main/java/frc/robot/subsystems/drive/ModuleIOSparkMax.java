@@ -5,22 +5,18 @@
 package frc.robot.subsystems.drive;
 
 import com.ctre.phoenix6.hardware.CANcoder;
-import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkPIDController;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import java.util.Queue;
 
 /** An SDS MK4i L3 swerve module */
 public class ModuleIOSparkMax implements ModuleIO {
-  private final boolean IS_AZIMUTH_INVERTED = true;
   // TODO Update these for our latest swerve modules
   private final double DRIVE_GEAR_RATIO = 6.75 / 1.0;
   private final double AZIMUTH_GEAR_RATIO = 150.0 / 7.0;
@@ -34,11 +30,6 @@ public class ModuleIOSparkMax implements ModuleIO {
   private CANcoder angleEncoder;
 
   private Rotation2d angleOffset;
-
-  private SparkPIDController driveController;
-  private SparkPIDController azimuthController;
-  private SimpleMotorFeedforward driveFeedforward;
-  private SimpleMotorFeedforward azimuthFeedforward;
 
   private Queue<Double> drivePositionQueue;
   private Queue<Double> azimuthPositionQueue;
@@ -92,7 +83,7 @@ public class ModuleIOSparkMax implements ModuleIO {
     // azimuthMotor.setCANTimeout(250);
 
     driveMotor.setInverted(false);
-    azimuthMotor.setInverted(IS_AZIMUTH_INVERTED);
+    azimuthMotor.setInverted(true);
 
     driveMotor.setSmartCurrentLimit(40);
     driveMotor.enableVoltageCompensation(12.0);
@@ -104,8 +95,6 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveEncoder.setAverageDepth(2);
 
     azimuthEncoder.setPosition(0.0);
-    // azimuthEncoder.setPosition(
-    //     angleEncoder.getAbsolutePosition().getValueAsDouble() - angleOffset.getRotations());
     azimuthEncoder.setMeasurementPeriod(10);
     azimuthEncoder.setAverageDepth(2);
 
@@ -127,34 +116,8 @@ public class ModuleIOSparkMax implements ModuleIO {
     azimuthPositionQueue =
         SparkMaxOdometryThread.getInstance().registerSignal(azimuthEncoder::getPosition);
 
-    // driveController = driveMotor.getPIDController();
-    // azimuthController = azimuthMotor.getPIDController();
-
-    // driveController.setFeedbackDevice(driveEncoder);
-    // azimuthController.setFeedbackDevice(azimuthEncoder);
-
-    // // TODO Tune PID gains
-    // driveController.setP(0.0);
-    // driveController.setI(0.0);
-    // driveController.setD(0.0);
-    // driveController.setFF(0.0);
-
-    // azimuthController.setP(0.0);
-    // azimuthController.setI(0.0);
-    // azimuthController.setD(0.0);
-    // azimuthController.setFF(0.0);
-
-    // azimuthController.setOutputRange(-Math.PI, Math.PI);
-
-    // driveFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
-    // azimuthFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
-
     driveMotor.burnFlash();
     azimuthMotor.burnFlash();
-
-    // azimuthEncoder.setPosition(
-    //     angleEncoder.getAbsolutePosition().getValueAsDouble()
-    //         - angleOffset.getRotations()); // Set to absolute
   }
 
   @Override
@@ -165,14 +128,6 @@ public class ModuleIOSparkMax implements ModuleIO {
     inputs.driveAppliedVolts = driveMotor.getAppliedOutput() * driveMotor.getBusVoltage();
     inputs.driveCurrentAmps = new double[] {driveMotor.getOutputCurrent()};
 
-    // TODO Verify that this abs pos telemetry works lmao
-    // inputs.azimuthAbsolutePosition =
-    //     new Rotation2d(
-    //             angleEncoder.getSupplyVoltage().getValueAsDouble()
-    //                 / RobotController.getVoltage5V()
-    //                 * 2.0
-    //                 * Math.PI)
-    //         .minus(angleOffset);
     inputs.azimuthAbsolutePosition =
         Rotation2d.fromRotations(angleEncoder.getAbsolutePosition().getValueAsDouble())
             .minus(angleOffset);
@@ -196,9 +151,6 @@ public class ModuleIOSparkMax implements ModuleIO {
     // Clear the odometry queue for the next cycle
     drivePositionQueue.clear();
     azimuthPositionQueue.clear();
-
-    // inputs.odometryDrivePositionR = new double[] {inputs.drivePositionR};
-    // inputs.odometryAzimuthPositions = new Rotation2d[] {inputs.azimuthPosition};
   }
 
   @Override
@@ -211,27 +163,6 @@ public class ModuleIOSparkMax implements ModuleIO {
   public void setAzimuthVolts(double volts) {
     double clampedVolts = MathUtil.clamp(volts, -12.0, 12.0);
     azimuthMotor.setVoltage(clampedVolts);
-  }
-
-  // TODO Fix these methods
-  @Override
-  public void setVelocity(double velocityMPS) {
-    driveController.setReference(
-        velocityMPS,
-        ControlType.kVelocity,
-        0,
-        driveFeedforward.calculate(velocityMPS),
-        SparkPIDController.ArbFFUnits.kVoltage);
-  }
-
-  @Override
-  public void setAngle(double angleR) {
-    azimuthController.setReference(
-        angleR,
-        ControlType.kPosition,
-        0,
-        azimuthFeedforward.calculate(Math.signum(angleR - azimuthEncoder.getPosition())),
-        SparkPIDController.ArbFFUnits.kVoltage);
   }
 
   @Override
