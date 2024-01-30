@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter.LeadScrewArm;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -24,9 +25,8 @@ public class ScrewArmSim implements ScrewArmIO {
           Math.toRadians(70),
           false,
           Math.toRadians(15),
-          VecBuilder.fill(0.5));
+          VecBuilder.fill(0.0));
 
-  private Rotation2d screwArmSetpointAngle = new Rotation2d();
   private Rotation2d screwArmAngle = new Rotation2d();
   private double appliedVolts = 0;
 
@@ -49,41 +49,41 @@ public class ScrewArmSim implements ScrewArmIO {
               10,
               new Color8Bit(0, 255, 0)));
 
-  private final ScrewArmController screwArmController;
-
-  public ScrewArmSim() {
-    screwArmController = new ScrewArmController(() -> screwArmAngle, this::setScrewArmVolts);
-  }
+  // Inverted for sake of PID to go the right direction
+  private final ScrewArmController screwArmController =
+      new ScrewArmController(() -> screwArmAngle, (s) -> setScrewArmVolts(-s));
 
   @Override
   public void updateInputs(ScrewArmInputs inputs) {
     screwArmAngle = Rotation2d.fromRadians(armSim.getAngleRads());
     inputs.screwArmDegrees = screwArmAngle;
-    inputs.screwArmDegreesSetpoint = screwArmSetpointAngle;
+    inputs.screwArmDegreesGoal = screwArmController.getGoal();
+    inputs.screwArmDegreesSetpoint = screwArmController.getSetpoint();
     inputs.screwArmAppliedVolts = appliedVolts;
     inputs.screwArmCurrentAmps = armSim.getCurrentDrawAmps();
     inputs.screwArmMotorTempC = 0;
-    inputs.screwArmPositionMeters = 0;
+    inputs.screwArmPositionMeters = ScrewArmKinematics.getLengthAlongScrew(screwArmAngle);
     inputs.screwArmVelocityMeters = 0;
     inputs.screwArmAtGoal = screwArmController.atGoal();
     inputs.screwArmAtSetpoint = screwArmController.atSetpoint();
 
     armPivot.setAngle(screwArmAngle);
-    armDriver.setAngle(ScrewArmKinematics.getDrivenAngle(screwArmSetpointAngle));
+    armDriver.setAngle(0); // ScrewArmKinematics.getDrivenAngle(screwArmAngle).div(-1));
     SmartDashboard.putData("ScrewArm", mechanismField);
+
+    armSim.update(0.02);
   }
 
   @Override
   public void setScrewArmVolts(double volts) {
-    appliedVolts = volts;
-    appliedVolts *= ScrewArmKinematics.getPerpendicularAngleDifference(screwArmAngle).getCos();
+    appliedVolts = MathUtil.clamp(volts, -12, 12);
+    // appliedVolts *= ScrewArmKinematics.getPerpendicularAngleDifference(screwArmAngle).getCos();
     armSim.setInputVoltage(appliedVolts);
   }
 
   @Override
   public void setGoal(Rotation2d goal) {
-    screwArmSetpointAngle = goal;
-    screwArmController.setGoal(screwArmSetpointAngle);
+    screwArmController.setGoal(goal);
   }
 
   @Override
@@ -93,11 +93,6 @@ public class ScrewArmSim implements ScrewArmIO {
 
   @Override
   public void executePID() {
-    screwArmController.executePIDClamped(screwArmSetpointAngle);
-  }
-
-  @Override
-  public boolean atGoal() {
-    return screwArmController.atGoal();
+    screwArmController.executePIDClamped();
   }
 }

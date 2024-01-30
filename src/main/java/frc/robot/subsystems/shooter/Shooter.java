@@ -7,6 +7,7 @@ package frc.robot.subsystems.shooter;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
@@ -46,7 +47,9 @@ public class Shooter extends SubsystemBase {
 
   private double indexerVoltage = 0;
 
-  private ShooterWheelIOInputsAutoLogged shooterWheelIOInputsAutoLogged =
+  private ShooterWheelIOInputsAutoLogged shooterWheelIOInputsAutoLoggedTop =
+      new ShooterWheelIOInputsAutoLogged();
+  private ShooterWheelIOInputsAutoLogged shooterWheelIOInputsAutoLoggedBottom =
       new ShooterWheelIOInputsAutoLogged();
   private ScrewArmInputsAutoLogged screwArmInputsAutoLogged = new ScrewArmInputsAutoLogged();
   private IndexerIOInputsAutoLogged indexerIOInputsAutoLogged = new IndexerIOInputsAutoLogged();
@@ -82,7 +85,9 @@ public class Shooter extends SubsystemBase {
                   ShooterWheelConstants.kSimI,
                   ShooterWheelConstants.kSimD),
               new SimpleMotorFeedforward(
-                  ShooterWheelConstants.kS, ShooterWheelConstants.kV, ShooterWheelConstants.kA),
+                  ShooterWheelConstants.kSimS,
+                  ShooterWheelConstants.kSimV,
+                  ShooterWheelConstants.kSimA),
               ShooterWheelConstants.kFlywheelRateLimit);
       shooterWheelBottom =
           new ShooterWheelSimIO(
@@ -91,7 +96,9 @@ public class Shooter extends SubsystemBase {
                   ShooterWheelConstants.kSimI,
                   ShooterWheelConstants.kSimD),
               new SimpleMotorFeedforward(
-                  ShooterWheelConstants.kS, ShooterWheelConstants.kV, ShooterWheelConstants.kA),
+                  ShooterWheelConstants.kSimS,
+                  ShooterWheelConstants.kSimV,
+                  ShooterWheelConstants.kSimA),
               ShooterWheelConstants.kFlywheelRateLimit);
 
       indexerIO = new IndexerSim();
@@ -103,6 +110,8 @@ public class Shooter extends SubsystemBase {
       screwArmIO = new ScrewArmIO() {};
     }
 
+    screwArmIO.setGoal(Rotation2d.fromDegrees(15));
+
     shooterWheelSub.setDefaultCommand(
         shooterVelocityCommand(() -> topVelocityMPS, () -> bottomVelocityMPS));
 
@@ -111,7 +120,7 @@ public class Shooter extends SubsystemBase {
     indexerSub.setDefaultCommand(indexerVoltageCommand(() -> indexerVoltage));
   }
 
-  public Command setShooterSetpoints(
+  public Command setShooterSetpointCommand(
       double topVelocityMPSSetpoint,
       double bottomVelocityMPSSetpoint,
       Rotation2d screwAngleSetpoint,
@@ -141,10 +150,7 @@ public class Shooter extends SubsystemBase {
           shooterWheelTop.setFlywheelsVelocity(topVelocityMPS.getAsDouble());
           shooterWheelBottom.setFlywheelsVelocity(bottomVelocityMPS.getAsDouble());
         },
-        (interrupted) -> {
-          shooterWheelTop.setFlywheelsVolts(0);
-          shooterWheelBottom.setFlywheelsVolts(0);
-        },
+        (interrupted) -> {},
         () -> false,
         shooterWheelSub);
   }
@@ -153,7 +159,7 @@ public class Shooter extends SubsystemBase {
     return new FunctionalCommand(
         () -> screwArmIO.initPID(),
         () -> screwArmIO.executePID(),
-        (interrupted) -> screwArmIO.setScrewArmVolts(0),
+        (interrupted) -> {},
         () -> false,
         screwArmSub);
   }
@@ -162,21 +168,28 @@ public class Shooter extends SubsystemBase {
     return new FunctionalCommand(
         () -> {},
         () -> indexerIO.setIndexerVolts(voltage.getAsDouble()),
-        (interrupted) -> indexerIO.setIndexerVolts(0),
+        (interrupted) -> {},
         () -> false,
         indexerSub);
   }
 
   @Override
   public void periodic() {
-    shooterWheelTop.updateInputs(shooterWheelIOInputsAutoLogged);
-    shooterWheelBottom.updateInputs(shooterWheelIOInputsAutoLogged);
+    shooterWheelTop.updateInputs(shooterWheelIOInputsAutoLoggedTop);
+    shooterWheelBottom.updateInputs(shooterWheelIOInputsAutoLoggedBottom);
     screwArmIO.updateInputs(screwArmInputsAutoLogged);
     indexerIO.updateInputs(indexerIOInputsAutoLogged);
 
-    Logger.processInputs("Shooter/TopWheel", shooterWheelIOInputsAutoLogged);
-    Logger.processInputs("Shooter/BottomWheel", shooterWheelIOInputsAutoLogged);
+    Logger.processInputs("Shooter/TopWheel", shooterWheelIOInputsAutoLoggedTop);
+    Logger.processInputs("Shooter/BottomWheel", shooterWheelIOInputsAutoLoggedBottom);
     Logger.processInputs("Shooter/ScrewArm", screwArmInputsAutoLogged);
     Logger.processInputs("Shooter/Indexer", indexerIOInputsAutoLogged);
+
+    if (DriverStation.isDisabled()) {
+      shooterWheelTop.setFlywheelsVolts(0.0);
+      shooterWheelBottom.setFlywheelsVolts(0.0);
+      indexerIO.setIndexerVolts(0.0);
+      screwArmIO.setScrewArmVolts(0.0);
+    }
   }
 }

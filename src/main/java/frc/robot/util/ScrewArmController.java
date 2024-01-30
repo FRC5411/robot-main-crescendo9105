@@ -30,6 +30,8 @@ public class ScrewArmController {
                 ScrewArmConstants.kSimI,
                 ScrewArmConstants.kSimD,
                 ScrewArmConstants.kSimConstraints);
+
+    this.controller.enableContinuousInput(0, 360);
   }
 
   public ScrewArmController(
@@ -42,18 +44,14 @@ public class ScrewArmController {
   }
 
   public void setGoal(Rotation2d goal) {
-    controller.setGoal(
-        MathUtil.clamp(
-            goal.getDegrees(),
-            ScrewArmConstants.kMinAngle.getDegrees(),
-            ScrewArmConstants.kMaxAngle.getDegrees()));
+    controller.setGoal(goal.getDegrees());
   }
 
   public void reset(TrapezoidProfile.State state) {
     controller.reset(state);
   }
 
-  public void executePIDClamped(Rotation2d goal) {
+  public void executePIDClamped() {
     double PID =
         controller.calculate(measureSupplier.get().getDegrees())
             * ScrewArmKinematics.scaleVoltage(
@@ -67,6 +65,14 @@ public class ScrewArmController {
                     Rotation2d.fromDegrees(controller.getSetpoint().position));
 
     voltageConsumer.accept(MathUtil.clamp(PID + FF, 12, -12));
+  }
+
+  public Rotation2d getGoal() {
+    return Rotation2d.fromDegrees(controller.getGoal().position);
+  }
+
+  public Rotation2d getSetpoint() {
+    return Rotation2d.fromDegrees(controller.getSetpoint().position);
   }
 
   public boolean atGoal() {

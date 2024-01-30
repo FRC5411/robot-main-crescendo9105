@@ -21,9 +21,9 @@ public class ShooterWheelSimIO implements ShooterWheelIO {
   private double velocitySetpointMPS = 0;
   private double velocityRateLimit = 0.5;
 
-  PIDController velocityController;
-  SimpleMotorFeedforward velocityFeedforward;
-  SlewRateLimiter velocityRateLimiter;
+  private PIDController velocityController;
+  private SimpleMotorFeedforward velocityFeedforward;
+  private SlewRateLimiter velocityRateLimiter;
 
   public ShooterWheelSimIO(
       PIDController flywheelPID,
@@ -49,18 +49,20 @@ public class ShooterWheelSimIO implements ShooterWheelIO {
 
   @Override
   public void setFlywheelsVolts(double volts) {
-    appliedVolts = volts;
-    flywheelMotor.setInputVoltage(MathUtil.clamp(volts, -12, 12));
+    appliedVolts = MathUtil.clamp(volts, -12, 12);
+    flywheelMotor.setInputVoltage(appliedVolts);
   }
 
   @Override
   public void setFlywheelsVelocity(double velocityMPS) {
     double velocityMPSLimited = velocityRateLimiter.calculate(velocityMPS);
-    velocitySetpointMPS = velocityMPS;
-    double PID = velocityController.calculate(velocityMeasuredMPS, velocityMPS);
+    velocitySetpointMPS = velocityMPSLimited;
+    double PID = velocityController.calculate(velocityMeasuredMPS, velocitySetpointMPS);
     if (velocityMPSLimited - velocityMPS > 1e-1)
-      PID += velocityFeedforward.calculate(velocityMPS, ShooterWheelConstants.kFlywheelRateLimit);
-    else PID += velocityFeedforward.calculate(velocityMPS);
+      PID +=
+          velocityFeedforward.calculate(
+              velocitySetpointMPS, ShooterWheelConstants.kFlywheelRateLimit);
+    else PID += velocityFeedforward.calculate(velocitySetpointMPS);
 
     setFlywheelsVolts(PID);
   }

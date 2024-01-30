@@ -24,10 +24,10 @@ public class ScrewArmConstants {
 
   public static TrapezoidProfile.Constraints kConstraints = new TrapezoidProfile.Constraints(0, 0);
 
-  public static double kSimP = 0.0;
+  public static double kSimP = 0.02;
   public static double kSimI = 0.0;
   public static double kSimD = 0.0;
 
   public static TrapezoidProfile.Constraints kSimConstraints =
-      new TrapezoidProfile.Constraints(0, 0);
+      new TrapezoidProfile.Constraints(360, 180);
 }

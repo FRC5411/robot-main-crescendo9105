@@ -4,6 +4,7 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
@@ -14,7 +15,6 @@ public class ScrewArmNEO implements ScrewArmIO {
   public RelativeEncoder screwArmRodEncoder;
   public DutyCycleEncoder screwArmPivotEncoder;
 
-  public Rotation2d screwArmSetpointAngle = new Rotation2d();
   public Rotation2d screwArmAngle = new Rotation2d();
 
   public ScrewArmController screwArmController;
@@ -30,7 +30,8 @@ public class ScrewArmNEO implements ScrewArmIO {
   public void updateInputs(ScrewArmInputs inputs) {
     screwArmAngle = Rotation2d.fromRotations(screwArmPivotEncoder.getAbsolutePosition());
     inputs.screwArmDegrees = screwArmAngle;
-    inputs.screwArmDegreesSetpoint = screwArmSetpointAngle;
+    inputs.screwArmDegreesGoal = screwArmController.getGoal();
+    inputs.screwArmDegreesSetpoint = screwArmController.getSetpoint();
     inputs.screwArmAppliedVolts = screwArmMotor.getBusVoltage();
     inputs.screwArmCurrentAmps = screwArmMotor.getOutputCurrent();
     inputs.screwArmMotorTempC = screwArmMotor.getMotorTemperature();
@@ -42,13 +43,12 @@ public class ScrewArmNEO implements ScrewArmIO {
 
   @Override
   public void setScrewArmVolts(double volts) {
-    screwArmMotor.setVoltage(volts);
+    screwArmMotor.setVoltage(MathUtil.clamp(volts, -12, 12));
   }
 
   @Override
   public void setGoal(Rotation2d goal) {
-    screwArmSetpointAngle = goal;
-    screwArmController.setGoal(screwArmSetpointAngle);
+    screwArmController.setGoal(goal);
   }
 
   @Override
@@ -58,12 +58,7 @@ public class ScrewArmNEO implements ScrewArmIO {
 
   @Override
   public void executePID() {
-    screwArmController.executePIDClamped(screwArmSetpointAngle);
-  }
-
-  @Override
-  public boolean atGoal() {
-    return screwArmController.atGoal();
+    screwArmController.executePIDClamped();
   }
 
   public void configScrewArmMotor(int id) {
