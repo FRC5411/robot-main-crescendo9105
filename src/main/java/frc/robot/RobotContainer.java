@@ -8,14 +8,10 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.ClimbCommands;
-import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.SwerveCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
@@ -116,42 +112,42 @@ public class RobotContainer {
             () -> -pilotController.getLeftX(),
             () -> pilotController.getRightX()));
 
-    /* Reset drive heading | Debugging */
-    pilotController
-        .y()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        robotDrive.setPose(
-                            new Pose2d(
-                                robotDrive.getPosition().getTranslation(), new Rotation2d())),
-                    robotDrive)
-                .ignoringDisable(true)); // Reset even when disabled
+    // /* Reset drive heading | Debugging */
+    // pilotController
+    //     .y()
+    //     .onTrue(
+    //         Commands.runOnce(
+    //                 () ->
+    //                     robotDrive.setPose(
+    //                         new Pose2d(
+    //                             robotDrive.getPosition().getTranslation(), new Rotation2d())),
+    //                 robotDrive)
+    //             .ignoringDisable(true)); // Reset even when disabled
 
-    /* Reset drive pose | Debugging */
-    pilotController.a().onTrue(Commands.runOnce(robotDrive::resetPose, robotDrive));
+    // /* Reset drive pose | Debugging */
+    // pilotController.a().onTrue(Commands.runOnce(robotDrive::resetPose, robotDrive));
 
-    /* Run intake (NEO) at half speed */
-    pilotController
-        .b()
-        //        .whileTrue(IntakeCommands.runIntake(robotIntake, 5676.0 / 2.0))
-        .whileTrue(IntakeCommands.runIntake(robotIntake, 1500.0))
-        .whileFalse(IntakeCommands.stopIntake(robotIntake));
+    // /* Run intake (NEO) at half speed */
+    // pilotController
+    //     .b()
+    //     //        .whileTrue(IntakeCommands.runIntake(robotIntake, 5676.0 / 2.0))
+    //     .whileTrue(IntakeCommands.runIntake(robotIntake, 1500.0))
+    //     .whileFalse(IntakeCommands.stopIntake(robotIntake));
 
-    /* Set climb to angle */
-    pilotController
-        .a()
-        .whileTrue(ClimbCommands.setAngle(robotClimb, 1.0, 1.0))
-        .whileFalse(ClimbCommands.setAngle(robotClimb, 0.0, 0.0));
+    // /* Set climb to angle */
+    // pilotController
+    //     .a()
+    //     .whileTrue(ClimbCommands.setAngle(robotClimb, 1.0, 1.0))
+    //     .whileFalse(ClimbCommands.setAngle(robotClimb, 0.0, 0.0));
 
-    /* Print commands for debugging purposes */
-    pilotController
-        .b()
-        .whileTrue(Commands.print("B Button | whileTrue"))
-        .whileFalse(Commands.print("B Button | whileFalse"));
-    pilotController.a().whileTrue(Commands.print("A Button | whileTrue"));
-    pilotController.y().whileTrue(Commands.print("Y Button | whileTrue"));
-    pilotController.x().whileTrue(Commands.print("X Button | whileTrue"));
+    // /* Print commands for debugging purposes */
+    // pilotController
+    //     .b()
+    //     .whileTrue(Commands.print("B Button | whileTrue"))
+    //     .whileFalse(Commands.print("B Button | whileFalse"));
+    // pilotController.a().whileTrue(Commands.print("A Button | whileTrue"));
+    // pilotController.y().whileTrue(Commands.print("Y Button | whileTrue"));
+    // pilotController.x().whileTrue(Commands.print("X Button | whileTrue"));
   }
 
   /** Returns the selected autonomous */

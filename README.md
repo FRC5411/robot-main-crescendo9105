@@ -1,3 +1,4 @@
+![Banner](docs/assets/logo-4.png)
 # Quasar
 [![Build Status](https://github.com/FRC5411/robot-main-crescendo9105/actions/workflows/build.yml/badge.svg?branch=temporary-drive)](https://github.com/FRC5411/robot-main-crescendo9105/actions/workflows/build.yml)
 [![GitHub Contributors](https://img.shields.io/github/contributors/FRC5411/robot-main-crescendo9105.svg?branch=temporary-drive)](https://github.com/FRC5411/robot-main-crescendo9105/graphs/contributors)
@@ -28,4 +29,4 @@ Below is a list of instructions to properly build the project, see [requirements
 
 The team is committed to providing extensive documentation for the project. Below is navigation to various pages regarding this project
 
-- [Project structure & organization](www.google.com)
+- [Project structure & organization](https://github.com/FRC5411/robot-main-crescendo9105/blob/temporary-drive/docs/STRUCTURE.md)
