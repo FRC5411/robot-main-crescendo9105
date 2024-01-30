@@ -1,4 +1,6 @@
 # Quasar
+[![Build](https://github.com/FRC5411/robot-main-crescendo9105/actions/workflows/build.yml/badge.svg?branch=temporary-drive)](https://github.com/FRC5411/robot-main-crescendo9105/actions/workflows/build.yml)
+
 Robot code for 9105 TechnoTalons 2024 robot
 
 This project is designed around the usage of [AdvantageKit](https://github.com/Mechanical-Advantage/AdvantageKit?tab=readme-ov-file). AdvantageKit requires all "inputs" (sensor readings, joystick movements, ete.) to be recorded to a log file. To do this efficiently, inputs are separated into different "IO" implementations. Below is the src file structure of the project:
