@@ -11,26 +11,26 @@ import frc.lib.Limelight;
 import frc.robot.subsystems.vision.VisionConstants.LL;
 
 public class Vision extends SubsystemBase {
-  private Limelight backLimelight;
+  private Limelight centerLimeLight;
   private Limelight leftLimelight;
   private Limelight rightLimelight;
   private Limelight[] limelights;
 
   public Vision() {
-    backLimelight = new Limelight(LL.centerLLNT, new Pose3d(), 0.2);
+    centerLimeLight = new Limelight(LL.centerLLNT, new Pose3d(), 0.2);
     leftLimelight = new Limelight(LL.leftLLNT, LL.leftLLOffsetMeters, 0.4);
     rightLimelight = new Limelight(LL.rightLLNT, LL.rightLLOffsetMeters, 0.4);
 
-    backLimelight.setPipelineIndex(LL.apriltagPipelineIndex);
+    centerLimeLight.setPipelineIndex(LL.apriltagPipelineIndex);
 
     leftLimelight.setPipelineIndex(LL.apriltagPipelineIndex);
     rightLimelight.setPipelineIndex(LL.apriltagPipelineIndex);
 
-    limelights = new Limelight[] {leftLimelight, rightLimelight, backLimelight};
+    limelights = new Limelight[] {leftLimelight, rightLimelight, centerLimeLight};
   }
 
-  public Limelight getbackLimelight() {
-    return backLimelight;
+  public Limelight getcenterLimeLight() {
+    return centerLimeLight;
   }
 
   public Limelight getLeftLimelight() {
@@ -42,7 +42,7 @@ public class Vision extends SubsystemBase {
   }
 
   public double getNorm() {
-    return getbackLimelight().getTarget().getTranslation().getNorm();
+    return getcenterLimeLight().getTarget().getTranslation().getNorm();
   }
 
   public void setPipelineIndices(int index) {
@@ -50,13 +50,13 @@ public class Vision extends SubsystemBase {
   }
 
   public void addVisionMeasurement(SwerveDrivePoseEstimator poseEstimator) {
-    if (backLimelight.hasTargetDebounced()
-        && backLimelight.getPipeLineIndex() == LL.apriltagPipelineIndex) {
+    if (centerLimeLight.hasTargetDebounced()
+        && centerLimeLight.getPipeLineIndex() == LL.apriltagPipelineIndex) {
       System.out.println("BACK Limelight TIME: " + Timer.getFPGATimestamp());
       poseEstimator.addVisionMeasurement(
-          backLimelight.getPose(),
-          Timer.getFPGATimestamp() - backLimelight.getLatency(),
-          createVisionVector(backLimelight));
+          centerLimeLight.getPose(),
+          Timer.getFPGATimestamp() - centerLimeLight.getLatency(),
+          createVisionVector(centerLimeLight));
     }
 
     if (leftLimelight.hasTargetDebounced()
@@ -81,22 +81,19 @@ public class Vision extends SubsystemBase {
   public Vector<N3> createVisionVector(Limelight cam) {
     final double kStdDev = 3.8;
     final int kStdDevLast = 10000000;
-    return VecBuilder.fill(
-      kStdDev * getNorm(),
-      kStdDev * getNorm(),
-      kStdDevLast);
+    return VecBuilder.fill(kStdDev * getNorm(), kStdDev * getNorm(), kStdDevLast);
   }
 
   @Override
   public void periodic() {
-    backLimelight.periodic();
+    centerLimeLight.periodic();
     leftLimelight.periodic();
     rightLimelight.periodic();
 
     // TODO: Add these to AK
-    backLimelight.getPose().minus(leftLimelight.getPose()).getTranslation().getX();
-    backLimelight.getPose().minus(rightLimelight.getPose()).getTranslation().getX();
-    backLimelight.getPose().minus(leftLimelight.getPose()).getTranslation().getY();
-    backLimelight.getPose().minus(rightLimelight.getPose()).getTranslation().getY();
+    centerLimeLight.getPose().minus(leftLimelight.getPose()).getTranslation().getX();
+    centerLimeLight.getPose().minus(rightLimelight.getPose()).getTranslation().getX();
+    centerLimeLight.getPose().minus(leftLimelight.getPose()).getTranslation().getY();
+    centerLimeLight.getPose().minus(rightLimelight.getPose()).getTranslation().getY();
   }
 }
