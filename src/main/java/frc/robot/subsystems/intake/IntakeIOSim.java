@@ -42,6 +42,5 @@ public class IntakeIOSim implements IntakeIO {
 
     intakeMotor.setInputVoltage(adjustedVolts);
     intakeMotor.setInput(adjustedVolts / 12.0);
-    // System.out.println("\nIntake/IntakeIOSim setVolts - adjustedVolts: " + adjustedVolts);
   }
 }
