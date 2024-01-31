@@ -1,5 +1,5 @@
 # Project Structure
-This project is organized as a [WPILib](https://docs.wpilib.org/en/stable/index.html) [Command-based](https://docs.wpilib.org/en/stable/docs/software/commandbased/what-is-command-based.html) project. This program makes use of [AdvantageKit](https://github.com/Mechanical-Advantage/AdvantageKit?tab=readme-ov-file) to log and replay data.
+This code is organized as a [WPILib](https://docs.wpilib.org/en/stable/index.html) [Command-based](https://docs.wpilib.org/en/stable/docs/software/commandbased/what-is-command-based.html) project. This program makes use of [AdvantageKit](https://github.com/Mechanical-Advantage/AdvantageKit?tab=readme-ov-file) to log and replay data.
 
 ## Telemetry & data
 This year, our team wanted to use AdvantageKit for it's ability to [log](https://github.com/Mechanical-Advantage/AdvantageKit/blob/main/docs/RECORDING-INPUTS.md) and replay match data. It's ease of use made it an obvious solution for the dilema of inaccurate or inconsistent logged data. AdvantageKit is able to **accurately** log and replay data because all *inputs* (sensor data, joystick movements, ete.) are recorded using deterministic timestamps. Then, those inputs can be replayed and compared against code to generate the same set of *outputs* (motor voltages, triggering commands, ete.).
