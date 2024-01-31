@@ -9,20 +9,20 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import frc.robot.util.ScrewArmController;
 import frc.robot.util.ScrewArmKinematics;
+import org.littletonrobotics.junction.Logger;
 
 public class ScrewArmSim implements ScrewArmIO {
   private SingleJointedArmSim armSim =
       new SingleJointedArmSim(
           DCMotor.getNEO(1),
           1.0,
-          1,
+          0.005,
           ScrewArmConstants.kPivotLength,
           Math.toRadians(15),
-          Math.toRadians(70),
+          Math.toRadians(75),
           false,
           Math.toRadians(15),
           VecBuilder.fill(0.0));
@@ -51,10 +51,12 @@ public class ScrewArmSim implements ScrewArmIO {
 
   // Inverted for sake of PID to go the right direction
   private final ScrewArmController screwArmController =
-      new ScrewArmController(() -> screwArmAngle, (s) -> setScrewArmVolts(-s));
+      new ScrewArmController(() -> screwArmAngle, (s) -> setScrewArmVolts(s));
 
   @Override
   public void updateInputs(ScrewArmInputs inputs) {
+    armSim.update(0.02);
+
     screwArmAngle = Rotation2d.fromRadians(armSim.getAngleRads());
     inputs.screwArmDegrees = screwArmAngle;
     inputs.screwArmDegreesGoal = screwArmController.getGoal();
@@ -69,15 +71,15 @@ public class ScrewArmSim implements ScrewArmIO {
 
     armPivot.setAngle(screwArmAngle);
     armDriver.setAngle(0); // ScrewArmKinematics.getDrivenAngle(screwArmAngle).div(-1));
-    SmartDashboard.putData("ScrewArm", mechanismField);
-
-    armSim.update(0.02);
+    Logger.recordOutput("ScrewArm", mechanismField);
+    // SmartDashboard.putData("ScrewArm", mechanismField);
   }
 
   @Override
   public void setScrewArmVolts(double volts) {
-    appliedVolts = MathUtil.clamp(volts, -12, 12);
-    // appliedVolts *= ScrewArmKinematics.getPerpendicularAngleDifference(screwArmAngle).getCos();
+    appliedVolts =
+        MathUtil.clamp(volts, -ScrewArmConstants.kMaxVoltage, ScrewArmConstants.kMaxVoltage);
+    appliedVolts *= ScrewArmKinematics.getPerpendicularAngleDifference(screwArmAngle).getCos();
     armSim.setInputVoltage(appliedVolts);
   }
 

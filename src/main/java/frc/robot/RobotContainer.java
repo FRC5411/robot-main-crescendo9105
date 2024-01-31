@@ -97,9 +97,9 @@ public class RobotContainer {
                                 robotDrive.getPosition().getTranslation(), new Rotation2d())),
                     robotDrive)
                 .ignoringDisable(true)); // Reset even when disabled
-    pilotController
-        .b()
-        .onTrue(robotShooter.setShooterSetpointCommand(20, 18, Rotation2d.fromDegrees(45), 6));
+    // pilotController
+    //     .b()
+    //     .onTrue(robotShooter.setShooterSetpointCommand(20, 18, Rotation2d.fromDegrees(45), 6));
     // pilotController
     //     .square()
     //     .onTrue(new PrintCommand("Running pathFind

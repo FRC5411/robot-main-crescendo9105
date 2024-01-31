@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmConstants;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 public class ScrewArmController {
   public final Supplier<Rotation2d> measureSupplier;
@@ -56,6 +57,7 @@ public class ScrewArmController {
         controller.calculate(measureSupplier.get().getDegrees())
             * ScrewArmKinematics.scaleVoltage(
                 Rotation2d.fromDegrees(controller.getSetpoint().position));
+    Logger.recordOutput("PID OUTPUT", PID);
 
     double FF =
         Math.signum(controller.getSetpoint().velocity) * ScrewArmConstants.kS
@@ -63,6 +65,7 @@ public class ScrewArmController {
             + ScrewArmConstants.kG
                 * ScrewArmKinematics.getGravityUnitVector(
                     Rotation2d.fromDegrees(controller.getSetpoint().position));
+    Logger.recordOutput("FF OUTPUT", FF);
 
     voltageConsumer.accept(MathUtil.clamp(PID + FF, 12, -12));
   }

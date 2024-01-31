@@ -115,7 +115,7 @@ public class Shooter extends SubsystemBase {
     shooterWheelSub.setDefaultCommand(
         shooterVelocityCommand(() -> topVelocityMPS, () -> bottomVelocityMPS));
 
-    screwArmSub.setDefaultCommand(anglerPositionCommand());
+    // screwArmSub.setDefaultCommand(anglerPositionCommand());
 
     indexerSub.setDefaultCommand(indexerVoltageCommand(() -> indexerVoltage));
   }
@@ -191,5 +191,7 @@ public class Shooter extends SubsystemBase {
       indexerIO.setIndexerVolts(0.0);
       screwArmIO.setScrewArmVolts(0.0);
     }
+
+    screwArmIO.setScrewArmVolts(0.1);
   }
 }

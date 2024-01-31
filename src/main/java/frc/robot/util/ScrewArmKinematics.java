@@ -21,10 +21,12 @@ public class ScrewArmKinematics {
   }
 
   public static Rotation2d getPerpendicularAngleDifference(Rotation2d pivotAngle) {
-    Rotation2d exteriorToJunctionAngle = getDrivenAngle(pivotAngle).plus(pivotAngle);
-    Rotation2d perpendicularAngle = Rotation2d.fromRadians(Math.PI / 2).minus(pivotAngle);
+    Rotation2d exteriorToJunctionAngle =
+        Rotation2d.fromRadians(Math.PI).minus(getJunctionAngle(pivotAngle));
+    Rotation2d perpendicularAngle =
+        Rotation2d.fromRadians(Math.PI / 2).minus(exteriorToJunctionAngle);
 
-    return exteriorToJunctionAngle.minus(perpendicularAngle);
+    return perpendicularAngle;
   }
 
   public static double scaleVoltage(Rotation2d pivotAngle) {
