@@ -11,11 +11,17 @@ public interface LauncherIO {
   /** Launcher sensor data */
   @AutoLog
   public static class LauncherIOInputs {
-    public double angleRadians = 0.0;
-    public double velocityRPS = 0.0;
-    public double appliedVolts = 0.0;
-    public double[] appliedCurrentAmps = new double[] {0.0};
-    public double[] temperatureCelsius = new double[] {0.0};
+    public double leftAngleRadians = 0.0;
+    public double leftVelocityRPS = 0.0;
+    public double leftAppliedVolts = 0.0;
+    public double[] leftAppliedCurrentAmps = new double[] {0.0};
+    public double[] leftTemperatureCelsius = new double[] {0.0};
+
+    public double rightAngleRadians = 0.0;
+    public double rightVelocityRPS = 0.0;
+    public double rightAppliedVolts = 0.0;
+    public double[] rightAppliedCurrentAmps = new double[] {0.0};
+    public double[] rightTemperatureCelsius = new double[] {0.0};
   }
 
   /** Update the inputs from the sensors */
