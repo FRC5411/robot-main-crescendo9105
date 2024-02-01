@@ -18,7 +18,7 @@ public class ScrewArmSim implements ScrewArmIO {
   private SingleJointedArmSim armSim =
       new SingleJointedArmSim(
           DCMotor.getNEO(1),
-          1.0,
+          5.0,
           0.005,
           ScrewArmConstants.kPivotLength,
           Math.toRadians(15),
@@ -30,7 +30,7 @@ public class ScrewArmSim implements ScrewArmIO {
   private Rotation2d screwArmAngle = new Rotation2d();
   private double appliedVolts = 0;
 
-  private Mechanism2d mechanismField = new Mechanism2d(80, 80);
+  private Mechanism2d mechanismField = new Mechanism2d(10, 10);
   private MechanismRoot2d armRoot = mechanismField.getRoot("ArmPivot", 0, 0);
   private final MechanismLigament2d armPivot =
       armRoot.append(

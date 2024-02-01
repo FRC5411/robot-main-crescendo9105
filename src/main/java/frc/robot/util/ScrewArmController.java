@@ -67,7 +67,8 @@ public class ScrewArmController {
                     Rotation2d.fromDegrees(controller.getSetpoint().position));
     Logger.recordOutput("FF OUTPUT", FF);
 
-    voltageConsumer.accept(MathUtil.clamp(PID + FF, 12, -12));
+    voltageConsumer.accept(
+        MathUtil.clamp(PID, -ScrewArmConstants.kMaxVoltage, ScrewArmConstants.kMaxVoltage));
   }
 
   public Rotation2d getGoal() {

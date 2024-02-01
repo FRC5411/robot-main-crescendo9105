@@ -115,7 +115,7 @@ public class Shooter extends SubsystemBase {
     shooterWheelSub.setDefaultCommand(
         shooterVelocityCommand(() -> topVelocityMPS, () -> bottomVelocityMPS));
 
-    // screwArmSub.setDefaultCommand(anglerPositionCommand());
+    screwArmSub.setDefaultCommand(anglerPositionCommand());
 
     indexerSub.setDefaultCommand(indexerVoltageCommand(() -> indexerVoltage));
   }
@@ -123,8 +123,7 @@ public class Shooter extends SubsystemBase {
   public Command setShooterSetpointCommand(
       double topVelocityMPSSetpoint,
       double bottomVelocityMPSSetpoint,
-      Rotation2d screwAngleSetpoint,
-      double indexerVoltageSetpoint) {
+      Rotation2d screwAngleSetpoint) {
     return new InstantCommand(
         () -> {
           topVelocityMPS = topVelocityMPSSetpoint;
@@ -132,14 +131,12 @@ public class Shooter extends SubsystemBase {
 
           screwArmIO.setGoal(screwAngleSetpoint);
           screwArmIO.initPID();
-
-          indexerVoltage = indexerVoltageSetpoint;
         },
         this);
   }
 
   public Command setIndexerVoltage(double volts) {
-    return new InstantCommand(() -> indexerVoltage = 12, this);
+    return new InstantCommand(() -> indexerVoltage = volts, this);
   }
 
   public Command shooterVelocityCommand(
@@ -185,13 +182,13 @@ public class Shooter extends SubsystemBase {
     Logger.processInputs("Shooter/ScrewArm", screwArmInputsAutoLogged);
     Logger.processInputs("Shooter/Indexer", indexerIOInputsAutoLogged);
 
+    // screwArmIO.setScrewArmVolts(0.1);
+
     if (DriverStation.isDisabled()) {
       shooterWheelTop.setFlywheelsVolts(0.0);
       shooterWheelBottom.setFlywheelsVolts(0.0);
       indexerIO.setIndexerVolts(0.0);
       screwArmIO.setScrewArmVolts(0.0);
     }
-
-    screwArmIO.setScrewArmVolts(0.1);
   }
 }

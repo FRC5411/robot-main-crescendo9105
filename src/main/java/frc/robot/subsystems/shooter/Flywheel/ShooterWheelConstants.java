@@ -18,11 +18,11 @@ public class ShooterWheelConstants {
   public static double kA = 0.0;
   public static double kFlywheelRateLimit = 2.5;
 
-  public static double kSimP = 0.2;
+  public static double kSimP = 0.0;
   public static double kSimI = 0.0;
   public static double kSimD = 0.0;
 
   public static double kSimS = 0.0;
-  public static double kSimV = 2.0;
+  public static double kSimV = 0.391;
   public static double kSimA = 0.0;
 }

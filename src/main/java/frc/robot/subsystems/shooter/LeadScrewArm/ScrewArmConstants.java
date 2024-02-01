@@ -8,7 +8,7 @@ public class ScrewArmConstants {
   public static int kEncoderID = 3;
 
   public static double kPivotLength = 0.5;
-  public static double kDriverLength = 5 / 6;
+  public static double kDriverLength = 5.0 / 6;
 
   public static double kS = 0.0;
   public static double kG = 0.0;
@@ -24,7 +24,7 @@ public class ScrewArmConstants {
 
   public static TrapezoidProfile.Constraints kConstraints = new TrapezoidProfile.Constraints(0, 0);
 
-  public static double kSimP = 0.002;
+  public static double kSimP = 0.035;
   public static double kSimI = 0.0;
   public static double kSimD = 0.0;
 
