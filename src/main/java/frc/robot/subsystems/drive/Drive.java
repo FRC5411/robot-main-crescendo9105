@@ -40,7 +40,7 @@ public class Drive extends SubsystemBase {
 
   private final SwerveDriveKinematics KINEMATICS = getKinematics();
 
-  // Odometry threats whine when I remove this so I keep for now
+  // Odometry threads whine when I remove this so I keep for now
   public static final Lock odometryLock = new ReentrantLock();
 
   private GyroIO gyroIO;
