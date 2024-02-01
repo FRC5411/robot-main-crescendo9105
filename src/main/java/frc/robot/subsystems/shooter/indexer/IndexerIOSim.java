@@ -6,25 +6,15 @@ package frc.robot.subsystems.shooter.indexer;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
-import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 /** Class to represent the indexer in simulation */
 public class IndexerIOSim implements IndexerIO {
   private double LOOP_PERIOD_S = 0.02;
 
-  private SingleJointedArmSim indexerMotor =
-      new SingleJointedArmSim(
-          DCMotor.getNeo550(1),
-          1.0,
-          0.0,
-          3.0,
-          Units.degreesToRadians(0.0),
-          Units.degreesToRadians(360.0),
-          false,
-          Units.degreesToRadians(0.0));
+  private FlywheelSim indexerMotor = new FlywheelSim(DCMotor.getNeo550(1), 1.0, 1.0);
 
   private double appliedVolts = 0.0;
 
@@ -38,8 +28,8 @@ public class IndexerIOSim implements IndexerIO {
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(indexerMotor.getCurrentDrawAmps()));
 
-    inputs.angleRadians = indexerMotor.getAngleRads();
-    inputs.velocityRPS = indexerMotor.getVelocityRadPerSec();
+    inputs.angleRadians = 0.0;
+    inputs.velocityRPS = indexerMotor.getAngularVelocityRadPerSec();
     inputs.appliedVolts = appliedVolts;
     inputs.appliedCurrentAmps = new double[] {indexerMotor.getCurrentDrawAmps()};
     inputs.temperatureCelsius = new double[] {0.0};
