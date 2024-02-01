@@ -152,11 +152,6 @@ public class Module {
     }
   }
 
-  // TODO Remove after testing
-  public void setVolts(double volts) {
-    moduleIO.setDriveVolts(volts);
-  }
-
   /** Sets the module's state */
   public SwerveModuleState setDesiredState(SwerveModuleState desiredState) {
     // TODO Update for get angle
