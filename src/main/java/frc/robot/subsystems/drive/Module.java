@@ -28,9 +28,6 @@ public class Module {
   private Rotation2d angleSetpoint = new Rotation2d();
 
   private Rotation2d azimuthRelativeOffset = null;
-  private double lastPositionM = 0.0;
-  private SwerveModulePosition[] positionDeltas =
-      new SwerveModulePosition[] {}; // Change since last cycle
 
   private PIDController driveController;
   private PIDController azimuthController;
@@ -116,26 +113,10 @@ public class Module {
       }
     }
 
-    // Calculate deltas (change) from odometry
-    int deltaCount = // deltaCount based on how many frames were captured
-        Math.min(
-            moduleIOInputs.odometryDrivePositionM.length,
-            moduleIOInputs.odometryAzimuthPositions.length);
-    positionDeltas =
-        new SwerveModulePosition
-            [deltaCount]; // Array resets every loop to account for varying frames
-    for (int i = 0; i < deltaCount; i++) {
-      double positionM = moduleIOInputs.odometryDrivePositionM[i] * WHEEL_RADIUS_M;
-      Rotation2d angle =
-          moduleIOInputs.odometryAzimuthPositions[i].plus(
-              azimuthRelativeOffset != null ? azimuthRelativeOffset : new Rotation2d());
+    updateTunableNumbers();
+  }
 
-      positionDeltas[i] =
-          new SwerveModulePosition(
-              positionM - lastPositionM, angle); // Update position from odometry
-      lastPositionM = positionM;
-    }
-
+  private void updateTunableNumbers() {
     if (driveControllerP.hasChanged(hashCode())
         || driveControllerI.hasChanged(hashCode())
         || driveControllerD.hasChanged(hashCode())) {
@@ -210,10 +191,5 @@ public class Module {
   /** Get the module's state */
   public SwerveModuleState getModuleState() {
     return new SwerveModuleState(getVelocityMPS(), getAngle());
-  }
-
-  /** Get the module position deltas from this cycle */
-  public SwerveModulePosition[] getModuleDeltas() {
-    return positionDeltas;
   }
 }

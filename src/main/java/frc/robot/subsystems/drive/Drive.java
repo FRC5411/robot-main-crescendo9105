@@ -14,7 +14,6 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -41,6 +40,7 @@ public class Drive extends SubsystemBase {
 
   private final SwerveDriveKinematics KINEMATICS = getKinematics();
 
+  // Odometry threats whine when I remove this so I keep for now
   public static final Lock odometryLock = new ReentrantLock();
 
   private GyroIO gyroIO;
@@ -49,10 +49,9 @@ public class Drive extends SubsystemBase {
   private Module[] modules = new Module[4]; // FL FR BL BR
 
   private Pose2d currentPose = new Pose2d();
-  private Rotation2d lastGyroRotation = new Rotation2d();
 
   private SwerveDrivePoseEstimator poseEstimator =
-      new SwerveDrivePoseEstimator(KINEMATICS, lastGyroRotation, getModulePositions(), currentPose);
+      new SwerveDrivePoseEstimator(KINEMATICS, getRotation(), getModulePositions(), currentPose);
 
   /** Creates a new swerve Drive. */
   public Drive(
@@ -120,36 +119,7 @@ public class Drive extends SubsystemBase {
       }
     }
 
-    // Calculate current pose from deltas
-    int deltaCount =
-        gyroIOInputs.connected ? gyroIOInputs.odometryYawPositions.length : Integer.MAX_VALUE;
-    for (int i = 0; i < 4; i++) {
-      deltaCount = Math.min(deltaCount, modules[i].getModuleDeltas().length);
-    }
-    // Iterate through all of the deltas for this cycle
-    for (int deltaIndex = 0; deltaIndex < deltaCount; deltaIndex++) {
-      // Get wheel deltas
-      SwerveModulePosition[] wheelDeltas = new SwerveModulePosition[4];
-      for (int moduleIndex = 0; moduleIndex < 4; moduleIndex++) {
-        wheelDeltas[moduleIndex] = modules[moduleIndex].getModuleDeltas()[deltaIndex];
-      }
-
-      // Twist is the motion of the robot (x, y, theta) since the last cycle
-      var twist = KINEMATICS.toTwist2d(wheelDeltas);
-      if (gyroIOInputs.connected) {
-        // If gyro is connected, replace the estimated theta with gyro yaw
-        Rotation2d gyroRotation = gyroIOInputs.odometryYawPositions[deltaIndex];
-        twist = new Twist2d(twist.dx, twist.dy, gyroRotation.minus(lastGyroRotation).getRadians());
-        lastGyroRotation = gyroRotation;
-      }
-      // Apply the change since last sample to current pose
-      currentPose = currentPose.exp(twist);
-    }
-
-    // TODO Fuse vision with 250hz odometry
-
-    poseEstimator.update(lastGyroRotation, getModulePositions());
-    Logger.recordOutput("Drive/Odometry/EstimatedPosition", poseEstimator.getEstimatedPosition());
+    poseEstimator.update(getRotation(), getModulePositions());
 
     currentPose = poseEstimator.getEstimatedPosition();
   }
@@ -181,7 +151,6 @@ public class Drive extends SubsystemBase {
   }
 
   public void resetPose() {
-    currentPose = new Pose2d();
     poseEstimator.resetPosition(gyroIOInputs.yawPosition, getModulePositions(), new Pose2d());
   }
 
@@ -244,7 +213,7 @@ public class Drive extends SubsystemBase {
   /** Gets the rotation of the robot */
   @AutoLogOutput(key = "Drive/Odometry/Rotation")
   public Rotation2d getRotation() {
-    return currentPose.getRotation();
+    return gyroIOInputs.yawPosition;
   }
 
   public double getMaxLinearSpeedMPS() {

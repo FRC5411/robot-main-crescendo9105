@@ -21,9 +21,6 @@ public interface ModuleIO {
     public double azimuthVelocityRPS = 0.0;
     public double azimuthAppliedVolts = 0.0;
     public double[] azimuthCurrentAmps = new double[] {};
-
-    public double[] odometryDrivePositionM = new double[] {};
-    public Rotation2d[] odometryAzimuthPositions = new Rotation2d[] {};
   }
 
   /** Update the hardware inputs for a module */

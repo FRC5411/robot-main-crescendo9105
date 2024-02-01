@@ -11,7 +11,6 @@ import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import java.util.Queue;
 
 /** A Pigeon2 */
 public class GyroIOPigeon2 implements GyroIO {
@@ -19,8 +18,6 @@ public class GyroIOPigeon2 implements GyroIO {
 
   private StatusSignal<Double> yaw = gyro.getYaw();
   private StatusSignal<Double> yawVelocity = gyro.getAngularVelocityZWorld();
-
-  private Queue<Double> yawPositionQueue;
 
   public GyroIOPigeon2(boolean phoenixDrive) {
     gyro.getConfigurator().apply(new Pigeon2Configuration());
@@ -30,15 +27,6 @@ public class GyroIOPigeon2 implements GyroIO {
     yawVelocity.setUpdateFrequency(100.0);
 
     gyro.optimizeBusUtilization();
-
-    // Add yaw odometry to different queues based on drivebase type
-    if (phoenixDrive) {
-      yawPositionQueue = PhoenixOdometryThread.getInstance().registerSignal(gyro, gyro.getYaw());
-    } else {
-      yawPositionQueue =
-          SparkMaxOdometryThread.getInstance()
-              .registerSignal(() -> gyro.getYaw().getValueAsDouble());
-    }
   }
 
   @Override
@@ -47,14 +35,5 @@ public class GyroIOPigeon2 implements GyroIO {
     inputs.connected = BaseStatusSignal.refreshAll(yaw, yawVelocity).equals(StatusCode.OK);
     inputs.yawPosition = Rotation2d.fromDegrees(yaw.getValueAsDouble());
     inputs.yawVelocityRPS = Units.degreesToRadians(yawVelocity.getValueAsDouble());
-
-    // Read odometry and add it to a queue, then add readings to an array to be processed by the
-    // logger
-    inputs.odometryYawPositions =
-        yawPositionQueue.stream()
-            .map((Double value) -> Rotation2d.fromDegrees(value)) // Map data from queue to ->
-            .toArray(Rotation2d[]::new); // this array
-    // Clear the queue for the next cycle
-    yawPositionQueue.clear();
   }
 }

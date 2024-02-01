@@ -39,9 +39,6 @@ public class ModuleIOSim implements ModuleIO {
     inputs.azimuthVelocityRPS = azimuthMotor.getAngularVelocityRadPerSec();
     inputs.azimuthAppliedVolts = azimuthAppliedVolts;
     inputs.azimuthCurrentAmps = new double[] {Math.abs(azimuthMotor.getCurrentDrawAmps())};
-
-    inputs.odometryDrivePositionM = new double[] {inputs.drivePositionM};
-    inputs.odometryAzimuthPositions = new Rotation2d[] {inputs.azimuthPosition};
   }
 
   @Override
