@@ -13,9 +13,18 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
 /** Class to represent the angler in simulation */
 public class AnglerIOSim implements AnglerIO {
-  private double LOOP_PERIOD_S = 0.0;
+  private double LOOP_PERIOD_S = 0.02;
 
-  private SingleJointedArmSim anglerMotor = new SingleJointedArmSim(DCMotor.getNEO(1), 1.0, -0.057, 3.0, Units.degreesToRadians(15.0), Units.degreesToRadians(75.0), false, Units.degreesToRadians(15));
+  private SingleJointedArmSim anglerMotor =
+      new SingleJointedArmSim(
+          DCMotor.getNEO(1),
+          1.0,
+          -0.057,
+          3.0,
+          Units.degreesToRadians(15.0),
+          Units.degreesToRadians(75.0),
+          false,
+          Units.degreesToRadians(15));
 
   private double appliedVolts = 0.0;
 

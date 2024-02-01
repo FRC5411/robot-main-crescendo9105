@@ -8,7 +8,6 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-
 import edu.wpi.first.math.MathUtil;
 
 /** Class to interact with the physical indexer */
@@ -19,7 +18,7 @@ public class IndexerIOSparkMax implements IndexerIO {
 
   private double appliedVolts = 0.0;
 
-  /** Create a new hardware implementation of the angler */
+  /** Create a new hardware implementation of the indexer */
   public IndexerIOSparkMax() {
     indexerMotor.clearFaults();
     indexerMotor.restoreFactoryDefaults();
