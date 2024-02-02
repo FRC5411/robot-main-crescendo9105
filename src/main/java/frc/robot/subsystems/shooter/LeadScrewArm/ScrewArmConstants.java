@@ -14,6 +14,7 @@ public class ScrewArmConstants {
   public static double kG = 0.0;
 
   public static double kMaxVoltage = 12.0;
+  public static double kMinVoltage = -12.0;
 
   public static Rotation2d kMinAngle = Rotation2d.fromDegrees(15);
   public static Rotation2d kMaxAngle = Rotation2d.fromDegrees(70);

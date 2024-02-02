@@ -1,24 +1,34 @@
 package frc.robot.util;
 
+import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmConstants;
+
 public class TrajectoryAngleSolver {
   public static double xGoalMeters = 0.23;
   public static double yGoalMeters = 2.045;
-  public static double heightFromShootMeters = 0.25;
+  public static double heightFromShootMeters = 0.0;
+  public static double mdistanceFromWallMeters = 0.0;
+
+  public static double thetaDegrees = 0;
+
   public static double c = 0;
   public static double v = 0;
 
   public static double newtonRaphsonSolver(double distanceFromWallMeters, double initVelocityMPS) {
-    double thetaDegrees = 15;
+    mdistanceFromWallMeters = distanceFromWallMeters;
+    thetaDegrees = 15;
     int i = 0;
-    while (Math.abs(trajectoryByAngle(distanceFromWallMeters, initVelocityMPS, thetaDegrees)) > 1e-2
-        && i < 10) {
+    while (Math.abs(trajectoryByAngle(mdistanceFromWallMeters, initVelocityMPS, thetaDegrees)) > 1e-2 && i < 10) {
       thetaDegrees =
           createTangentLineXIntercept(
               thetaDegrees,
               trajectoryByAngle(
-                  distanceFromWallMeters, initVelocityMPS, Math.toRadians(thetaDegrees)),
+                  mdistanceFromWallMeters + ScrewArmConstants.kPivotLength 
+                    * Math.cos( Math.toDegrees( thetaDegrees ) ), 
+                  initVelocityMPS, Math.toRadians( thetaDegrees ) ),
               derivativeOfTrajectoryByAngle(
-                  distanceFromWallMeters, initVelocityMPS, Math.toRadians(thetaDegrees)));
+                  mdistanceFromWallMeters + ScrewArmConstants.kPivotLength 
+                    * Math.cos( Math.toDegrees( thetaDegrees ) ), 
+                  initVelocityMPS, Math.toRadians( thetaDegrees) ) );
       i++;
     }
     return thetaDegrees;
@@ -27,6 +37,7 @@ public class TrajectoryAngleSolver {
   public static double trajectoryByAngle(
       double distanceFromWallMeters, double initVelocityMPS, double thetaRadians) {
     setCAndV(distanceFromWallMeters, initVelocityMPS);
+    heightFromShootMeters = ScrewArmConstants.kPivotLength * Math.sin( Math.toDegrees( thetaDegrees ) );
 
     return heightFromShootMeters
         - yGoalMeters

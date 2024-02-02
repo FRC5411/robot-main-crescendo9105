@@ -6,9 +6,9 @@ import org.littletonrobotics.junction.AutoLog;
 public interface ScrewArmIO {
   @AutoLog
   public static class ScrewArmInputs {
-    public Rotation2d screwArmDegrees = new Rotation2d();
-    public Rotation2d screwArmDegreesSetpoint = new Rotation2d();
-    public Rotation2d screwArmDegreesGoal = new Rotation2d();
+    public Rotation2d screwArmAngle = new Rotation2d();
+    public Rotation2d screwArmAngleSetpoint = new Rotation2d();
+    public Rotation2d screwArmAngleGoal = new Rotation2d();
     public double screwArmPositionMeters = 0.0;
     public double screwArmVelocityMeters = 0.0;
     public double screwArmAppliedVolts = 0.0;

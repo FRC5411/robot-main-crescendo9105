@@ -25,4 +25,7 @@ public class ShooterWheelConstants {
   public static double kSimS = 0.0;
   public static double kSimV = 0.391;
   public static double kSimA = 0.0;
+
+  public static double kPassiveMPS = 15.0;
+  public static double kShootMPS = 30.0;
 }

@@ -58,9 +58,9 @@ public class ScrewArmSim implements ScrewArmIO {
     armSim.update(0.02);
 
     screwArmAngle = Rotation2d.fromRadians(armSim.getAngleRads());
-    inputs.screwArmDegrees = screwArmAngle;
-    inputs.screwArmDegreesGoal = screwArmController.getGoal();
-    inputs.screwArmDegreesSetpoint = screwArmController.getSetpoint();
+    inputs.screwArmAngle = screwArmAngle;
+    inputs.screwArmAngleGoal = screwArmController.getGoal();
+    inputs.screwArmAngleSetpoint = screwArmController.getSetpoint();
     inputs.screwArmAppliedVolts = appliedVolts;
     inputs.screwArmCurrentAmps = armSim.getCurrentDrawAmps();
     inputs.screwArmMotorTempC = 0;
@@ -78,7 +78,7 @@ public class ScrewArmSim implements ScrewArmIO {
   @Override
   public void setScrewArmVolts(double volts) {
     appliedVolts =
-        MathUtil.clamp(volts, -ScrewArmConstants.kMaxVoltage, ScrewArmConstants.kMaxVoltage);
+        MathUtil.clamp(volts, ScrewArmConstants.kMinVoltage, ScrewArmConstants.kMaxVoltage);
     appliedVolts *= ScrewArmKinematics.getPerpendicularAngleDifference(screwArmAngle).getCos();
     armSim.setInputVoltage(appliedVolts);
   }

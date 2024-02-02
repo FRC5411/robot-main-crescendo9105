@@ -29,9 +29,9 @@ public class ScrewArmNEO implements ScrewArmIO {
   @Override
   public void updateInputs(ScrewArmInputs inputs) {
     screwArmAngle = Rotation2d.fromRotations(screwArmPivotEncoder.getAbsolutePosition());
-    inputs.screwArmDegrees = screwArmAngle;
-    inputs.screwArmDegreesGoal = screwArmController.getGoal();
-    inputs.screwArmDegreesSetpoint = screwArmController.getSetpoint();
+    inputs.screwArmAngle = screwArmAngle;
+    inputs.screwArmAngleGoal = screwArmController.getGoal();
+    inputs.screwArmAngleSetpoint = screwArmController.getSetpoint();
     inputs.screwArmAppliedVolts = screwArmMotor.getBusVoltage();
     inputs.screwArmCurrentAmps = screwArmMotor.getOutputCurrent();
     inputs.screwArmMotorTempC = screwArmMotor.getMotorTemperature();
@@ -43,7 +43,7 @@ public class ScrewArmNEO implements ScrewArmIO {
 
   @Override
   public void setScrewArmVolts(double volts) {
-    screwArmMotor.setVoltage(MathUtil.clamp(volts, -12, 12));
+    screwArmMotor.setVoltage(MathUtil.clamp(volts, ScrewArmConstants.kMinVoltage, ScrewArmConstants.kMaxVoltage));
   }
 
   @Override

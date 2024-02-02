@@ -68,7 +68,7 @@ public class ScrewArmController {
     Logger.recordOutput("FF OUTPUT", FF);
 
     voltageConsumer.accept(
-        MathUtil.clamp(PID, -ScrewArmConstants.kMaxVoltage, ScrewArmConstants.kMaxVoltage));
+        MathUtil.clamp(PID, ScrewArmConstants.kMinVoltage, ScrewArmConstants.kMaxVoltage));
   }
 
   public Rotation2d getGoal() {

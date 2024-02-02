@@ -6,14 +6,17 @@ package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.subsystems.shooter.Flywheel.ShooterWheelConstants;
 import frc.robot.subsystems.shooter.Flywheel.ShooterWheelIO;
 import frc.robot.subsystems.shooter.Flywheel.ShooterWheelIOInputsAutoLogged;
@@ -28,6 +31,9 @@ import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmIO;
 import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmInputsAutoLogged;
 import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmNEO;
 import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmSim;
+import frc.robot.util.TrajectoryAngleSolver;
+
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
@@ -120,6 +126,20 @@ public class Shooter extends SubsystemBase {
     indexerSub.setDefaultCommand(indexerVoltageCommand(() -> indexerVoltage));
   }
 
+  public Command shootToSpeakerCommand(Pose2d robotPose, BooleanSupplier isRobotInPosition, double desiredMPS) {
+    return new SequentialCommandGroup(
+      setShooterSetpointCommand(
+        ShooterWheelConstants.kShootMPS, 
+        ShooterWheelConstants.kShootMPS, 
+        Rotation2d.fromDegrees(
+          TrajectoryAngleSolver.newtonRaphsonSolver(
+            ShooterConstants.kSpeaker3DPose.toPose2d()
+              .minus( robotPose ).getTranslation().getNorm(), 
+            ShooterWheelConstants.kShootMPS ) ) ),
+      new WaitUntilCommand(isRobotInPosition),
+      new InstantCommand(() -> indexerVoltage = 12.0, this));
+  }
+
   public Command setShooterSetpointCommand(
       double topVelocityMPSSetpoint,
       double bottomVelocityMPSSetpoint,
@@ -168,6 +188,18 @@ public class Shooter extends SubsystemBase {
         (interrupted) -> {},
         () -> false,
         indexerSub);
+  }
+
+  public boolean isShooterAtSetpoint() {
+    return 
+        Math.abs( shooterWheelIOInputsAutoLoggedTop.flywheelVelocityMPSSetpoint 
+        - shooterWheelIOInputsAutoLoggedTop.flywheelVelocityMPS ) < 0.5
+      && 
+        Math.abs( shooterWheelIOInputsAutoLoggedTop.flywheelVelocityMPSSetpoint 
+        - shooterWheelIOInputsAutoLoggedTop.flywheelVelocityMPS ) < 0.5
+      &&
+        Math.abs( screwArmInputsAutoLogged.screwArmAngleSetpoint.getDegrees() 
+        - screwArmInputsAutoLogged.screwArmAngle.getDegrees() ) < 0.5 ;
   }
 
   @Override

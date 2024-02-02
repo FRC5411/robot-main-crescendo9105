@@ -88,7 +88,7 @@ public class RobotContainer {
             () -> pilotController.getRightX()));
     // Reset heading
     pilotController
-        .b()
+      .b()
         .onTrue(
             Commands.runOnce(
                     () ->
