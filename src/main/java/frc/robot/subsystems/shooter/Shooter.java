@@ -10,6 +10,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.angler.AnglerIOInputsAutoLogged;
@@ -18,6 +19,7 @@ import frc.robot.subsystems.shooter.indexer.IndexerIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOInputsAutoLogged;
 import frc.robot.utils.LoggedTunableNumber;
+import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
   private AnglerIO anglerIO;
@@ -69,10 +71,80 @@ public class Shooter extends SubsystemBase {
   private Double launcherSetpointRPM = null;
 
   /** Creates a new Shooter. */
-  public Shooter() {}
+  public Shooter(AnglerIO anglerIO, IndexerIO indexerIO, LauncherIO launcherIO) {
+    this.anglerIO = anglerIO;
+    this.indexerIO = indexerIO;
+    this.launcherIO = launcherIO;
+
+    anglerFeedback.enableContinuousInput(-Math.PI, Math.PI);
+
+    anglerFeedback.setTolerance(0.001, 0.0);
+    indexerFeedback.setTolerance(0.0, 5.0);
+    launcherFeedback.setTolerance(0.0, 5.0);
+  }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    anglerIO.updateInputs(anglerIOInputs);
+    Logger.processInputs("Shooter/Angler/Inputs", anglerIOInputs);
+    indexerIO.updateInputs(indexerIOInputs);
+    Logger.processInputs("Shooter/Indexer/Inputs", indexerIOInputs);
+    launcherIO.updateInputs(launcherIOInputs);
+    Logger.processInputs("Shooter/Launcher/Inputs", launcherIOInputs);
+
+    if (DriverStation.isDisabled()) {
+      stopMotors(true, true, true);
+    }
+  }
+
+  /** Update tunable numbers if they've changed */
+  private void updateTunableNumbers() {
+    // hashCode() updates when class is changed (I think)
+
+    /* Angler */
+    if (anglerFeedbackP.hasChanged(hashCode())
+        || anglerFeedbackI.hasChanged(hashCode())
+        || anglerFeedbackD.hasChanged(hashCode())) {
+      anglerFeedback.setP(anglerFeedbackP.get());
+      anglerFeedback.setI(anglerFeedbackI.get());
+      anglerFeedback.setD(anglerFeedbackD.get());
+    }
+    if (anglerFeedbackA.hasChanged(hashCode()) || anglerFeedbackV.hasChanged(hashCode())) {
+      var newConstraints =
+          new TrapezoidProfile.Constraints(anglerFeedbackA.get(), anglerFeedbackV.get());
+
+      anglerFeedback.setConstraints(newConstraints);
+    }
+
+    /* Indexer */
+    if (indexerFeedbackP.hasChanged(hashCode())
+        || indexerFeedbackI.hasChanged(hashCode())
+        || indexerFeedbackD.hasChanged(hashCode())) {
+      indexerFeedback.setP(indexerFeedbackP.get());
+      indexerFeedback.setI(indexerFeedbackI.get());
+      indexerFeedback.setD(indexerFeedbackD.get());
+    }
+
+    /* Launcher */
+    if (launcherFeedbackP.hasChanged(hashCode())
+        || launcherFeedbackI.hasChanged(hashCode())
+        || launcherFeedbackD.hasChanged(hashCode())) {
+      launcherFeedback.setP(launcherFeedbackP.get());
+      launcherFeedback.setI(launcherFeedbackI.get());
+      launcherFeedback.setD(launcherFeedbackD.get());
+    }
+  }
+
+  /** Stop the motors of the shooter subsystem */
+  public void stopMotors(boolean stopAngler, boolean stopIndexer, boolean stopLauncher) {
+    if (stopAngler) {
+      anglerIO.setVolts(0.0);
+    }
+    if (stopIndexer) {
+      indexerIO.setVolts(0.0);
+    }
+    if (stopLauncher) {
+      launcherIO.setVolts(0.0, 0.0);
+    }
   }
 }
