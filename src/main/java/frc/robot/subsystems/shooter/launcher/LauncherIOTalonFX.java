@@ -4,5 +4,47 @@
 
 package frc.robot.subsystems.shooter.launcher;
 
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
 /** Class to interact with the physical launcher */
-public class LauncherIOTalonFX implements LauncherIO {}
+public class LauncherIOTalonFX implements LauncherIO {
+  private TalonFX leftMotor = new TalonFX(50);
+  private TalonFX rightMotor = new TalonFX(51);
+
+  /** Create a new hardware implementation of the launcher */
+  public LauncherIOTalonFX() {
+    TalonFXConfiguration leftConfiguration = new TalonFXConfiguration();
+    TalonFXConfiguration rightConfiguration = new TalonFXConfiguration();
+
+    leftConfiguration.CurrentLimits.StatorCurrentLimitEnable = true;
+    leftConfiguration.CurrentLimits.StatorCurrentLimit = 40;
+    rightConfiguration.CurrentLimits.StatorCurrentLimitEnable = true;
+    rightConfiguration.CurrentLimits.StatorCurrentLimit = 40;
+
+    leftConfiguration.Voltage.PeakForwardVoltage = 12.0;
+    leftConfiguration.Voltage.PeakReverseVoltage = -12.0;
+    rightConfiguration.Voltage.PeakForwardVoltage = 12.0;
+    rightConfiguration.Voltage.PeakReverseVoltage = -12.0;
+
+    leftConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    rightConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+
+    leftMotor.setInverted(true);
+    rightMotor.setInverted(false);
+
+    leftMotor.getConfigurator().apply(leftConfiguration);
+    rightMotor.getConfigurator().apply(rightConfiguration);
+  }
+
+  @Override
+  public void updateInputs(LauncherIOInputs inputs) {
+
+  }
+
+  @Override
+  public void setVolts(double volts) {
+
+  }
+}
