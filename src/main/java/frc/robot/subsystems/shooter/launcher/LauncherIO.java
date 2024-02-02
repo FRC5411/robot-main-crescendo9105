@@ -28,5 +28,5 @@ public interface LauncherIO {
   public default void updateInputs(LauncherIOInputs inputs) {}
 
   /** Set the volts for the launcher motor */
-  public default void setVolts(double volts) {}
+  public default void setVolts(double leftVolts, double rightVolts) {}
 }
