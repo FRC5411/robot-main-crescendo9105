@@ -7,7 +7,6 @@ package frc.robot.subsystems.shooter.launcher;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import edu.wpi.first.math.MathUtil;
 
 /** Class to interact with the physical launcher */
@@ -54,7 +53,8 @@ public class LauncherIOTalonFX implements LauncherIO {
     inputs.rightAngleRadians = rightMotor.getPosition().getValueAsDouble();
     inputs.rightVelocityRPS = rightMotor.getVelocity().getValueAsDouble();
     inputs.rightAppliedVolts = rightAppliedVolts;
-    inputs.rightAppliedCurrentAmps = new double[] {rightMotor.getStatorCurrent().getValueAsDouble()};
+    inputs.rightAppliedCurrentAmps =
+        new double[] {rightMotor.getStatorCurrent().getValueAsDouble()};
     inputs.rightTemperatureCelsius = new double[] {rightMotor.getDeviceTemp().getValueAsDouble()};
   }
 
