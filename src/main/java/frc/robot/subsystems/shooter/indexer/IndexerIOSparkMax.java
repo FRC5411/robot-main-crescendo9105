@@ -20,6 +20,7 @@ public class IndexerIOSparkMax implements IndexerIO {
 
   /** Create a new hardware implementation of the indexer */
   public IndexerIOSparkMax() {
+    // TODO Update as needed
     indexerMotor.clearFaults();
     indexerMotor.restoreFactoryDefaults();
 
@@ -36,7 +37,7 @@ public class IndexerIOSparkMax implements IndexerIO {
   public void updateInputs(IndexerIOInputs inputs) {
     // TODO Convert units as needed
     inputs.angleRadians = indexerEncoder.getPosition();
-    inputs.velocityRPS = indexerEncoder.getVelocity();
+    inputs.velocityRPM = indexerEncoder.getVelocity();
     inputs.appliedVolts = appliedVolts;
     inputs.appliedCurrentAmps = new double[] {indexerMotor.getOutputCurrent()};
     inputs.temperatureCelsius = new double[] {indexerMotor.getMotorTemperature()};

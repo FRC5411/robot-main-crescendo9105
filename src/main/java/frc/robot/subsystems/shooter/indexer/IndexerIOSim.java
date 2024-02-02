@@ -23,13 +23,14 @@ public class IndexerIOSim implements IndexerIO {
 
   @Override
   public void updateInputs(IndexerIOInputs inputs) {
+    // TODO Update as needed
     indexerMotor.update(LOOP_PERIOD_S);
 
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(indexerMotor.getCurrentDrawAmps()));
 
     inputs.angleRadians = 0.0;
-    inputs.velocityRPS = indexerMotor.getAngularVelocityRadPerSec();
+    inputs.velocityRPM = indexerMotor.getAngularVelocityRPM();
     inputs.appliedVolts = appliedVolts;
     inputs.appliedCurrentAmps = new double[] {indexerMotor.getCurrentDrawAmps()};
     inputs.temperatureCelsius = new double[] {0.0};

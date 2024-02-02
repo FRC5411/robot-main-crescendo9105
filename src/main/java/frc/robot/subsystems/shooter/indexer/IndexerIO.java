@@ -12,7 +12,7 @@ public interface IndexerIO {
   @AutoLog
   public static class IndexerIOInputs {
     public double angleRadians = 0.0;
-    public double velocityRPS = 0.0;
+    public double velocityRPM = 0.0;
     public double appliedVolts = 0.0;
     public double[] appliedCurrentAmps = new double[] {0.0};
     public double[] temperatureCelsius = new double[] {0.0};

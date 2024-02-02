@@ -12,13 +12,13 @@ public interface LauncherIO {
   @AutoLog
   public static class LauncherIOInputs {
     public double leftAngleRadians = 0.0;
-    public double leftVelocityRPS = 0.0;
+    public double leftVelocityRPM = 0.0;
     public double leftAppliedVolts = 0.0;
     public double[] leftAppliedCurrentAmps = new double[] {0.0};
     public double[] leftTemperatureCelsius = new double[] {0.0};
 
     public double rightAngleRadians = 0.0;
-    public double rightVelocityRPS = 0.0;
+    public double rightVelocityRPM = 0.0;
     public double rightAppliedVolts = 0.0;
     public double[] rightAppliedCurrentAmps = new double[] {0.0};
     public double[] rightTemperatureCelsius = new double[] {0.0};

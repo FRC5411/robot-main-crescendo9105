@@ -11,6 +11,7 @@ import edu.wpi.first.math.MathUtil;
 
 /** Class to interact with the physical launcher */
 public class LauncherIOTalonFX implements LauncherIO {
+  // TODO Update as needed
   private TalonFX leftMotor = new TalonFX(50);
   private TalonFX rightMotor = new TalonFX(51);
 
@@ -19,6 +20,7 @@ public class LauncherIOTalonFX implements LauncherIO {
 
   /** Create a new hardware implementation of the launcher */
   public LauncherIOTalonFX() {
+    // TODO Update as needed
     TalonFXConfiguration leftConfiguration = new TalonFXConfiguration();
     TalonFXConfiguration rightConfiguration = new TalonFXConfiguration();
 
@@ -44,14 +46,15 @@ public class LauncherIOTalonFX implements LauncherIO {
 
   @Override
   public void updateInputs(LauncherIOInputs inputs) {
+    // TODO Update as needed
     inputs.leftAngleRadians = leftMotor.getPosition().getValueAsDouble();
-    inputs.leftVelocityRPS = leftMotor.getVelocity().getValueAsDouble();
+    inputs.leftVelocityRPM = leftMotor.getVelocity().getValueAsDouble();
     inputs.leftAppliedVolts = leftAppliedVolts;
     inputs.leftAppliedCurrentAmps = new double[] {leftMotor.getStatorCurrent().getValueAsDouble()};
     inputs.leftTemperatureCelsius = new double[] {leftMotor.getDeviceTemp().getValueAsDouble()};
 
     inputs.rightAngleRadians = rightMotor.getPosition().getValueAsDouble();
-    inputs.rightVelocityRPS = rightMotor.getVelocity().getValueAsDouble();
+    inputs.rightVelocityRPM = rightMotor.getVelocity().getValueAsDouble();
     inputs.rightAppliedVolts = rightAppliedVolts;
     inputs.rightAppliedCurrentAmps =
         new double[] {rightMotor.getStatorCurrent().getValueAsDouble()};

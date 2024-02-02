@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 public class AnglerIOSim implements AnglerIO {
   private double LOOP_PERIOD_S = 0.02;
 
+  // TODO Update as needed
   private SingleJointedArmSim anglerMotor =
       new SingleJointedArmSim(
           DCMotor.getNEO(1),

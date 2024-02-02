@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 
 /** Class to represent the launcher in simulation */
 public class LauncherIOSim implements LauncherIO {
+  // TODO Update as needed
   private double LOOP_PERIOD_S = 0.02;
 
   private FlywheelSim leftMotor = new FlywheelSim(DCMotor.getFalcon500(1), 1.0, 1.0);
@@ -34,13 +35,13 @@ public class LauncherIOSim implements LauncherIO {
         BatterySim.calculateDefaultBatteryLoadedVoltage(rightMotor.getCurrentDrawAmps()));
 
     inputs.leftAngleRadians = 0.0;
-    inputs.leftVelocityRPS = leftMotor.getAngularVelocityRadPerSec();
+    inputs.leftVelocityRPM = leftMotor.getAngularVelocityRPM();
     inputs.leftAppliedVolts = leftAppliedVolts;
     inputs.leftAppliedCurrentAmps = new double[] {leftMotor.getCurrentDrawAmps()};
     inputs.leftTemperatureCelsius = new double[] {0.0};
 
     inputs.rightAngleRadians = 0.0;
-    inputs.rightVelocityRPS = rightMotor.getAngularVelocityRadPerSec();
+    inputs.rightVelocityRPM = rightMotor.getAngularVelocityRPM();
     inputs.rightAppliedVolts = rightAppliedVolts;
     inputs.rightAppliedCurrentAmps = new double[] {rightMotor.getCurrentDrawAmps()};
     inputs.rightTemperatureCelsius = new double[] {0.0};
