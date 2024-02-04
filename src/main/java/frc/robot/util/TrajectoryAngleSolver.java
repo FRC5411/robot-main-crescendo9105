@@ -37,9 +37,8 @@ public class TrajectoryAngleSolver {
   public static double trajectoryByAngle(
       double distanceFromWallMeters, double initVelocityMPS, double thetaRadians) {
     setCAndV(distanceFromWallMeters, initVelocityMPS);
-    heightFromShootMeters = ScrewArmConstants.kPivotLength * Math.sin( Math.toDegrees( thetaDegrees ) );
 
-    return heightFromShootMeters
+    return ScrewArmConstants.kPivotLength * Math.sin( Math.toDegrees( thetaDegrees ) )
         - yGoalMeters
         + c * Math.tan(thetaRadians)
         - c * c * v * secantSquared(thetaRadians);
@@ -50,8 +49,9 @@ public class TrajectoryAngleSolver {
     setCAndV(distanceFromWallMeters, initVelocityMPS);
 
     return (Math.PI / 180)
-        * (c * secantSquared(thetaRadians)
-            - 2 * c * c * v * secantSquared(thetaRadians) * Math.tan(thetaRadians));
+        * ( c * secantSquared(thetaRadians)
+            - 2 * c * c * v * secantSquared(thetaRadians) * Math.tan(thetaRadians)
+            - ScrewArmConstants.kPivotLength * Math.cos( Math.toDegrees( thetaDegrees ) ) );
   }
 
   public static double createTangentLineXIntercept(double x, double y, double slope) {

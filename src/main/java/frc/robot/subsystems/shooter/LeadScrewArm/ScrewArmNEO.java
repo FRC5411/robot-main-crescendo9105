@@ -13,7 +13,9 @@ import frc.robot.util.ScrewArmController;
 public class ScrewArmNEO implements ScrewArmIO {
   public CANSparkMax screwArmMotor;
   public RelativeEncoder screwArmRodEncoder;
-  public DutyCycleEncoder screwArmPivotEncoder;
+  public DutyCycleEncoder screwArmPivotAbsoluteEncoder;
+  // Potential future change to account for absolute encoder being slower
+  // public Encoder screwArmPivotRelativeEncoder;
 
   public Rotation2d screwArmAngle = new Rotation2d();
 
@@ -21,14 +23,19 @@ public class ScrewArmNEO implements ScrewArmIO {
 
   public ScrewArmNEO(int id) {
     configScrewArmMotor(id);
-    this.screwArmPivotEncoder = new DutyCycleEncoder(ScrewArmConstants.kEncoderID);
+    this.screwArmPivotAbsoluteEncoder = new DutyCycleEncoder(ScrewArmConstants.kAbsoluteEncoderID);
+    this.screwArmPivotAbsoluteEncoder.setDistancePerRotation(360);
+
+    // this.screwArmPivotRelativeEncoder = new Encoder(
+    //   ScrewArmConstants.kRelativeEncoderAID, ScrewArmConstants.kRelativeEncoderBID);
+    // this.screwArmPivotRelativeEncoder.setDistancePerPulse(360 / 8192);
 
     screwArmController = new ScrewArmController(() -> screwArmAngle, this::setScrewArmVolts);
   }
 
   @Override
   public void updateInputs(ScrewArmInputs inputs) {
-    screwArmAngle = Rotation2d.fromRotations(screwArmPivotEncoder.getAbsolutePosition());
+    screwArmAngle = Rotation2d.fromRotations(screwArmPivotAbsoluteEncoder.getDistance());
     inputs.screwArmAngle = screwArmAngle;
     inputs.screwArmAngleGoal = screwArmController.getGoal();
     inputs.screwArmAngleSetpoint = screwArmController.getSetpoint();

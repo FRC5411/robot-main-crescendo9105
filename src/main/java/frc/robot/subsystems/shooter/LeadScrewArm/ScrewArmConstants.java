@@ -4,8 +4,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
 public class ScrewArmConstants {
-  public static int kMotorID = 25;
-  public static int kEncoderID = 3;
+  public static int kMotorID = 65;
+  public static int kAbsoluteEncoderID = 6;
+  public static int kRelativeEncoderAID = 6;
+  public static int kRelativeEncoderBID = 6;
 
   public static double kPivotLength = 0.5;
   public static double kDriverLength = 5.0 / 6;
