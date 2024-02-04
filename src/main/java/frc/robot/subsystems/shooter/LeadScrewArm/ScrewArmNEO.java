@@ -50,7 +50,8 @@ public class ScrewArmNEO implements ScrewArmIO {
 
   @Override
   public void setScrewArmVolts(double volts) {
-    screwArmMotor.setVoltage(MathUtil.clamp(volts, ScrewArmConstants.kMinVoltage, ScrewArmConstants.kMaxVoltage));
+    screwArmMotor.setVoltage(
+        MathUtil.clamp(volts, ScrewArmConstants.kMinVoltage, ScrewArmConstants.kMaxVoltage));
   }
 
   @Override

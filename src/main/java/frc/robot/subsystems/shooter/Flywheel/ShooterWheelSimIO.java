@@ -19,7 +19,7 @@ public class ShooterWheelSimIO implements ShooterWheelIO {
   private double appliedVolts = 0;
   private double velocityMeasuredMPS = 0;
   private double velocitySetpointMPS = 0;
-  private double velocityRateLimit = 0.5;
+  private double velocityRateLimit = 0;
 
   private PIDController velocityController;
   private SimpleMotorFeedforward velocityFeedforward;

@@ -4,7 +4,7 @@ public class ShooterWheelConstants {
   public static int kTopMotorID = 61;
   public static int kBottomMotorID = 62;
 
-  public static double kRadiusM = 5.08 / 100;
+  public static double kRadiusM = 7.62 / 100;
   public static double kCircumferenceM = 2 * Math.PI * kRadiusM;
   public static double kGearing = 1.0 / 1.0;
   public static double kJKgMetersSquared = 0.0001;
@@ -16,14 +16,14 @@ public class ShooterWheelConstants {
   public static double kS = 0.0;
   public static double kV = 0.0;
   public static double kA = 0.0;
-  public static double kFlywheelRateLimit = 2.5;
+  public static double kFlywheelRateLimit = 25;
 
   public static double kSimP = 0.0;
   public static double kSimI = 0.0;
   public static double kSimD = 0.0;
 
   public static double kSimS = 0.0;
-  public static double kSimV = 0.391;
+  public static double kSimV = 0.391 * (2.0 / 3.0);
   public static double kSimA = 0.0;
 
   public static double kPassiveMPS = 15.0;

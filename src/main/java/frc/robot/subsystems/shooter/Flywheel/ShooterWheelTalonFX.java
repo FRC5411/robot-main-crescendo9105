@@ -3,6 +3,7 @@ package frc.robot.subsystems.shooter.Flywheel;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -15,8 +16,7 @@ public class ShooterWheelTalonFX implements ShooterWheelIO {
   private double velocityRateLimit;
 
   private VelocityVoltage flywheelVelocity = new VelocityVoltage(0.0);
-  private SlewRateLimiter velocityRateLimiter;
-  ;
+  private SlewRateLimiter velocityRateLimiter;;
 
   public ShooterWheelTalonFX(
       int motorID,
@@ -49,6 +49,7 @@ public class ShooterWheelTalonFX implements ShooterWheelIO {
     double acceleration = 0;
     if (newVelocityMPS != velocityMPS) acceleration = velocityRateLimit;
     flywheelVelocitySetpointMPS = velocityMPS;
+
     flywheelMotor.setControl(
         flywheelVelocity
             .withVelocity(flywheelVelocitySetpointMPS / ShooterWheelConstants.kCircumferenceM)
@@ -74,9 +75,12 @@ public class ShooterWheelTalonFX implements ShooterWheelIO {
 
     configs.Voltage.PeakForwardVoltage = 12;
     configs.Voltage.PeakReverseVoltage = -12;
+    
+    configs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
+    configs.Feedback.FeedbackRemoteSensorID = id;
 
     configs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    flywheelMotor.setInverted(true);
+    flywheelMotor.setInverted(invert);
     flywheelMotor.getConfigurator().apply(configs);
   }
 }

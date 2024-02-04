@@ -32,7 +32,6 @@ import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmInputsAutoLogged;
 import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmNEO;
 import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmSim;
 import frc.robot.util.TrajectoryAngleSolver;
-
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
@@ -126,18 +125,22 @@ public class Shooter extends SubsystemBase {
     indexerSub.setDefaultCommand(indexerVoltageCommand(() -> indexerVoltage));
   }
 
-  public Command shootToSpeakerCommand(Pose2d robotPose, BooleanSupplier isRobotInPosition, double desiredMPS) {
+  public Command shootToSpeakerCommand(
+      Pose2d robotPose, BooleanSupplier isRobotInPosition, double desiredMPS) {
     return new SequentialCommandGroup(
-      setShooterSetpointCommand(
-        ShooterWheelConstants.kShootMPS, 
-        ShooterWheelConstants.kShootMPS, 
-        Rotation2d.fromDegrees(
-          TrajectoryAngleSolver.newtonRaphsonSolver(
-            ShooterConstants.kSpeaker3DPose.toPose2d()
-              .minus( robotPose ).getTranslation().getNorm(), 
-            ShooterWheelConstants.kShootMPS ) ) ),
-      new WaitUntilCommand(isRobotInPosition),
-      new InstantCommand(() -> indexerVoltage = 12.0, this));
+        setShooterSetpointCommand(
+            ShooterWheelConstants.kShootMPS,
+            ShooterWheelConstants.kShootMPS,
+            Rotation2d.fromDegrees(
+                TrajectoryAngleSolver.newtonRaphsonSolver(
+                    ShooterConstants.kSpeaker3DPose
+                        .toPose2d()
+                        .minus(robotPose)
+                        .getTranslation()
+                        .getNorm(),
+                    ShooterWheelConstants.kShootMPS))),
+        new WaitUntilCommand(isRobotInPosition),
+        new InstantCommand(() -> indexerVoltage = 12.0, this));
   }
 
   public Command setShooterSetpointCommand(
@@ -191,15 +194,18 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean isShooterAtSetpoint() {
-    return 
-        Math.abs( shooterWheelIOInputsAutoLoggedTop.flywheelVelocityMPSSetpoint 
-        - shooterWheelIOInputsAutoLoggedTop.flywheelVelocityMPS ) < 0.5
-      && 
-        Math.abs( shooterWheelIOInputsAutoLoggedTop.flywheelVelocityMPSSetpoint 
-        - shooterWheelIOInputsAutoLoggedTop.flywheelVelocityMPS ) < 0.5
-      &&
-        Math.abs( screwArmInputsAutoLogged.screwArmAngleSetpoint.getDegrees() 
-        - screwArmInputsAutoLogged.screwArmAngle.getDegrees() ) < 0.5 ;
+    return Math.abs(
+                shooterWheelIOInputsAutoLoggedTop.flywheelVelocityMPSSetpoint
+                    - shooterWheelIOInputsAutoLoggedTop.flywheelVelocityMPS)
+            < 0.5
+        && Math.abs(
+                shooterWheelIOInputsAutoLoggedTop.flywheelVelocityMPSSetpoint
+                    - shooterWheelIOInputsAutoLoggedTop.flywheelVelocityMPS)
+            < 0.5
+        && Math.abs(
+                screwArmInputsAutoLogged.screwArmAngleSetpoint.getDegrees()
+                    - screwArmInputsAutoLogged.screwArmAngle.getDegrees())
+            < 0.5;
   }
 
   @Override

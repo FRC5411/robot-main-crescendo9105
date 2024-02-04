@@ -88,7 +88,7 @@ public class RobotContainer {
             () -> pilotController.getRightX()));
     // Reset heading
     pilotController
-      .b()
+        .b()
         .onTrue(
             Commands.runOnce(
                     () ->
@@ -97,6 +97,16 @@ public class RobotContainer {
                                 robotDrive.getPosition().getTranslation(), new Rotation2d())),
                     robotDrive)
                 .ignoringDisable(true)); // Reset even when disabled
+    pilotController
+        .a()
+        .onTrue(robotShooter.setShooterSetpointCommand(
+          20, 
+          20, 
+          Rotation2d.fromDegrees(45)))
+        .onFalse(robotShooter.setShooterSetpointCommand(
+          0, 
+          0, 
+          Rotation2d.fromDegrees(45)));
 
     // pilotController
     //     .square()
