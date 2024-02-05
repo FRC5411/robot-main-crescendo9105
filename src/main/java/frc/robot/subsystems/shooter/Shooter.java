@@ -95,6 +95,8 @@ public class Shooter extends SubsystemBase {
     if (DriverStation.isDisabled()) {
       stopMotors(true, true, true);
     }
+
+    updateTunableNumbers();
   }
 
   /** Update tunable numbers if they've changed */
@@ -133,6 +135,24 @@ public class Shooter extends SubsystemBase {
       launcherFeedback.setI(launcherFeedbackI.get());
       launcherFeedback.setD(launcherFeedbackD.get());
     }
+  }
+
+  public void setAngler(Rotation2d desiredAngle) {
+    anglerSetpoint = desiredAngle;
+
+    Logger.recordOutput("Shooter/AnglerController/Setpoint", anglerSetpoint);
+  }
+
+  public void setIndexerVelocity(double desiredVelocityRPM) {
+    indexerSetpointRPM = desiredVelocityRPM;
+
+    Logger.recordOutput("Shooter/IndexerController/Setpoint", indexerSetpointRPM);
+  }
+
+  public void setLauncher(double desiredVelocityRPM) {
+    launcherSetpointRPM = desiredVelocityRPM;
+
+    Logger.recordOutput("Shooter/LauncherController/Setpoint", launcherSetpointRPM);
   }
 
   /** Stop the motors of the shooter subsystem */

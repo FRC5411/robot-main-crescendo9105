@@ -8,6 +8,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.pathfinding.Pathfinding;
 import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
@@ -53,6 +54,9 @@ public class Drive extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(KINEMATICS, getRotation(), getModulePositions(), currentPose);
 
+  private PIDConstants translationPathplannerConstants = new PIDConstants(2.02, 0.0, 0.0);
+  private PIDConstants rotationPathplannerConstants = new PIDConstants(0.66, 0.0, 0.0);
+
   /** Creates a new swerve Drive. */
   public Drive(
       ModuleIO moduleFL, ModuleIO moduleFR, ModuleIO moduleBL, ModuleIO moduleBR, GyroIO gyro) {
@@ -69,7 +73,11 @@ public class Drive extends SubsystemBase {
         () -> KINEMATICS.toChassisSpeeds(getModuleStates()),
         this::runSwerve,
         new HolonomicPathFollowerConfig(
-            MAX_LINEAR_SPEED_MPS, DRIVEBASE_RADIUS_M, new ReplanningConfig(true, true)),
+            translationPathplannerConstants,
+            rotationPathplannerConstants,
+            MAX_LINEAR_SPEED_MPS,
+            DRIVEBASE_RADIUS_M,
+            new ReplanningConfig(true, true)),
         () ->
             DriverStation.getAlliance().isPresent()
                 && DriverStation.getAlliance().get() == Alliance.Red,
@@ -86,6 +94,7 @@ public class Drive extends SubsystemBase {
           Logger.recordOutput(
               "Drive/Odometry/TrajectorySetpoint", targetPose); // Auto log the target setpoint
         });
+    Logger.recordOutput("Drive/MaxAngularSpeed", MAX_ANGULAR_SPEED_MPS);
   }
 
   @Override
@@ -156,6 +165,7 @@ public class Drive extends SubsystemBase {
 
   /** Set the pose of the robot */
   public void setPose(Pose2d pose) {
+    poseEstimator.resetPosition(getRotation(), getModulePositions(), pose);
     currentPose = pose;
   }
 
