@@ -7,7 +7,7 @@ public class ShooterWheelConstants {
   public static double kRadiusM = 7.62 / 100;
   public static double kCircumferenceM = 2 * Math.PI * kRadiusM;
   public static double kGearing = 1.0 / 1.0;
-  public static double kJKgMetersSquared = 0.0001;
+  public static double kJKgMetersSquared = 0.0002;
 
   public static double kP = 0.0;
   public static double kI = 0.0;
@@ -18,7 +18,7 @@ public class ShooterWheelConstants {
   public static double kA = 0.0;
   public static double kFlywheelRateLimit = 25;
 
-  public static double kSimP = 0.0;
+  public static double kSimP = 0.02;
   public static double kSimI = 0.0;
   public static double kSimD = 0.0;
 
