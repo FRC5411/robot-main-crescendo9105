@@ -15,12 +15,14 @@ public interface ModuleIO {
     public double driveVelocityMPS = 0.0;
     public double driveAppliedVolts = 0.0;
     public double[] driveCurrentAmps = new double[] {};
+    public double[] driveTemperatureCelsius = new double[] {};
 
     public Rotation2d azimuthAbsolutePosition = new Rotation2d();
     public Rotation2d azimuthPosition = new Rotation2d();
     public double azimuthVelocityRPS = 0.0;
     public double azimuthAppliedVolts = 0.0;
     public double[] azimuthCurrentAmps = new double[] {};
+    public double[] azimuthTemperatureCelsius = new double[] {};
   }
 
   /** Update the hardware inputs for a module */

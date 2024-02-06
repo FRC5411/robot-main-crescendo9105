@@ -15,44 +15,44 @@ public class LauncherIOSim implements LauncherIO {
   // TODO Update as needed
   private double LOOP_PERIOD_S = 0.02;
 
-  private FlywheelSim leftMotor = new FlywheelSim(DCMotor.getFalcon500(1), 1.0, 1.0);
-  private FlywheelSim rightMotor = new FlywheelSim(DCMotor.getFalcon500(1), 1.0, 1.0);
+  private FlywheelSim topMotor = new FlywheelSim(DCMotor.getFalcon500(1), 1.0, 1.0);
+  private FlywheelSim bottomtMotor = new FlywheelSim(DCMotor.getFalcon500(1), 1.0, 1.0);
 
-  private double leftAppliedVolts = 0.0;
-  private double rightAppliedVolts = 0.0;
+  private double topAppliedVolts = 0.0;
+  private double bottomAppliedVolts = 0.0;
 
   /** Create a new virtual implementation of the launcher */
   public LauncherIOSim() {}
 
   @Override
   public void updateInputs(LauncherIOInputs inputs) {
-    leftMotor.update(LOOP_PERIOD_S);
-    rightMotor.update(LOOP_PERIOD_S);
+    topMotor.update(LOOP_PERIOD_S);
+    bottomtMotor.update(LOOP_PERIOD_S);
 
     RoboRioSim.setVInVoltage(
-        BatterySim.calculateDefaultBatteryLoadedVoltage(leftMotor.getCurrentDrawAmps()));
+        BatterySim.calculateDefaultBatteryLoadedVoltage(topMotor.getCurrentDrawAmps()));
     RoboRioSim.setVInVoltage(
-        BatterySim.calculateDefaultBatteryLoadedVoltage(rightMotor.getCurrentDrawAmps()));
+        BatterySim.calculateDefaultBatteryLoadedVoltage(bottomtMotor.getCurrentDrawAmps()));
 
-    inputs.leftAngleRadians = 0.0;
-    inputs.leftVelocityRPM = leftMotor.getAngularVelocityRPM();
-    inputs.leftAppliedVolts = leftAppliedVolts;
-    inputs.leftAppliedCurrentAmps = new double[] {leftMotor.getCurrentDrawAmps()};
-    inputs.leftTemperatureCelsius = new double[] {0.0};
+    inputs.topAngleRadians = 0.0;
+    inputs.topVelocityRPM = topMotor.getAngularVelocityRPM();
+    inputs.topAppliedVolts = topAppliedVolts;
+    inputs.topAppliedCurrentAmps = new double[] {topMotor.getCurrentDrawAmps()};
+    inputs.topTemperatureCelsius = new double[] {0.0};
 
-    inputs.rightAngleRadians = 0.0;
-    inputs.rightVelocityRPM = rightMotor.getAngularVelocityRPM();
-    inputs.rightAppliedVolts = rightAppliedVolts;
-    inputs.rightAppliedCurrentAmps = new double[] {rightMotor.getCurrentDrawAmps()};
-    inputs.rightTemperatureCelsius = new double[] {0.0};
+    inputs.bottomAngleRadians = 0.0;
+    inputs.bottomVelocityRPM = bottomtMotor.getAngularVelocityRPM();
+    inputs.bottomAppliedVolts = bottomAppliedVolts;
+    inputs.bottomAppliedCurrentAmps = new double[] {bottomtMotor.getCurrentDrawAmps()};
+    inputs.bottomTemperatureCelsius = new double[] {0.0};
   }
 
   @Override
   public void setVolts(double leftVolts, double rightVolts) {
-    leftAppliedVolts = MathUtil.clamp(leftVolts, -12.0, 12.0);
-    rightAppliedVolts = MathUtil.clamp(rightVolts, -12.0, 12.0);
+    topAppliedVolts = MathUtil.clamp(leftVolts, -12.0, 12.0);
+    bottomAppliedVolts = MathUtil.clamp(rightVolts, -12.0, 12.0);
 
-    leftMotor.setInputVoltage(leftVolts);
-    rightMotor.setInputVoltage(rightVolts);
+    topMotor.setInputVoltage(leftVolts);
+    bottomtMotor.setInputVoltage(rightVolts);
   }
 }

@@ -32,8 +32,8 @@ import org.littletonrobotics.junction.Logger;
 /** Swerve drive */
 public class Drive extends SubsystemBase {
   // TODO Adjust values as needed
-  private final double TRACK_WIDTH_X_M = Units.inchesToMeters(26.0);
-  private final double TRACK_WIDTH_Y_M = Units.inchesToMeters(26.0);
+  private final double TRACK_WIDTH_X_M = Units.inchesToMeters(29.5);
+  private final double TRACK_WIDTH_Y_M = Units.inchesToMeters(29.5);
   private final double DRIVEBASE_RADIUS_M =
       Math.hypot(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0);
   private final double MAX_LINEAR_SPEED_MPS = Units.feetToMeters(14.0);
@@ -213,7 +213,6 @@ public class Drive extends SubsystemBase {
     return positions;
   }
 
-  // TODO Fuse 250hz odometry with vision
   /** Gets the pose of the robot */
   @AutoLogOutput(key = "Drive/Odometry/Pose")
   public Pose2d getPosition() {

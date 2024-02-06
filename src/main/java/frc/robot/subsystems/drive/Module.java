@@ -16,8 +16,7 @@ import org.littletonrobotics.junction.Logger;
 
 /** Swerve module wrapper */
 public class Module {
-  // TODO Double check wheel radius
-  private final double WHEEL_RADIUS_M = Units.inchesToMeters(3.0);
+  private final double WHEEL_RADIUS_M = Units.inchesToMeters(2.5);
   public static final double ODOMETRY_FREQUENCY = 250.0;
   private final int MODULE_ID;
 
@@ -135,7 +134,6 @@ public class Module {
 
   /** Sets the module's state */
   public SwerveModuleState setDesiredState(SwerveModuleState desiredState) {
-    // TODO Update for get angle
     var optimizedState = SwerveModuleState.optimize(desiredState, getAngle());
 
     // Controllers run in IO, which is called in periodic

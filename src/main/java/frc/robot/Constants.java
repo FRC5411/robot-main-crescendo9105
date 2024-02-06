@@ -25,6 +25,7 @@ import edu.wpi.first.wpilibj.RobotBase;
  */
 public final class Constants {
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : Mode.SIM;
+  public static final Robot currentRobot = Robot.SIGMA;
   public static boolean tuningMode = true;
 
   public static enum Mode {
@@ -36,5 +37,12 @@ public final class Constants {
 
     /** Replaying from a log file. */
     REPLAY
+  }
+
+  public static enum Robot {
+    /** NEO Swerve robot */
+    NEOSWERVE,
+    /** Alphabot constants */
+    SIGMA
   }
 }

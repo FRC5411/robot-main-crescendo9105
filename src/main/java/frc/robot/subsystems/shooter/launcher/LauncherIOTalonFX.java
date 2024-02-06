@@ -12,11 +12,11 @@ import edu.wpi.first.math.MathUtil;
 /** Class to interact with the physical launcher */
 public class LauncherIOTalonFX implements LauncherIO {
   // TODO Update as needed
-  private TalonFX leftMotor = new TalonFX(50);
-  private TalonFX rightMotor = new TalonFX(51);
+  private TalonFX topMotor = new TalonFX(50);
+  private TalonFX bottomMotor = new TalonFX(51);
 
-  private double leftAppliedVolts = 0.0;
-  private double rightAppliedVolts = 0.0;
+  private double topAppliedVolts = 0.0;
+  private double bottomAppliedVolts = 0.0;
 
   /** Create a new hardware implementation of the launcher */
   public LauncherIOTalonFX() {
@@ -37,36 +37,36 @@ public class LauncherIOTalonFX implements LauncherIO {
     leftConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     rightConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
-    leftMotor.setInverted(true);
-    rightMotor.setInverted(false);
+    topMotor.setInverted(true);
+    bottomMotor.setInverted(false);
 
-    leftMotor.getConfigurator().apply(leftConfiguration);
-    rightMotor.getConfigurator().apply(rightConfiguration);
+    topMotor.getConfigurator().apply(leftConfiguration);
+    bottomMotor.getConfigurator().apply(rightConfiguration);
   }
 
   @Override
   public void updateInputs(LauncherIOInputs inputs) {
     // TODO Update as needed
-    inputs.leftAngleRadians = leftMotor.getPosition().getValueAsDouble();
-    inputs.leftVelocityRPM = leftMotor.getVelocity().getValueAsDouble();
-    inputs.leftAppliedVolts = leftAppliedVolts;
-    inputs.leftAppliedCurrentAmps = new double[] {leftMotor.getStatorCurrent().getValueAsDouble()};
-    inputs.leftTemperatureCelsius = new double[] {leftMotor.getDeviceTemp().getValueAsDouble()};
+    inputs.topAngleRadians = topMotor.getPosition().getValueAsDouble();
+    inputs.topVelocityRPM = topMotor.getVelocity().getValueAsDouble();
+    inputs.topAppliedVolts = topAppliedVolts;
+    inputs.topAppliedCurrentAmps = new double[] {topMotor.getStatorCurrent().getValueAsDouble()};
+    inputs.topTemperatureCelsius = new double[] {topMotor.getDeviceTemp().getValueAsDouble()};
 
-    inputs.rightAngleRadians = rightMotor.getPosition().getValueAsDouble();
-    inputs.rightVelocityRPM = rightMotor.getVelocity().getValueAsDouble();
-    inputs.rightAppliedVolts = rightAppliedVolts;
-    inputs.rightAppliedCurrentAmps =
-        new double[] {rightMotor.getStatorCurrent().getValueAsDouble()};
-    inputs.rightTemperatureCelsius = new double[] {rightMotor.getDeviceTemp().getValueAsDouble()};
+    inputs.bottomAngleRadians = bottomMotor.getPosition().getValueAsDouble();
+    inputs.bottomVelocityRPM = bottomMotor.getVelocity().getValueAsDouble();
+    inputs.bottomAppliedVolts = bottomAppliedVolts;
+    inputs.bottomAppliedCurrentAmps =
+        new double[] {bottomMotor.getStatorCurrent().getValueAsDouble()};
+    inputs.bottomTemperatureCelsius = new double[] {bottomMotor.getDeviceTemp().getValueAsDouble()};
   }
 
   @Override
   public void setVolts(double leftVolts, double rightVolts) {
-    leftAppliedVolts = MathUtil.clamp(leftVolts, -12.0, 12.0);
-    rightAppliedVolts = MathUtil.clamp(rightVolts, -12.0, 12.0);
+    topAppliedVolts = MathUtil.clamp(leftVolts, -12.0, 12.0);
+    bottomAppliedVolts = MathUtil.clamp(rightVolts, -12.0, 12.0);
 
-    leftMotor.setVoltage(leftAppliedVolts);
-    rightMotor.setVoltage(rightAppliedVolts);
+    topMotor.setVoltage(topAppliedVolts);
+    bottomMotor.setVoltage(bottomAppliedVolts);
   }
 }

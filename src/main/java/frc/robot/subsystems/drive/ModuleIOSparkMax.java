@@ -30,14 +30,13 @@ public class ModuleIOSparkMax implements ModuleIO {
   private Rotation2d angleOffset;
 
   public ModuleIOSparkMax(int module) {
-    // TODO Update devices and offsets as needed
     switch (module) {
       case 0:
         driveMotor = new CANSparkMax(11, MotorType.kBrushless);
         azimuthMotor = new CANSparkMax(21, MotorType.kBrushless);
 
         angleEncoder = new CANcoder(31);
-        angleOffset = Rotation2d.fromRotations(0.108643);
+        angleOffset = Rotation2d.fromRotations(-0.275879);
 
         break;
       case 1:
@@ -45,7 +44,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         azimuthMotor = new CANSparkMax(22, MotorType.kBrushless);
 
         angleEncoder = new CANcoder(32);
-        angleOffset = Rotation2d.fromRotations(0.321533);
+        angleOffset = Rotation2d.fromRotations(-0.273926);
 
         break;
       case 2:
@@ -53,7 +52,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         azimuthMotor = new CANSparkMax(23, MotorType.kBrushless);
 
         angleEncoder = new CANcoder(33);
-        angleOffset = Rotation2d.fromRotations(-0.149658);
+        angleOffset = Rotation2d.fromRotations(-0.390137);
 
         break;
       case 3:
@@ -61,7 +60,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         azimuthMotor = new CANSparkMax(24, MotorType.kBrushless);
 
         angleEncoder = new CANcoder(34);
-        angleOffset = Rotation2d.fromRotations(-0.005859);
+        angleOffset = Rotation2d.fromRotations(0.382568);
 
         break;
       default:
@@ -74,8 +73,8 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveMotor.restoreFactoryDefaults();
     azimuthMotor.restoreFactoryDefaults();
 
-    // driveMotor.setCANTimeout(250);
-    // azimuthMotor.setCANTimeout(250);
+    driveMotor.setCANTimeout(250);
+    azimuthMotor.setCANTimeout(250);
 
     driveMotor.setInverted(false);
     azimuthMotor.setInverted(true);
@@ -96,9 +95,8 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveMotor.setIdleMode(IdleMode.kBrake);
     azimuthMotor.setIdleMode(IdleMode.kCoast);
 
-    // TODO Investigate why this is set to 0 after being set to 250
-    // driveMotor.setCANTimeout(0);
-    // azimuthMotor.setCANTimeout(0);
+    driveMotor.setCANTimeout(0);
+    azimuthMotor.setCANTimeout(0);
 
     driveMotor.burnFlash();
     azimuthMotor.burnFlash();
@@ -111,6 +109,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         driveEncoder.getVelocity() * CIRCUMFRENCE_METERS / (60.0 * DRIVE_GEAR_RATIO);
     inputs.driveAppliedVolts = driveMotor.getAppliedOutput() * driveMotor.getBusVoltage();
     inputs.driveCurrentAmps = new double[] {driveMotor.getOutputCurrent()};
+    inputs.driveTemperatureCelsius = new double[] {driveMotor.getMotorTemperature()};
 
     inputs.azimuthAbsolutePosition =
         Rotation2d.fromRotations(angleEncoder.getAbsolutePosition().getValueAsDouble())
@@ -122,6 +121,7 @@ public class ModuleIOSparkMax implements ModuleIO {
             / AZIMUTH_GEAR_RATIO;
     inputs.azimuthAppliedVolts = azimuthMotor.getAppliedOutput() * azimuthMotor.getBusVoltage();
     inputs.azimuthCurrentAmps = new double[] {azimuthMotor.getOutputCurrent()};
+    inputs.azimuthTemperatureCelsius = new double[] {azimuthMotor.getMotorTemperature()};
   }
 
   @Override
