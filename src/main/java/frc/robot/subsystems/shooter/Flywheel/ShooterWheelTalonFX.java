@@ -16,7 +16,7 @@ public class ShooterWheelTalonFX implements ShooterWheelIO {
   private double velocityRateLimit;
 
   private VelocityVoltage flywheelVelocity = new VelocityVoltage(0.0);
-  private SlewRateLimiter velocityRateLimiter;;
+  private SlewRateLimiter velocityRateLimiter;
 
   public ShooterWheelTalonFX(
       int motorID,
@@ -75,7 +75,7 @@ public class ShooterWheelTalonFX implements ShooterWheelIO {
 
     configs.Voltage.PeakForwardVoltage = 12;
     configs.Voltage.PeakReverseVoltage = -12;
-    
+
     configs.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
     configs.Feedback.FeedbackRemoteSensorID = id;
 

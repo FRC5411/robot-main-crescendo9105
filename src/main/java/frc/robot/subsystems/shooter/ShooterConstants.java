@@ -15,4 +15,6 @@ public class ShooterConstants {
               8.27 / 2 + 1.4478,
               2.045),
           new Rotation3d());
+
+  public static final boolean isClosedLoop = true;
 }

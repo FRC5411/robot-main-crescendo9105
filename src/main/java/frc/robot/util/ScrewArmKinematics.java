@@ -1,12 +1,12 @@
 package frc.robot.util;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import frc.robot.subsystems.shooter.LeadScrewArm.ScrewArmConstants;
+import frc.robot.subsystems.shooter.Angler.AnglerConstants;
 
 public class ScrewArmKinematics {
   public static double getLengthAlongScrew(Rotation2d pivotAngle) {
-    return ScrewArmConstants.kPivotLength * pivotAngle.getCos()
-        + ScrewArmConstants.kDriverLength * getDrivenAngle(pivotAngle).getCos();
+    return AnglerConstants.kPivotLength * pivotAngle.getCos()
+        + AnglerConstants.kDriverLength * getDrivenAngle(pivotAngle).getCos();
   }
 
   public static Rotation2d getJunctionAngle(Rotation2d pivotAngle) {
@@ -16,8 +16,7 @@ public class ScrewArmKinematics {
   public static Rotation2d getDrivenAngle(Rotation2d pivotAngle) {
     return Rotation2d.fromRadians(
         Math.asin(
-            (ScrewArmConstants.kPivotLength / ScrewArmConstants.kDriverLength)
-                * pivotAngle.getSin()));
+            (AnglerConstants.kPivotLength / AnglerConstants.kDriverLength) * pivotAngle.getSin()));
   }
 
   public static Rotation2d getPerpendicularAngleDifference(Rotation2d pivotAngle) {
