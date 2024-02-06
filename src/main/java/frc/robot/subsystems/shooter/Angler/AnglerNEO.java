@@ -15,6 +15,7 @@ public class AnglerNEO implements AnglerIO {
   public Encoder anglerPivotRelativeEncoder;
 
   public Rotation2d anglerAngle = new Rotation2d();
+  public Rotation2d anglerOffset = new Rotation2d();
 
   public AnglerController anglerController;
 
@@ -22,6 +23,7 @@ public class AnglerNEO implements AnglerIO {
     configanglerMotor(id);
     this.anglerPivotAbsoluteEncoder = new DutyCycleEncoder(AnglerConstants.kAbsoluteEncoderID);
     this.anglerPivotAbsoluteEncoder.setDistancePerRotation(360);
+    this.anglerAngle = Rotation2d.fromDegrees(anglerPivotAbsoluteEncoder.getAbsolutePosition());
 
     this.anglerPivotRelativeEncoder =
         new Encoder(AnglerConstants.kRelativeEncoderAID, AnglerConstants.kRelativeEncoderBID);
@@ -32,7 +34,7 @@ public class AnglerNEO implements AnglerIO {
 
   @Override
   public void updateInputs(AnglerInputs inputs) {
-    anglerAngle = Rotation2d.fromRotations(anglerPivotAbsoluteEncoder.getDistance());
+    anglerAngle = Rotation2d.fromRotations(anglerPivotAbsoluteEncoder.getAbsolutePosition());
     inputs.anglerAngle = anglerAngle;
     inputs.anglerAngleGoal = anglerController.getGoal();
     inputs.anglerAngleSetpoint = anglerController.getSetpoint();

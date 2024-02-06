@@ -35,13 +35,13 @@ public class TrajectoryAngleSolver {
   public static double trajectoryByAngle(
       double distanceFromWallMeters, double initVelocityMPS, double thetaRadians) {
     setDistanceCAndVelocityC(
-        distanceFromWallMeters - AnglerConstants.kPivotLength * Math.cos(thetaRadians),
+        distanceFromWallMeters - AnglerConstants.kPivotLengthMeters * Math.cos(thetaRadians),
         initVelocityMPS);
 
-    return - yGoalMeters
+    return -yGoalMeters
         + distanceConstant * Math.tan(thetaRadians)
         - distanceConstant * distanceConstant * velocityConstant * secantSquared(thetaRadians)
-        - AnglerConstants.kPivotLength * Math.sin(thetaRadians);
+        - AnglerConstants.kPivotLengthMeters * Math.sin(thetaRadians);
   }
 
   public static double discreteDerivativeOfTrajectoryByAngle(
@@ -69,7 +69,7 @@ public class TrajectoryAngleSolver {
                 * velocityConstant
                 * secantSquared(thetaRadians)
                 * Math.tan(thetaRadians)
-            - AnglerConstants.kPivotLength * Math.cos(Math.toDegrees(thetaDegrees)));
+            - AnglerConstants.kPivotLengthMeters * Math.cos(Math.toDegrees(thetaDegrees)));
   }
 
   public static double createTangentLineXIntercept(double x, double y, double slope) {
@@ -80,7 +80,8 @@ public class TrajectoryAngleSolver {
     return Math.pow(1 / Math.cos(thetaRadians), 2);
   }
 
-  public static void setDistanceCAndVelocityC(double distanceFromWallMeters, double initVelocityMPS) {
+  public static void setDistanceCAndVelocityC(
+      double distanceFromWallMeters, double initVelocityMPS) {
     distanceConstant = -(xGoalMeters - distanceFromWallMeters);
     velocityConstant = 9.81 / (2 * initVelocityMPS * initVelocityMPS);
   }

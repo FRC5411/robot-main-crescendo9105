@@ -16,25 +16,25 @@ public class AnglerSim implements AnglerIO {
   private SingleJointedArmSim armSim =
       new SingleJointedArmSim(
           DCMotor.getNEO(1),
-          5.0,
-          0.005,
-          AnglerConstants.kPivotLength,
+          50.0,
+          AnglerConstants.kJKGMetersSquared,
+          AnglerConstants.kPivotLengthMeters,
           Math.toRadians(15),
           Math.toRadians(75),
           false,
           Math.toRadians(15),
-          VecBuilder.fill(0.0));
+          VecBuilder.fill(0.001));
 
   private Rotation2d anglerAngle = new Rotation2d();
   private double appliedVolts = 0;
 
-  private Mechanism2d mechanismField = new Mechanism2d(10, 10);
+  private Mechanism2d mechanismField = new Mechanism2d(4, 4);
   private MechanismRoot2d armRoot = mechanismField.getRoot("ArmPivot", 0, 0);
   private final MechanismLigament2d armPivot =
       armRoot.append(
           new MechanismLigament2d(
               "pivotArm",
-              AnglerConstants.kDriverLength,
+              AnglerConstants.kPivotLengthMeters,
               Math.toRadians(15),
               10,
               new Color8Bit(255, 0, 0)));

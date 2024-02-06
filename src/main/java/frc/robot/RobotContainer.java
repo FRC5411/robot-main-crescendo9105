@@ -103,7 +103,7 @@ public class RobotContainer {
             robotShooter
                 .setShooterVelocitySetpointCommand(20, 20, Rotation2d.fromDegrees(45))
                 .andThen(robotShooter.setIndexerVoltage(12)))
-        .onFalse(robotShooter.setShooterVelocitySetpointCommand(0, 0, Rotation2d.fromDegrees(45)));
+        .onFalse(robotShooter.setShooterVelocitySetpointCommand(0, 0, Rotation2d.fromDegrees(15)));
 
     // pilotController
     //     .square()

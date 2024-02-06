@@ -5,12 +5,12 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
 public class AnglerConstants {
   public static int kMotorID = 65;
-  public static int kAbsoluteEncoderID = 6;
-  public static int kRelativeEncoderAID = 6;
-  public static int kRelativeEncoderBID = 6;
+  public static int kAbsoluteEncoderID = 7;
+  public static int kRelativeEncoderAID = 8;
+  public static int kRelativeEncoderBID = 9;
 
-  public static double kPivotLength = 0.5;
-  public static double kDriverLength = 5.0 / 6;
+  public static double kPivotLengthMeters = 0.4826;
+  public static double kJKGMetersSquared = 0.167248163371;
 
   public static double kMaxVoltage = 12.0;
   public static double kMinVoltage = -12.0;
@@ -29,7 +29,7 @@ public class AnglerConstants {
 
   public static TrapezoidProfile.Constraints kConstraints = new TrapezoidProfile.Constraints(0, 0);
 
-  public static double kSimP = 0.035;
+  public static double kSimP = 0.25;
   public static double kSimI = 0.0;
   public static double kSimD = 0.0;
 
