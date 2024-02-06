@@ -43,6 +43,7 @@ public class AnglerNEO implements AnglerIO {
     inputs.anglerMotorTempC = anglerMotor.getMotorTemperature();
     inputs.anglerAtGoal = anglerController.atGoal();
     inputs.anglerAtSetpoint = anglerController.atSetpoint();
+    anglerController.updateTunablePID();
   }
 
   @Override

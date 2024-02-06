@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter.Flywheel;
 
+import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -8,6 +9,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import frc.robot.util.LoggedTunableNumber;
 
 public class ShooterWheelTalonFX implements ShooterWheelIO {
   private TalonFX flywheelMotor;
@@ -18,15 +20,30 @@ public class ShooterWheelTalonFX implements ShooterWheelIO {
   private VelocityVoltage flywheelVelocity = new VelocityVoltage(0.0);
   private SlewRateLimiter velocityRateLimiter;
 
+  private LoggedTunableNumber shooterWheelControlP;
+  private LoggedTunableNumber shooterWheelControlI;
+  private LoggedTunableNumber shooterWheelControlD;
+  private LoggedTunableNumber shooterWheelControlS;
+  private LoggedTunableNumber shooterWheelControlV;
+  private LoggedTunableNumber shooterWheelControlA;
+
   public ShooterWheelTalonFX(
       int motorID,
       boolean invert,
       PIDController velocity,
       SimpleMotorFeedforward velocityFeedforward,
-      double flywheelRateLimit) {
+      double flywheelRateLimit,
+      String key) {
     configMotor(motorID, invert, velocity, velocityFeedforward);
     this.velocityRateLimit = flywheelRateLimit;
     this.velocityRateLimiter = new SlewRateLimiter(this.velocityRateLimit);
+
+    this.shooterWheelControlP =
+        new LoggedTunableNumber("ShooterWheel/P" + key, ShooterWheelConstants.kP);
+    this.shooterWheelControlI =
+        new LoggedTunableNumber("ShooterWheel/I" + key, ShooterWheelConstants.kI);
+    this.shooterWheelControlD =
+        new LoggedTunableNumber("ShooterWheel/D" + key, ShooterWheelConstants.kD);
   }
 
   @Override
@@ -36,6 +53,19 @@ public class ShooterWheelTalonFX implements ShooterWheelIO {
     inputs.flywheelAppliedVolts = flywheelMotor.getMotorVoltage().getValueAsDouble();
     inputs.flywheelCurrentAmps = new double[] {flywheelMotor.getStatorCurrent().getValueAsDouble()};
     inputs.flywheelVelocityMPSSetpoint = flywheelVelocitySetpointMPS;
+
+    if (shooterWheelControlP.hasChanged(hashCode())
+        || shooterWheelControlI.hasChanged(hashCode())
+        || shooterWheelControlD.hasChanged(hashCode())) {
+      Slot0Configs config = new Slot0Configs();
+      config.kP = shooterWheelControlP.get();
+      config.kI = shooterWheelControlI.get();
+      config.kD = shooterWheelControlD.get();
+      config.kS = shooterWheelControlS.get();
+      config.kV = shooterWheelControlV.get();
+      config.kA = shooterWheelControlA.get();
+      flywheelMotor.getConfigurator().apply(config, 50);
+    }
   }
 
   @Override

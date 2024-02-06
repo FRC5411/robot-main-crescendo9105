@@ -57,6 +57,8 @@ public class AnglerSim implements AnglerIO {
     inputs.anglerAtGoal = anglerController.atGoal();
     inputs.anglerAtSetpoint = anglerController.atSetpoint();
 
+    anglerController.updateTunablePID();
+
     armPivot.setAngle(anglerAngle);
     Logger.recordOutput("angler", mechanismField);
   }

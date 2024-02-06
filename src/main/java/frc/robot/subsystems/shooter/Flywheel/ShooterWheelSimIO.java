@@ -7,6 +7,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import frc.robot.util.LoggedTunableNumber;
 
 public class ShooterWheelSimIO implements ShooterWheelIO {
   private FlywheelSim flywheelMotor =
@@ -25,14 +26,26 @@ public class ShooterWheelSimIO implements ShooterWheelIO {
   private SimpleMotorFeedforward velocityFeedforward;
   private SlewRateLimiter velocityRateLimiter;
 
+  private LoggedTunableNumber shooterWheelControlP;
+  private LoggedTunableNumber shooterWheelControlI;
+  private LoggedTunableNumber shooterWheelControlD;
+
   public ShooterWheelSimIO(
       PIDController flywheelPID,
       SimpleMotorFeedforward flywheelFeedforward,
-      double flywheelRateLimit) {
+      double flywheelRateLimit,
+      String key) {
     this.velocityController = flywheelPID;
     this.velocityFeedforward = flywheelFeedforward;
     this.velocityRateLimit = flywheelRateLimit;
     this.velocityRateLimiter = new SlewRateLimiter(this.velocityRateLimit);
+
+    this.shooterWheelControlP =
+        new LoggedTunableNumber("ShooterWheel/P" + key, velocityController.getP());
+    this.shooterWheelControlI =
+        new LoggedTunableNumber("ShooterWheel/I" + key, velocityController.getI());
+    this.shooterWheelControlD =
+        new LoggedTunableNumber("ShooterWheel/D" + key, velocityController.getD());
   }
 
   @Override
@@ -45,6 +58,14 @@ public class ShooterWheelSimIO implements ShooterWheelIO {
     inputs.flywheelVelocityMPSSetpoint = velocitySetpointMPS;
 
     flywheelMotor.update(0.2);
+
+    if (shooterWheelControlP.hasChanged(hashCode())
+        || shooterWheelControlI.hasChanged(hashCode())
+        || shooterWheelControlD.hasChanged(hashCode())) {
+      velocityController.setP(shooterWheelControlP.get());
+      velocityController.setI(shooterWheelControlI.get());
+      velocityController.setD(shooterWheelControlD.get());
+    }
   }
 
   @Override

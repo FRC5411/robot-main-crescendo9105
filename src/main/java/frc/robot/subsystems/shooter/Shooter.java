@@ -72,7 +72,8 @@ public class Shooter extends SubsystemBase {
                   ShooterWheelConstants.kP, ShooterWheelConstants.kI, ShooterWheelConstants.kD),
               new SimpleMotorFeedforward(
                   ShooterWheelConstants.kS, ShooterWheelConstants.kV, ShooterWheelConstants.kA),
-              ShooterWheelConstants.kFlywheelRateLimit);
+              ShooterWheelConstants.kFlywheelRateLimit,
+              "Top");
       shooterWheelBottom =
           new ShooterWheelTalonFX(
               ShooterWheelConstants.kBottomMotorID,
@@ -81,7 +82,8 @@ public class Shooter extends SubsystemBase {
                   ShooterWheelConstants.kP, ShooterWheelConstants.kI, ShooterWheelConstants.kD),
               new SimpleMotorFeedforward(
                   ShooterWheelConstants.kS, ShooterWheelConstants.kV, ShooterWheelConstants.kA),
-              ShooterWheelConstants.kFlywheelRateLimit);
+              ShooterWheelConstants.kFlywheelRateLimit,
+              "Bottom");
 
       indexerIO = new Indexer550();
       anglerIO = new AnglerNEO(AnglerConstants.kMotorID);
@@ -96,7 +98,8 @@ public class Shooter extends SubsystemBase {
                   ShooterWheelConstants.kSimS,
                   ShooterWheelConstants.kSimV,
                   ShooterWheelConstants.kSimA),
-              ShooterWheelConstants.kFlywheelRateLimit);
+              ShooterWheelConstants.kFlywheelRateLimit,
+              "Top");
       shooterWheelBottom =
           new ShooterWheelSimIO(
               new PIDController(
@@ -107,7 +110,8 @@ public class Shooter extends SubsystemBase {
                   ShooterWheelConstants.kSimS,
                   ShooterWheelConstants.kSimV,
                   ShooterWheelConstants.kSimA),
-              ShooterWheelConstants.kFlywheelRateLimit);
+              ShooterWheelConstants.kFlywheelRateLimit,
+              "Bottom");
 
       indexerIO = new IndexerSim();
       anglerIO = new AnglerSim();

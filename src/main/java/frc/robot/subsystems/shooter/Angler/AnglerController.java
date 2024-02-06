@@ -6,6 +6,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.RobotBase;
+import frc.robot.util.LoggedTunableNumber;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -14,6 +15,10 @@ public class AnglerController {
   public final Consumer<Double> voltageConsumer;
   public final ProfiledPIDController controller;
   public final ArmFeedforward armFF;
+
+  private LoggedTunableNumber armControlP;
+  private LoggedTunableNumber armControlI;
+  private LoggedTunableNumber armControlD;
 
   public AnglerController(Supplier<Rotation2d> measureSupplier, Consumer<Double> voltageConsumer) {
     this.measureSupplier = measureSupplier;
@@ -41,6 +46,10 @@ public class AnglerController {
                 AnglerConstants.kSimA);
 
     this.controller.enableContinuousInput(0, 360);
+
+    this.armControlP = new LoggedTunableNumber("Angler/P", controller.getP());
+    this.armControlI = new LoggedTunableNumber("Angler/I", controller.getI());
+    this.armControlD = new LoggedTunableNumber("Angler/D", controller.getD());
   }
 
   public void setGoal(Rotation2d goal) {
@@ -75,5 +84,15 @@ public class AnglerController {
 
   public boolean atSetpoint() {
     return controller.atSetpoint();
+  }
+
+  public void updateTunablePID() {
+    if (armControlP.hasChanged(hashCode())
+        || armControlI.hasChanged(hashCode())
+        || armControlD.hasChanged(hashCode())) {
+      controller.setP(armControlP.get());
+      controller.setI(armControlI.get());
+      controller.setD(armControlD.get());
+    }
   }
 }
