@@ -1,11 +1,14 @@
-package frc.robot.util;
+package frc.robot.subsystems.shooter;
 
 import frc.robot.subsystems.shooter.Angler.AnglerConstants;
+import org.littletonrobotics.junction.Logger;
+
+import edu.wpi.first.wpilibj.Timer;
 
 public class TrajectoryAngleSolver {
   public static double xGoalMeters = 0.23;
   public static double yGoalMeters = 2.045;
-  public static double heightFromShootMeters = 0.0;
+  public static double heightFromShootMeters = 0.25;
   public static double mdistanceFromWallMeters = 0.0;
 
   public static double thetaDegrees = 0;
@@ -15,11 +18,13 @@ public class TrajectoryAngleSolver {
 
   public static double newtonRaphsonSolver(double distanceFromWallMeters, double initVelocityMPS) {
     mdistanceFromWallMeters = distanceFromWallMeters;
-    thetaDegrees = 15;
+    thetaDegrees = 70;
     int i = 0;
+    Timer timer = new Timer();
+    timer.start();
     while (Math.abs(trajectoryByAngle(mdistanceFromWallMeters, initVelocityMPS, thetaDegrees))
-            > 1e-2
-        && i < 10) {
+            > 1e-4
+        && i < 1000) {
       thetaDegrees =
           createTangentLineXIntercept(
               thetaDegrees,
@@ -29,19 +34,22 @@ public class TrajectoryAngleSolver {
                   mdistanceFromWallMeters, initVelocityMPS, Math.toRadians(thetaDegrees), 1e-4));
       i++;
     }
+    Logger.recordOutput("Shot Calculation Time", timer.get());
+    timer.stop();
     return thetaDegrees;
   }
 
   public static double trajectoryByAngle(
       double distanceFromWallMeters, double initVelocityMPS, double thetaRadians) {
-    setDistanceCAndVelocityC(
-        distanceFromWallMeters - AnglerConstants.kPivotLengthMeters * Math.cos(thetaRadians),
-        initVelocityMPS);
+    setDistanceCAndVelocityC(distanceFromWallMeters, initVelocityMPS, thetaRadians);
+    Logger.recordOutput("Distance Constant", distanceConstant);
+    Logger.recordOutput("Velocity Constant", velocityConstant);
 
-    return -yGoalMeters
-        + distanceConstant * Math.tan(thetaRadians)
-        - distanceConstant * distanceConstant * velocityConstant * secantSquared(thetaRadians)
-        - AnglerConstants.kPivotLengthMeters * Math.sin(thetaRadians);
+    return +distanceConstant * Math.tan(thetaRadians)
+        - Math.pow(distanceConstant, 2) * velocityConstant * secantSquared(thetaRadians)
+        + AnglerConstants.kPivotLengthMeters * Math.sin(thetaRadians)
+        + heightFromShootMeters
+        - yGoalMeters;
   }
 
   public static double discreteDerivativeOfTrajectoryByAngle(
@@ -60,7 +68,7 @@ public class TrajectoryAngleSolver {
 
   public static double derivativeOfTrajectoryByAngle(
       double distanceFromWallMeters, double initVelocityMPS, double thetaRadians) {
-    setDistanceCAndVelocityC(distanceFromWallMeters, initVelocityMPS);
+    setDistanceCAndVelocityC(distanceFromWallMeters, initVelocityMPS, thetaRadians);
 
     return (Math.PI / 180)
         * (distanceConstant * secantSquared(thetaRadians)
@@ -81,8 +89,11 @@ public class TrajectoryAngleSolver {
   }
 
   public static void setDistanceCAndVelocityC(
-      double distanceFromWallMeters, double initVelocityMPS) {
-    distanceConstant = -(xGoalMeters - distanceFromWallMeters);
+      double distanceFromWallMeters, double initVelocityMPS, double thetaRadians) {
+    distanceConstant =
+        -(xGoalMeters
+            - distanceFromWallMeters
+            + AnglerConstants.kPivotLengthMeters * Math.cos(thetaRadians));
     velocityConstant = 9.81 / (2 * initVelocityMPS * initVelocityMPS);
   }
 }

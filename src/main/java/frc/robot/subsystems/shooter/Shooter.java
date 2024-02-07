@@ -31,7 +31,6 @@ import frc.robot.subsystems.shooter.Indexer.Indexer550;
 import frc.robot.subsystems.shooter.Indexer.IndexerIO;
 import frc.robot.subsystems.shooter.Indexer.IndexerIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.Indexer.IndexerSim;
-import frc.robot.util.TrajectoryAngleSolver;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
