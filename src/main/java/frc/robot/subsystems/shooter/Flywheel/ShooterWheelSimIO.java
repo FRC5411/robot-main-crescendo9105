@@ -12,7 +12,7 @@ import frc.robot.util.LoggedTunableNumber;
 public class ShooterWheelSimIO implements ShooterWheelIO {
   private FlywheelSim flywheelMotor =
       new FlywheelSim(
-          DCMotor.getNEO(1),
+          DCMotor.getFalcon500(1),
           ShooterWheelConstants.kGearing,
           ShooterWheelConstants.kJKgMetersSquared,
           VecBuilder.fill(0.1));

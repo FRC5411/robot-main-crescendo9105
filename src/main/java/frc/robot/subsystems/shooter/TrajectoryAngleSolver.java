@@ -1,9 +1,8 @@
 package frc.robot.subsystems.shooter;
 
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.subsystems.shooter.Angler.AnglerConstants;
 import org.littletonrobotics.junction.Logger;
-
-import edu.wpi.first.wpilibj.Timer;
 
 public class TrajectoryAngleSolver {
   public static double xGoalMeters = 0.23;

@@ -44,6 +44,12 @@ public class ShooterWheelTalonFX implements ShooterWheelIO {
         new LoggedTunableNumber("ShooterWheel/I" + key, ShooterWheelConstants.kI);
     this.shooterWheelControlD =
         new LoggedTunableNumber("ShooterWheel/D" + key, ShooterWheelConstants.kD);
+    this.shooterWheelControlS =
+        new LoggedTunableNumber("ShooterWheel/S" + key, ShooterWheelConstants.kS);
+    this.shooterWheelControlV =
+        new LoggedTunableNumber("ShooterWheel/V" + key, ShooterWheelConstants.kV);
+    this.shooterWheelControlA =
+        new LoggedTunableNumber("ShooterWheel/A" + key, ShooterWheelConstants.kA);
   }
 
   @Override
@@ -54,9 +60,12 @@ public class ShooterWheelTalonFX implements ShooterWheelIO {
     inputs.flywheelCurrentAmps = new double[] {flywheelMotor.getStatorCurrent().getValueAsDouble()};
     inputs.flywheelVelocityMPSSetpoint = flywheelVelocitySetpointMPS;
 
-    if (shooterWheelControlP.hasChanged(hashCode())
+    if (   shooterWheelControlP.hasChanged(hashCode())
         || shooterWheelControlI.hasChanged(hashCode())
-        || shooterWheelControlD.hasChanged(hashCode())) {
+        || shooterWheelControlD.hasChanged(hashCode())
+        || shooterWheelControlS.hasChanged(hashCode())
+        || shooterWheelControlV.hasChanged(hashCode())
+        || shooterWheelControlA.hasChanged(hashCode()) ) {
       Slot0Configs config = new Slot0Configs();
       config.kP = shooterWheelControlP.get();
       config.kI = shooterWheelControlI.get();
@@ -64,7 +73,7 @@ public class ShooterWheelTalonFX implements ShooterWheelIO {
       config.kS = shooterWheelControlS.get();
       config.kV = shooterWheelControlV.get();
       config.kA = shooterWheelControlA.get();
-      flywheelMotor.getConfigurator().apply(config, 50);
+      flywheelMotor.getConfigurator().apply(config, 0.1);
     }
   }
 
@@ -82,8 +91,8 @@ public class ShooterWheelTalonFX implements ShooterWheelIO {
 
     flywheelMotor.setControl(
         flywheelVelocity
-            .withVelocity(flywheelVelocitySetpointMPS / ShooterWheelConstants.kCircumferenceM)
-            .withAcceleration(acceleration));
+            .withVelocity( flywheelVelocitySetpointMPS / ShooterWheelConstants.kCircumferenceM)
+            .withAcceleration( acceleration / ShooterWheelConstants.kCircumferenceM ) );
   }
 
   public void configMotor(
