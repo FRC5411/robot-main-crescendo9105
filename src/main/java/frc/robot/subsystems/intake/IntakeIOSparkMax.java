@@ -13,8 +13,10 @@ import edu.wpi.first.math.MathUtil;
 /** Class to interact with the physical intake structure */
 public class IntakeIOSparkMax implements IntakeIO {
   // TODO Update IDs and constatns as needed
-  private CANSparkMax intakeMotor = new CANSparkMax(40, MotorType.kBrushless);
+  private CANSparkMax intakeMotor = new CANSparkMax(51, MotorType.kBrushless);
   private RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
+
+  private double appliedVolts = 0.0;
 
   /** Create a new hardware implementation of the intake */
   public IntakeIOSparkMax() {
@@ -23,7 +25,7 @@ public class IntakeIOSparkMax implements IntakeIO {
 
     intakeMotor.setSmartCurrentLimit(40);
     intakeMotor.enableVoltageCompensation(12.0);
-    intakeMotor.setIdleMode(IdleMode.kCoast);
+    intakeMotor.setIdleMode(IdleMode.kBrake);
 
     intakeEncoder.setPosition(0.0);
 
@@ -34,14 +36,14 @@ public class IntakeIOSparkMax implements IntakeIO {
   public void updateInputs(IntakeIOInputs inputs) {
     inputs.angleRotations = intakeEncoder.getPosition();
     inputs.velocityRPM = intakeEncoder.getVelocity();
-    inputs.appliedVolts = intakeMotor.getBusVoltage();
+    inputs.appliedVolts = appliedVolts;
     inputs.appliedCurrentAmps = new double[] {intakeMotor.getOutputCurrent()};
     inputs.temperatureCelsius = new double[] {intakeMotor.getMotorTemperature()};
   }
 
   @Override
   public void setVolts(double volts) {
-    var adjustedVolts = MathUtil.clamp(volts, -12.0, 12.0);
-    intakeMotor.setVoltage(adjustedVolts);
+    appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+    intakeMotor.setVoltage(appliedVolts);
   }
 }

@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.SwerveCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
@@ -25,6 +26,8 @@ import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -60,7 +63,7 @@ public class RobotContainer {
                 new ModuleIOSparkMax(2),
                 new ModuleIOSparkMax(3),
                 new GyroIOPigeon2(false));
-        // robotIntake = new Intake(new IntakeIOSparkMax());
+        robotIntake = new Intake(new IntakeIOSparkMax());
         // robotClimb = new Climb(new ClimbIOSparkMax());
         break;
       case SIM:
@@ -71,7 +74,7 @@ public class RobotContainer {
                 new ModuleIOSim(2),
                 new ModuleIOSim(3),
                 new GyroIO() {});
-        // robotIntake = new Intake(new IntakeIOSim());
+        robotIntake = new Intake(new IntakeIOSim());
         // robotClimb = new Climb(new ClimbIOSim());
         break;
       default:
@@ -93,8 +96,8 @@ public class RobotContainer {
     // Register commands with PathPlanner's AutoBuilder so it can call them
     NamedCommands.registerCommand(
         "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));
-    // NamedCommands.registerCommand(
-    //     "Intake", Commands.run(() -> robotIntake.setVelocity(1), robotIntake));
+    NamedCommands.registerCommand("Intake", IntakeCommands.intakePiece(robotIntake, 12.0));
+    NamedCommands.registerCommand("Stop Intake", IntakeCommands.stopIntake(robotIntake));
 
     autoChooser.addDefaultOption("Print Hello", new PrintCommand("Hello"));
   }
@@ -108,7 +111,7 @@ public class RobotContainer {
             robotDrive,
             () -> -pilotController.getLeftY(),
             () -> -pilotController.getLeftX(),
-            () -> pilotController.getRightX()));
+            () -> -pilotController.getRightX()));
 
     /* Reset drive heading | Debugging */
     pilotController
@@ -131,6 +134,18 @@ public class RobotContainer {
     //     //        .whileTrue(IntakeCommands.runIntake(robotIntake, 5676.0 / 2.0))
     //     .whileTrue(IntakeCommands.runIntake(robotIntake, 1500.0))
     //     .whileFalse(IntakeCommands.stopIntake(robotIntake));
+    pilotController
+        .leftBumper()
+        .whileTrue(IntakeCommands.intakePiece(robotIntake, 12.0))
+        .whileFalse(IntakeCommands.stopIntake(robotIntake));
+    pilotController
+        .rightBumper()
+        .whileTrue(IntakeCommands.intakePiece(robotIntake, -12.0))
+        .whileFalse(IntakeCommands.stopIntake(robotIntake));
+    pilotController
+        .b()
+        .onTrue(IntakeCommands.intakePiece(robotIntake, 12.0))
+        .onFalse(IntakeCommands.stopIntake(robotIntake));
 
     // /* Set climb to angle */
     // pilotController

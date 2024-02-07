@@ -17,7 +17,7 @@ import java.util.function.DoubleSupplier;
 
 /** Class to hold all of the commands for the Drive */
 public class SwerveCommands {
-  private static final double DEADBAND = 0.1;
+  private static final double DEADBAND = 0.2;
 
   private SwerveCommands() {}
 

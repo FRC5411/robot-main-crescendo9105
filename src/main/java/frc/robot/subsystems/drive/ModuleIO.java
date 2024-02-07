@@ -34,6 +34,12 @@ public interface ModuleIO {
   /** Set the voltage for the azmith motor */
   public default void setAzimuthVolts(double volts) {}
 
+  /** Set the velocity setpoint for closed-loop control */
+  public default void setDriveVelocity(double velocityMPS) {}
+
+  /** Set the position setpoint for closed-loop control */
+  public default void setAzimuthPosition(Rotation2d position) {}
+
   /** Brake the drive motor */
   public default void setDriveBrake(boolean isBrake) {}
 

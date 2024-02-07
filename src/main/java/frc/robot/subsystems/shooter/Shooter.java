@@ -37,6 +37,7 @@ public class Shooter extends SubsystemBase {
 
   private ArmFeedforward anglerFeedforward = new ArmFeedforward(0.0, 0.0, 0.0);
   private SimpleMotorFeedforward indexerFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
+  // TODO Remove this cause launcher control is gonna be on Talons
   private SimpleMotorFeedforward launcherFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
 
   private LoggedTunableNumber anglerFeedbackP =

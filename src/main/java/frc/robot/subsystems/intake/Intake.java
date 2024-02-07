@@ -88,6 +88,10 @@ public class Intake extends SubsystemBase {
     Logger.recordOutput("Intake/Controller/Setpoint", velocitySetpointRPM);
   }
 
+  public void setVolts(double volts) {
+    io.setVolts(volts);
+  }
+
   /** Stops the motor */
   public void stopMotor() {
     io.setVolts(0.0);

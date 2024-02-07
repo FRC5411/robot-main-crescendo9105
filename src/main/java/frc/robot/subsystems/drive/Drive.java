@@ -24,8 +24,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -40,9 +38,6 @@ public class Drive extends SubsystemBase {
   private final double MAX_ANGULAR_SPEED_MPS = MAX_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS_M;
 
   private final SwerveDriveKinematics KINEMATICS = getKinematics();
-
-  // Odometry threads whine when I remove this so I keep for now
-  public static final Lock odometryLock = new ReentrantLock();
 
   private GyroIO gyroIO;
   private GyroIOInputsAutoLogged gyroIOInputs = new GyroIOInputsAutoLogged();
@@ -99,14 +94,10 @@ public class Drive extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // Lock odometry while reading data to logger
-    odometryLock.lock();
     gyroIO.updateInputs(gyroIOInputs);
     for (var module : modules) {
       module.updateInputs();
     }
-    // Now unlock odometry since data has been logged
-    odometryLock.unlock();
     Logger.processInputs("Drive/Gyro", gyroIOInputs);
 
     for (var module : modules) {

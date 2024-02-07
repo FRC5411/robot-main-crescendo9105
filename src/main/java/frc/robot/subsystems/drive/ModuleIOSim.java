@@ -5,6 +5,7 @@
 package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -21,7 +22,12 @@ public class ModuleIOSim implements ModuleIO {
   private double driveAppliedVolts = 0.0;
   private double azimuthAppliedVolts = 0.0;
 
-  public ModuleIOSim(int module) {}
+  private PIDController driveFeedback = new PIDController(0.0, 0.0, 0.0);
+  private PIDController azimuthFeedback = new PIDController(0.0, 0.0, 0.0);
+
+  public ModuleIOSim(int module) {
+    azimuthFeedback.enableContinuousInput(-Math.PI, Math.PI);
+  }
 
   @Override
   public void updateInputs(ModuleIOInputs inputs) {
@@ -29,6 +35,7 @@ public class ModuleIOSim implements ModuleIO {
     azimuthMotor.update(LOOP_PERIOD_S);
 
     inputs.drivePositionM = driveMotor.getAngularPositionRad();
+    // TODO Fix this
     inputs.driveVelocityMPS = driveMotor.getAngularVelocityRadPerSec();
     inputs.driveAppliedVolts = driveAppliedVolts;
     inputs.driveCurrentAmps = new double[] {Math.abs(driveMotor.getCurrentDrawAmps())};
@@ -53,5 +60,20 @@ public class ModuleIOSim implements ModuleIO {
   public void setAzimuthVolts(double volts) {
     azimuthAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
     azimuthMotor.setInputVoltage(azimuthAppliedVolts);
+  }
+
+  @Override
+  public void setDriveVelocity(double velocityMPS) {
+    // TODO Fix this too
+    var feedbackOutput = driveFeedback.calculate(driveMotor.getAngularVelocityRPM(), velocityMPS);
+    setDriveVolts(feedbackOutput * 12.0);
+  }
+
+  @Override
+  public void setAzimuthPosition(Rotation2d position) {
+    // TODO Fix this too
+    var feedbackOutput =
+        driveFeedback.calculate(azimuthMotor.getAngularPositionRad(), position.getRadians());
+    setDriveVolts(feedbackOutput * 12.0);
   }
 }
