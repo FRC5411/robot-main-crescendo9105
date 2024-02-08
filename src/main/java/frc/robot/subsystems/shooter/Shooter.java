@@ -37,8 +37,6 @@ public class Shooter extends SubsystemBase {
 
   private ArmFeedforward anglerFeedforward = new ArmFeedforward(0.0, 0.0, 0.0);
   private SimpleMotorFeedforward indexerFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
-  // TODO Remove this cause launcher control is gonna be on Talons
-  private SimpleMotorFeedforward launcherFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
 
   private LoggedTunableNumber anglerFeedbackP =
       new LoggedTunableNumber("Shooter/Tuning/AnglerP", anglerFeedback.getP());
@@ -60,16 +58,8 @@ public class Shooter extends SubsystemBase {
   private LoggedTunableNumber indexerFeedbackD =
       new LoggedTunableNumber("Shooter/Tuning/indexerD", indexerFeedback.getD());
 
-  private LoggedTunableNumber launcherFeedbackP =
-      new LoggedTunableNumber("Shooter/Tuning/launcherP", launcherFeedback.getP());
-  private LoggedTunableNumber launcherFeedbackI =
-      new LoggedTunableNumber("Shooter/Tuning/launcherI", launcherFeedback.getI());
-  private LoggedTunableNumber launcherFeedbackD =
-      new LoggedTunableNumber("Shooter/Tuning/launcherD", launcherFeedback.getD());
-
   private Rotation2d anglerSetpoint = null;
   private Double indexerSetpointRPM = null;
-  private Double launcherSetpointRPM = null;
 
   /** Creates a new Shooter. */
   public Shooter(AnglerIO anglerIO, IndexerIO indexerIO, LauncherIO launcherIO) {
@@ -127,15 +117,6 @@ public class Shooter extends SubsystemBase {
       indexerFeedback.setI(indexerFeedbackI.get());
       indexerFeedback.setD(indexerFeedbackD.get());
     }
-
-    /* Launcher */
-    if (launcherFeedbackP.hasChanged(hashCode())
-        || launcherFeedbackI.hasChanged(hashCode())
-        || launcherFeedbackD.hasChanged(hashCode())) {
-      launcherFeedback.setP(launcherFeedbackP.get());
-      launcherFeedback.setI(launcherFeedbackI.get());
-      launcherFeedback.setD(launcherFeedbackD.get());
-    }
   }
 
   public void setAngler(Rotation2d desiredAngle) {
@@ -148,12 +129,6 @@ public class Shooter extends SubsystemBase {
     indexerSetpointRPM = desiredVelocityRPM;
 
     Logger.recordOutput("Shooter/IndexerController/Setpoint", indexerSetpointRPM);
-  }
-
-  public void setLauncher(double desiredVelocityRPM) {
-    launcherSetpointRPM = desiredVelocityRPM;
-
-    Logger.recordOutput("Shooter/LauncherController/Setpoint", launcherSetpointRPM);
   }
 
   /** Stop the motors of the shooter subsystem */
