@@ -42,7 +42,7 @@ public class ModuleIOSparkMax implements ModuleIO {
   private double azimuthFeedbackError = 0.0;
 
   private LoggedTunableNumber driveFeedbackP =
-      new LoggedTunableNumber("Drive/SM/FeedbackP", 0.00005);
+      new LoggedTunableNumber("Drive/SM/FeedbackP", 0.02 * (60 / (DRIVE_GEAR_RATIO * CIRCUMFRENCE_METERS)));
   private LoggedTunableNumber driveFeedbackI = new LoggedTunableNumber("Drive/SM/FeedbackI", 0.0);
   private LoggedTunableNumber driveFeedbackD = new LoggedTunableNumber("Drive/SM/FeedbackD", 0.0);
 

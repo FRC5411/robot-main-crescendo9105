@@ -24,6 +24,9 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utils.Swerve.ModuleLimits;
+import frc.robot.utils.Swerve.SwerveSetpoint;
+import frc.robot.utils.Swerve.SwerveSetpointGenerator;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -36,8 +39,22 @@ public class Drive extends SubsystemBase {
       Math.hypot(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0);
   private final double MAX_LINEAR_SPEED_MPS = Units.feetToMeters(14.0);
   private final double MAX_ANGULAR_SPEED_MPS = MAX_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS_M;
+  private ModuleLimits MODULE_LIMITS =
+      new ModuleLimits(MAX_LINEAR_SPEED_MPS, MAX_LINEAR_SPEED_MPS * 5, MAX_ANGULAR_SPEED_MPS);
+  private SwerveSetpoint currentSetpoint =
+      new SwerveSetpoint(
+          new ChassisSpeeds(),
+          new SwerveModuleState[] {
+            new SwerveModuleState(),
+            new SwerveModuleState(),
+            new SwerveModuleState(),
+            new SwerveModuleState()
+          });
+  private SwerveSetpointGenerator setpointGenerator;
 
+  private final Translation2d[] MODULE_TRANSLATIONS = getModuleTranslations();
   private final SwerveDriveKinematics KINEMATICS = getKinematics();
+  private final boolean modulesOrienting = false;
 
   private GyroIO gyroIO;
   private GyroIOInputsAutoLogged gyroIOInputs = new GyroIOInputsAutoLogged();
@@ -60,6 +77,12 @@ public class Drive extends SubsystemBase {
     modules[2] = new Module(moduleBL, 2);
     modules[3] = new Module(moduleBR, 3);
     gyroIO = gyro;
+
+    setpointGenerator =
+        SwerveSetpointGenerator.builder()
+            .kinematics(KINEMATICS)
+            .moduleLocations(MODULE_TRANSLATIONS)
+            .build();
 
     // Configure PathPlanner
     AutoBuilder.configureHolonomic(
@@ -128,17 +151,40 @@ public class Drive extends SubsystemBase {
   public void runSwerve(ChassisSpeeds speeds) {
     // Calculates setpoint states from inputs
     ChassisSpeeds discreteSpeeds =
-        ChassisSpeeds.discretize(speeds, 0.02); // Compensate for translational skew when rotating
+        discretize(speeds); // Compensate for translational skew when rotating
     SwerveModuleState[] setpointStates = KINEMATICS.toSwerveModuleStates(discreteSpeeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(
         setpointStates, MAX_LINEAR_SPEED_MPS); // Normalize speeds
 
-    // Set and log the optimized states
     SwerveModuleState[] optimizedSetpointStates = new SwerveModuleState[4];
-    for (int i = 0; i < 4; i++) {
-      optimizedSetpointStates[i] =
-          modules[i].setDesiredState(
-              setpointStates[i]); // setDesiredState returns the optimized state
+    if (!modulesOrienting) {
+      currentSetpoint =
+          setpointGenerator.generateSetpoint(MODULE_LIMITS, currentSetpoint, discreteSpeeds, 0.02);
+
+      // run modules
+      for (int i = 0; i < modules.length; i++) {
+        // Optimize setpoints
+        optimizedSetpointStates[i] =
+            SwerveModuleState.optimize(currentSetpoint.moduleStates()[i], modules[i].getAngle());
+        // optimizedSetpointStates[i] =
+        //     (Math.sqrt(
+        //                     Math.pow(discreteSpeeds.vxMetersPerSecond, 2)
+        //                         + Math.pow(discreteSpeeds.vxMetersPerSecond, 2))
+        //                 / MAX_LINEAR_SPEED_MPS
+        //             > 0.01)
+        //         ? modules[i].setDesiredState(optimizedSetpointStates[i])
+        //         : modules[i].setDesiredState(
+        //             new SwerveModuleState(
+        //                 optimizedSetpointStates[i].speedMetersPerSecond, modules[i].getAngle()));
+
+        modules[i].setDesiredState(optimizedSetpointStates[i]);
+      }
+    } else {
+      for (int i = 0; i < 4; i++) {
+        optimizedSetpointStates[i] =
+            modules[i].setDesiredState(
+                setpointStates[i]); // setDesiredState returns the optimized state
+      }
     }
 
     Logger.recordOutput("Drive/SwerveStates/Setpoints", setpointStates);
@@ -226,12 +272,28 @@ public class Drive extends SubsystemBase {
 
   /** Gets the kinematics of the drivetrain */
   public SwerveDriveKinematics getKinematics() {
-    return new SwerveDriveKinematics(
-        new Translation2d[] {
-          new Translation2d(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0),
-          new Translation2d(TRACK_WIDTH_X_M / 2.0, -TRACK_WIDTH_Y_M / 2.0),
-          new Translation2d(-TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0),
-          new Translation2d(-TRACK_WIDTH_X_M / 2.0, -TRACK_WIDTH_Y_M / 2.0)
-        });
+    return new SwerveDriveKinematics(getModuleTranslations());
   }
+
+  public Translation2d[] getModuleTranslations() {
+    return new Translation2d[] {
+      new Translation2d(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0),
+      new Translation2d(TRACK_WIDTH_X_M / 2.0, -TRACK_WIDTH_Y_M / 2.0),
+      new Translation2d(-TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0),
+      new Translation2d(-TRACK_WIDTH_X_M / 2.0, -TRACK_WIDTH_Y_M / 2.0)
+    };
+  }
+
+  public ChassisSpeeds discretize(ChassisSpeeds speeds) {
+    double dt = 0.02;
+    var desiredDeltaPose = new Pose2d(
+      speeds.vxMetersPerSecond * dt, 
+      speeds.vyMetersPerSecond * dt, 
+      new Rotation2d(speeds.omegaRadiansPerSecond * dt * 3)
+    );
+    var twist = new Pose2d().log(desiredDeltaPose);
+
+    return new ChassisSpeeds((twist.dx / dt), (twist.dy / dt), (speeds.omegaRadiansPerSecond));
+  }
+
 }
