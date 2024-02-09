@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
+import org.littletonrobotics.junction.Logger;
 
 /** Class to interact with the physical intake structure */
 public class IntakeIOSparkMax implements IntakeIO {
@@ -44,6 +45,7 @@ public class IntakeIOSparkMax implements IntakeIO {
   @Override
   public void setVolts(double volts) {
     appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+    Logger.recordOutput("Commands running internal level", appliedVolts);
     intakeMotor.setVoltage(appliedVolts);
   }
 }

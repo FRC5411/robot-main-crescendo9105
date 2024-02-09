@@ -166,16 +166,13 @@ public class Drive extends SubsystemBase {
         // Optimize setpoints
         optimizedSetpointStates[i] =
             SwerveModuleState.optimize(currentSetpoint.moduleStates()[i], modules[i].getAngle());
-        // optimizedSetpointStates[i] =
-        //     (Math.sqrt(
-        //                     Math.pow(discreteSpeeds.vxMetersPerSecond, 2)
-        //                         + Math.pow(discreteSpeeds.vxMetersPerSecond, 2))
-        //                 / MAX_LINEAR_SPEED_MPS
-        //             > 0.01)
-        //         ? modules[i].setDesiredState(optimizedSetpointStates[i])
-        //         : modules[i].setDesiredState(
-        //             new SwerveModuleState(
-        //                 optimizedSetpointStates[i].speedMetersPerSecond, modules[i].getAngle()));
+        optimizedSetpointStates[i] =
+            (Math.abs(optimizedSetpointStates[i].speedMetersPerSecond / MAX_LINEAR_SPEED_MPS)
+                    > 0.01)
+                ? modules[i].setDesiredState(optimizedSetpointStates[i])
+                : modules[i].setDesiredState(
+                    new SwerveModuleState(
+                        optimizedSetpointStates[i].speedMetersPerSecond, modules[i].getAngle()));
 
         modules[i].setDesiredState(optimizedSetpointStates[i]);
       }
@@ -286,14 +283,13 @@ public class Drive extends SubsystemBase {
 
   public ChassisSpeeds discretize(ChassisSpeeds speeds) {
     double dt = 0.02;
-    var desiredDeltaPose = new Pose2d(
-      speeds.vxMetersPerSecond * dt, 
-      speeds.vyMetersPerSecond * dt, 
-      new Rotation2d(speeds.omegaRadiansPerSecond * dt * 3)
-    );
+    var desiredDeltaPose =
+        new Pose2d(
+            speeds.vxMetersPerSecond * dt,
+            speeds.vyMetersPerSecond * dt,
+            new Rotation2d(speeds.omegaRadiansPerSecond * dt * 3));
     var twist = new Pose2d().log(desiredDeltaPose);
 
     return new ChassisSpeeds((twist.dx / dt), (twist.dy / dt), (speeds.omegaRadiansPerSecond));
   }
-
 }

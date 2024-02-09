@@ -7,6 +7,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.intake.Intake;
+import org.littletonrobotics.junction.Logger;
 
 /** Class to hold all of the commands for the Intake */
 public class IntakeCommands {
@@ -38,7 +39,15 @@ public class IntakeCommands {
 
   /** Intake a gamepiece */
   public static Command intakePiece(Intake robotIntake, double volts) {
-    currentCommand = Commands.run(() -> robotIntake.setVolts(volts), robotIntake);
+    currentCommand =
+        Commands.run(
+                () -> {
+                  robotIntake.setVolts(volts);
+                  Logger.recordOutput("Command Running", "Is running");
+                },
+                robotIntake)
+            .repeatedly()
+            .withTimeout(20);
 
     return currentCommand;
   }

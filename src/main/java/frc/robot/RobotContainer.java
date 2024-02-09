@@ -28,6 +28,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -93,6 +94,7 @@ public class RobotContainer {
 
   /** Register commands with PathPlanner and add default autos to chooser */
   private void configureAutonomous() {
+    Logger.recordOutput("Command Running", "Not Running");
     // Register commands with PathPlanner's AutoBuilder so it can call them
     NamedCommands.registerCommand(
         "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));
@@ -144,8 +146,10 @@ public class RobotContainer {
         .whileFalse(IntakeCommands.stopIntake(robotIntake));
     pilotController
         .b()
-        .onTrue(IntakeCommands.intakePiece(robotIntake, 12.0))
-        .onFalse(IntakeCommands.stopIntake(robotIntake));
+        .toggleOnTrue(
+            IntakeCommands.intakePiece(robotIntake, 12.0)
+                .finallyDo(() -> robotIntake.setVolts(0.0)));
+    // .toggleOnFalse(IntakeCommands.stopIntake(robotIntake));
 
     // /* Set climb to angle */
     // pilotController
