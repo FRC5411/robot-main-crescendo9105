@@ -203,6 +203,7 @@ public class Drive extends SubsystemBase {
 
   /** Set the pose of the robot */
   public void setPose(Pose2d pose) {
+    gyroIO.resetGyro( pose.getRotation() );
     poseEstimator.resetPosition(getRotation(), getModulePositions(), pose);
     currentPose = pose;
     //gyroIO.resetGyro(currentPose.getRotation());
