@@ -6,10 +6,8 @@ package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
 /** A simulated swerve module */
@@ -24,13 +22,12 @@ public class ModuleIOSim implements ModuleIO {
   private double driveAppliedVolts = 0.0;
   private double azimuthAppliedVolts = 0.0;
 
-  // TODO Tune sim values as needed
-  private PIDController driveController = new PIDController(0.1, 0.0, 0.0);
-  private PIDController azimuthController = new PIDController(10.0, 0.0, 0.0);
-  private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.13);
-  private SimpleMotorFeedforward azimuthFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
+  private PIDController driveFeedback = new PIDController(0.0, 0.0, 0.0);
+  private PIDController azimuthFeedback = new PIDController(0.0, 0.0, 0.0);
 
-  public ModuleIOSim(int module) {}
+  public ModuleIOSim(int module) {
+    azimuthFeedback.enableContinuousInput(-Math.PI, Math.PI);
+  }
 
   @Override
   public void updateInputs(ModuleIOInputs inputs) {
@@ -38,9 +35,11 @@ public class ModuleIOSim implements ModuleIO {
     azimuthMotor.update(LOOP_PERIOD_S);
 
     inputs.drivePositionM = driveMotor.getAngularPositionRad();
+    // TODO Fix this
     inputs.driveVelocityMPS = driveMotor.getAngularVelocityRadPerSec();
     inputs.driveAppliedVolts = driveAppliedVolts;
     inputs.driveCurrentAmps = new double[] {Math.abs(driveMotor.getCurrentDrawAmps())};
+    inputs.driveTemperatureCelsius = new double[] {0.0};
 
     inputs.azimuthAbsolutePosition =
         new Rotation2d(azimuthMotor.getAngularPositionRad()).plus(INITIAL_ABSOLUTE_ANGLE);
@@ -48,10 +47,7 @@ public class ModuleIOSim implements ModuleIO {
     inputs.azimuthVelocityRPS = azimuthMotor.getAngularVelocityRadPerSec();
     inputs.azimuthAppliedVolts = azimuthAppliedVolts;
     inputs.azimuthCurrentAmps = new double[] {Math.abs(azimuthMotor.getCurrentDrawAmps())};
-
-    inputs.odometryTimestamps = new double[] {Timer.getFPGATimestamp()};
-    inputs.odometryDrivePositionM = new double[] {inputs.drivePositionM};
-    inputs.odometryAzimuthPositions = new Rotation2d[] {inputs.azimuthPosition};
+    inputs.azimuthTemperatureCelsius = new double[] {0.0};
   }
 
   @Override
@@ -67,17 +63,17 @@ public class ModuleIOSim implements ModuleIO {
   }
 
   @Override
-  public void setVelocity(double velocityRPS) {
-    setDriveVolts(
-        driveController.calculate(driveMotor.getAngularVelocityRadPerSec(), velocityRPS)
-            + driveFeedforward.calculate(velocityRPS));
+  public void setDriveVelocity(double velocityMPS) {
+    // TODO Fix this too
+    var feedbackOutput = driveFeedback.calculate(driveMotor.getAngularVelocityRPM(), velocityMPS);
+    setDriveVolts(feedbackOutput * 12.0);
   }
 
   @Override
-  public void setAngle(double angleR) {
-    // Feedforward will help drive the motor based on the PID error
-    setAzimuthVolts(
-        azimuthController.calculate(azimuthMotor.getAngularPositionRad(), angleR)
-            + azimuthFeedforward.calculate(Math.signum(azimuthController.getPositionError())));
+  public void setAzimuthPosition(Rotation2d position) {
+    // TODO Fix this too
+    var feedbackOutput =
+        driveFeedback.calculate(azimuthMotor.getAngularPositionRad(), position.getRadians());
+    setDriveVolts(feedbackOutput * 12.0);
   }
 }

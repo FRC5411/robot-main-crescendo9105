@@ -8,7 +8,6 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkPIDController;
@@ -16,11 +15,10 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import java.util.Queue;
+import frc.robot.utils.LoggedTunableNumber;
 
 /** An SDS MK4i L3 swerve module */
 public class ModuleIOSparkMax implements ModuleIO {
-  private final boolean IS_AZIMUTH_INVERTED = true;
   // TODO Update these for our latest swerve modules
   private final double DRIVE_GEAR_RATIO = 6.75 / 1.0;
   private final double AZIMUTH_GEAR_RATIO = 150.0 / 7.0;
@@ -35,24 +33,34 @@ public class ModuleIOSparkMax implements ModuleIO {
 
   private Rotation2d angleOffset;
 
-  private SparkPIDController driveController;
-  private SparkPIDController azimuthController;
-  private SimpleMotorFeedforward driveFeedforward;
-  private SimpleMotorFeedforward azimuthFeedforward;
+  private SparkPIDController driveFeedback;
+  private SparkPIDController azimuthFeedback;
 
-  private Queue<Double> odometryTimestampQueue;
-  private Queue<Double> drivePositionQueue;
-  private Queue<Double> azimuthPositionQueue;
+  private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.21 / 12.0);
+  private SimpleMotorFeedforward azimuthFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
+
+  private double azimuthFeedbackError = 0.0;
+
+  private LoggedTunableNumber driveFeedbackP =
+      new LoggedTunableNumber("Drive/SM/FeedbackP", 0.00005);
+  private LoggedTunableNumber driveFeedbackI = new LoggedTunableNumber("Drive/SM/FeedbackI", 0.0);
+  private LoggedTunableNumber driveFeedbackD = new LoggedTunableNumber("Drive/SM/FeedbackD", 0.0);
+
+  private LoggedTunableNumber azimuthFeedbackP =
+      new LoggedTunableNumber("Azimuth/SM/FeedbackP", 0.085);
+  private LoggedTunableNumber azimuthFeedbackI =
+      new LoggedTunableNumber("Azimuth/SM/FeedbackI", 0.0);
+  private LoggedTunableNumber azimuthFeedbackD =
+      new LoggedTunableNumber("Azimuth/SM/FeedbackD", 0.0);
 
   public ModuleIOSparkMax(int module) {
-    // TODO Update devices and offsets as needed
     switch (module) {
       case 0:
         driveMotor = new CANSparkMax(11, MotorType.kBrushless);
         azimuthMotor = new CANSparkMax(21, MotorType.kBrushless);
 
         angleEncoder = new CANcoder(31);
-        angleOffset = Rotation2d.fromRotations(0.108643);
+        angleOffset = Rotation2d.fromRotations(-0.275879);
 
         break;
       case 1:
@@ -60,7 +68,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         azimuthMotor = new CANSparkMax(22, MotorType.kBrushless);
 
         angleEncoder = new CANcoder(32);
-        angleOffset = Rotation2d.fromRotations(0.321533);
+        angleOffset = Rotation2d.fromRotations(-0.273926);
 
         break;
       case 2:
@@ -68,7 +76,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         azimuthMotor = new CANSparkMax(23, MotorType.kBrushless);
 
         angleEncoder = new CANcoder(33);
-        angleOffset = Rotation2d.fromRotations(-0.149658);
+        angleOffset = Rotation2d.fromRotations(-0.390137);
 
         break;
       case 3:
@@ -76,7 +84,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         azimuthMotor = new CANSparkMax(24, MotorType.kBrushless);
 
         angleEncoder = new CANcoder(34);
-        angleOffset = Rotation2d.fromRotations(-0.005859);
+        angleOffset = Rotation2d.fromRotations(0.382568);
 
         break;
       default:
@@ -86,14 +94,17 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveEncoder = driveMotor.getEncoder();
     azimuthEncoder = azimuthMotor.getEncoder();
 
+    driveFeedback = driveMotor.getPIDController();
+    azimuthFeedback = azimuthMotor.getPIDController();
+
     driveMotor.restoreFactoryDefaults();
     azimuthMotor.restoreFactoryDefaults();
 
-    // driveMotor.setCANTimeout(250);
-    // azimuthMotor.setCANTimeout(250);
+    driveMotor.setCANTimeout(250);
+    azimuthMotor.setCANTimeout(250);
 
     driveMotor.setInverted(false);
-    azimuthMotor.setInverted(IS_AZIMUTH_INVERTED);
+    azimuthMotor.setInverted(true);
 
     driveMotor.setSmartCurrentLimit(40);
     driveMotor.enableVoltageCompensation(12.0);
@@ -105,58 +116,33 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveEncoder.setAverageDepth(2);
 
     azimuthEncoder.setPosition(0.0);
-    // azimuthEncoder.setPosition(
-    //     angleEncoder.getAbsolutePosition().getValueAsDouble() - angleOffset.getRotations());
+    resetAzimuthEncoder();
     azimuthEncoder.setMeasurementPeriod(10);
     azimuthEncoder.setAverageDepth(2);
 
     driveMotor.setIdleMode(IdleMode.kBrake);
     azimuthMotor.setIdleMode(IdleMode.kCoast);
 
-    // TODO Investigate why this is set to 0 after being set to 250
-    // driveMotor.setCANTimeout(0);
-    // azimuthMotor.setCANTimeout(0);
+    driveMotor.setCANTimeout(0);
+    azimuthMotor.setCANTimeout(0);
 
-    // Set CAN Frame frequency to what's specified
-    driveMotor.setPeriodicFramePeriod(
-        PeriodicFrame.kStatus2, (int) (1000.0 / Module.ODOMETRY_FREQUENCY));
-    azimuthMotor.setPeriodicFramePeriod(
-        PeriodicFrame.kStatus2, (int) (1000.0 / Module.ODOMETRY_FREQUENCY));
-    // Have queues listen for getPosition signals
-    odometryTimestampQueue = SparkMaxOdometryThread.getInstance().makeTimestampQueue();
-    drivePositionQueue =
-        SparkMaxOdometryThread.getInstance().registerSignal(driveEncoder::getPosition);
-    azimuthPositionQueue =
-        SparkMaxOdometryThread.getInstance().registerSignal(azimuthEncoder::getPosition);
+    driveFeedback.setP(0.00005);
+    driveFeedback.setI(0.0);
+    driveFeedback.setD(0.0);
+    driveFeedback.setFeedbackDevice(driveEncoder);
 
-    // driveController = driveMotor.getPIDController();
-    // azimuthController = azimuthMotor.getPIDController();
+    azimuthFeedback.setP(0.155);
+    azimuthFeedback.setI(0.0);
+    azimuthFeedback.setD(0.0);
+    azimuthFeedback.setFeedbackDevice(azimuthEncoder);
 
-    // driveController.setFeedbackDevice(driveEncoder);
-    // azimuthController.setFeedbackDevice(azimuthEncoder);
+    azimuthFeedback.setPositionPIDWrappingEnabled(true);
 
-    // // TODO Tune PID gains
-    // driveController.setP(0.0);
-    // driveController.setI(0.0);
-    // driveController.setD(0.0);
-    // driveController.setFF(0.0);
-
-    // azimuthController.setP(0.0);
-    // azimuthController.setI(0.0);
-    // azimuthController.setD(0.0);
-    // azimuthController.setFF(0.0);
-
-    // azimuthController.setOutputRange(-Math.PI, Math.PI);
-
-    // driveFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
-    // azimuthFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
+    azimuthFeedback.setPositionPIDWrappingMinInput(-0.5 * AZIMUTH_GEAR_RATIO);
+    azimuthFeedback.setPositionPIDWrappingMaxInput(0.5 * AZIMUTH_GEAR_RATIO);
 
     driveMotor.burnFlash();
     azimuthMotor.burnFlash();
-
-    // azimuthEncoder.setPosition(
-    //     angleEncoder.getAbsolutePosition().getValueAsDouble()
-    //         - angleOffset.getRotations()); // Set to absolute
   }
 
   @Override
@@ -166,15 +152,8 @@ public class ModuleIOSparkMax implements ModuleIO {
         driveEncoder.getVelocity() * CIRCUMFRENCE_METERS / (60.0 * DRIVE_GEAR_RATIO);
     inputs.driveAppliedVolts = driveMotor.getAppliedOutput() * driveMotor.getBusVoltage();
     inputs.driveCurrentAmps = new double[] {driveMotor.getOutputCurrent()};
+    inputs.driveTemperatureCelsius = new double[] {driveMotor.getMotorTemperature()};
 
-    // TODO Verify that this abs pos telemetry works lmao
-    // inputs.azimuthAbsolutePosition =
-    //     new Rotation2d(
-    //             angleEncoder.getSupplyVoltage().getValueAsDouble()
-    //                 / RobotController.getVoltage5V()
-    //                 * 2.0
-    //                 * Math.PI)
-    //         .minus(angleOffset);
     inputs.azimuthAbsolutePosition =
         Rotation2d.fromRotations(angleEncoder.getAbsolutePosition().getValueAsDouble())
             .minus(angleOffset);
@@ -185,25 +164,9 @@ public class ModuleIOSparkMax implements ModuleIO {
             / AZIMUTH_GEAR_RATIO;
     inputs.azimuthAppliedVolts = azimuthMotor.getAppliedOutput() * azimuthMotor.getBusVoltage();
     inputs.azimuthCurrentAmps = new double[] {azimuthMotor.getOutputCurrent()};
+    inputs.azimuthTemperatureCelsius = new double[] {azimuthMotor.getMotorTemperature()};
 
-    // Take odometry signals that have added up in the queue to an array, log the array
-    inputs.odometryTimestamps =
-        odometryTimestampQueue.stream().mapToDouble((Double value) -> value).toArray();
-    inputs.odometryDrivePositionM =
-        drivePositionQueue.stream()
-            .mapToDouble((Double value) -> value * CIRCUMFRENCE_METERS / DRIVE_GEAR_RATIO)
-            .toArray();
-    inputs.odometryAzimuthPositions =
-        azimuthPositionQueue.stream()
-            .map((Double value) -> Rotation2d.fromRotations(value / AZIMUTH_GEAR_RATIO))
-            .toArray(Rotation2d[]::new); // Store the azimuth positions as a Rotation2d
-    // Clear the odometry queue for the next cycle
-    odometryTimestampQueue.clear();
-    drivePositionQueue.clear();
-    azimuthPositionQueue.clear();
-
-    // inputs.odometryDrivePositionR = new double[] {inputs.drivePositionR};
-    // inputs.odometryAzimuthPositions = new Rotation2d[] {inputs.azimuthPosition};
+    updateTunableNumbers();
   }
 
   @Override
@@ -218,25 +181,22 @@ public class ModuleIOSparkMax implements ModuleIO {
     azimuthMotor.setVoltage(clampedVolts);
   }
 
-  // TODO Fix these methods
   @Override
-  public void setVelocity(double velocityMPS) {
-    driveController.setReference(
-        velocityMPS,
-        ControlType.kVelocity,
-        0,
-        driveFeedforward.calculate(velocityMPS),
-        SparkPIDController.ArbFFUnits.kVoltage);
+  public void setDriveVelocity(double velocityMPS) {
+    double adjustedVelocity =
+        60.0 * (velocityMPS / CIRCUMFRENCE_METERS); // * Math.cos(azimuthFeedbackError);
+
+    double feedforwardOutput = driveFeedforward.calculate(adjustedVelocity);
+    driveFeedback.setReference(adjustedVelocity, ControlType.kVelocity, 0, feedforwardOutput);
   }
 
   @Override
-  public void setAngle(double angleR) {
-    azimuthController.setReference(
-        angleR,
-        ControlType.kPosition,
-        0,
-        azimuthFeedforward.calculate(Math.signum(angleR - azimuthEncoder.getPosition())),
-        SparkPIDController.ArbFFUnits.kVoltage);
+  public void setAzimuthPosition(Rotation2d position) {
+    azimuthFeedbackError = position.getRotations() - azimuthEncoder.getPosition();
+
+    double feedforwardOutput = 0.0; // = azimuthFeedforward.calculate(azimuthEncoder.getPosition());
+    azimuthFeedback.setReference(
+        position.getRotations() * AZIMUTH_GEAR_RATIO, ControlType.kPosition, 0, feedforwardOutput);
   }
 
   @Override
@@ -255,5 +215,32 @@ public class ModuleIOSparkMax implements ModuleIO {
     } else {
       azimuthMotor.setIdleMode(IdleMode.kCoast);
     }
+  }
+
+  /** Update the tunable numbers if they've changed */
+  private void updateTunableNumbers() {
+    if (driveFeedbackP.hasChanged(hashCode())
+        || driveFeedbackI.hasChanged(hashCode())
+        || driveFeedbackD.hasChanged(hashCode())) {
+      driveFeedback.setP(driveFeedbackP.get());
+      driveFeedback.setI(driveFeedbackI.get());
+      driveFeedback.setD(driveFeedbackD.get());
+    }
+    if (azimuthFeedbackP.hasChanged(hashCode())
+        || azimuthFeedbackI.hasChanged(hashCode())
+        || azimuthFeedbackD.hasChanged(hashCode())) {
+      azimuthFeedback.setP(azimuthFeedbackP.get());
+      azimuthFeedback.setI(azimuthFeedbackI.get());
+      azimuthFeedback.setD(azimuthFeedbackD.get());
+    }
+  }
+
+  /** Reset the relative azimuth encoder to the absolute position */
+  private void resetAzimuthEncoder() {
+    Rotation2d currentAbsolutePosition =
+        Rotation2d.fromRotations(angleEncoder.getAbsolutePosition().getValueAsDouble())
+            .minus(angleOffset);
+
+    azimuthEncoder.setPosition(currentAbsolutePosition.getRotations() * AZIMUTH_GEAR_RATIO);
   }
 }

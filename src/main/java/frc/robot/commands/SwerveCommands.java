@@ -15,11 +15,13 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.drive.Drive;
 import java.util.function.DoubleSupplier;
 
+/** Class to hold all of the commands for the Drive */
 public class SwerveCommands {
-  private static final double DEADBAND = 0.1;
+  private static final double DEADBAND = 0.2;
 
   private SwerveCommands() {}
 
+  /** Command to drive the swerve with joysticks | Field-relative */
   public static Command swerveDrive(
       Drive robotDrive,
       DoubleSupplier xSupplier,
