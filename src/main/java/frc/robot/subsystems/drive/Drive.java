@@ -84,6 +84,11 @@ public class Drive extends SubsystemBase {
             .moduleLocations(MODULE_TRANSLATIONS)
             .build();
 
+    Logger.recordOutput("Drive/MaxAngularSpeed", MAX_ANGULAR_SPEED_MPS);
+    configDriveAutonomous();
+  }
+
+  public void configDriveAutonomous() {
     // Configure PathPlanner
     AutoBuilder.configureHolonomic(
         this::getPosition,
@@ -112,7 +117,6 @@ public class Drive extends SubsystemBase {
           Logger.recordOutput(
               "Drive/Odometry/TrajectorySetpoint", targetPose); // Auto log the target setpoint
         });
-    Logger.recordOutput("Drive/MaxAngularSpeed", MAX_ANGULAR_SPEED_MPS);
   }
 
   @Override

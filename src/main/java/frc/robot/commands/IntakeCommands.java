@@ -38,16 +38,14 @@ public class IntakeCommands {
   // TODO Yeah yeah ik these are basically the same it's just for testing
 
   /** Intake a gamepiece */
-  public static Command intakePiece(Intake robotIntake, double volts) {
+  public static Command intakePiece(Intake robotIntake, double volts, double timeout) {
     currentCommand =
         Commands.run(
                 () -> {
                   robotIntake.setVolts(volts);
                   Logger.recordOutput("Command Running", "Is running");
                 },
-                robotIntake)
-            .repeatedly()
-            .withTimeout(20);
+                robotIntake).withTimeout(timeout);
 
     return currentCommand;
   }
