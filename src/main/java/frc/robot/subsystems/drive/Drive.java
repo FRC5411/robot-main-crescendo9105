@@ -122,25 +122,20 @@ public class Drive extends SubsystemBase {
   @Override
   public void periodic() {
     gyroIO.updateInputs(gyroIOInputs);
-    for (var module : modules) {
+    for (var module : modules) { 
       module.updateInputs();
-    }
-    Logger.processInputs("Drive/Gyro", gyroIOInputs);
+      Logger.processInputs("Drive/Gyro", gyroIOInputs);
 
-    for (var module : modules) {
       module.periodic();
-    }
-
-    if (DriverStation.isDisabled()) {
-      for (var module : modules) {
+      
+      if (DriverStation.isDisabled()) {  
         module.stop();
+
+        // Log empty states
+        Logger.recordOutput("Drive/SwerveStates/Setpoints", new SwerveModuleState[] {});
+        Logger.recordOutput("Drive/SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
       }
-      // Log empty states
-      Logger.recordOutput("Drive/SwerveStates/Setpoints", new SwerveModuleState[] {});
-      Logger.recordOutput("Drive/SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
-    }
-    if (DriverStation.isEStopped()) {
-      for (var module : modules) {
+      if (DriverStation.isEStopped()) {
         module.stop();
         module.setBrake(true); // Apply brakes if E-Stopped
       }
