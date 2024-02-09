@@ -24,7 +24,7 @@ public class IntakeIOSparkMax implements IntakeIO {
     intakeMotor.clearFaults();
     intakeMotor.restoreFactoryDefaults();
 
-    intakeMotor.setSmartCurrentLimit(40);
+    intakeMotor.setSmartCurrentLimit(30);
     intakeMotor.enableVoltageCompensation(12.0);
     intakeMotor.setIdleMode(IdleMode.kBrake);
 

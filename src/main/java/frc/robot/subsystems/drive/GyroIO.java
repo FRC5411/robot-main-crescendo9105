@@ -18,4 +18,7 @@ public interface GyroIO {
 
   /** Update the inputs for gyro */
   public default void updateInputs(GyroIOInputs inputs) {}
+
+  /** Reset gyro */
+  public default void resetGyro(Rotation2d heading) {}
 }

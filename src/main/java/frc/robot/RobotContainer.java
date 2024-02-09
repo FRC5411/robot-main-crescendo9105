@@ -97,7 +97,7 @@ public class RobotContainer {
     // Register commands with PathPlanner's AutoBuilder so it can call them
     NamedCommands.registerCommand(
         "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));
-    NamedCommands.registerCommand("Intake", IntakeCommands.intakePiece(robotIntake, 12.0, 5));
+    NamedCommands.registerCommand("Intake", IntakeCommands.intakePiece(robotIntake, 12.0));
     NamedCommands.registerCommand("Stop Intake", IntakeCommands.stopIntake(robotIntake));
 
     // autoChooser.addDefaultOption("Print Hello", new PrintCommand("Hello"));

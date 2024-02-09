@@ -205,6 +205,7 @@ public class Drive extends SubsystemBase {
   public void setPose(Pose2d pose) {
     poseEstimator.resetPosition(getRotation(), getModulePositions(), pose);
     currentPose = pose;
+    //gyroIO.resetGyro(currentPose.getRotation());
   }
 
   /** Add a vision measurement for the poseEstimator */
