@@ -11,10 +11,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.subsystems.shooter.Angler.AnglerConstants;
@@ -32,7 +30,6 @@ import frc.robot.subsystems.shooter.Indexer.IndexerIO;
 import frc.robot.subsystems.shooter.Indexer.IndexerIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.Indexer.IndexerSim;
 import java.util.function.BooleanSupplier;
-import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
@@ -41,16 +38,8 @@ public class Shooter extends SubsystemBase {
   private IndexerIO indexerIO;
   private AnglerIO anglerIO;
 
-  // Placeholder subsystems with no functionality, just used to satisfy command requirements
-  private Subsystem shooterWheelSub = new Subsystem() {};
-  private Subsystem indexerSub = new Subsystem() {};
-  private Subsystem anglerSub = new Subsystem() {};
-
   private double topVelocityMPS = 0;
   private double bottomVelocityMPS = 0;
-
-  private double topVolts = 0;
-  private double bottomVolts = 0;
 
   private double indexerVoltage = 0;
 
@@ -121,22 +110,14 @@ public class Shooter extends SubsystemBase {
       anglerIO = new AnglerIO() {};
     }
 
-    shooterWheelSub.setDefaultCommand(
-        (ShooterConstants.isClosedLoop)
-            ? shooterVelocityCommand(() -> topVelocityMPS, () -> bottomVelocityMPS)
-            : shooterVoltsCommand(() -> topVolts, () -> bottomVolts));
-
     anglerIO.setGoal(Rotation2d.fromDegrees(15));
-
-    anglerSub.setDefaultCommand(anglerPositionCommand());
-
-    indexerSub.setDefaultCommand(indexerVoltageCommand(() -> indexerVoltage));
+    anglerIO.initPID();
   }
 
   public Command shootToSpeakerCommand(
       Pose2d robotPose, BooleanSupplier isRobotInPosition, double desiredMPS) {
     return new SequentialCommandGroup(
-        setShooterVelocitySetpointCommand(
+        setShooterSepointsCommand(
             ShooterWheelConstants.kShootMPS,
             ShooterWheelConstants.kShootMPS,
             Rotation2d.fromDegrees(
@@ -151,29 +132,37 @@ public class Shooter extends SubsystemBase {
         new InstantCommand(() -> indexerVoltage = 12.0, this));
   }
 
+  public Command setShooterSepointsCommand(
+      double topVelocityMPSSetpoint, double bottomVelocityMPSSetpoint, Rotation2d angle) {
+    return new SequentialCommandGroup(
+        setShooterVelocitySetpointCommand(topVelocityMPSSetpoint, bottomVelocityMPSSetpoint),
+        setShooterAngleCommand(angle));
+  }
+
   public Command setShooterVelocitySetpointCommand(
-      double topVelocityMPSSetpoint,
-      double bottomVelocityMPSSetpoint,
-      Rotation2d screwAngleSetpoint) {
+      double topVelocityMPSSetpoint, double bottomVelocityMPSSetpoint) {
     return new InstantCommand(
         () -> {
           topVelocityMPS = topVelocityMPSSetpoint;
           bottomVelocityMPS = bottomVelocityMPSSetpoint;
-
-          anglerIO.setGoal(screwAngleSetpoint);
-          anglerIO.initPID();
         },
         this);
   }
 
   public Command setShooterVoltageSetpointCommand(
-      double topVoltsSetpoint, double bottomVoltsSetpoint, Rotation2d screwAngleSetpoint) {
+      double topVoltsSetpoint, double bottomVoltsSetpoint) {
     return new InstantCommand(
         () -> {
-          topVolts = topVoltsSetpoint;
-          bottomVolts = bottomVoltsSetpoint;
+          shooterWheelTop.setFlywheelsVolts(topVoltsSetpoint);
+          shooterWheelBottom.setFlywheelsVolts(bottomVoltsSetpoint);
+        },
+        this);
+  }
 
-          anglerIO.setGoal(screwAngleSetpoint);
+  public Command setShooterAngleCommand(Rotation2d angle) {
+    return new InstantCommand(
+        () -> {
+          anglerIO.setGoal(angle);
           anglerIO.initPID();
         },
         this);
@@ -181,49 +170,6 @@ public class Shooter extends SubsystemBase {
 
   public Command setIndexerVoltage(double volts) {
     return new InstantCommand(() -> indexerVoltage = volts, this);
-  }
-
-  public Command shooterVelocityCommand(
-      DoubleSupplier topVelocityMPS, DoubleSupplier bottomVelocityMPS) {
-    return new FunctionalCommand(
-        () -> {},
-        () -> {
-          shooterWheelTop.setFlywheelsVelocity(topVelocityMPS.getAsDouble());
-          shooterWheelBottom.setFlywheelsVelocity(bottomVelocityMPS.getAsDouble());
-        },
-        (interrupted) -> {},
-        () -> false,
-        shooterWheelSub);
-  }
-
-  public Command shooterVoltsCommand(DoubleSupplier topVolts, DoubleSupplier bottomVolts) {
-    return new FunctionalCommand(
-        () -> {},
-        () -> {
-          shooterWheelTop.setFlywheelsVolts(topVolts.getAsDouble());
-          shooterWheelBottom.setFlywheelsVolts(bottomVolts.getAsDouble());
-        },
-        (interrupted) -> {},
-        () -> false,
-        shooterWheelSub);
-  }
-
-  public Command anglerPositionCommand() {
-    return new FunctionalCommand(
-        () -> anglerIO.initPID(),
-        () -> anglerIO.executePID(),
-        (interrupted) -> {},
-        () -> false,
-        anglerSub);
-  }
-
-  public Command indexerVoltageCommand(DoubleSupplier voltage) {
-    return new FunctionalCommand(
-        () -> {},
-        () -> indexerIO.setIndexerVolts(voltage.getAsDouble()),
-        (interrupted) -> {},
-        () -> false,
-        indexerSub);
   }
 
   public boolean isShooterAtSetpoint() {
@@ -259,5 +205,12 @@ public class Shooter extends SubsystemBase {
       indexerIO.setIndexerVolts(0.0);
       anglerIO.setAnglerVolts(0.0);
     }
+
+    shooterWheelTop.setFlywheelsVelocity(topVelocityMPS);
+    shooterWheelBottom.setFlywheelsVelocity(bottomVelocityMPS);
+
+    anglerIO.executePID();
+
+    indexerIO.setIndexerVolts(indexerVoltage);
   }
 }

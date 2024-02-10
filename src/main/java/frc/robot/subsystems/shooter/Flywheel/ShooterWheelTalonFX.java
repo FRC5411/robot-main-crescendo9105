@@ -60,12 +60,12 @@ public class ShooterWheelTalonFX implements ShooterWheelIO {
     inputs.flywheelCurrentAmps = new double[] {flywheelMotor.getStatorCurrent().getValueAsDouble()};
     inputs.flywheelVelocityMPSSetpoint = flywheelVelocitySetpointMPS;
 
-    if (   shooterWheelControlP.hasChanged(hashCode())
+    if (shooterWheelControlP.hasChanged(hashCode())
         || shooterWheelControlI.hasChanged(hashCode())
         || shooterWheelControlD.hasChanged(hashCode())
         || shooterWheelControlS.hasChanged(hashCode())
         || shooterWheelControlV.hasChanged(hashCode())
-        || shooterWheelControlA.hasChanged(hashCode()) ) {
+        || shooterWheelControlA.hasChanged(hashCode())) {
       Slot0Configs config = new Slot0Configs();
       config.kP = shooterWheelControlP.get();
       config.kI = shooterWheelControlI.get();
@@ -91,8 +91,8 @@ public class ShooterWheelTalonFX implements ShooterWheelIO {
 
     flywheelMotor.setControl(
         flywheelVelocity
-            .withVelocity( flywheelVelocitySetpointMPS / ShooterWheelConstants.kCircumferenceM)
-            .withAcceleration( acceleration / ShooterWheelConstants.kCircumferenceM ) );
+            .withVelocity(flywheelVelocitySetpointMPS / ShooterWheelConstants.kCircumferenceM)
+            .withAcceleration(acceleration / ShooterWheelConstants.kCircumferenceM));
   }
 
   public void configMotor(
