@@ -183,8 +183,7 @@ public class ModuleIOSparkMax implements ModuleIO {
   @Override
   public void setDriveVelocity(double velocityMPS) {
     // Adjusting to RPM
-    double adjustedVelocity =
-        60.0 * (velocityMPS / CIRCUMFRENCE_METERS);
+    double adjustedVelocity = 60.0 * (velocityMPS / CIRCUMFRENCE_METERS);
 
     double feedforwardOutput = driveFeedforward.calculate(adjustedVelocity);
     driveFeedback.setReference(adjustedVelocity, ControlType.kVelocity, 0, feedforwardOutput);

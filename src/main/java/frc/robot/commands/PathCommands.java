@@ -4,11 +4,9 @@
 
 package frc.robot.commands;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import frc.robot.subsystems.drive.Drive;
 
 /** Class to hold all of the path commands */
@@ -27,18 +25,19 @@ public class PathCommands {
   public Command findPathToPose() {
     // Command pathFindCommand = new PrintCommand("PathFind Command is not initialized");
 
-    return new FunctionalCommand(
-        // Init
-        () -> {},
-        // Execute
-        () -> {
-          AutoBuilder.pathfindToPose(robotDrive.getPathFinderSetpoint(), constraints).schedule();
-        },
-        // End
-        interrupted -> {
-          AutoBuilder.pathfindToPose(robotDrive.getPathFinderSetpoint(), constraints).cancel();
-        },
-        () -> false,
-        robotDrive);
+    // return new FunctionalCommand(
+    //     // Init
+    //     () -> {},
+    //     // Execute
+    //     () -> {
+    //       AutoBuilder.pathfindToPose(robotDrive.getPathFinderSetpoint(), constraints).schedule();
+    //     },
+    //     // End
+    //     interrupted -> {
+    //       AutoBuilder.pathfindToPose(robotDrive.getPathFinderSetpoint(), constraints).cancel();
+    //     },
+    //     () -> false,
+    //     robotDrive);
+    return null;
   }
 }

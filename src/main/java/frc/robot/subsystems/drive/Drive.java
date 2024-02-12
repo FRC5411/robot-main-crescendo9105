@@ -22,12 +22,10 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.utils.swerve.ModuleLimits;
 import frc.robot.utils.swerve.SwerveSetpoint;
 import frc.robot.utils.swerve.SwerveSetpointGenerator;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -41,13 +39,23 @@ public class Drive extends SubsystemBase {
   private final double MAX_LINEAR_SPEED_MPS = Units.feetToMeters(14.0);
   private final double MAX_ANGULAR_SPEED_MPS = MAX_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS_M;
   // Second argument is the max accel, which we want to be half of the max vel for now
-  private final ModuleLimits MODULE_LIMITS = new ModuleLimits(MAX_LINEAR_SPEED_MPS, MAX_LINEAR_SPEED_MPS * 0.5, MAX_ANGULAR_SPEED_MPS);
+  private final ModuleLimits MODULE_LIMITS =
+      new ModuleLimits(MAX_LINEAR_SPEED_MPS, MAX_LINEAR_SPEED_MPS * 0.5, MAX_ANGULAR_SPEED_MPS);
 
   private final Translation2d[] MODULE_TRANSLATIONS = getModuleTranslations();
   private final SwerveDriveKinematics KINEMATICS = getKinematics();
 
-  private SwerveSetpoint currentSetpoint = new SwerveSetpoint(new ChassisSpeeds(), new SwerveModuleState[] {new SwerveModuleState(), new SwerveModuleState(), new SwerveModuleState(), new SwerveModuleState()});
-  private SwerveSetpointGenerator setpointGenerator = new SwerveSetpointGenerator(KINEMATICS, MODULE_TRANSLATIONS);
+  private SwerveSetpoint currentSetpoint =
+      new SwerveSetpoint(
+          new ChassisSpeeds(),
+          new SwerveModuleState[] {
+            new SwerveModuleState(),
+            new SwerveModuleState(),
+            new SwerveModuleState(),
+            new SwerveModuleState()
+          });
+  private SwerveSetpointGenerator setpointGenerator =
+      new SwerveSetpointGenerator(KINEMATICS, MODULE_TRANSLATIONS);
   private boolean areModulesOrienting = false;
 
   private GyroIO gyroIO;
@@ -73,7 +81,11 @@ public class Drive extends SubsystemBase {
     gyroIO = gyro;
 
     // Configure setpoint generator
-    setpointGenerator = SwerveSetpointGenerator.builder().kinematics(KINEMATICS).moduleLocations(MODULE_TRANSLATIONS).build();
+    setpointGenerator =
+        SwerveSetpointGenerator.builder()
+            .kinematics(KINEMATICS)
+            .moduleLocations(MODULE_TRANSLATIONS)
+            .build();
 
     // Configure PathPlanner
     AutoBuilder.configureHolonomic(
@@ -140,19 +152,41 @@ public class Drive extends SubsystemBase {
 
   /** Runs the swerve drive based on speeds */
   public void runSwerve(ChassisSpeeds speeds) {
-    // Calculates setpoint states from inputs
-    ChassisSpeeds discreteSpeeds =
-        ChassisSpeeds.discretize(speeds, 0.02); // Compensate for translational skew when rotating
+    ChassisSpeeds discreteSpeeds = discretize(speeds); // Translational skew compensation
     SwerveModuleState[] setpointStates = KINEMATICS.toSwerveModuleStates(discreteSpeeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(
         setpointStates, MAX_LINEAR_SPEED_MPS); // Normalize speeds
 
-    // Set and log the optimized states
     SwerveModuleState[] optimizedSetpointStates = new SwerveModuleState[4];
-    for (int i = 0; i < 4; i++) {
-      optimizedSetpointStates[i] =
-          modules[i].setDesiredState(
-              setpointStates[i]); // setDesiredState returns the optimized state
+
+    // TODO Find out what the areModulesOrienting variable does lol
+    if (!areModulesOrienting) {
+      currentSetpoint =
+          setpointGenerator.generateSetpoint(MODULE_LIMITS, currentSetpoint, discreteSpeeds, 0.02);
+
+      for (int i = 0; i < 4; i++) {
+        // Optimized azimuth setpoint angles
+        optimizedSetpointStates[i] =
+            SwerveModuleState.optimize(currentSetpoint.moduleStates()[i], modules[i].getAngle());
+
+        // Prevent jittering from small joystick inputs or noise
+        optimizedSetpointStates[i] =
+            (Math.abs(optimizedSetpointStates[i].speedMetersPerSecond / MAX_LINEAR_SPEED_MPS)
+                    > 0.01)
+                ? modules[i].setDesiredState(optimizedSetpointStates[i])
+                : modules[i].setDesiredState(
+                    new SwerveModuleState(
+                        optimizedSetpointStates[i].speedMetersPerSecond, modules[i].getAngle()));
+
+        // Run state
+        modules[i].setDesiredState(optimizedSetpointStates[i]);
+      }
+    } else {
+      for (int i = 0; i < 4; i++) {
+        optimizedSetpointStates[i] =
+            modules[i].setDesiredState(
+                setpointStates[i]); // setDesiredState returns the optimized state
+      }
     }
 
     Logger.recordOutput("Drive/SwerveStates/Setpoints", setpointStates);
@@ -195,17 +229,6 @@ public class Drive extends SubsystemBase {
   /** Get PathFinder constraints */
   public PathConstraints getPathConstraints() {
     return new PathConstraints(3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
-  }
-
-  /** Gets the PathFinder setpoint, you can set the setpoint in SmartDashboard */
-  @AutoLogOutput(key = "Drive/PathFinder/Setpoint")
-  public Pose2d getPathFinderSetpoint() {
-    // System.out.println("getPathFinderSetpoint");
-
-    return new Pose2d(
-        SmartDashboard.getNumber("PathfindX", 0.0),
-        SmartDashboard.getNumber("PathfindY", 0.0),
-        new Rotation2d());
   }
 
   /** Gets the drive's measured state (module azimuth angles and drive velocities) */
@@ -256,11 +279,11 @@ public class Drive extends SubsystemBase {
   /** Get the positions of the modules on the drive */
   public Translation2d[] getModuleTranslations() {
     return new Translation2d[] {
-          new Translation2d(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0),
-          new Translation2d(TRACK_WIDTH_X_M / 2.0, -TRACK_WIDTH_Y_M / 2.0),
-          new Translation2d(-TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0),
-          new Translation2d(-TRACK_WIDTH_X_M / 2.0, -TRACK_WIDTH_Y_M / 2.0)
-        };
+      new Translation2d(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0),
+      new Translation2d(TRACK_WIDTH_X_M / 2.0, -TRACK_WIDTH_Y_M / 2.0),
+      new Translation2d(-TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0),
+      new Translation2d(-TRACK_WIDTH_X_M / 2.0, -TRACK_WIDTH_Y_M / 2.0)
+    };
   }
 
   /** Gets the kinematics of the drivetrain */
