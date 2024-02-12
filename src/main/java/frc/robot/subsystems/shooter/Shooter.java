@@ -18,7 +18,7 @@ import frc.robot.subsystems.shooter.indexer.IndexerIO;
 import frc.robot.subsystems.shooter.indexer.IndexerIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOInputsAutoLogged;
-import frc.robot.utils.LoggedTunableNumber;
+import frc.robot.utils.debugging.LoggedTunableNumber;
 import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {

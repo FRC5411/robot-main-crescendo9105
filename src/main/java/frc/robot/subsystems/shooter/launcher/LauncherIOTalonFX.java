@@ -18,6 +18,8 @@ public class LauncherIOTalonFX implements LauncherIO {
   private double topAppliedVolts = 0.0;
   private double bottomAppliedVolts = 0.0;
 
+  // TODO Add closed loop control
+
   /** Create a new hardware implementation of the launcher */
   public LauncherIOTalonFX() {
     // TODO Update as needed
