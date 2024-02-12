@@ -37,9 +37,6 @@ public class ModuleIOSparkMax implements ModuleIO {
   private SparkPIDController azimuthFeedback;
 
   private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.21 / 12.0);
-  private SimpleMotorFeedforward azimuthFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
-
-  private double azimuthFeedbackError = 0.0;
 
   private LoggedTunableNumber driveFeedbackP =
       new LoggedTunableNumber("Drive/SM/FeedbackP", 0.00005);
@@ -47,7 +44,7 @@ public class ModuleIOSparkMax implements ModuleIO {
   private LoggedTunableNumber driveFeedbackD = new LoggedTunableNumber("Drive/SM/FeedbackD", 0.0);
 
   private LoggedTunableNumber azimuthFeedbackP =
-      new LoggedTunableNumber("Azimuth/SM/FeedbackP", 0.085);
+      new LoggedTunableNumber("Azimuth/SM/FeedbackP", 0.155);
   private LoggedTunableNumber azimuthFeedbackI =
       new LoggedTunableNumber("Azimuth/SM/FeedbackI", 0.0);
   private LoggedTunableNumber azimuthFeedbackD =
@@ -131,13 +128,15 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveFeedback.setD(0.0);
     driveFeedback.setFeedbackDevice(driveEncoder);
 
-    azimuthFeedback.setP(0.085);
+    azimuthFeedback.setP(0.155);
     azimuthFeedback.setI(0.0);
     azimuthFeedback.setD(0.0);
     azimuthFeedback.setFeedbackDevice(azimuthEncoder);
 
     azimuthFeedback.setPositionPIDWrappingEnabled(true);
 
+    // Wrap PID output if output exceeds these boundaries
+    // TBH I really don't know why we chose these as the bounds but ¯\_(ツ)_/¯
     azimuthFeedback.setPositionPIDWrappingMinInput(-0.5 * AZIMUTH_GEAR_RATIO);
     azimuthFeedback.setPositionPIDWrappingMaxInput(0.5 * AZIMUTH_GEAR_RATIO);
 
@@ -183,8 +182,9 @@ public class ModuleIOSparkMax implements ModuleIO {
 
   @Override
   public void setDriveVelocity(double velocityMPS) {
+    // Adjusting to RPM
     double adjustedVelocity =
-        60.0 * (velocityMPS / CIRCUMFRENCE_METERS); // * Math.cos(azimuthFeedbackError);
+        60.0 * (velocityMPS / CIRCUMFRENCE_METERS);
 
     double feedforwardOutput = driveFeedforward.calculate(adjustedVelocity);
     driveFeedback.setReference(adjustedVelocity, ControlType.kVelocity, 0, feedforwardOutput);
@@ -192,9 +192,7 @@ public class ModuleIOSparkMax implements ModuleIO {
 
   @Override
   public void setAzimuthPosition(Rotation2d position) {
-    azimuthFeedbackError = position.getRotations() - azimuthEncoder.getPosition();
-
-    double feedforwardOutput = 0.0; // = azimuthFeedforward.calculate(azimuthEncoder.getPosition());
+    double feedforwardOutput = 0.0;
     azimuthFeedback.setReference(
         position.getRotations() * AZIMUTH_GEAR_RATIO, ControlType.kPosition, 0, feedforwardOutput);
   }
@@ -241,6 +239,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         Rotation2d.fromRotations(angleEncoder.getAbsolutePosition().getValueAsDouble())
             .minus(angleOffset);
 
+    // The number of rotations a motor makes is affected by the gear ratio
     azimuthEncoder.setPosition(currentAbsolutePosition.getRotations() * AZIMUTH_GEAR_RATIO);
   }
 }
