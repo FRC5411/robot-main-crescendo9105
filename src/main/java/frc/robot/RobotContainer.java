@@ -104,6 +104,7 @@ public class RobotContainer {
                 .setShooterSepointsCommand(20, 20, Rotation2d.fromDegrees(45))
                 .andThen(robotShooter.setIndexerVoltage(12)))
         .onFalse(robotShooter.setShooterSepointsCommand(0, 0, Rotation2d.fromDegrees(15)));
+    pilotController.x().onTrue(robotShooter.getSysIDTests());
 
     // pilotController
     //     .square()

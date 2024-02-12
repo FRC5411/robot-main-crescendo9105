@@ -4,17 +4,21 @@
 
 package frc.robot.subsystems.shooter;
 
+import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.shooter.Angler.AnglerConstants;
 import frc.robot.subsystems.shooter.Angler.AnglerIO;
 import frc.robot.subsystems.shooter.Angler.AnglerInputsAutoLogged;
@@ -49,6 +53,8 @@ public class Shooter extends SubsystemBase {
       new ShooterWheelIOInputsAutoLogged();
   private AnglerInputsAutoLogged anglerInputsAutoLogged = new AnglerInputsAutoLogged();
   private IndexerIOInputsAutoLogged indexerIOInputsAutoLogged = new IndexerIOInputsAutoLogged();
+
+  private boolean runShooter = true;
 
   public Shooter() {
     if (RobotBase.isReal()) {
@@ -206,11 +212,59 @@ public class Shooter extends SubsystemBase {
       anglerIO.setAnglerVolts(0.0);
     }
 
-    shooterWheelTop.setFlywheelsVelocity(topVelocityMPS);
-    shooterWheelBottom.setFlywheelsVelocity(bottomVelocityMPS);
+    if (runShooter) {
+      shooterWheelTop.setFlywheelsVelocity(topVelocityMPS);
+      shooterWheelBottom.setFlywheelsVelocity(bottomVelocityMPS);
+    }
 
     anglerIO.executePID();
 
     indexerIO.setIndexerVolts(indexerVoltage);
+  }
+
+  public Command getSysIDTests() {
+    SysIdRoutine sysIdRoutine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                Units.Volts.of(1).per(Units.Seconds.of(1)),
+                Units.Volts.of(4),
+                Units.Seconds.of(15),
+                (state) -> sysIDStateLogger(state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> {
+                  shooterWheelBottom.setFlywheelsVolts(voltage.magnitude());
+                  shooterWheelTop.setFlywheelsVolts(voltage.magnitude());
+                },
+                null, // No log consumer, since external logger
+                this));
+
+    return new SequentialCommandGroup(
+        startLoggingRoutine(),
+        Commands.waitSeconds(3),
+        sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward),
+        Commands.waitSeconds(3),
+        sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse),
+        Commands.waitSeconds(3),
+        sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward),
+        Commands.waitSeconds(3),
+        sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse),
+        Commands.waitSeconds(3),
+        stopLoggingRoutine());
+    // For rev logs extract using wpilib's data log tool:
+    // https://docs.wpilib.org/en/stable/docs/software/telemetry/datalog-download.html
+    // For talon logs extract using phoenix tuner x:
+    // https://pro.docs.ctr-electronics.com/en/latest/docs/tuner/tools/log-extractor.html
+  }
+
+  public Command startLoggingRoutine() {
+    return Commands.runOnce(() -> SignalLogger.start(), this);
+  }
+
+  public void sysIDStateLogger(String state) {
+    SignalLogger.writeString("Shooter/sysIDTestState", state);
+  }
+
+  public Command stopLoggingRoutine() {
+    return Commands.runOnce(() -> SignalLogger.stop(), this);
   }
 }
