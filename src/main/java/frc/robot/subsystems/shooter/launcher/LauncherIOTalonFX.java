@@ -18,8 +18,6 @@ public class LauncherIOTalonFX implements LauncherIO {
   private double topAppliedVolts = 0.0;
   private double bottomAppliedVolts = 0.0;
 
-  // TODO Add closed loop control
-
   /** Create a new hardware implementation of the launcher */
   public LauncherIOTalonFX() {
     // TODO Update as needed
@@ -64,9 +62,9 @@ public class LauncherIOTalonFX implements LauncherIO {
   }
 
   @Override
-  public void setVolts(double leftVolts, double rightVolts) {
-    topAppliedVolts = MathUtil.clamp(leftVolts, -12.0, 12.0);
-    bottomAppliedVolts = MathUtil.clamp(rightVolts, -12.0, 12.0);
+  public void setVolts(double topVolts, double bottomVolts) {
+    topAppliedVolts = MathUtil.clamp(topVolts, -12.0, 12.0);
+    bottomAppliedVolts = MathUtil.clamp(bottomVolts, -12.0, 12.0);
 
     topMotor.setVoltage(topAppliedVolts);
     bottomMotor.setVoltage(bottomAppliedVolts);

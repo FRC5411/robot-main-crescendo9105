@@ -223,12 +223,12 @@ public class Drive extends SubsystemBase {
     poseEstimator.addVisionMeasurement(visionMeasurement, timestampS);
   }
 
-  /** Get PathFinder constraints */
+  /** Returns PathFinder constraints */
   public PathConstraints getPathConstraints() {
     return new PathConstraints(3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
   }
 
-  /** Gets the drive's measured state (module azimuth angles and drive velocities) */
+  /** Returns the drive's measured state (module azimuth angles and drive velocities) */
   @AutoLogOutput(key = "Drive/SwerveStates/Measured")
   private SwerveModuleState[] getModuleStates() {
     SwerveModuleState[] states = new SwerveModuleState[4];
@@ -239,7 +239,7 @@ public class Drive extends SubsystemBase {
     return states;
   }
 
-  /** Gets the swerve module's positions */
+  /** Returns the swerve module's positions */
   @AutoLogOutput(key = "Drive/ModulePositions")
   public SwerveModulePosition[] getModulePositions() {
     SwerveModulePosition[] positions = new SwerveModulePosition[4];
@@ -251,29 +251,29 @@ public class Drive extends SubsystemBase {
     return positions;
   }
 
-  /** Gets the pose of the robot */
+  /** Returns the pose of the robot */
   @AutoLogOutput(key = "Drive/Odometry/Pose")
   public Pose2d getPosition() {
     return currentPose;
   }
 
-  /** Gets the rotation of the robot */
+  /** Returns the rotation of the robot */
   @AutoLogOutput(key = "Drive/Odometry/Rotation")
   public Rotation2d getRotation() {
     return gyroIOInputs.yawPosition;
   }
 
-  /** Get the maximum allowed linear (translational) speed */
+  /** Returns the maximum allowed linear (translational) speed */
   public double getMaxLinearSpeedMPS() {
     return MAX_LINEAR_SPEED_MPS;
   }
 
-  /** Get the maximum allowed rotational speed */
+  /** Returns the maximum allowed rotational speed */
   public double getMaxAngularSpeedMPS() {
     return MAX_ANGULAR_SPEED_MPS;
   }
 
-  /** Get the positions of the modules on the drive */
+  /** Returns the positions of the modules on the drive */
   public Translation2d[] getModuleTranslations() {
     return new Translation2d[] {
       new Translation2d(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0),
@@ -283,7 +283,7 @@ public class Drive extends SubsystemBase {
     };
   }
 
-  /** Gets the kinematics of the drivetrain */
+  /** Returns the kinematics of the drivetrain */
   public SwerveDriveKinematics getKinematics() {
     return new SwerveDriveKinematics(getModuleTranslations());
   }

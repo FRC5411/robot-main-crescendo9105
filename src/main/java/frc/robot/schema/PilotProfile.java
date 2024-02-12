@@ -4,11 +4,10 @@
 
 package frc.robot.schema;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
+import java.util.HashMap;
+import java.util.Map;
 
 /** Object to hold the keybindings and preferences for the pilots */
 public class PilotProfile {

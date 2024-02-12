@@ -55,6 +55,7 @@ public class RobotContainer {
         new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
     autoChooser.addDefaultOption("Print Hello", new PrintCommand("Hello"));
 
+    // TODO Remove this disgusting piece of code soon
     pilotChooser = new LoggedDashboardChooser<>("Pilot Selector");
     pilotChooser.addDefaultOption("COMPUTER", Constants.Pilot.COMPUTER);
 
@@ -112,11 +113,11 @@ public class RobotContainer {
   }
 
   private void configurePilots() {
+    // TODO Fix or remove this ungodly implementation of pilot profiles
     pilot = new PilotProfile(pilotChooser.get());
 
     switch (pilot.getName()) {
       case COMPUTER:
-
         break;
       default:
         break;
@@ -128,7 +129,6 @@ public class RobotContainer {
     /* Drive with joysticks */
     robotDrive.setDefaultCommand(
         SwerveCommands.swerveDrive(
-            // FIXME Figure out why joysticks are being goofy
             robotDrive,
             () -> -pilotController.getLeftY(),
             () -> -pilotController.getLeftX(),

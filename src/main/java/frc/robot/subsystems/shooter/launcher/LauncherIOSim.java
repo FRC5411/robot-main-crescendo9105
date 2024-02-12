@@ -48,11 +48,11 @@ public class LauncherIOSim implements LauncherIO {
   }
 
   @Override
-  public void setVolts(double leftVolts, double rightVolts) {
-    topAppliedVolts = MathUtil.clamp(leftVolts, -12.0, 12.0);
-    bottomAppliedVolts = MathUtil.clamp(rightVolts, -12.0, 12.0);
+  public void setVolts(double topVolts, double bottomVolts) {
+    topAppliedVolts = MathUtil.clamp(topVolts, -12.0, 12.0);
+    bottomAppliedVolts = MathUtil.clamp(bottomVolts, -12.0, 12.0);
 
-    topMotor.setInputVoltage(leftVolts);
-    bottomtMotor.setInputVoltage(rightVolts);
+    topMotor.setInputVoltage(topVolts);
+    bottomtMotor.setInputVoltage(bottomVolts);
   }
 }
