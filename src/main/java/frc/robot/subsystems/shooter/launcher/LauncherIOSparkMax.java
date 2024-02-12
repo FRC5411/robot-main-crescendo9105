@@ -12,8 +12,8 @@ import edu.wpi.first.math.MathUtil;
 
 /** Class to interact with the physical launcher */
 public class LauncherIOSparkMax implements LauncherIO {
-  private CANSparkMax topMotor = new CANSparkMax(61, MotorType.kBrushless);
-  private CANSparkMax bottomMotor = new CANSparkMax(62, MotorType.kBrushless);
+  private CANSparkMax topMotor = new CANSparkMax(43, MotorType.kBrushless);
+  private CANSparkMax bottomMotor = new CANSparkMax(44, MotorType.kBrushless);
 
   private RelativeEncoder topEncoder = topMotor.getEncoder();
   private RelativeEncoder bottomEncoder = bottomMotor.getEncoder();

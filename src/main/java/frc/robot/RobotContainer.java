@@ -42,12 +42,14 @@ public class RobotContainer {
   public RobotContainer() {
     initializeSubsystems();
 
+    // NamedCommands MUST be registered before building the auto chooser
+    configureAutonomous();
+
     // AutoBuilder is configured when Drive is initialized, thus chooser must be instantiated after
     // initializeSubsystems()
     autoChooser =
         new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
-
-    configureAutonomous();
+    autoChooser.addDefaultOption("Print Hello", new PrintCommand("Hello"));
 
     configureButtonBindings();
   }
@@ -98,8 +100,6 @@ public class RobotContainer {
         "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));
     NamedCommands.registerCommand("Intake", IntakeCommands.intakePiece(robotIntake, 12.0));
     NamedCommands.registerCommand("Stop Intake", IntakeCommands.stopIntake(robotIntake));
-
-    autoChooser.addDefaultOption("Print Hello", new PrintCommand("Hello"));
   }
 
   /** Configure controllers */

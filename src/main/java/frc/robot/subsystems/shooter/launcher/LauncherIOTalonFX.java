@@ -12,8 +12,8 @@ import edu.wpi.first.math.MathUtil;
 /** Class to interact with the physical launcher */
 public class LauncherIOTalonFX implements LauncherIO {
   // TODO Update as needed
-  private TalonFX topMotor = new TalonFX(50);
-  private TalonFX bottomMotor = new TalonFX(51);
+  private TalonFX topMotor = new TalonFX(43);
+  private TalonFX bottomMotor = new TalonFX(44);
 
   private double topAppliedVolts = 0.0;
   private double bottomAppliedVolts = 0.0;

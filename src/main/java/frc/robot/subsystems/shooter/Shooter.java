@@ -33,7 +33,6 @@ public class Shooter extends SubsystemBase {
   private ProfiledPIDController anglerFeedback =
       new ProfiledPIDController(0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(0.0, 0.0));
   private PIDController indexerFeedback = new PIDController(0.0, 0.0, 0.0);
-  private PIDController launcherFeedback = new PIDController(0.0, 0.0, 0.0);
 
   private ArmFeedforward anglerFeedforward = new ArmFeedforward(0.0, 0.0, 0.0);
   private SimpleMotorFeedforward indexerFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
@@ -71,7 +70,6 @@ public class Shooter extends SubsystemBase {
 
     anglerFeedback.setTolerance(0.001, 0.0);
     indexerFeedback.setTolerance(0.0, 5.0);
-    launcherFeedback.setTolerance(0.0, 5.0);
   }
 
   @Override

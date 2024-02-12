@@ -13,7 +13,7 @@ import edu.wpi.first.math.MathUtil;
 /** Class to interact with the physical angler */
 public class AnglerIOSparkMax implements AnglerIO {
   // TODO Update args as needed
-  private CANSparkMax anglerMotor = new CANSparkMax(43, MotorType.kBrushless);
+  private CANSparkMax anglerMotor = new CANSparkMax(41, MotorType.kBrushless);
   private RelativeEncoder anglerEncoder = anglerMotor.getEncoder();
 
   private double appliedVolts = 0.0;

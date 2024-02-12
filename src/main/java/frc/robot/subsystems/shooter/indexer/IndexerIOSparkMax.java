@@ -13,7 +13,7 @@ import edu.wpi.first.math.MathUtil;
 /** Class to interact with the physical indexer */
 public class IndexerIOSparkMax implements IndexerIO {
   // TODO Update args as needed
-  private CANSparkMax indexerMotor = new CANSparkMax(45, MotorType.kBrushless);
+  private CANSparkMax indexerMotor = new CANSparkMax(42, MotorType.kBrushless);
   private RelativeEncoder indexerEncoder = indexerMotor.getEncoder();
 
   private double appliedVolts = 0.0;
