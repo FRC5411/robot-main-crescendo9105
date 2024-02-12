@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.SwerveCommands;
+import frc.robot.schema.PilotProfile;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.drive.Drive;
@@ -35,9 +36,12 @@ public class RobotContainer {
   private Intake robotIntake;
   private Climb robotClimb;
 
+  private PilotProfile pilot;
+
   private CommandXboxController pilotController = new CommandXboxController(0);
 
   private LoggedDashboardChooser<Command> autoChooser;
+  private LoggedDashboardChooser<Constants.Pilot> pilotChooser;
 
   public RobotContainer() {
     initializeSubsystems();
@@ -50,6 +54,11 @@ public class RobotContainer {
     autoChooser =
         new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
     autoChooser.addDefaultOption("Print Hello", new PrintCommand("Hello"));
+
+    pilotChooser = new LoggedDashboardChooser<>("Pilot Selector");
+    pilotChooser.addDefaultOption("COMPUTER", Constants.Pilot.COMPUTER);
+
+    configurePilots();
 
     configureButtonBindings();
   }
@@ -100,6 +109,18 @@ public class RobotContainer {
         "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));
     NamedCommands.registerCommand("Intake", IntakeCommands.intakePiece(robotIntake, 12.0));
     NamedCommands.registerCommand("Stop Intake", IntakeCommands.stopIntake(robotIntake));
+  }
+
+  private void configurePilots() {
+    pilot = new PilotProfile(pilotChooser.get());
+
+    switch (pilot.getName()) {
+      case COMPUTER:
+
+        break;
+      default:
+        break;
+    }
   }
 
   /** Configure controllers */
