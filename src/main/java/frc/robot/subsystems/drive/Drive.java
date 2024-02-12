@@ -24,6 +24,10 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.utils.swerve.ModuleLimits;
+import frc.robot.utils.swerve.SwerveSetpoint;
+import frc.robot.utils.swerve.SwerveSetpointGenerator;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -36,8 +40,15 @@ public class Drive extends SubsystemBase {
       Math.hypot(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0);
   private final double MAX_LINEAR_SPEED_MPS = Units.feetToMeters(14.0);
   private final double MAX_ANGULAR_SPEED_MPS = MAX_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS_M;
+  // Second argument is the max accel, which we want to be half of the max vel for now
+  private final ModuleLimits MODULE_LIMITS = new ModuleLimits(MAX_LINEAR_SPEED_MPS, MAX_LINEAR_SPEED_MPS * 0.5, MAX_ANGULAR_SPEED_MPS);
 
+  private final Translation2d[] MODULE_TRANSLATIONS = getModuleTranslations();
   private final SwerveDriveKinematics KINEMATICS = getKinematics();
+
+  private SwerveSetpoint currentSetpoint = new SwerveSetpoint(new ChassisSpeeds(), new SwerveModuleState[] {new SwerveModuleState(), new SwerveModuleState(), new SwerveModuleState(), new SwerveModuleState()});
+  private SwerveSetpointGenerator setpointGenerator = new SwerveSetpointGenerator(KINEMATICS, MODULE_TRANSLATIONS);
+  private boolean areModulesOrienting = false;
 
   private GyroIO gyroIO;
   private GyroIOInputsAutoLogged gyroIOInputs = new GyroIOInputsAutoLogged();
@@ -60,6 +71,9 @@ public class Drive extends SubsystemBase {
     modules[2] = new Module(moduleBL, 2);
     modules[3] = new Module(moduleBR, 3);
     gyroIO = gyro;
+
+    // Configure setpoint generator
+    setpointGenerator = SwerveSetpointGenerator.builder().kinematics(KINEMATICS).moduleLocations(MODULE_TRANSLATIONS).build();
 
     // Configure PathPlanner
     AutoBuilder.configureHolonomic(
@@ -145,6 +159,19 @@ public class Drive extends SubsystemBase {
     Logger.recordOutput("Drive/SwerveStates/SetpointsOptimized", optimizedSetpointStates);
   }
 
+  /** Custom method for discretizing swerve speeds */
+  private ChassisSpeeds discretize(ChassisSpeeds speeds) {
+    double dt = 0.02;
+    var desiredDeltaPose =
+        new Pose2d(
+            speeds.vxMetersPerSecond * dt,
+            speeds.vyMetersPerSecond * dt,
+            new Rotation2d(speeds.omegaRadiansPerSecond * dt * 3));
+    var twist = new Pose2d().log(desiredDeltaPose);
+
+    return new ChassisSpeeds((twist.dx / dt), (twist.dy / dt), (speeds.omegaRadiansPerSecond));
+  }
+
   /** Stops the drive */
   public void stop() {
     runSwerve(new ChassisSpeeds());
@@ -216,22 +243,28 @@ public class Drive extends SubsystemBase {
     return gyroIOInputs.yawPosition;
   }
 
+  /** Get the maximum allowed linear (translational) speed */
   public double getMaxLinearSpeedMPS() {
     return MAX_LINEAR_SPEED_MPS;
   }
 
+  /** Get the maximum allowed rotational speed */
   public double getMaxAngularSpeedMPS() {
     return MAX_ANGULAR_SPEED_MPS;
   }
 
-  /** Gets the kinematics of the drivetrain */
-  public SwerveDriveKinematics getKinematics() {
-    return new SwerveDriveKinematics(
-        new Translation2d[] {
+  /** Get the positions of the modules on the drive */
+  public Translation2d[] getModuleTranslations() {
+    return new Translation2d[] {
           new Translation2d(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0),
           new Translation2d(TRACK_WIDTH_X_M / 2.0, -TRACK_WIDTH_Y_M / 2.0),
           new Translation2d(-TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0),
           new Translation2d(-TRACK_WIDTH_X_M / 2.0, -TRACK_WIDTH_Y_M / 2.0)
-        });
+        };
+  }
+
+  /** Gets the kinematics of the drivetrain */
+  public SwerveDriveKinematics getKinematics() {
+    return new SwerveDriveKinematics(getModuleTranslations());
   }
 }
