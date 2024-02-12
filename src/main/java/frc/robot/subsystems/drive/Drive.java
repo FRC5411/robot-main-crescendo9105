@@ -122,13 +122,13 @@ public class Drive extends SubsystemBase {
   @Override
   public void periodic() {
     gyroIO.updateInputs(gyroIOInputs);
-    for (var module : modules) { 
+    for (var module : modules) {
       module.updateInputs();
       Logger.processInputs("Drive/Gyro", gyroIOInputs);
 
       module.periodic();
-      
-      if (DriverStation.isDisabled()) {  
+
+      if (DriverStation.isDisabled()) {
         module.stop();
 
         // Log empty states
@@ -198,10 +198,10 @@ public class Drive extends SubsystemBase {
 
   /** Set the pose of the robot */
   public void setPose(Pose2d pose) {
-    gyroIO.resetGyro( pose.getRotation() );
+    gyroIO.resetGyro(pose.getRotation());
     poseEstimator.resetPosition(getRotation(), getModulePositions(), pose);
     currentPose = pose;
-    //gyroIO.resetGyro(currentPose.getRotation());
+    // gyroIO.resetGyro(currentPose.getRotation());
   }
 
   /** Add a vision measurement for the poseEstimator */
