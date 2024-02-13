@@ -5,6 +5,4 @@
 package frc.robot.subsystems.shooter;
 
 /** Add your docs here. */
-public class ProjectileTrajectoryGenerator {
-  
-}
+public class ProjectileTrajectoryGenerator {}

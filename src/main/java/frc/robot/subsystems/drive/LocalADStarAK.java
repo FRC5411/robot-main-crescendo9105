@@ -17,6 +17,7 @@ import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 public class LocalADStarAK implements Pathfinder {
   private final ADStarIO io = new ADStarIO();
+
   /**
    * Get if a new path has been calculated since the last time a path was retrieved
    *
@@ -30,6 +31,7 @@ public class LocalADStarAK implements Pathfinder {
     Logger.processInputs("LocalADStarAK", io);
     return io.isNewPathAvailable;
   }
+
   /**
    * Get the most recently calculated path
    *
@@ -48,6 +50,7 @@ public class LocalADStarAK implements Pathfinder {
     }
     return PathPlannerPath.fromPathPoints(io.currentPathPoints, constraints, goalEndState);
   }
+
   /**
    * Set the start position to pathfind from
    *
@@ -60,6 +63,7 @@ public class LocalADStarAK implements Pathfinder {
       io.adStar.setStartPosition(startPosition);
     }
   }
+
   /**
    * Set the goal position to pathfind to
    *
@@ -72,6 +76,7 @@ public class LocalADStarAK implements Pathfinder {
       io.adStar.setGoalPosition(goalPosition);
     }
   }
+
   /**
    * Set the dynamic obstacles that should be avoided while pathfinding.
    *
