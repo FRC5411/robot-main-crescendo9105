@@ -61,7 +61,7 @@ public class Shooter extends SubsystemBase {
       shooterWheelTop =
           new ShooterWheelTalonFX(
               ShooterWheelConstants.kTopMotorID,
-              true,
+              false,
               new PIDController(
                   ShooterWheelConstants.kP, ShooterWheelConstants.kI, ShooterWheelConstants.kD),
               new SimpleMotorFeedforward(
@@ -71,7 +71,7 @@ public class Shooter extends SubsystemBase {
       shooterWheelBottom =
           new ShooterWheelTalonFX(
               ShooterWheelConstants.kBottomMotorID,
-              true,
+              false,
               new PIDController(
                   ShooterWheelConstants.kP, ShooterWheelConstants.kI, ShooterWheelConstants.kD),
               new SimpleMotorFeedforward(
@@ -152,8 +152,7 @@ public class Shooter extends SubsystemBase {
           runClosedLoop = true;
           topVelocityMPS = topVelocityMPSSetpoint;
           bottomVelocityMPS = bottomVelocityMPSSetpoint;
-        },
-        this);
+      } );
   }
 
   public Command setShooterVoltageSetpointCommand(
@@ -163,8 +162,7 @@ public class Shooter extends SubsystemBase {
           runClosedLoop = false;
           shooterWheelTop.setFlywheelsVolts(topVoltsSetpoint);
           shooterWheelBottom.setFlywheelsVolts(bottomVoltsSetpoint);
-        },
-        this);
+        } );
   }
 
   // public Command setShooterAngleCommand(Rotation2d angle) {
@@ -177,7 +175,7 @@ public class Shooter extends SubsystemBase {
   // }
 
   public Command setIndexerVoltage(double volts) {
-    return new InstantCommand(() -> indexerVoltage = volts, this);
+    return new InstantCommand(() -> indexerVoltage = volts);
   }
 
   public boolean isShooterAtSetpoint() {
