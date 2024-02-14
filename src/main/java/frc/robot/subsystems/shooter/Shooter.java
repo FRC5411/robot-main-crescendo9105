@@ -61,7 +61,7 @@ public class Shooter extends SubsystemBase {
       shooterWheelTop =
           new ShooterWheelTalonFX(
               ShooterWheelConstants.kTopMotorID,
-              false,
+              true,
               new PIDController(
                   ShooterWheelConstants.kP, ShooterWheelConstants.kI, ShooterWheelConstants.kD),
               new SimpleMotorFeedforward(
