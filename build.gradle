@@ -60,6 +60,7 @@ repositories {
         }
     }
     mavenLocal()
+    mavenCentral()
 }
 
 configurations.all {
@@ -96,6 +97,11 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     implementation 'gov.nist.math:jama:1.0.3'
+
+    // implementation "javax.annotation:javax.annotation-api:1.3.2"
+    // implementation 'org.projectlombok:lombok:1.18.22'
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
 
     def akitJson = new groovy.json.JsonSlurper().parseText(new File(projectDir.getAbsolutePath() + "/vendordeps/AdvantageKit.json").text)
     annotationProcessor "org.littletonrobotics.akit.junction:junction-autolog:$akitJson.version"
