@@ -224,8 +224,6 @@ public class Shooter extends SubsystemBase {
       }
     }
 
-    shooterWheelBottom.setFlywheelsVolts(indexerVoltage);
-
     // anglerIO.executePID();
 
     indexerIO.setIndexerVolts(indexerVoltage);

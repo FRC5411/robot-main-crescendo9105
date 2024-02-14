@@ -27,12 +27,14 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
+import frc.robot.subsystems.shooter.Shooter;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
   private Drive robotDrive;
   private Intake robotIntake;
+  private Shooter robotShooter;
   private Climb robotClimb;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
@@ -89,6 +91,8 @@ public class RobotContainer {
         robotClimb = new Climb(new ClimbIO() {});
         break;
     }
+
+    robotShooter = new Shooter();
   }
 
   /** Register commands with PathPlanner and add default autos to chooser */
@@ -143,11 +147,31 @@ public class RobotContainer {
         .rightBumper()
         .whileTrue(IntakeCommands.intakePiece(robotIntake, -12.0))
         .whileFalse(IntakeCommands.stopIntake(robotIntake));
+    // pilotController
+    //     .b()
+    //     .toggleOnTrue(
+    //         IntakeCommands.intakePiece(robotIntake, 12.0)
+    //             .finallyDo(() -> robotIntake.setVolts(0.0)));
+
+    pilotController
+        .a()
+        .whileTrue(
+            robotShooter
+                .setShooterVoltageSetpointCommand(12, 12)
+                .andThen(robotShooter.setIndexerVoltage(12)))
+        .onFalse(
+            robotShooter
+                .setShooterVoltageSetpointCommand(0, 0)
+                .andThen(robotShooter.setIndexerVoltage(0)));
     pilotController
         .b()
-        .toggleOnTrue(
-            IntakeCommands.intakePiece(robotIntake, 12.0)
-                .finallyDo(() -> robotIntake.setVolts(0.0)));
+        .onTrue(robotShooter.setIndexerVoltage(-12))
+        .onFalse(robotShooter.setIndexerVoltage(0));
+    pilotController
+        .x()
+        .onTrue(robotShooter.getSysIDTests())
+        .onFalse(robotShooter.setShooterVoltageSetpointCommand(0, 0));
+
     // .toggleOnFalse(IntakeCommands.stopIntake(robotIntake));
 
     // /* Set climb to angle */
