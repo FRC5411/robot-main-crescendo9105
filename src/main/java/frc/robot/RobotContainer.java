@@ -90,9 +90,13 @@ public class RobotContainer {
         .a()
         .onTrue(
             robotShooter
-                .setShooterSepointsCommand(20, 20, Rotation2d.fromDegrees(45))
+                .setShooterVoltageSetpointCommand(12, 12)
                 .andThen(robotShooter.setIndexerVoltage(12)))
-        .onFalse(robotShooter.setShooterSepointsCommand(0, 0, Rotation2d.fromDegrees(15)));
+        .onFalse(
+            robotShooter
+                .setShooterVoltageSetpointCommand(0, 0)
+                .andThen(robotShooter.setIndexerVoltage(0)));
+
     pilotController.x().onTrue(robotShooter.getSysIDTests());
 
     // pilotController

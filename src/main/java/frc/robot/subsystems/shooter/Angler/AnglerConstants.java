@@ -4,7 +4,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 
 public class AnglerConstants {
-  public static int kMotorID = 65;
+  public static int kMotorID = 41;
   public static int kAbsoluteEncoderID = 7;
   public static int kRelativeEncoderAID = 8;
   public static int kRelativeEncoderBID = 9;

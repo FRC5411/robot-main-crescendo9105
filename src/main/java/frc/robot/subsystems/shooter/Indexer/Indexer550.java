@@ -21,7 +21,7 @@ public class Indexer550 implements IndexerIO {
   }
 
   @Override
-  public void setIndexerVoltsLeft(double volts) {
+  public void setIndexerVolts(double volts) {
     indexerLeft.setVoltage(volts);
   }
 

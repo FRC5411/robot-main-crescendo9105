@@ -41,6 +41,9 @@ public class Shooter extends SubsystemBase {
   private double topVelocityMPS = 0;
   private double bottomVelocityMPS = 0;
 
+  private double topVolts = 0;
+  private double bottomVolts = 0;
+
   private double indexerVoltage = 0;
 
   private ShooterWheelIOInputsAutoLogged shooterWheelIOInputsAutoLoggedTop =
@@ -51,13 +54,14 @@ public class Shooter extends SubsystemBase {
   private IndexerIOInputsAutoLogged indexerIOInputsAutoLogged = new IndexerIOInputsAutoLogged();
 
   private boolean runShooter = false;
+  private boolean runClosedLoop = false;
 
   public Shooter() {
     if (RobotBase.isReal()) {
       shooterWheelTop =
           new ShooterWheelTalonFX(
               ShooterWheelConstants.kTopMotorID,
-              false,
+              true,
               new PIDController(
                   ShooterWheelConstants.kP, ShooterWheelConstants.kI, ShooterWheelConstants.kD),
               new SimpleMotorFeedforward(
@@ -67,7 +71,7 @@ public class Shooter extends SubsystemBase {
       shooterWheelBottom =
           new ShooterWheelTalonFX(
               ShooterWheelConstants.kBottomMotorID,
-              true,
+              false,
               new PIDController(
                   ShooterWheelConstants.kP, ShooterWheelConstants.kI, ShooterWheelConstants.kD),
               new SimpleMotorFeedforward(
@@ -145,6 +149,7 @@ public class Shooter extends SubsystemBase {
       double topVelocityMPSSetpoint, double bottomVelocityMPSSetpoint) {
     return new InstantCommand(
         () -> {
+          runClosedLoop = true;
           topVelocityMPS = topVelocityMPSSetpoint;
           bottomVelocityMPS = bottomVelocityMPSSetpoint;
         },
@@ -155,6 +160,7 @@ public class Shooter extends SubsystemBase {
       double topVoltsSetpoint, double bottomVoltsSetpoint) {
     return new InstantCommand(
         () -> {
+          runClosedLoop = false;
           shooterWheelTop.setFlywheelsVolts(topVoltsSetpoint);
           shooterWheelBottom.setFlywheelsVolts(bottomVoltsSetpoint);
         },
@@ -209,8 +215,13 @@ public class Shooter extends SubsystemBase {
     }
 
     if (runShooter) {
-      shooterWheelTop.setFlywheelsVelocity(topVelocityMPS);
-      shooterWheelBottom.setFlywheelsVelocity(bottomVelocityMPS);
+      if (runClosedLoop) {
+        shooterWheelTop.setFlywheelsVelocity(topVelocityMPS);
+        shooterWheelBottom.setFlywheelsVelocity(bottomVelocityMPS);
+      } else {
+        shooterWheelTop.setFlywheelsVolts(topVolts);
+        shooterWheelBottom.setFlywheelsVolts(bottomVolts);
+      }
     }
 
     shooterWheelBottom.setFlywheelsVolts(indexerVoltage);

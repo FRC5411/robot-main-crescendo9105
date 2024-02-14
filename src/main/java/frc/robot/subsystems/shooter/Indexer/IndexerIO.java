@@ -9,21 +9,9 @@ public interface IndexerIO {
     public double indexerAppliedVoltsLeft = 0.0;
     public double indexerCurrentAmpsLeft = 0.0;
     public double indexerTemperatureLeftC = 0.0;
-
-    public double indexerVelocityRPMRight = 0.0;
-    public double indexerAppliedVoltsRight = 0.0;
-    public double indexerCurrentAmpsRight = 0.0;
-    public double indexerTemperatureRightC = 0.0;
   }
 
   public default void updateInputs(IndexerIOInputs inputs) {}
 
-  public default void setIndexerVoltsLeft(double volts) {}
-
-  public default void setIndexerVoltsRight(double volts) {}
-
-  public default void setIndexerVolts(double volts) {
-    setIndexerVoltsLeft(volts);
-    setIndexerVoltsRight(volts);
-  }
+  public default void setIndexerVolts(double volts) {}
 }
