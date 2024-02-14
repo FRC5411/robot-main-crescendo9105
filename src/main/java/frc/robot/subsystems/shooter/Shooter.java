@@ -59,6 +59,7 @@ public class Shooter extends SubsystemBase {
 
   private Rotation2d anglerSetpoint = null;
   private Double indexerSetpointRPM = null;
+  private Double launcherSetpointMPS = null;
 
   /** Creates a new Shooter. */
   public Shooter(AnglerIO anglerIO, IndexerIO indexerIO, LauncherIO launcherIO) {
@@ -83,6 +84,30 @@ public class Shooter extends SubsystemBase {
 
     if (DriverStation.isDisabled()) {
       stopMotors(true, true, true);
+    }
+
+    if (anglerSetpoint != null) {
+      var anglerFeedbackOutput =
+          anglerFeedback.calculate(anglerIOInputs.angleRadians, anglerSetpoint.getRadians()) / 12.0;
+
+      anglerIO.setVolts(anglerFeedbackOutput);
+
+      Logger.recordOutput("Shooter/AnglerController/FeedbackOutput", anglerFeedbackOutput);
+    }
+    if (indexerSetpointRPM != null) {
+      var indexerFeedbackOutput =
+          indexerFeedback.calculate(indexerIOInputs.velocityRPM, indexerSetpointRPM) / 12.0;
+      var indexerFeedforwardOutput =
+          indexerFeedforward.calculate(indexerIOInputs.velocityRPM) / 12.0;
+
+      indexerIO.setVolts((indexerFeedbackOutput + indexerFeedforwardOutput));
+
+      Logger.recordOutput("Shooter/IndexerController/FeedbackOutput", indexerFeedbackOutput / 12.0);
+      Logger.recordOutput(
+          "Shooter/IndexerController/FeedforwardOutput", indexerFeedforwardOutput / 12.0);
+    }
+    if (launcherSetpointMPS != null) {
+      launcherIO.setVelocity(launcherSetpointMPS);
     }
 
     updateTunableNumbers();
@@ -117,16 +142,25 @@ public class Shooter extends SubsystemBase {
     }
   }
 
+  /** Set the closed-loop control goal of the angler */
   public void setAngler(Rotation2d desiredAngle) {
     anglerSetpoint = desiredAngle;
 
     Logger.recordOutput("Shooter/AnglerController/Setpoint", anglerSetpoint);
   }
 
+  /** Set the closed-loop control goal of the indexer */
   public void setIndexerVelocity(double desiredVelocityRPM) {
     indexerSetpointRPM = desiredVelocityRPM;
 
     Logger.recordOutput("Shooter/IndexerController/Setpoint", indexerSetpointRPM);
+  }
+
+  /** Set the closed-loop control goal of the launcher */
+  public void setLauncherVelocity(double desiredVelocityMPS) {
+    launcherSetpointMPS = desiredVelocityMPS;
+
+    Logger.recordOutput("Shooter/Launcher/Setpoint", launcherSetpointMPS);
   }
 
   /** Stop the motors of the shooter subsystem */

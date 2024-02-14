@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems.shooter.launcher;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -14,6 +12,7 @@ import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import frc.robot.utils.debugging.LoggedTunableNumber;
+import org.littletonrobotics.junction.Logger;
 
 /** Class to represent the launcher in simulation */
 public class LauncherIOSim implements LauncherIO {
@@ -34,9 +33,12 @@ public class LauncherIOSim implements LauncherIO {
   private PIDController topFeedback = new PIDController(0.0, 0.0, 0.0);
   private PIDController bottomFeedback = new PIDController(0.0, 0.0, 0.0);
 
-  private LoggedTunableNumber topFeedbackP = new LoggedTunableNumber("Shooter/Top/FeedbackP", topFeedback.getP());
-  private LoggedTunableNumber topFeedbackI = new LoggedTunableNumber("Shooter/Top/FeedbackI", topFeedback.getI());
-  private LoggedTunableNumber topFeedbackD = new LoggedTunableNumber("Shooter/Top/FeedbackD", topFeedback.getD());
+  private LoggedTunableNumber topFeedbackP =
+      new LoggedTunableNumber("Shooter/Top/FeedbackP", topFeedback.getP());
+  private LoggedTunableNumber topFeedbackI =
+      new LoggedTunableNumber("Shooter/Top/FeedbackI", topFeedback.getI());
+  private LoggedTunableNumber topFeedbackD =
+      new LoggedTunableNumber("Shooter/Top/FeedbackD", topFeedback.getD());
 
   private LoggedTunableNumber bottomFeedbackP =
       new LoggedTunableNumber("Shooter/Bottom/FeedbackP", bottomFeedback.getP());
