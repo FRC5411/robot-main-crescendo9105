@@ -9,7 +9,7 @@ import com.revrobotics.SparkPIDController.ArbFFUnits;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import frc.robot.util.LoggedTunableNumber;
+import frc.robot.utils.LoggedTunableNumber;
 
 public class ShooterWheelNEO implements ShooterWheelIO {
   private CANSparkMax shooter;

@@ -7,7 +7,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import frc.robot.util.LoggedTunableNumber;
+import frc.robot.utils.LoggedTunableNumber;
 
 public class ShooterWheelSimIO implements ShooterWheelIO {
   private FlywheelSim flywheelMotor =
