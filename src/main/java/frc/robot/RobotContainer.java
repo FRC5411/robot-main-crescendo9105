@@ -41,7 +41,6 @@ public class RobotContainer {
   private CommandXboxController pilotController = new CommandXboxController(0);
 
   private LoggedDashboardChooser<Command> autoChooser;
-  private LoggedDashboardChooser<Constants.Pilot> pilotChooser;
 
   public RobotContainer() {
     initializeSubsystems();
@@ -54,12 +53,6 @@ public class RobotContainer {
     autoChooser =
         new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
     autoChooser.addDefaultOption("Print Hello", new PrintCommand("Hello"));
-
-    // TODO Remove this disgusting piece of code soon
-    pilotChooser = new LoggedDashboardChooser<>("Pilot Selector");
-    pilotChooser.addDefaultOption("COMPUTER", Constants.Pilot.COMPUTER);
-
-    configurePilots();
 
     configureButtonBindings();
   }
@@ -110,18 +103,6 @@ public class RobotContainer {
         "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));
     NamedCommands.registerCommand("Intake", IntakeCommands.intakePiece(robotIntake, 12.0));
     NamedCommands.registerCommand("Stop Intake", IntakeCommands.stopIntake(robotIntake));
-  }
-
-  private void configurePilots() {
-    // TODO Fix or remove this ungodly implementation of pilot profiles
-    pilot = new PilotProfile(pilotChooser.get());
-
-    switch (pilot.getName()) {
-      case COMPUTER:
-        break;
-      default:
-        break;
-    }
   }
 
   /** Configure controllers */

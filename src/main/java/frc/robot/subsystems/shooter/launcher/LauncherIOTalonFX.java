@@ -5,12 +5,19 @@
 package frc.robot.subsystems.shooter.launcher;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
+import frc.robot.utils.debugging.LoggedTunableNumber;
 
 /** Class to interact with the physical launcher */
 public class LauncherIOTalonFX implements LauncherIO {
+  private final double RADIUS_M = 7.62 / 100.0;
+  private final double CIRCUMFRENCE_M = 2.0 * Math.PI * RADIUS_M;
+
+  private VelocityVoltage flywheelVelocity = new VelocityVoltage(0.0);
+
   // TODO Update as needed
   private TalonFX topMotor = new TalonFX(43);
   private TalonFX bottomMotor = new TalonFX(44);
@@ -18,30 +25,73 @@ public class LauncherIOTalonFX implements LauncherIO {
   private double topAppliedVolts = 0.0;
   private double bottomAppliedVolts = 0.0;
 
+  private LoggedTunableNumber topFeedbackP = new LoggedTunableNumber("Shooter/Top/FeedbackP", 0.0);
+  private LoggedTunableNumber topFeedbackI = new LoggedTunableNumber("Shooter/Top/FeedbackI", 0.0);
+  private LoggedTunableNumber topFeedbackD = new LoggedTunableNumber("Shooter/Top/FeedbackD", 0.0);
+
+  private LoggedTunableNumber bottomFeedbackP =
+      new LoggedTunableNumber("Shooter/Bottom/FeedbackP", 0.0);
+  private LoggedTunableNumber bottomFeedbackI =
+      new LoggedTunableNumber("Shooter/Bottom/FeedbackI", 0.0);
+  private LoggedTunableNumber bottomFeedbackD =
+      new LoggedTunableNumber("Shooter/Bottom/FeedbackD", 0.0);
+
+  private LoggedTunableNumber topFeedbackS = new LoggedTunableNumber("Shooter/Top/FeedbackS", 0.0);
+  private LoggedTunableNumber topFeedbackG = new LoggedTunableNumber("Shooter/Top/FeedbackG", 0.0);
+  private LoggedTunableNumber topFeedbackV = new LoggedTunableNumber("Shooter/Top/FeedbackV", 0.0);
+  private LoggedTunableNumber topFeedbackA = new LoggedTunableNumber("Shooter/Top/FeedbackA", 0.0);
+
+  private LoggedTunableNumber bottomFeedbackS =
+      new LoggedTunableNumber("Shooter/Bottom/FeedbackS", 0.0);
+  private LoggedTunableNumber bottomFeedbackG =
+      new LoggedTunableNumber("Shooter/Bottom/FeedbackG", 0.0);
+  private LoggedTunableNumber bottomFeedbackV =
+      new LoggedTunableNumber("Shooter/Bottom/FeedbackV", 0.0);
+  private LoggedTunableNumber bottomFeedbackA =
+      new LoggedTunableNumber("Shooter/Bottom/FeedbackA", 0.0);
+
   /** Create a new hardware implementation of the launcher */
   public LauncherIOTalonFX() {
     // TODO Update as needed
-    TalonFXConfiguration leftConfiguration = new TalonFXConfiguration();
-    TalonFXConfiguration rightConfiguration = new TalonFXConfiguration();
+    TalonFXConfiguration topConfiguration = new TalonFXConfiguration();
+    TalonFXConfiguration bottomConfiguration = new TalonFXConfiguration();
 
-    leftConfiguration.CurrentLimits.StatorCurrentLimitEnable = true;
-    leftConfiguration.CurrentLimits.StatorCurrentLimit = 40;
-    rightConfiguration.CurrentLimits.StatorCurrentLimitEnable = true;
-    rightConfiguration.CurrentLimits.StatorCurrentLimit = 40;
+    topConfiguration.CurrentLimits.StatorCurrentLimitEnable = true;
+    topConfiguration.CurrentLimits.StatorCurrentLimit = 40;
+    bottomConfiguration.CurrentLimits.StatorCurrentLimitEnable = true;
+    bottomConfiguration.CurrentLimits.StatorCurrentLimit = 40;
 
-    leftConfiguration.Voltage.PeakForwardVoltage = 12.0;
-    leftConfiguration.Voltage.PeakReverseVoltage = -12.0;
-    rightConfiguration.Voltage.PeakForwardVoltage = 12.0;
-    rightConfiguration.Voltage.PeakReverseVoltage = -12.0;
+    topConfiguration.Voltage.PeakForwardVoltage = 12.0;
+    topConfiguration.Voltage.PeakReverseVoltage = -12.0;
+    bottomConfiguration.Voltage.PeakForwardVoltage = 12.0;
+    bottomConfiguration.Voltage.PeakReverseVoltage = -12.0;
 
-    leftConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    rightConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    topConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    bottomConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
     topMotor.setInverted(true);
     bottomMotor.setInverted(false);
 
-    topMotor.getConfigurator().apply(leftConfiguration);
-    bottomMotor.getConfigurator().apply(rightConfiguration);
+    topConfiguration.Slot0.kP = topFeedbackP.get();
+    topConfiguration.Slot0.kI = topFeedbackI.get();
+    topConfiguration.Slot0.kD = topFeedbackD.get();
+
+    bottomConfiguration.Slot0.kP = bottomFeedbackP.get();
+    bottomConfiguration.Slot0.kI = bottomFeedbackI.get();
+    bottomConfiguration.Slot0.kD = bottomFeedbackD.get();
+
+    topConfiguration.Slot0.kS = topFeedbackS.get();
+    topConfiguration.Slot0.kG = topFeedbackG.get();
+    topConfiguration.Slot0.kV = topFeedbackV.get();
+    topConfiguration.Slot0.kA = topFeedbackA.get();
+
+    bottomConfiguration.Slot0.kS = bottomFeedbackS.get();
+    bottomConfiguration.Slot0.kG = bottomFeedbackG.get();
+    bottomConfiguration.Slot0.kV = bottomFeedbackV.get();
+    bottomConfiguration.Slot0.kA = bottomFeedbackA.get();
+
+    topMotor.getConfigurator().apply(topConfiguration);
+    bottomMotor.getConfigurator().apply(bottomConfiguration);
   }
 
   @Override
@@ -59,6 +109,8 @@ public class LauncherIOTalonFX implements LauncherIO {
     inputs.bottomAppliedCurrentAmps =
         new double[] {bottomMotor.getStatorCurrent().getValueAsDouble()};
     inputs.bottomTemperatureCelsius = new double[] {bottomMotor.getDeviceTemp().getValueAsDouble()};
+
+    updateTunableNumbers();
   }
 
   @Override
@@ -68,5 +120,57 @@ public class LauncherIOTalonFX implements LauncherIO {
 
     topMotor.setVoltage(topAppliedVolts);
     bottomMotor.setVoltage(bottomAppliedVolts);
+  }
+
+  @Override
+  public void setVelocity(double velocityMPS) {
+    topMotor.setControl(flywheelVelocity.withVelocity(velocityMPS / CIRCUMFRENCE_M));
+    bottomMotor.setControl(flywheelVelocity.withVelocity(velocityMPS / CIRCUMFRENCE_M));
+  }
+
+  /** Update the tunable numbers if they've changed */
+  private void updateTunableNumbers() {
+    if (topFeedbackP.hasChanged(hashCode())
+        || topFeedbackI.hasChanged(hashCode())
+        || topFeedbackD.hasChanged(hashCode())) {
+      TalonFXConfiguration topConfiguration = new TalonFXConfiguration();
+
+      topConfiguration.Slot0.kP = topFeedbackP.get();
+      topConfiguration.Slot0.kI = topFeedbackI.get();
+      topConfiguration.Slot0.kD = topFeedbackD.get();
+
+      if (topFeedbackS.hasChanged(hashCode())
+          || topFeedbackG.hasChanged(hashCode())
+          || topFeedbackV.hasChanged(hashCode())
+          || topFeedbackA.hasChanged(hashCode())) {
+        topConfiguration.Slot0.kS = topFeedbackS.get();
+        topConfiguration.Slot0.kG = topFeedbackG.get();
+        topConfiguration.Slot0.kV = topFeedbackV.get();
+        topConfiguration.Slot0.kA = topFeedbackA.get();
+      }
+
+      topMotor.getConfigurator().apply(topConfiguration);
+    }
+    if (bottomFeedbackP.hasChanged(hashCode())
+        || bottomFeedbackI.hasChanged(hashCode())
+        || bottomFeedbackD.hasChanged(hashCode())) {
+      TalonFXConfiguration bottomConfiguration = new TalonFXConfiguration();
+
+      bottomConfiguration.Slot0.kP = bottomFeedbackP.get();
+      bottomConfiguration.Slot0.kI = bottomFeedbackI.get();
+      bottomConfiguration.Slot0.kD = bottomFeedbackD.get();
+
+      if (bottomFeedbackS.hasChanged(hashCode())
+          || bottomFeedbackG.hasChanged(hashCode())
+          || bottomFeedbackV.hasChanged(hashCode())
+          || bottomFeedbackA.hasChanged(hashCode())) {
+        bottomConfiguration.Slot0.kS = bottomFeedbackS.get();
+        bottomConfiguration.Slot0.kG = bottomFeedbackG.get();
+        bottomConfiguration.Slot0.kV = bottomFeedbackV.get();
+        bottomConfiguration.Slot0.kA = bottomFeedbackA.get();
+      }
+
+      bottomMotor.getConfigurator().apply(bottomConfiguration);
+    }
   }
 }

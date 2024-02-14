@@ -31,4 +31,5 @@ public interface LauncherIO {
   public default void setVolts(double topVolts, double bottomVolts) {}
 
   /** Set the closed-loop velocity for the motors */
+  public default void setVelocity(double velocityMPS) {}
 }
