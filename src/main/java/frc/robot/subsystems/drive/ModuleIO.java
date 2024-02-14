@@ -11,19 +11,18 @@ import org.littletonrobotics.junction.AutoLog;
 public interface ModuleIO {
   @AutoLog
   public static class ModuleIOInputs {
-    public double drivePositionR = 0.0;
-    public double driveVelocityRPS = 0.0;
+    public double drivePositionM = 0.0;
+    public double driveVelocityMPS = 0.0;
     public double driveAppliedVolts = 0.0;
     public double[] driveCurrentAmps = new double[] {};
+    public double[] driveTemperatureCelsius = new double[] {};
 
     public Rotation2d azimuthAbsolutePosition = new Rotation2d();
     public Rotation2d azimuthPosition = new Rotation2d();
     public double azimuthVelocityRPS = 0.0;
     public double azimuthAppliedVolts = 0.0;
     public double[] azimuthCurrentAmps = new double[] {};
-
-    public double[] odometryDrivePositionR = new double[] {};
-    public Rotation2d[] odometryAzimuthPositions = new Rotation2d[] {};
+    public double[] azimuthTemperatureCelsius = new double[] {};
   }
 
   /** Update the hardware inputs for a module */
@@ -35,11 +34,11 @@ public interface ModuleIO {
   /** Set the voltage for the azmith motor */
   public default void setAzimuthVolts(double volts) {}
 
-  /** Enable closed loop control for the module's drive velocity */
-  public default void setVelocity(double velocityMPS) {}
+  /** Set the velocity setpoint for closed-loop control */
+  public default void setDriveVelocity(double velocityMPS) {}
 
-  /** Enable closed loop control for the module's azimuth position */
-  public default void setAngle(double angleR) {}
+  /** Set the position setpoint for closed-loop control */
+  public default void setAzimuthPosition(Rotation2d position) {}
 
   /** Brake the drive motor */
   public default void setDriveBrake(boolean isBrake) {}

@@ -14,10 +14,11 @@ public interface GyroIO {
     public boolean connected = false;
     public Rotation2d yawPosition = new Rotation2d();
     public double yawVelocityRPS = 0.0;
-
-    public Rotation2d[] odometryYawPositions = new Rotation2d[] {};
   }
 
   /** Update the inputs for gyro */
   public default void updateInputs(GyroIOInputs inputs) {}
+
+  /** Reset gyro */
+  public default void resetGyro(Rotation2d heading) {}
 }

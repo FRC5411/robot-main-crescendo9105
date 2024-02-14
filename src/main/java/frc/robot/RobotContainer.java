@@ -7,123 +7,167 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.path.PathConstraints;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.commands.IntakeCommands;
+import frc.robot.commands.SwerveCommands;
+import frc.robot.subsystems.climb.Climb;
+import frc.robot.subsystems.climb.ClimbIO;
+import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.drive.GyroIO;
+import frc.robot.subsystems.drive.GyroIOPigeon2;
+import frc.robot.subsystems.drive.ModuleIO;
+import frc.robot.subsystems.drive.ModuleIOSim;
+import frc.robot.subsystems.drive.ModuleIOSparkMax;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.intake.IntakeIOSparkMax;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
-  // private Drive robotDrive;
-  private Shooter robotShooter;
+  private Drive robotDrive;
+  private Intake robotIntake;
+  private Climb robotClimb;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
-  // private CommandPS4Controller pilotController = new CommandPS4Controller(0);
 
-  // private final LoggedDashboardChooser<Command> AUTO_CHOOSER;
+  private LoggedDashboardChooser<Command> autoChooser;
 
   public RobotContainer() {
-    // switch (Constants.currentMode) {
-    //   case REAL:
-    //     robotDrive =
-    //         new Drive(
-    //             new ModuleIOSparkMax(0),
-    //             new ModuleIOSparkMax(1),
-    //             new ModuleIOSparkMax(2),
-    //             new ModuleIOSparkMax(3),
-    //             new GyroIOPigeon2(false));
-    //     break;
-    //   case SIM:
-    //     robotDrive =
-    //         new Drive(
-    //             new ModuleIOSim(0),
-    //             new ModuleIOSim(1),
-    //             new ModuleIOSim(2),
-    //             new ModuleIOSim(3),
-    //             new GyroIO() {});
-    //     break;
-    //   default:
-    //     robotDrive =
-    //         new Drive(
-    //             new ModuleIO() {},
-    //             new ModuleIO() {},
-    //             new ModuleIO() {},
-    //             new ModuleIO() {},
-    //             new GyroIO() {});
-    //     break;
-    // }
+    initializeSubsystems();
 
-    robotShooter = new Shooter();
+    configureAutonomous();
 
-    // NamedCommands.registerCommand(
-    //     "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));
-
-    // AUTO_CHOOSER =
-    //     new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
-
-    // AUTO_CHOOSER.addDefaultOption("Print Hello", new PrintCommand("Hello"));
+    // AutoBuilder is configured when Drive is initialized, thus chooser must be instantiated after
+    // initializeSubsystems()
+    autoChooser =
+        new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
 
     configureButtonBindings();
   }
 
+  /** Instantiate subsystems */
+  private void initializeSubsystems() {
+    switch (Constants.currentMode) {
+      case REAL:
+        robotDrive =
+            new Drive(
+                new ModuleIOSparkMax(0),
+                new ModuleIOSparkMax(1),
+                new ModuleIOSparkMax(2),
+                new ModuleIOSparkMax(3),
+                new GyroIOPigeon2(false));
+        robotIntake = new Intake(new IntakeIOSparkMax());
+        // robotClimb = new Climb(new ClimbIOSparkMax());
+        break;
+      case SIM:
+        robotDrive =
+            new Drive(
+                new ModuleIOSim(0),
+                new ModuleIOSim(1),
+                new ModuleIOSim(2),
+                new ModuleIOSim(3),
+                new GyroIO() {});
+        robotIntake = new Intake(new IntakeIOSim());
+        // robotClimb = new Climb(new ClimbIOSim());
+        break;
+      default:
+        robotDrive =
+            new Drive(
+                new ModuleIO() {},
+                new ModuleIO() {},
+                new ModuleIO() {},
+                new ModuleIO() {},
+                new GyroIO() {});
+        robotIntake = new Intake(new IntakeIO() {});
+        robotClimb = new Climb(new ClimbIO() {});
+        break;
+    }
+  }
+
+  /** Register commands with PathPlanner and add default autos to chooser */
+  private void configureAutonomous() {
+    Logger.recordOutput("Command Running", "Not Running");
+    // Register commands with PathPlanner's AutoBuilder so it can call them
+    NamedCommands.registerCommand(
+        "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));
+    NamedCommands.registerCommand("Intake", IntakeCommands.intakePiece(robotIntake, 12.0));
+    NamedCommands.registerCommand("Stop Intake", IntakeCommands.stopIntake(robotIntake));
+
+    // autoChooser.addDefaultOption("Print Hello", new PrintCommand("Hello"));
+  }
+
+  /** Configure controllers */
   private void configureButtonBindings() {
-    // robotDrive.setDefaultCommand(
-    //     SwerveCommands.swerveDrive(
-    //         robotDrive,
-    //         () -> pilotController.getLeftX(),
-    //         () -> -pilotController.getLeftY(),
-    //         () -> pilotController.getRightX()));
-    // // Reset heading
+    /* Drive with joysticks */
+    robotDrive.setDefaultCommand(
+        SwerveCommands.swerveDrive(
+            // FIXME Figure out why joysticks are being goofy
+            robotDrive,
+            () -> -pilotController.getLeftY(),
+            () -> -pilotController.getLeftX(),
+            () -> -pilotController.getRightX()));
+
+    /* Reset drive heading | Debugging */
+    pilotController
+        .y()
+        .onTrue(
+            Commands.runOnce(
+                    () ->
+                        robotDrive.setPose(
+                            new Pose2d(
+                                robotDrive.getPosition().getTranslation(), new Rotation2d())),
+                    robotDrive)
+                .ignoringDisable(true)); // Reset even when disabled
+
+    /* Reset drive pose | Debugging */
+    pilotController.a().onTrue(Commands.runOnce(robotDrive::resetPose, robotDrive));
+
+    // /* Run intake (NEO) at half speed */
     // pilotController
     //     .b()
-    //     .onTrue(
-    //         Commands.runOnce(
-    //                 () ->
-    //                     robotDrive.setPose(
-    //                         new Pose2d(
-    //                             robotDrive.getPosition().getTranslation(), new Rotation2d())),
-    //                 robotDrive)
-    //             .ignoringDisable(true)); // Reset even when disabled
+    //     //        .whileTrue(IntakeCommands.runIntake(robotIntake, 5676.0 / 2.0))
+    //     .whileTrue(IntakeCommands.runIntake(robotIntake, 1500.0))
+    //     .whileFalse(IntakeCommands.stopIntake(robotIntake));
     pilotController
-        .a()
-        .onTrue(
-            robotShooter
-                .setShooterVoltageSetpointCommand(12, 12)
-                .andThen(robotShooter.setIndexerVoltage(12)))
-        .onFalse(
-            robotShooter
-                .setShooterVoltageSetpointCommand(0, 0)
-                .andThen(robotShooter.setIndexerVoltage(0)));
+        .leftBumper()
+        .whileTrue(IntakeCommands.intakePiece(robotIntake, 12.0))
+        .whileFalse(IntakeCommands.stopIntake(robotIntake));
+    pilotController
+        .rightBumper()
+        .whileTrue(IntakeCommands.intakePiece(robotIntake, -12.0))
+        .whileFalse(IntakeCommands.stopIntake(robotIntake));
+    pilotController
+        .b()
+        .toggleOnTrue(
+            IntakeCommands.intakePiece(robotIntake, 12.0)
+                .finallyDo(() -> robotIntake.setVolts(0.0)));
+    // .toggleOnFalse(IntakeCommands.stopIntake(robotIntake));
 
-    pilotController.x().onTrue(robotShooter.getSysIDTests());
-
+    // /* Set climb to angle */
     // pilotController
-    //     .square()
-    //     .onTrue(new PrintCommand("Running pathFind
-    // command").andThen(getExamplePathfindCommand()))
-    //     .onFalse(new InstantCommand());
-    // AUTO_CHOOSER.addOption(
-    //     "Pathfind",
-    //     AutoBuilder.pathfindToPose(
-    //         new Pose2d(3, 1, Rotation2d.fromDegrees(180)),
-    //         new PathConstraints(
-    //             3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720))));
+    //     .a()
+    //     .whileTrue(ClimbCommands.setAngle(robotClimb, 1.0, 1.0))
+    //     .whileFalse(ClimbCommands.setAngle(robotClimb, 0.0, 0.0));
+
+    // /* Print commands for debugging purposes */
+    // pilotController
+    //     .b()
+    //     .whileTrue(Commands.print("B Button | whileTrue"))
+    //     .whileFalse(Commands.print("B Button | whileFalse"));
+    // pilotController.a().whileTrue(Commands.print("A Button | whileTrue"));
+    // pilotController.y().whileTrue(Commands.print("Y Button | whileTrue"));
+    // pilotController.x().whileTrue(Commands.print("X Button | whileTrue"));
   }
 
-  public Command getExamplePathfindCommand() {
-    Pose2d targetPose = new Pose2d(3, 1, Rotation2d.fromDegrees(180));
-
-    PathConstraints constraints =
-        new PathConstraints(3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
-
-    Command pathFindingCommand = AutoBuilder.pathfindToPose(targetPose, constraints, 0.0, 0.0);
-
-    return pathFindingCommand;
+  /** Returns the selected autonomous */
+  public Command getAutonomousCommand() {
+    return autoChooser.get();
   }
-
-  // public Command getAutonomousCommand() {
-  //   return AUTO_CHOOSER.get();
-  // }
 }
