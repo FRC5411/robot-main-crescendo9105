@@ -19,11 +19,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.subsystems.shooter.Angler.AnglerConstants;
-import frc.robot.subsystems.shooter.Angler.AnglerIO;
 import frc.robot.subsystems.shooter.Angler.AnglerInputsAutoLogged;
-import frc.robot.subsystems.shooter.Angler.AnglerNEO;
-import frc.robot.subsystems.shooter.Angler.AnglerSim;
 import frc.robot.subsystems.shooter.Flywheel.ShooterWheelConstants;
 import frc.robot.subsystems.shooter.Flywheel.ShooterWheelIO;
 import frc.robot.subsystems.shooter.Flywheel.ShooterWheelIOInputsAutoLogged;
@@ -40,7 +36,7 @@ public class Shooter extends SubsystemBase {
   private ShooterWheelIO shooterWheelTop;
   private ShooterWheelIO shooterWheelBottom;
   private IndexerIO indexerIO;
-  private AnglerIO anglerIO;
+  // private AnglerIO anglerIO;
 
   private double topVelocityMPS = 0;
   private double bottomVelocityMPS = 0;
@@ -54,7 +50,7 @@ public class Shooter extends SubsystemBase {
   private AnglerInputsAutoLogged anglerInputsAutoLogged = new AnglerInputsAutoLogged();
   private IndexerIOInputsAutoLogged indexerIOInputsAutoLogged = new IndexerIOInputsAutoLogged();
 
-  private boolean runShooter = true;
+  private boolean runShooter = false;
 
   public Shooter() {
     if (RobotBase.isReal()) {
@@ -80,7 +76,7 @@ public class Shooter extends SubsystemBase {
               "BottomWheel");
 
       indexerIO = new Indexer550();
-      anglerIO = new AnglerNEO(AnglerConstants.kMotorID);
+      // anglerIO = new AnglerNEO(AnglerConstants.kMotorID);
     } else if (RobotBase.isSimulation()) {
       shooterWheelTop =
           new ShooterWheelSimIO(
@@ -108,16 +104,16 @@ public class Shooter extends SubsystemBase {
               "BottomWheel");
 
       indexerIO = new IndexerSim();
-      anglerIO = new AnglerSim();
+      // anglerIO = new AnglerSim();
     } else {
       shooterWheelTop = new ShooterWheelIO() {};
       shooterWheelBottom = new ShooterWheelIO() {};
       indexerIO = new IndexerIO() {};
-      anglerIO = new AnglerIO() {};
+      // anglerIO = new AnglerIO() {};
     }
 
-    anglerIO.setGoal(Rotation2d.fromDegrees(15));
-    anglerIO.initPID();
+    // anglerIO.setGoal(Rotation2d.fromDegrees(15));
+    // anglerIO.initPID();
   }
 
   public Command shootToSpeakerCommand(
@@ -141,8 +137,8 @@ public class Shooter extends SubsystemBase {
   public Command setShooterSepointsCommand(
       double topVelocityMPSSetpoint, double bottomVelocityMPSSetpoint, Rotation2d angle) {
     return new SequentialCommandGroup(
-        setShooterVelocitySetpointCommand(topVelocityMPSSetpoint, bottomVelocityMPSSetpoint),
-        setShooterAngleCommand(angle));
+        setShooterVelocitySetpointCommand(
+            topVelocityMPSSetpoint, bottomVelocityMPSSetpoint)); // setShooterAngleCommand(angle));
   }
 
   public Command setShooterVelocitySetpointCommand(
@@ -165,14 +161,14 @@ public class Shooter extends SubsystemBase {
         this);
   }
 
-  public Command setShooterAngleCommand(Rotation2d angle) {
-    return new InstantCommand(
-        () -> {
-          anglerIO.setGoal(angle);
-          anglerIO.initPID();
-        },
-        this);
-  }
+  // public Command setShooterAngleCommand(Rotation2d angle) {
+  //   return new InstantCommand(
+  //       () -> {
+  //         anglerIO.setGoal(angle);
+  //         anglerIO.initPID();
+  //       },
+  //       this);
+  // }
 
   public Command setIndexerVoltage(double volts) {
     return new InstantCommand(() -> indexerVoltage = volts, this);
@@ -197,19 +193,19 @@ public class Shooter extends SubsystemBase {
   public void periodic() {
     shooterWheelTop.updateInputs(shooterWheelIOInputsAutoLoggedTop);
     shooterWheelBottom.updateInputs(shooterWheelIOInputsAutoLoggedBottom);
-    anglerIO.updateInputs(anglerInputsAutoLogged);
+    // anglerIO.updateInputs(anglerInputsAutoLogged);
     indexerIO.updateInputs(indexerIOInputsAutoLogged);
 
     Logger.processInputs("Shooter/TopWheel", shooterWheelIOInputsAutoLoggedTop);
     Logger.processInputs("Shooter/BottomWheel", shooterWheelIOInputsAutoLoggedBottom);
-    Logger.processInputs("Shooter/Angler", anglerInputsAutoLogged);
+    // Logger.processInputs("Shooter/Angler", anglerInputsAutoLogged);
     Logger.processInputs("Shooter/Indexer", indexerIOInputsAutoLogged);
 
     if (DriverStation.isDisabled()) {
       shooterWheelTop.setFlywheelsVolts(0.0);
       shooterWheelBottom.setFlywheelsVolts(0.0);
       indexerIO.setIndexerVolts(0.0);
-      anglerIO.setAnglerVolts(0.0);
+      // anglerIO.setAnglerVolts(0.0);
     }
 
     if (runShooter) {
@@ -217,7 +213,9 @@ public class Shooter extends SubsystemBase {
       shooterWheelBottom.setFlywheelsVelocity(bottomVelocityMPS);
     }
 
-    anglerIO.executePID();
+    shooterWheelBottom.setFlywheelsVolts(indexerVoltage);
+
+    // anglerIO.executePID();
 
     indexerIO.setIndexerVolts(indexerVoltage);
   }

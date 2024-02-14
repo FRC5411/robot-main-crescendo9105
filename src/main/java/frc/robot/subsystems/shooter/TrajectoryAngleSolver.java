@@ -6,11 +6,12 @@ import frc.robot.subsystems.shooter.Angler.AnglerConstants;
 import org.littletonrobotics.junction.Logger;
 
 public class TrajectoryAngleSolver {
-  public static double xGoalMeters = 
-    (DriverStation.getAlliance().isPresent()) ? 
-    (DriverStation.getAlliance().get().equals(DriverStation.Alliance.Blue)) 
-      ? 0.23 : 16.5 - 0.023
-    : 0.23;
+  public static double xGoalMeters =
+      (DriverStation.getAlliance().isPresent())
+          ? (DriverStation.getAlliance().get().equals(DriverStation.Alliance.Blue))
+              ? 0.23
+              : 16.5 - 0.023
+          : 0.23;
   public static double yGoalMeters = 2.045;
   public static double heightFromShootMeters = 0.25;
   public static double mdistanceFromWallMeters = 0.0;

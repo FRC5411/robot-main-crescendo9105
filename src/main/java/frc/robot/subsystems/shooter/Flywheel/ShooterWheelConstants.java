@@ -1,8 +1,8 @@
 package frc.robot.subsystems.shooter.Flywheel;
 
 public class ShooterWheelConstants {
-  public static int kTopMotorID = 41;
-  public static int kBottomMotorID = 42;
+  public static int kTopMotorID = 43;
+  public static int kBottomMotorID = 44;
 
   public static double kRadiusM = 7.62 / 100;
   public static double kCircumferenceM = 2 * Math.PI * kRadiusM;

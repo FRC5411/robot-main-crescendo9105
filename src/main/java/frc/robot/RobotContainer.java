@@ -7,96 +7,85 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.SwerveCommands;
-import frc.robot.subsystems.drive.Drive;
-import frc.robot.subsystems.drive.GyroIO;
-import frc.robot.subsystems.drive.GyroIOPigeon2;
-import frc.robot.subsystems.drive.ModuleIO;
-import frc.robot.subsystems.drive.ModuleIOSim;
-import frc.robot.subsystems.drive.ModuleIOSparkMax;
 import frc.robot.subsystems.shooter.Shooter;
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
-  private Drive robotDrive;
+  // private Drive robotDrive;
   private Shooter robotShooter;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
   // private CommandPS4Controller pilotController = new CommandPS4Controller(0);
 
-  private final LoggedDashboardChooser<Command> AUTO_CHOOSER;
+  // private final LoggedDashboardChooser<Command> AUTO_CHOOSER;
 
   public RobotContainer() {
-    switch (Constants.currentMode) {
-      case REAL:
-        robotDrive =
-            new Drive(
-                new ModuleIOSparkMax(0),
-                new ModuleIOSparkMax(1),
-                new ModuleIOSparkMax(2),
-                new ModuleIOSparkMax(3),
-                new GyroIOPigeon2(false));
-        break;
-      case SIM:
-        robotDrive =
-            new Drive(
-                new ModuleIOSim(0),
-                new ModuleIOSim(1),
-                new ModuleIOSim(2),
-                new ModuleIOSim(3),
-                new GyroIO() {});
-        break;
-      default:
-        robotDrive =
-            new Drive(
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new ModuleIO() {},
-                new GyroIO() {});
-        break;
-    }
+    // switch (Constants.currentMode) {
+    //   case REAL:
+    //     robotDrive =
+    //         new Drive(
+    //             new ModuleIOSparkMax(0),
+    //             new ModuleIOSparkMax(1),
+    //             new ModuleIOSparkMax(2),
+    //             new ModuleIOSparkMax(3),
+    //             new GyroIOPigeon2(false));
+    //     break;
+    //   case SIM:
+    //     robotDrive =
+    //         new Drive(
+    //             new ModuleIOSim(0),
+    //             new ModuleIOSim(1),
+    //             new ModuleIOSim(2),
+    //             new ModuleIOSim(3),
+    //             new GyroIO() {});
+    //     break;
+    //   default:
+    //     robotDrive =
+    //         new Drive(
+    //             new ModuleIO() {},
+    //             new ModuleIO() {},
+    //             new ModuleIO() {},
+    //             new ModuleIO() {},
+    //             new GyroIO() {});
+    //     break;
+    // }
 
     robotShooter = new Shooter();
 
-    NamedCommands.registerCommand(
-        "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));
+    // NamedCommands.registerCommand(
+    //     "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));
 
-    AUTO_CHOOSER =
-        new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
+    // AUTO_CHOOSER =
+    //     new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
 
-    AUTO_CHOOSER.addDefaultOption("Print Hello", new PrintCommand("Hello"));
+    // AUTO_CHOOSER.addDefaultOption("Print Hello", new PrintCommand("Hello"));
 
     configureButtonBindings();
   }
 
   private void configureButtonBindings() {
-    robotDrive.setDefaultCommand(
-        SwerveCommands.swerveDrive(
-            robotDrive,
-            () -> pilotController.getLeftX(),
-            () -> -pilotController.getLeftY(),
-            () -> pilotController.getRightX()));
-    // Reset heading
-    pilotController
-        .b()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        robotDrive.setPose(
-                            new Pose2d(
-                                robotDrive.getPosition().getTranslation(), new Rotation2d())),
-                    robotDrive)
-                .ignoringDisable(true)); // Reset even when disabled
+    // robotDrive.setDefaultCommand(
+    //     SwerveCommands.swerveDrive(
+    //         robotDrive,
+    //         () -> pilotController.getLeftX(),
+    //         () -> -pilotController.getLeftY(),
+    //         () -> pilotController.getRightX()));
+    // // Reset heading
+    // pilotController
+    //     .b()
+    //     .onTrue(
+    //         Commands.runOnce(
+    //                 () ->
+    //                     robotDrive.setPose(
+    //                         new Pose2d(
+    //                             robotDrive.getPosition().getTranslation(), new Rotation2d())),
+    //                 robotDrive)
+    //             .ignoringDisable(true)); // Reset even when disabled
     pilotController
         .a()
         .onTrue(
@@ -130,7 +119,7 @@ public class RobotContainer {
     return pathFindingCommand;
   }
 
-  public Command getAutonomousCommand() {
-    return AUTO_CHOOSER.get();
-  }
+  // public Command getAutonomousCommand() {
+  //   return AUTO_CHOOSER.get();
+  // }
 }
