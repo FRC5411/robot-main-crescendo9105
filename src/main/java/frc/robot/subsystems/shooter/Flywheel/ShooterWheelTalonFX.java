@@ -5,6 +5,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -119,7 +120,8 @@ public class ShooterWheelTalonFX implements ShooterWheelIO {
     configs.Feedback.FeedbackRemoteSensorID = id;
 
     configs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    flywheelMotor.setInverted(invert);
+    configs.MotorOutput.Inverted = invert ? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive;
+
     flywheelMotor.getConfigurator().apply(configs);
   }
 }
