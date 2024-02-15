@@ -34,9 +34,12 @@ public class LauncherIOSparkMax implements LauncherIO {
   private SimpleMotorFeedforward topFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
   private SimpleMotorFeedforward bottomFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
 
-  private LoggedTunableNumber topFeedbackP = new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/P", 0.0);
-  private LoggedTunableNumber topFeedbackI = new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/I", 0.0);
-  private LoggedTunableNumber topFeedbackD = new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/D", 0.0);
+  private LoggedTunableNumber topFeedbackP =
+      new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/P", 0.0);
+  private LoggedTunableNumber topFeedbackI =
+      new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/I", 0.0);
+  private LoggedTunableNumber topFeedbackD =
+      new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/D", 0.0);
 
   private LoggedTunableNumber bottomFeedbackP =
       new LoggedTunableNumber("Shooter/LauncherIO/BottomRoller/Feedback/P", 0.0);

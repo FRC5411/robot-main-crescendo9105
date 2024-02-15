@@ -19,7 +19,6 @@ import frc.robot.subsystems.shooter.indexer.IndexerIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOInputsAutoLogged;
 import frc.robot.utils.debugging.LoggedTunableNumber;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -91,10 +90,14 @@ public class Shooter extends SubsystemBase {
     if (anglerSetpoint != null) {
       var anglerFeedbackOutput =
           anglerFeedback.calculate(anglerIOInputs.angleRadians, anglerSetpoint.getRadians()) / 12.0;
+      var anglerFeedforwardOutput =
+          anglerFeedforward.calculate(anglerIOInputs.angleRadians, anglerIOInputs.velocityRPS)
+              / 12.0;
 
       anglerIO.setVolts(anglerFeedbackOutput);
 
       Logger.recordOutput("Shooter/Angler/Feedback/Output", anglerFeedbackOutput);
+      Logger.recordOutput("Shooter/Angler/Feedforward/Output", anglerFeedforwardOutput);
     }
     if (indexerSetpointRPM != null) {
       var indexerFeedbackOutput =
@@ -104,9 +107,8 @@ public class Shooter extends SubsystemBase {
 
       indexerIO.setVolts((indexerFeedbackOutput + indexerFeedforwardOutput));
 
-      Logger.recordOutput("Shooter/Indexer/Feedback/Output", indexerFeedbackOutput / 12.0);
-      Logger.recordOutput(
-          "Shooter/Indexer/Feedforward/Output", indexerFeedforwardOutput / 12.0);
+      Logger.recordOutput("Shooter/Indexer/Feedback/Output", indexerFeedbackOutput);
+      Logger.recordOutput("Shooter/Indexer/Feedforward/Output", indexerFeedforwardOutput);
     }
     if (launcherSetpointMPS != null) {
       launcherIO.setVelocity(launcherSetpointMPS);

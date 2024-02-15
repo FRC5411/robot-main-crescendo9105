@@ -32,8 +32,7 @@ public class Intake extends SubsystemBase {
       new LoggedTunableNumber(
           "Intake/Feedback/Accel", intakeFeedback.getConstraints().maxAcceleration);
   private LoggedTunableNumber feedbackV =
-      new LoggedTunableNumber(
-          "Intake/Feedback/Vel", intakeFeedback.getConstraints().maxVelocity);
+      new LoggedTunableNumber("Intake/Feedback/Vel", intakeFeedback.getConstraints().maxVelocity);
 
   private Double velocitySetpointRPM = null;
 

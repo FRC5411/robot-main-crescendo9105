@@ -99,9 +99,11 @@ public class LauncherIOSim implements LauncherIO {
     bottomMotor.setInput(bottomFeedbackOutput + bottomFeedforwardOutput);
 
     Logger.recordOutput("Shooter/LauncherIO/TopRoller/Feedback/Output", topFeedbackOutput);
-    Logger.recordOutput("Shooter/LauncherIO/BottomRoller/Feedforward/kOutput", bottomFeedbackOutput);
+    Logger.recordOutput(
+        "Shooter/LauncherIO/BottomRoller/Feedforward/kOutput", bottomFeedbackOutput);
     Logger.recordOutput("Shooter/LauncherIO/TopRoller/Feedback/Output", topFeedforwardOutput);
-    Logger.recordOutput("Shooter/LauncherIO/BottomRoller/Feedforward/Output", bottomFeedforwardOutput);
+    Logger.recordOutput(
+        "Shooter/LauncherIO/BottomRoller/Feedforward/Output", bottomFeedforwardOutput);
   }
 
   /** Update the tunable numbers if they've changed */

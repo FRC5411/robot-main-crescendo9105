@@ -25,9 +25,12 @@ public class LauncherIOTalonFX implements LauncherIO {
   private double topAppliedVolts = 0.0;
   private double bottomAppliedVolts = 0.0;
 
-  private LoggedTunableNumber topFeedbackP = new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/P", 0.0);
-  private LoggedTunableNumber topFeedbackI = new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/I", 0.0);
-  private LoggedTunableNumber topFeedbackD = new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/D", 0.0);
+  private LoggedTunableNumber topFeedbackP =
+      new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/P", 0.0);
+  private LoggedTunableNumber topFeedbackI =
+      new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/I", 0.0);
+  private LoggedTunableNumber topFeedbackD =
+      new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/D", 0.0);
 
   private LoggedTunableNumber bottomFeedbackP =
       new LoggedTunableNumber("Shooter/LauncherIO/BottomRoller/Feedback/P", 0.0);
@@ -36,10 +39,14 @@ public class LauncherIOTalonFX implements LauncherIO {
   private LoggedTunableNumber bottomFeedbackD =
       new LoggedTunableNumber("Shooter/LauncherIO/BottomRoller/Feedbac/D", 0.0);
 
-  private LoggedTunableNumber topFeedbackS = new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/S", 0.0);
-  private LoggedTunableNumber topFeedbackG = new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/G", 0.0);
-  private LoggedTunableNumber topFeedbackV = new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/V", 0.0);
-  private LoggedTunableNumber topFeedbackA = new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/A", 0.0);
+  private LoggedTunableNumber topFeedbackS =
+      new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/S", 0.0);
+  private LoggedTunableNumber topFeedbackG =
+      new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/G", 0.0);
+  private LoggedTunableNumber topFeedbackV =
+      new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/V", 0.0);
+  private LoggedTunableNumber topFeedbackA =
+      new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/A", 0.0);
 
   private LoggedTunableNumber bottomFeedbackS =
       new LoggedTunableNumber("Shooter/LauncherIO/BottomRoller/Feedbac/kS", 0.0);
