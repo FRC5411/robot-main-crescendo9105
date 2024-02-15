@@ -156,36 +156,35 @@ public class Drive extends SubsystemBase {
 
     SwerveModuleState[] optimizedSetpointStates = new SwerveModuleState[4];
 
-    // // TODO Find out what the areModulesOrienting variable does lol
-    // if (!areModulesOrienting) {
-    //   currentSetpoint =
-    //       setpointGenerator.generateSetpoint(MODULE_LIMITS, currentSetpoint, discreteSpeeds,
-    // 0.02);
+    // TODO Find out what the areModulesOrienting variable does lol
+    if (!areModulesOrienting) {
+      currentSetpoint =
+          setpointGenerator.generateSetpoint(MODULE_LIMITS, currentSetpoint, discreteSpeeds, 0.02);
 
-    //   for (int i = 0; i < 4; i++) {
-    //     // Optimized azimuth setpoint angles
-    //     optimizedSetpointStates[i] =
-    //         SwerveModuleState.optimize(currentSetpoint.moduleStates()[i], modules[i].getAngle());
+      for (int i = 0; i < 4; i++) {
+        // Optimized azimuth setpoint angles
+        optimizedSetpointStates[i] =
+            SwerveModuleState.optimize(currentSetpoint.moduleStates()[i], modules[i].getAngle());
 
-    //     // Prevent jittering from small joystick inputs or noise
-    //     optimizedSetpointStates[i] =
-    //         (Math.abs(optimizedSetpointStates[i].speedMetersPerSecond / MAX_LINEAR_SPEED_MPS)
-    //                 > 0.01)
-    //             ? modules[i].setDesiredState(optimizedSetpointStates[i])
-    //             : modules[i].setDesiredState(
-    //                 new SwerveModuleState(
-    //                     optimizedSetpointStates[i].speedMetersPerSecond, modules[i].getAngle()));
+        // Prevent jittering from small joystick inputs or noise
+        optimizedSetpointStates[i] =
+            (Math.abs(optimizedSetpointStates[i].speedMetersPerSecond / MAX_LINEAR_SPEED_MPS)
+                    > 0.01)
+                ? modules[i].setDesiredState(optimizedSetpointStates[i])
+                : modules[i].setDesiredState(
+                    new SwerveModuleState(
+                        optimizedSetpointStates[i].speedMetersPerSecond, modules[i].getAngle()));
 
-    //     // Run state
-    //     modules[i].setDesiredState(optimizedSetpointStates[i]);
-    //   }
-    // } else {
-    //   for (int i = 0; i < 4; i++) {
-    //     optimizedSetpointStates[i] =
-    //         modules[i].setDesiredState(
-    //             setpointStates[i]); // setDesiredState returns the optimized state
-    //   }
-    // }
+        // Run state
+        modules[i].setDesiredState(optimizedSetpointStates[i]);
+      }
+    } else {
+      for (int i = 0; i < 4; i++) {
+        optimizedSetpointStates[i] =
+            modules[i].setDesiredState(
+                setpointStates[i]); // setDesiredState returns the optimized state
+      }
+    }
 
     Logger.recordOutput("Drive/SwerveStates/Setpoints", setpointStates);
     Logger.recordOutput("Drive/SwerveStates/SetpointsOptimized", optimizedSetpointStates);
