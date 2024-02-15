@@ -26,6 +26,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
+import frc.robot.subsystems.shooter.ProjectileTrajectoryGenerator;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -49,6 +50,9 @@ public class RobotContainer {
     autoChooser.addDefaultOption("Print Hello", new PrintCommand("Hello"));
 
     configureButtonBindings();
+
+    // TODO Remove
+    ProjectileTrajectoryGenerator.displayDebuggingInformation();
   }
 
   /** Instantiate subsystems */
