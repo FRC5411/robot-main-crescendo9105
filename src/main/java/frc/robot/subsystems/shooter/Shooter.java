@@ -19,6 +19,8 @@ import frc.robot.subsystems.shooter.indexer.IndexerIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOInputsAutoLogged;
 import frc.robot.utils.debugging.LoggedTunableNumber;
+
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
@@ -38,24 +40,24 @@ public class Shooter extends SubsystemBase {
   private SimpleMotorFeedforward indexerFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
 
   private LoggedTunableNumber anglerFeedbackP =
-      new LoggedTunableNumber("Shooter/Tuning/AnglerP", anglerFeedback.getP());
+      new LoggedTunableNumber("Shooter/Angler/Feedback/P", anglerFeedback.getP());
   private LoggedTunableNumber anglerFeedbackI =
-      new LoggedTunableNumber("Shooter/Tuning/AnglerI", anglerFeedback.getI());
+      new LoggedTunableNumber("Shooter/Angler/Feedback/I", anglerFeedback.getI());
   private LoggedTunableNumber anglerFeedbackD =
-      new LoggedTunableNumber("Shooter/Tuning/AnglerD", anglerFeedback.getD());
+      new LoggedTunableNumber("Shooter/Angler/Feedback/D", anglerFeedback.getD());
   private LoggedTunableNumber anglerFeedbackA =
       new LoggedTunableNumber(
-          "Shooter/Tuning/AnglerAccel", anglerFeedback.getConstraints().maxAcceleration);
+          "Shooter/Angler/Feedback/Accel", anglerFeedback.getConstraints().maxAcceleration);
   private LoggedTunableNumber anglerFeedbackV =
       new LoggedTunableNumber(
-          "Shooter/Tuning/AnglerVel", anglerFeedback.getConstraints().maxVelocity);
+          "Shooter/Angler/Feedback/Vel", anglerFeedback.getConstraints().maxVelocity);
 
   private LoggedTunableNumber indexerFeedbackP =
-      new LoggedTunableNumber("Shooter/Tuning/indexerP", indexerFeedback.getP());
+      new LoggedTunableNumber("Shooter/Indexer/Feedback/P", indexerFeedback.getP());
   private LoggedTunableNumber indexerFeedbackI =
-      new LoggedTunableNumber("Shooter/Tuning/indexerI", indexerFeedback.getI());
+      new LoggedTunableNumber("Shooter/Indexer/Feedback/I", indexerFeedback.getI());
   private LoggedTunableNumber indexerFeedbackD =
-      new LoggedTunableNumber("Shooter/Tuning/indexerD", indexerFeedback.getD());
+      new LoggedTunableNumber("Shooter/Indexer/Feedback/D", indexerFeedback.getD());
 
   private Rotation2d anglerSetpoint = null;
   private Double indexerSetpointRPM = null;
@@ -92,7 +94,7 @@ public class Shooter extends SubsystemBase {
 
       anglerIO.setVolts(anglerFeedbackOutput);
 
-      Logger.recordOutput("Shooter/AnglerController/FeedbackOutput", anglerFeedbackOutput);
+      Logger.recordOutput("Shooter/Angler/Feedback/Output", anglerFeedbackOutput);
     }
     if (indexerSetpointRPM != null) {
       var indexerFeedbackOutput =
@@ -102,9 +104,9 @@ public class Shooter extends SubsystemBase {
 
       indexerIO.setVolts((indexerFeedbackOutput + indexerFeedforwardOutput));
 
-      Logger.recordOutput("Shooter/IndexerController/FeedbackOutput", indexerFeedbackOutput / 12.0);
+      Logger.recordOutput("Shooter/Indexer/Feedback/Output", indexerFeedbackOutput / 12.0);
       Logger.recordOutput(
-          "Shooter/IndexerController/FeedforwardOutput", indexerFeedforwardOutput / 12.0);
+          "Shooter/Indexer/Feedforward/Output", indexerFeedforwardOutput / 12.0);
     }
     if (launcherSetpointMPS != null) {
       launcherIO.setVelocity(launcherSetpointMPS);
@@ -145,22 +147,34 @@ public class Shooter extends SubsystemBase {
   /** Set the closed-loop control goal of the angler */
   public void setAngler(Rotation2d desiredAngle) {
     anglerSetpoint = desiredAngle;
-
-    Logger.recordOutput("Shooter/AnglerController/Setpoint", anglerSetpoint);
   }
 
   /** Set the closed-loop control goal of the indexer */
   public void setIndexerVelocity(double desiredVelocityRPM) {
     indexerSetpointRPM = desiredVelocityRPM;
-
-    Logger.recordOutput("Shooter/IndexerController/Setpoint", indexerSetpointRPM);
   }
 
   /** Set the closed-loop control goal of the launcher */
   public void setLauncherVelocity(double desiredVelocityMPS) {
     launcherSetpointMPS = desiredVelocityMPS;
+  }
 
-    Logger.recordOutput("Shooter/Launcher/Setpoint", launcherSetpointMPS);
+  /** Returns the angular position setpoint for the angler */
+  @AutoLogOutput(key = "Shooter/Angler/Feedback/Setpoint")
+  public Rotation2d getAnglerSetpoint() {
+    return anglerSetpoint;
+  }
+
+  /** Returns the indexer's velocity setpoint in RPM */
+  @AutoLogOutput(key = "Shooter/Indexer/Feedback/Setpoint")
+  public double getIndexerSetpoint() {
+    return indexerSetpointRPM;
+  }
+
+  /** Returns the launcher's velocity setpoint in MPS */
+  @AutoLogOutput(key = "Shooter/Launcher/Feedback/Setpoint")
+  public double getLauncherVelocity() {
+    return launcherSetpointMPS;
   }
 
   /** Stop the motors of the shooter subsystem */

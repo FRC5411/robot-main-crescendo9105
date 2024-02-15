@@ -112,7 +112,6 @@ public class Drive extends SubsystemBase {
           Logger.recordOutput(
               "Drive/Odometry/TrajectorySetpoint", targetPose); // Auto log the target setpoint
         });
-    Logger.recordOutput("Drive/MaxAngularSpeed", MAX_ANGULAR_SPEED_MPS);
   }
 
   @Override
@@ -121,7 +120,7 @@ public class Drive extends SubsystemBase {
     for (var module : modules) {
       module.updateInputs();
     }
-    Logger.processInputs("Drive/Gyro", gyroIOInputs);
+    Logger.processInputs("Drive/Gyro/Inputs", gyroIOInputs);
 
     for (var module : modules) {
       module.periodic();
@@ -132,8 +131,8 @@ public class Drive extends SubsystemBase {
         module.stop();
       }
       // Log empty states
-      Logger.recordOutput("Drive/SwerveStates/Setpoints", new SwerveModuleState[] {});
-      Logger.recordOutput("Drive/SwerveStates/SetpointsOptimized", new SwerveModuleState[] {});
+      Logger.recordOutput("Drive/Swerve/Setpoints", new SwerveModuleState[] {});
+      Logger.recordOutput("Drive/Swerve/SetpointsOptimized", new SwerveModuleState[] {});
     }
     if (DriverStation.isEStopped()) {
       for (var module : modules) {
@@ -186,8 +185,8 @@ public class Drive extends SubsystemBase {
       }
     }
 
-    Logger.recordOutput("Drive/SwerveStates/Setpoints", setpointStates);
-    Logger.recordOutput("Drive/SwerveStates/SetpointsOptimized", optimizedSetpointStates);
+    Logger.recordOutput("Drive/Swerve/Setpoints", setpointStates);
+    Logger.recordOutput("Drive/Swerve/SetpointsOptimized", optimizedSetpointStates);
   }
 
   /** Custom method for discretizing swerve speeds */
@@ -229,7 +228,7 @@ public class Drive extends SubsystemBase {
   }
 
   /** Returns the drive's measured state (module azimuth angles and drive velocities) */
-  @AutoLogOutput(key = "Drive/SwerveStates/Measured")
+  @AutoLogOutput(key = "Drive/Swerve/Measured")
   private SwerveModuleState[] getModuleStates() {
     SwerveModuleState[] states = new SwerveModuleState[4];
     for (int i = 0; i < 4; i++) {
@@ -240,7 +239,7 @@ public class Drive extends SubsystemBase {
   }
 
   /** Returns the swerve module's positions */
-  @AutoLogOutput(key = "Drive/ModulePositions")
+  @AutoLogOutput(key = "Drive/Swerve/ModulePositions")
   public SwerveModulePosition[] getModulePositions() {
     SwerveModulePosition[] positions = new SwerveModulePosition[4];
     for (int i = 0; i < 4; i++) {

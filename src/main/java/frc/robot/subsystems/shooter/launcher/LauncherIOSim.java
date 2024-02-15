@@ -34,18 +34,18 @@ public class LauncherIOSim implements LauncherIO {
   private PIDController bottomFeedback = new PIDController(0.0, 0.0, 0.0);
 
   private LoggedTunableNumber topFeedbackP =
-      new LoggedTunableNumber("Shooter/Top/FeedbackP", topFeedback.getP());
+      new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/P", topFeedback.getP());
   private LoggedTunableNumber topFeedbackI =
-      new LoggedTunableNumber("Shooter/Top/FeedbackI", topFeedback.getI());
+      new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/I", topFeedback.getI());
   private LoggedTunableNumber topFeedbackD =
-      new LoggedTunableNumber("Shooter/Top/FeedbackD", topFeedback.getD());
+      new LoggedTunableNumber("Shooter/LauncherIO/TopRoller/Feedback/D", topFeedback.getD());
 
   private LoggedTunableNumber bottomFeedbackP =
-      new LoggedTunableNumber("Shooter/Bottom/FeedbackP", bottomFeedback.getP());
+      new LoggedTunableNumber("Shooter/LauncherIO/BottomRoller/Feedback/P", bottomFeedback.getP());
   private LoggedTunableNumber bottomFeedbackI =
-      new LoggedTunableNumber("Shooter/Bottom/FeedbackI", bottomFeedback.getI());
+      new LoggedTunableNumber("Shooter/LauncherIO/BottomRoller/Feedback/I", bottomFeedback.getI());
   private LoggedTunableNumber bottomFeedbackD =
-      new LoggedTunableNumber("Shooter/Bottom/FeedbackD", bottomFeedback.getD());
+      new LoggedTunableNumber("Shooter/LauncherIO/BottomRoller/Feedback/D", bottomFeedback.getD());
 
   /** Create a new virtual implementation of the launcher */
   public LauncherIOSim() {}
@@ -98,10 +98,10 @@ public class LauncherIOSim implements LauncherIO {
     topMotor.setInput(topFeedbackOutput + topFeedforwardOutput);
     bottomMotor.setInput(bottomFeedbackOutput + bottomFeedforwardOutput);
 
-    Logger.recordOutput("Shooter/Top/FeedbackOutput", topFeedbackOutput);
-    Logger.recordOutput("Shooter/Bottom/FeedbackOutput", bottomFeedbackOutput);
-    Logger.recordOutput("Shooter/Top/FeedforwardOutput", topFeedforwardOutput);
-    Logger.recordOutput("Shooter/Bottom/FeedforwardOutput", bottomFeedforwardOutput);
+    Logger.recordOutput("Shooter/LauncherIO/TopRoller/Feedback/Output", topFeedbackOutput);
+    Logger.recordOutput("Shooter/LauncherIO/BottomRoller/Feedforward/kOutput", bottomFeedbackOutput);
+    Logger.recordOutput("Shooter/LauncherIO/TopRoller/Feedback/Output", topFeedforwardOutput);
+    Logger.recordOutput("Shooter/LauncherIO/BottomRoller/Feedforward/Output", bottomFeedforwardOutput);
   }
 
   /** Update the tunable numbers if they've changed */

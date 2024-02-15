@@ -29,30 +29,30 @@ public class Climb extends SubsystemBase {
   private ArmFeedforward rightClimbFeedforward = new ArmFeedforward(0.0, 0.0, 0.0);
 
   private LoggedTunableNumber leftFeedbackP =
-      new LoggedTunableNumber("Climb/Tuning/Left/P", leftClimbFeedback.getP());
+      new LoggedTunableNumber("Climb/LeftArm/Feedback/P", leftClimbFeedback.getP());
   private LoggedTunableNumber leftFeedbackI =
-      new LoggedTunableNumber("Climb/Tuning/Left/I", leftClimbFeedback.getI());
+      new LoggedTunableNumber("Climb/LeftArm/Feedback/I", leftClimbFeedback.getI());
   private LoggedTunableNumber leftFeedbackD =
-      new LoggedTunableNumber("Climb/Tuning/Left/D", leftClimbFeedback.getD());
+      new LoggedTunableNumber("Climb/LeftArm/Feedback/D", leftClimbFeedback.getD());
   private LoggedTunableNumber leftFeedbackA =
       new LoggedTunableNumber(
-          "Climb/Tuning/Left/Accel", leftClimbFeedback.getConstraints().maxAcceleration);
+          "Climb/LeftArm/Feedback/Accel", leftClimbFeedback.getConstraints().maxAcceleration);
   private LoggedTunableNumber leftFeedbackV =
       new LoggedTunableNumber(
-          "Climb/Tuning/Left/Vel", leftClimbFeedback.getConstraints().maxVelocity);
+          "Climb/LeftArm/Feedback/Vel", leftClimbFeedback.getConstraints().maxVelocity);
 
   private LoggedTunableNumber rightFeedbackP =
-      new LoggedTunableNumber("Climb/Tuning/Right/P", rightClimbFeedback.getP());
+      new LoggedTunableNumber("Climb/RightArm/Feedback/P", rightClimbFeedback.getP());
   private LoggedTunableNumber rightFeedbackI =
-      new LoggedTunableNumber("Climb/Tuning/Right/I", rightClimbFeedback.getI());
+      new LoggedTunableNumber("Climb/RightArm/Feedback/I", rightClimbFeedback.getI());
   private LoggedTunableNumber rightFeedbackD =
-      new LoggedTunableNumber("Climb/Tuning/Right/D", rightClimbFeedback.getD());
+      new LoggedTunableNumber("Climb/RightArm/Feedback/D", rightClimbFeedback.getD());
   private LoggedTunableNumber rightFeedbackA =
       new LoggedTunableNumber(
-          "Climb/Tuning/Right/Accel", rightClimbFeedback.getConstraints().maxAcceleration);
+          "Climb/RightArm/Feedback/Accel", rightClimbFeedback.getConstraints().maxAcceleration);
   private LoggedTunableNumber rightFeedbackV =
       new LoggedTunableNumber(
-          "Climb/Tuning/Right/Vel", rightClimbFeedback.getConstraints().maxVelocity);
+          "Climb/RightArm/Feedback/Vel", rightClimbFeedback.getConstraints().maxVelocity);
 
   private Double leftAngleSetpointRadians = null;
   private Double rightAngleSetpointRadians = null;
@@ -85,8 +85,8 @@ public class Climb extends SubsystemBase {
           leftClimbFeedforward.calculate(
               inputs.leftAngleRadians, leftClimbFeedback.getSetpoint().velocity);
 
-      Logger.recordOutput("Climb/Controller/leftFeedbackOutput", leftFeedbackOutput);
-      Logger.recordOutput("Climb/Controller/leftFeedforwardOutput", leftFeedforwardOutput);
+      Logger.recordOutput("Climb/LeftArm/Feedback/Output", leftFeedbackOutput);
+      Logger.recordOutput("Climb/LeftArm/Feedforward/Output", leftFeedforwardOutput);
 
       io.setLeftVolts((leftFeedbackOutput + leftFeedforwardOutput) * 12.0);
     }
@@ -99,8 +99,8 @@ public class Climb extends SubsystemBase {
           rightClimbFeedforward.calculate(
               inputs.rightAngleRadians, rightClimbFeedback.getSetpoint().velocity);
 
-      Logger.recordOutput("Climb/Controller/rightFeedbackOutput", rightFeedbackOutput);
-      Logger.recordOutput("Climb/Controller/rightFeedforwardOutput", rightFeedforwardOutput);
+      Logger.recordOutput("Climb/RightArm/Feedback/Output", rightFeedbackOutput);
+      Logger.recordOutput("Climb/RightArm/Feedforward/Output", rightFeedforwardOutput);
 
       io.setRightVolts((rightFeedbackOutput + rightFeedforwardOutput) * 12.0);
     }
@@ -148,8 +148,8 @@ public class Climb extends SubsystemBase {
     leftAngleSetpointRadians = leftDesiredAngleRadians;
     rightAngleSetpointRadians = rightDesiredAngleRadians;
 
-    Logger.recordOutput("Climb/Controller/leftSetpoint", leftAngleSetpointRadians);
-    Logger.recordOutput("Climb/Controller/rightSetpoint", rightAngleSetpointRadians);
+    Logger.recordOutput("Climb/LeftArm/Feedback/Setpoint", leftAngleSetpointRadians);
+    Logger.recordOutput("Climb/RightArm/Feedback/Setpoint", rightAngleSetpointRadians);
   }
 
   /** Stops both motors */
@@ -162,37 +162,37 @@ public class Climb extends SubsystemBase {
   }
 
   /** Returns the error of the left feedback */
-  @AutoLogOutput(key = "Climb/Controller/Left/Error")
+  @AutoLogOutput(key = "Climb/LeftArm/Feedback/Error")
   public double getLeftError() {
     return leftClimbFeedback.getPositionError();
   }
 
   /** Returns the error of the right feedback */
-  @AutoLogOutput(key = "Climb/Controller/Right/Setpoint")
+  @AutoLogOutput(key = "Climb/RightArm/Feedback/Error")
   public double getRightError() {
     return rightClimbFeedback.getPositionError();
   }
 
   /** Returns the setpoint of the left feedback */
-  @AutoLogOutput(key = "Climb/Controller/Left/Setpoint")
+  @AutoLogOutput(key = "Climb/LeftArm/Feedback/Setpoint")
   public double getLeftSetpoint() {
     return leftClimbFeedback.getSetpoint().position;
   }
 
   /** Returns the setpoint of the right feedback */
-  @AutoLogOutput(key = "Climb/Controller/Right/Setpoint")
+  @AutoLogOutput(key = "Climb/RightArm/Feedback/Setpoint")
   public double getRightSetpoint() {
     return rightClimbFeedback.getSetpoint().position;
   }
 
   /** Returns if the left feedback is at the setpoint */
-  @AutoLogOutput(key = "Climb/Controller/Left/isAtSetpoint")
+  @AutoLogOutput(key = "Climb/LeftArm/Feedback/isAtSetpoint")
   public boolean isLeftAtSetpoint() {
     return leftClimbFeedback.atSetpoint();
   }
 
   /** Returns if the right feedback is at the setpoint */
-  @AutoLogOutput(key = "Climb/Controller/Right/Setpoint")
+  @AutoLogOutput(key = "Climb/RightArm/Feedback/isAtSetpoint")
   public boolean isRightAtSetpoint() {
     return rightClimbFeedback.atSetpoint();
   }
