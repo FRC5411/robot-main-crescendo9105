@@ -152,7 +152,7 @@ public class Shooter extends SubsystemBase {
           runClosedLoop = true;
           topVelocityMPS = topVelocityMPSSetpoint;
           bottomVelocityMPS = bottomVelocityMPSSetpoint;
-      } );
+        });
   }
 
   public Command setShooterVoltageSetpointCommand(
@@ -162,7 +162,7 @@ public class Shooter extends SubsystemBase {
           runClosedLoop = false;
           shooterWheelTop.setFlywheelsVolts(topVoltsSetpoint);
           shooterWheelBottom.setFlywheelsVolts(bottomVoltsSetpoint);
-        } );
+        });
   }
 
   // public Command setShooterAngleCommand(Rotation2d angle) {

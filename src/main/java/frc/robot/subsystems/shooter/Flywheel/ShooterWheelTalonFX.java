@@ -120,7 +120,8 @@ public class ShooterWheelTalonFX implements ShooterWheelIO {
     configs.Feedback.FeedbackRemoteSensorID = id;
 
     configs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    configs.MotorOutput.Inverted = invert ? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive;
+    configs.MotorOutput.Inverted =
+        invert ? InvertedValue.CounterClockwise_Positive : InvertedValue.Clockwise_Positive;
 
     flywheelMotor.getConfigurator().apply(configs);
   }
