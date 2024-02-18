@@ -28,6 +28,7 @@ import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.TrajectoryAngleSolver;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -171,6 +172,19 @@ public class RobotContainer {
         .x()
         .onTrue(robotShooter.getSysIDTests())
         .onFalse(robotShooter.setShooterVoltageSetpointCommand(0, 0));
+
+    pilotController
+        .povUp()
+        .whileTrue(robotShooter.setShooterVelocitySetpointCommand(5, 5))
+        .whileTrue(
+            robotShooter.setShooterAngleCommand(
+                new Rotation2d(TrajectoryAngleSolver.newtonRaphsonSolver(3, 5))))
+        .onFalse(robotShooter.setShooterVelocitySetpointCommand(0, 0));
+
+    // pilotController
+    //     .y()
+    //     .onTrue()
+    //     .onFalse();
 
     // .toggleOnFalse(IntakeCommands.stopIntake(robotIntake));
 
