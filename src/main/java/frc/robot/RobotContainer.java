@@ -67,7 +67,7 @@ public class RobotContainer {
     autoChooser.addDefaultOption("Print Hello", new PrintCommand("Hello"));
 
     // configureButtonBindings();
-    configureButtonBindings();
+    configureCompetitionButtonBindings();
 
     // TODO Remove
     ProjectileTrajectoryGenerator.displayDebuggingInformation();
@@ -127,11 +127,140 @@ public class RobotContainer {
 
   /** Configure competition controllers */
   private void configureCompetitionButtonBindings() {
+    /* Drive with joysticks */
+    robotDrive.setDefaultCommand(
+        SwerveCommands.swerveDrive(
+            robotDrive,
+            () -> -pilotController.getLeftY(),
+            () -> -pilotController.getLeftX(),
+            () -> -pilotController.getRightX()));
 
+    /* Reset gyro / field-oriented */
+    pilotController
+        .y()
+        .onTrue(
+            Commands.runOnce(
+                () -> {
+                  robotDrive.resetGyro();
+                },
+                robotDrive));
+
+    /* Intake */
+    pilotController
+        .leftBumper()
+        .whileTrue(
+            IntakeCommands.intakePiece(robotIntake, 12.0)
+                .alongWith(ShooterCommands.runAll(robotShooter, 0.0, 12.0, 0.0)))
+        .whileFalse(
+            IntakeCommands.stopIntake(robotIntake)
+                .alongWith(ShooterCommands.stopShooter(robotShooter)));
+
+    /* Outtake */
+    pilotController
+        .rightBumper()
+        .whileTrue(
+            IntakeCommands.outtakePiece(robotIntake, -12.0)
+                .alongWith(ShooterCommands.runAll(robotShooter, 0.0, -12.0, 0.0)))
+        .whileFalse(
+            IntakeCommands.stopIntake(robotIntake)
+                .alongWith(ShooterCommands.stopShooter(robotShooter)));
+
+    /* Run the flywheel and then the indexer */
+    copilotController
+        .y()
+        .toggleOnTrue(
+            Commands.run(
+                    () -> {
+                      robotShooter.setManualLauncher(-9.0);
+                    },
+                    robotShooter)
+                .withTimeout(2.0)
+                .andThen(
+                    Commands.run(
+                            () -> {
+                              robotShooter.setManualIndexer(12.0);
+                              robotIntake.setVolts(12.0);
+                            },
+                            robotShooter)
+                        .withTimeout(1.0)))
+        .toggleOnFalse(
+            Commands.run(
+                () -> {
+                  robotShooter.setManualIndexer(0.0);
+                  robotShooter.setManualLauncher(0.0);
+                  robotIntake.setVolts(0.0);
+                },
+                robotShooter));
+
+    /* Run launcher */
+    copilotController
+        .x()
+        .toggleOnTrue(
+            Commands.run(
+                () -> {
+                  robotShooter.setManualLauncher(-12.0);
+                },
+                robotShooter))
+        .toggleOnFalse(
+            Commands.run(
+                () -> {
+                  robotShooter.setManualLauncher(0.0);
+                },
+                robotShooter));
+
+    /* Run indexer */
+    copilotController
+        .b()
+        .toggleOnTrue(
+            Commands.run(
+                () -> {
+                  robotShooter.setManualIndexer(12.0);
+                  robotIntake.setVolts(12.0);
+                },
+                robotShooter))
+        .toggleOnFalse(
+            Commands.run(
+                () -> {
+                  robotShooter.setManualIndexer(0.0);
+                  robotIntake.setVolts(0.0);
+                },
+                robotShooter));
+
+    /* Angle up */
+    copilotController
+        .povUp()
+        .whileTrue(
+            Commands.run(
+                () -> {
+                  robotShooter.setManualAngler(-8.0);
+                },
+                robotShooter))
+        .whileFalse(
+            Commands.run(
+                () -> {
+                  robotShooter.setManualAngler(0.0);
+                },
+                robotShooter));
+
+    /* Angle down */
+    copilotController
+        .povDown()
+        .whileTrue(
+            Commands.run(
+                () -> {
+                  robotShooter.setManualAngler(8.0);
+                },
+                robotShooter))
+        .whileFalse(
+            Commands.run(
+                () -> {
+                  robotShooter.setManualAngler(0.0);
+                },
+                robotShooter));
   }
 
   /** Configure controllers */
-  private void configureButtonBindings() {
+  public void configureButtonBindings() {
     /* Drive with joysticks */
     robotDrive.setDefaultCommand(
         SwerveCommands.swerveDrive(
