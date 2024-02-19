@@ -37,7 +37,7 @@ public class Drive extends SubsystemBase {
   private final double MAX_ANGULAR_SPEED_MPS = MAX_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS_M;
   // Second argument is the max accel, which we want to be half of the max vel for now
   private final ModuleLimits MODULE_LIMITS =
-      new ModuleLimits(MAX_LINEAR_SPEED_MPS, MAX_LINEAR_SPEED_MPS * 0.5, MAX_ANGULAR_SPEED_MPS);
+      new ModuleLimits(MAX_LINEAR_SPEED_MPS, MAX_LINEAR_SPEED_MPS * 5, MAX_ANGULAR_SPEED_MPS);
 
   private final Translation2d[] MODULE_TRANSLATIONS = getModuleTranslations();
   private final SwerveDriveKinematics KINEMATICS = getKinematics();
@@ -207,8 +207,14 @@ public class Drive extends SubsystemBase {
     runSwerve(new ChassisSpeeds());
   }
 
+  /** Reset the robot's pose */
   public void resetPose() {
     poseEstimator.resetPosition(gyroIOInputs.yawPosition, getModulePositions(), new Pose2d());
+  }
+
+  /** Reset the gyro heading */
+  public void resetGyro() {
+    gyroIO.resetGyro();
   }
 
   /** Set the pose of the robot */

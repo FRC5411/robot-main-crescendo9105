@@ -89,26 +89,28 @@ public class Shooter extends SubsystemBase {
 
     if (anglerSetpoint != null) {
       var anglerFeedbackOutput =
-          anglerFeedback.calculate(anglerIOInputs.angleRadians, anglerSetpoint.getRadians()) / 12.0;
-      var anglerFeedforwardOutput =
-          anglerFeedforward.calculate(anglerIOInputs.angleRadians, anglerIOInputs.velocityRPS)
+          anglerFeedback.calculate(
+                  anglerIOInputs.dutyCycleEncoderRadians, anglerSetpoint.getRadians())
               / 12.0;
+      // var anglerFeedforwardOutput =
+      //     anglerFeedforward.calculate(anglerIOInputs.angleRadians, anglerIOInputs.velocityRPS)
+      //         / 12.0;
 
       anglerIO.setVolts(anglerFeedbackOutput);
 
       Logger.recordOutput("Shooter/Angler/Feedback/Output", anglerFeedbackOutput);
-      Logger.recordOutput("Shooter/Angler/Feedforward/Output", anglerFeedforwardOutput);
+      // Logger.recordOutput("Shooter/Angler/Feedforward/Output", anglerFeedforwardOutput);
     }
     if (indexerSetpointRPM != null) {
       var indexerFeedbackOutput =
           indexerFeedback.calculate(indexerIOInputs.velocityRPM, indexerSetpointRPM) / 12.0;
-      var indexerFeedforwardOutput =
-          indexerFeedforward.calculate(indexerIOInputs.velocityRPM) / 12.0;
+      // var indexerFeedforwardOutput =
+      //     indexerFeedforward.calculate(indexerIOInputs.velocityRPM) / 12.0;
 
-      indexerIO.setVolts((indexerFeedbackOutput + indexerFeedforwardOutput));
+      indexerIO.setVolts((indexerFeedbackOutput));
 
       Logger.recordOutput("Shooter/Indexer/Feedback/Output", indexerFeedbackOutput);
-      Logger.recordOutput("Shooter/Indexer/Feedforward/Output", indexerFeedforwardOutput);
+      // Logger.recordOutput("Shooter/Indexer/Feedforward/Output", indexerFeedforwardOutput);
     }
     if (launcherSetpointMPS != null) {
       launcherIO.setVelocity(launcherSetpointMPS);
@@ -146,6 +148,21 @@ public class Shooter extends SubsystemBase {
     }
   }
 
+  /** Set the volts for the launcher */
+  public void setManualAngler(double volts) {
+    anglerIO.setVolts(volts);
+  }
+
+  /** Set the volts for the launcher */
+  public void setManualIndexer(double volts) {
+    indexerIO.setVolts(volts);
+  }
+
+  /** Set the volts for the launcher */
+  public void setManualLauncher(double volts) {
+    launcherIO.setVolts(volts, volts);
+  }
+
   /** Set the closed-loop control goal of the angler */
   public void setAngler(Rotation2d desiredAngle) {
     anglerSetpoint = desiredAngle;
@@ -164,19 +181,31 @@ public class Shooter extends SubsystemBase {
   /** Returns the angular position setpoint for the angler */
   @AutoLogOutput(key = "Shooter/Angler/Feedback/Setpoint")
   public Rotation2d getAnglerSetpoint() {
-    return anglerSetpoint;
+    if (anglerSetpoint != null) {
+      return anglerSetpoint;
+    } else {
+      return new Rotation2d();
+    }
   }
 
   /** Returns the indexer's velocity setpoint in RPM */
   @AutoLogOutput(key = "Shooter/Indexer/Feedback/Setpoint")
   public double getIndexerSetpoint() {
-    return indexerSetpointRPM;
+    if (indexerSetpointRPM != null) {
+      return indexerSetpointRPM;
+    } else {
+      return 0.0;
+    }
   }
 
   /** Returns the launcher's velocity setpoint in MPS */
   @AutoLogOutput(key = "Shooter/Launcher/Feedback/Setpoint")
   public double getLauncherVelocity() {
-    return launcherSetpointMPS;
+    if (launcherSetpointMPS != null) {
+      return launcherSetpointMPS;
+    } else {
+      return 0.0;
+    }
   }
 
   /** Stop the motors of the shooter subsystem */

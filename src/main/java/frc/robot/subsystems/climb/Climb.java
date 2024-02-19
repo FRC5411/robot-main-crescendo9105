@@ -143,6 +143,22 @@ public class Climb extends SubsystemBase {
     }
   }
 
+  /** Set the volts of each arm */
+  public void setVolts(double leftVolts, double rightVolts) {
+    io.setLeftVolts(leftVolts);
+    io.setRightVolts(rightVolts);
+  }
+
+  /** Sets the volts of the left climb */
+  public void setVoltsLeft(double volts) {
+    io.setLeftVolts(volts);
+  }
+
+  /** Sets the volts of the right climb */
+  public void setVoltsRight(double volts) {
+    io.setRightVolts(volts);
+  }
+
   /** Sets the desired position in Radians */
   public void setAngle(double leftDesiredAngleRadians, double rightDesiredAngleRadians) {
     leftAngleSetpointRadians = leftDesiredAngleRadians;

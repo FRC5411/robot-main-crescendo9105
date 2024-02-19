@@ -7,6 +7,7 @@ package frc.robot.subsystems.shooter.launcher;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import frc.robot.utils.debugging.LoggedTunableNumber;
@@ -76,8 +77,8 @@ public class LauncherIOTalonFX implements LauncherIO {
     topConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     bottomConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
-    topMotor.setInverted(true);
-    bottomMotor.setInverted(false);
+    topConfiguration.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    bottomConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     topConfiguration.Slot0.kP = topFeedbackP.get();
     topConfiguration.Slot0.kI = topFeedbackI.get();
@@ -131,8 +132,10 @@ public class LauncherIOTalonFX implements LauncherIO {
 
   @Override
   public void setVelocity(double velocityMPS) {
-    topMotor.setControl(flywheelVelocity.withVelocity(velocityMPS / CIRCUMFRENCE_M));
-    bottomMotor.setControl(flywheelVelocity.withVelocity(velocityMPS / CIRCUMFRENCE_M));
+    double velocityRPM = (velocityMPS / (CIRCUMFRENCE_M * 1.0)) * 60.0;
+
+    topMotor.setControl(flywheelVelocity.withVelocity(velocityMPS));
+    bottomMotor.setControl(flywheelVelocity.withVelocity(velocityMPS));
   }
 
   /** Update the tunable numbers if they've changed */

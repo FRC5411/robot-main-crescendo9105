@@ -12,6 +12,8 @@ import edu.wpi.first.math.MathUtil;
 
 /** Class to interact with the physical intake structure */
 public class IntakeIOSparkMax implements IntakeIO {
+  private final double GEARING = 9.0 / 1.0;
+
   // TODO Update IDs and constatns as needed
   private CANSparkMax intakeMotor = new CANSparkMax(51, MotorType.kBrushless);
   private RelativeEncoder intakeEncoder = intakeMotor.getEncoder();

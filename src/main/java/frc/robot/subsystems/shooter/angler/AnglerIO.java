@@ -12,7 +12,9 @@ public interface AnglerIO {
   @AutoLog
   public static class AnglerIOInputs {
     public double angleRadians = 0.0;
+    public double dutyCycleEncoderRadians = 0.0;
     public double velocityRPS = 0.0;
+    public double dutyCycleEncoderRPM = 0.0;
     public double appliedVolts = 0.0;
     public double[] appliedCurrentAmps = new double[] {0.0};
     public double[] temperatureCelsius = new double[] {0.0};

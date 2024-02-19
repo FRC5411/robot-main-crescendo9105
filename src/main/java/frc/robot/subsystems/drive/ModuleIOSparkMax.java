@@ -39,18 +39,18 @@ public class ModuleIOSparkMax implements ModuleIO {
   private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.21 / 12.0);
 
   private LoggedTunableNumber driveFeedbackP =
-      new LoggedTunableNumber("Drive/ModuleIO/Feedback/P", 0.00005);
+      new LoggedTunableNumber("Drive/ModuleIO/Drive/Feedback/P", 0.00005);
   private LoggedTunableNumber driveFeedbackI =
-      new LoggedTunableNumber("Drive/ModuleIO/Feedback/I", 0.0);
+      new LoggedTunableNumber("Drive/ModuleIO/Drive/Feedback/I", 0.0);
   private LoggedTunableNumber driveFeedbackD =
-      new LoggedTunableNumber("Drive/ModuleIO/Feedback/D", 0.0);
+      new LoggedTunableNumber("Drive/ModuleIO/Drive/Feedback/D", 0.0);
 
   private LoggedTunableNumber azimuthFeedbackP =
-      new LoggedTunableNumber("Drive/ModuleIO/Feedback/P", 0.155);
+      new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/P", 0.155);
   private LoggedTunableNumber azimuthFeedbackI =
-      new LoggedTunableNumber("Drive/ModuleIO/Feedback/I", 0.0);
+      new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/I", 0.0);
   private LoggedTunableNumber azimuthFeedbackD =
-      new LoggedTunableNumber("Drive/ModuleIO/Feedback/D", 0.0);
+      new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/D", 0.0);
 
   public ModuleIOSparkMax(int module) {
     switch (module) {

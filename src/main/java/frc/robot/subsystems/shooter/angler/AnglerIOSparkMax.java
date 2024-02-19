@@ -9,11 +9,14 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 /** Class to interact with the physical angler */
 public class AnglerIOSparkMax implements AnglerIO {
   // TODO Update args as needed
   private CANSparkMax anglerMotor = new CANSparkMax(41, MotorType.kBrushless);
+
+  private DutyCycleEncoder anglerAbsoluteEncoder = new DutyCycleEncoder(0);
   private RelativeEncoder anglerEncoder = anglerMotor.getEncoder();
 
   private double appliedVolts = 0.0;
@@ -36,6 +39,8 @@ public class AnglerIOSparkMax implements AnglerIO {
   public void updateInputs(AnglerIOInputs inputs) {
     // TODO Convert units as needed
     inputs.angleRadians = anglerEncoder.getPosition();
+    inputs.dutyCycleEncoderRadians =
+        anglerAbsoluteEncoder.getAbsolutePosition(); // * ((2.0 * Math.PI) / 8096);
     inputs.velocityRPS = anglerEncoder.getVelocity();
     inputs.appliedVolts = appliedVolts;
     inputs.appliedCurrentAmps = new double[] {anglerMotor.getOutputCurrent()};
