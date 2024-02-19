@@ -50,6 +50,7 @@ public class RobotContainer {
   private Climb robotClimb;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
+  private CommandXboxController copilotController = new CommandXboxController(1);
 
   private LoggedDashboardChooser<Command> autoChooser;
 
@@ -65,6 +66,7 @@ public class RobotContainer {
         new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
     autoChooser.addDefaultOption("Print Hello", new PrintCommand("Hello"));
 
+    // configureButtonBindings();
     configureButtonBindings();
 
     // TODO Remove
@@ -121,6 +123,11 @@ public class RobotContainer {
         "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));
     NamedCommands.registerCommand("Intake", IntakeCommands.intakePiece(robotIntake, 12.0));
     NamedCommands.registerCommand("Stop Intake", IntakeCommands.stopIntake(robotIntake));
+  }
+
+  /** Configure competition controllers */
+  private void configureCompetitionButtonBindings() {
+
   }
 
   /** Configure controllers */
