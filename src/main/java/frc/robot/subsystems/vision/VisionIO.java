@@ -11,6 +11,4 @@ public interface VisionIO {
   public static class VisionIOInputs {}
 
   public default void updateInputs(VisionIOInputs inputs) {}
-
-  public default void setVolts(double volts) {}
 }
