@@ -4,15 +4,13 @@
 
 package frc.robot.subsystems.vision;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.littletonrobotics.junction.AutoLog;
 
-public class Vision extends SubsystemBase {
+public interface VisionIO {
+  @AutoLog
+  public static class VisionIOInputs {}
 
-  public Vision() {
-  }
+  public default void updateInputs(VisionIOInputs inputs) {}
 
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-  }
+  public default void setVolts(double volts) {}
 }

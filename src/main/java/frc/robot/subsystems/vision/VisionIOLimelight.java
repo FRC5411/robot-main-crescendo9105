@@ -4,15 +4,13 @@
 
 package frc.robot.subsystems.vision;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+public class VisionIOLimelight implements VisionIO {
 
-public class Vision extends SubsystemBase {
-
-  public Vision() {
-  }
+  public VisionIOLimelight() {}
 
   @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
-  }
+  public void updateInputs(VisionIOInputs inputs) {}
+
+  @Override
+  public void setVolts(double volts) {}
 }
