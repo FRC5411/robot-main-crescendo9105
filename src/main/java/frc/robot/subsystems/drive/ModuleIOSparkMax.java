@@ -22,7 +22,7 @@ public class ModuleIOSparkMax implements ModuleIO {
   // TODO Update these for our latest swerve modules
   private final double DRIVE_GEAR_RATIO = 6.75 / 1.0;
   private final double AZIMUTH_GEAR_RATIO = 150.0 / 7.0;
-  private final double CIRCUMFRENCE_METERS = 2 * Math.PI * 0.0508;
+  private final double CIRCUMFERENCE_METERS = 2 * Math.PI * 0.0508;
 
   private CANSparkMax driveMotor;
   private CANSparkMax azimuthMotor;
@@ -147,9 +147,9 @@ public class ModuleIOSparkMax implements ModuleIO {
 
   @Override
   public void updateInputs(ModuleIOInputs inputs) {
-    inputs.drivePositionM = driveEncoder.getPosition() * CIRCUMFRENCE_METERS / DRIVE_GEAR_RATIO;
+    inputs.drivePositionM = driveEncoder.getPosition() * CIRCUMFERENCE_METERS / DRIVE_GEAR_RATIO;
     inputs.driveVelocityMPS =
-        driveEncoder.getVelocity() * CIRCUMFRENCE_METERS / (60.0 * DRIVE_GEAR_RATIO);
+        driveEncoder.getVelocity() * CIRCUMFERENCE_METERS / (60.0 * DRIVE_GEAR_RATIO);
     inputs.driveAppliedVolts = driveMotor.getAppliedOutput() * driveMotor.getBusVoltage();
     inputs.driveCurrentAmps = new double[] {driveMotor.getOutputCurrent()};
     inputs.driveTemperatureCelsius = new double[] {driveMotor.getMotorTemperature()};
@@ -184,7 +184,7 @@ public class ModuleIOSparkMax implements ModuleIO {
   @Override
   public void setDriveVelocity(double velocityMPS) {
     double adjustedVelocity =
-        60.0 * (velocityMPS / CIRCUMFRENCE_METERS); // * Math.cos(azimuthFeedbackError);
+        60.0 * (velocityMPS / CIRCUMFERENCE_METERS); // * Math.cos(azimuthFeedbackError);
 
     double feedforwardOutput = driveFeedforward.calculate(adjustedVelocity);
     driveFeedback.setReference(adjustedVelocity, ControlType.kVelocity, 0, feedforwardOutput);

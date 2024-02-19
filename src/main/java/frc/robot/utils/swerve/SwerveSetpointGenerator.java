@@ -1,4 +1,4 @@
-package frc.robot.utils.Swerve;
+package frc.robot.utils.swerve;
 // Taken from 6328's robot code
 
 import static frc.robot.utils.EqualsUtil.*;
