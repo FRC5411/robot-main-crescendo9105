@@ -7,7 +7,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.utils.debugging.LoggedTunableNumber;
-
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 

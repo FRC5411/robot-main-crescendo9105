@@ -46,7 +46,7 @@ public class ShooterCommands {
       currentCommand.cancel();
     }
     currentCommand = null;
-        // Commands.runOnce(() -> robotShooter.stopMotors(true, true, true), robotShooter);
+    // Commands.runOnce(() -> robotShooter.stopMotors(true, true, true), robotShooter);
 
     return currentCommand;
   }

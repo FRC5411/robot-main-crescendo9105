@@ -20,20 +20,19 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.shooter.angler.AnglerConstants;
-import frc.robot.subsystems.shooter.angler.AnglerIOi;
 import frc.robot.subsystems.shooter.angler.AnglerIOInputsAutoLogged;
+import frc.robot.subsystems.shooter.angler.AnglerIOi;
 import frc.robot.subsystems.shooter.angler.AnglerNEO;
 import frc.robot.subsystems.shooter.angler.AnglerSim;
+import frc.robot.subsystems.shooter.flywheel.ShooterIOSim;
 import frc.robot.subsystems.shooter.flywheel.ShooterWheelConstants;
 import frc.robot.subsystems.shooter.flywheel.ShooterWheelIO;
 import frc.robot.subsystems.shooter.flywheel.ShooterWheelIOInputsAutoLogged;
-import frc.robot.subsystems.shooter.flywheel.ShooterIOSim;
 import frc.robot.subsystems.shooter.flywheel.ShooterWheelTalonFX;
 import frc.robot.subsystems.shooter.indexer.Indexer550;
 import frc.robot.subsystems.shooter.indexer.IndexerIO;
 import frc.robot.subsystems.shooter.indexer.IndexerIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.indexer.IndexerIOSim;
-
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
