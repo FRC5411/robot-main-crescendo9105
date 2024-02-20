@@ -208,6 +208,22 @@ public class RobotContainer {
                 },
                 robotShooter));
 
+    /* Run launcher slow */
+    copilotController
+        .a()
+        .toggleOnTrue(
+            Commands.run(
+                () -> {
+                  robotShooter.setManualLauncher(-3.0);
+                },
+                robotShooter))
+        .toggleOnFalse(
+            Commands.run(
+                () -> {
+                  robotShooter.setManualLauncher(0.0);
+                },
+                robotShooter));
+
     /* Run indexer */
     copilotController
         .b()
