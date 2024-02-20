@@ -17,7 +17,8 @@ import java.util.function.DoubleSupplier;
 
 /** Class to hold all of the commands for the Drive */
 public class SwerveCommands {
-  private static final double DEADBAND = 0.2;
+  private static final double DEADBAND = 0.1;
+  private static final boolean IS_FIELD = true;
 
   private SwerveCommands() {}
 
@@ -49,13 +50,22 @@ public class SwerveCommands {
                   .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
                   .getTranslation();
 
-          robotDrive.runSwerve(
-              ChassisSpeeds.fromFieldRelativeSpeeds(
-                  // Convert from % to MPS
-                  linearVelocity.getX() * robotDrive.getMaxLinearSpeedMPS(),
-                  linearVelocity.getY() * robotDrive.getMaxLinearSpeedMPS(),
-                  theta * robotDrive.getMaxAngularSpeedMPS(),
-                  robotDrive.getRotation()));
+          if (IS_FIELD) {
+            robotDrive.runSwerve(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                    // Convert from % to MPS
+                    linearVelocity.getX() * robotDrive.getMaxLinearSpeedMPS(),
+                    linearVelocity.getY() * robotDrive.getMaxLinearSpeedMPS(),
+                    theta * robotDrive.getMaxAngularSpeedMPS(),
+                    robotDrive.getRotation()));
+          } else {
+            robotDrive.runSwerve(
+                ChassisSpeeds.fromRobotRelativeSpeeds(
+                    linearVelocity.getX() * robotDrive.getMaxLinearSpeedMPS(),
+                    linearVelocity.getY() * robotDrive.getMaxLinearSpeedMPS(),
+                    theta * robotDrive.getMaxAngularSpeedMPS(),
+                    robotDrive.getRotation()));
+          }
         },
         robotDrive);
   }

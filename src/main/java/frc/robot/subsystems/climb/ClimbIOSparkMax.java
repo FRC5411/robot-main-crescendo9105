@@ -13,8 +13,8 @@ import edu.wpi.first.math.MathUtil;
 /** Class to interact with the physical climb structure */
 public class ClimbIOSparkMax implements ClimbIO {
   // TODO Adjust values as needed
-  private CANSparkMax leftMotor = new CANSparkMax(41, MotorType.kBrushless);
-  private CANSparkMax rightMotor = new CANSparkMax(42, MotorType.kBrushless);
+  private CANSparkMax leftMotor = new CANSparkMax(61, MotorType.kBrushless);
+  private CANSparkMax rightMotor = new CANSparkMax(62, MotorType.kBrushless);
 
   private RelativeEncoder leftEncoder = leftMotor.getEncoder();
   private RelativeEncoder rightEncoder = rightMotor.getEncoder();
@@ -31,10 +31,10 @@ public class ClimbIOSparkMax implements ClimbIO {
 
     leftMotor.setSmartCurrentLimit(40);
     leftMotor.enableVoltageCompensation(12.0);
-    leftMotor.setIdleMode(IdleMode.kCoast);
+    leftMotor.setIdleMode(IdleMode.kBrake);
     rightMotor.setSmartCurrentLimit(40);
     rightMotor.enableVoltageCompensation(12.0);
-    rightMotor.setIdleMode(IdleMode.kCoast);
+    rightMotor.setIdleMode(IdleMode.kBrake);
 
     leftEncoder.setPosition(0.0);
     rightEncoder.setPosition(0.0);

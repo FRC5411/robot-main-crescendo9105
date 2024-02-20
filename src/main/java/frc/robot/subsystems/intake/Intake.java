@@ -9,7 +9,7 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.utils.LoggedTunableNumber;
+import frc.robot.utils.debugging.LoggedTunableNumber;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -23,16 +23,16 @@ public class Intake extends SubsystemBase {
   private SimpleMotorFeedforward intakeFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
 
   private LoggedTunableNumber feedbackP =
-      new LoggedTunableNumber("Intake/Tuning/P", intakeFeedback.getP());
+      new LoggedTunableNumber("Intake/Feedback/P", intakeFeedback.getP());
   private LoggedTunableNumber feedbackI =
-      new LoggedTunableNumber("Intake/Tuning/I", intakeFeedback.getI());
+      new LoggedTunableNumber("Intake/Feedback/I", intakeFeedback.getI());
   private LoggedTunableNumber feedbackD =
-      new LoggedTunableNumber("Intake/Tuning/D", intakeFeedback.getD());
+      new LoggedTunableNumber("Intake/Feedback/D", intakeFeedback.getD());
   private LoggedTunableNumber feedbackA =
       new LoggedTunableNumber(
-          "Intake/Tuning/Accel", intakeFeedback.getConstraints().maxAcceleration);
+          "Intake/Feedback/Accel", intakeFeedback.getConstraints().maxAcceleration);
   private LoggedTunableNumber feedbackV =
-      new LoggedTunableNumber("Intake/Tuning/Vel", intakeFeedback.getConstraints().maxVelocity);
+      new LoggedTunableNumber("Intake/Feedback/Vel", intakeFeedback.getConstraints().maxVelocity);
 
   private Double velocitySetpointRPM = null;
 
@@ -53,12 +53,11 @@ public class Intake extends SubsystemBase {
     }
 
     if (velocitySetpointRPM != null) {
-      var motorOutput =
-          (intakeFeedback.calculate(inputs.velocityRPM, velocitySetpointRPM)
-              + intakeFeedforward.calculate(intakeFeedback.getGoal().velocity));
+      var motorOutput = (intakeFeedback.calculate(inputs.velocityRPM, velocitySetpointRPM));
+      // + intakeFeedforward.calculate(intakeFeedback.getGoal().velocity));
 
-      Logger.recordOutput("Intake/Controller/Output", motorOutput);
-      io.setVolts(motorOutput);
+      io.setVolts(motorOutput / 12.0);
+      Logger.recordOutput("Intake/Feedback/Outupt", motorOutput);
     }
 
     updateTunableNumbers();
@@ -85,7 +84,7 @@ public class Intake extends SubsystemBase {
   public void setVelocity(double desiredVelocityRPM) {
     velocitySetpointRPM = desiredVelocityRPM;
 
-    Logger.recordOutput("Intake/Controller/Setpoint", velocitySetpointRPM);
+    Logger.recordOutput("Intake/Feedback/Setpoint", velocitySetpointRPM);
   }
 
   public void setVolts(double volts) {
@@ -98,25 +97,25 @@ public class Intake extends SubsystemBase {
   }
 
   /** Returns the intake motor's velocity */
-  @AutoLogOutput(key = "Intake/Velocity")
+  @AutoLogOutput(key = "Intake/IntakeMotor/Velocity")
   public double getVelocity() {
     return inputs.velocityRPM;
   }
 
   /** Returns the bus voltage from the intake */
-  @AutoLogOutput(key = "Intake/AppliedVolts")
+  @AutoLogOutput(key = "Intake/IntakeMotor/AppliedVolts")
   public double[] getAppliedVolts() {
     return inputs.appliedCurrentAmps;
   }
 
   /** Returns if the controller is at the setpoint */
-  @AutoLogOutput(key = "Intake/Controller/AtSetpoint")
+  @AutoLogOutput(key = "Intake/Feedback/AtSetpoint")
   public boolean isAtSetpoint() {
     return intakeFeedback.atSetpoint();
   }
 
   /** Returns the controller's velocity error */
-  @AutoLogOutput(key = "Intake/Controller/VelocityError")
+  @AutoLogOutput(key = "Intake/Feedback/VelocityError")
   public double getFeedbackError() {
     return intakeFeedback.getVelocityError();
   }

@@ -38,7 +38,7 @@ public class GyroIOPigeon2 implements GyroIO {
   }
 
   @Override
-  public void resetGyro(Rotation2d heading) {
-    gyro.setYaw(heading.getDegrees());
+  public void resetGyro() {
+    gyro.reset();
   }
 }

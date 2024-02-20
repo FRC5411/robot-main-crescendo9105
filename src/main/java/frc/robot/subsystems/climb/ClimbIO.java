@@ -23,6 +23,7 @@ public interface ClimbIO {
     public double[] rightCurrentAmps = new double[] {0.0};
     public double[] rightTemperatureCelsius = new double[] {0.0};
   }
+
   /** Update the inputs from the sensors */
   public default void updateInputs(ClimbIOInputs inputs) {}
 
