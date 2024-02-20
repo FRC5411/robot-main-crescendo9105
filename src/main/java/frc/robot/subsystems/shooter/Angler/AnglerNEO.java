@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter.Angler;
+package frc.robot.subsystems.shooter.angler;
 
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
@@ -9,7 +9,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Encoder;
 
-public class AnglerNEO implements AnglerIO {
+public class AnglerNEO implements AnglerIOi {
   public CANSparkMax anglerMotor;
   public DutyCycleEncoder anglerPivotAbsoluteEncoder;
   public Encoder anglerPivotRelativeEncoder;
@@ -33,7 +33,7 @@ public class AnglerNEO implements AnglerIO {
   }
 
   @Override
-  public void updateInputs(AnglerInputs inputs) {
+  public void updateInputs(AnglerIOInputs inputs) {
     anglerAngle = Rotation2d.fromRotations(anglerPivotAbsoluteEncoder.getAbsolutePosition());
     inputs.anglerAngle = anglerAngle;
     inputs.anglerAngleGoal = anglerController.getGoal();

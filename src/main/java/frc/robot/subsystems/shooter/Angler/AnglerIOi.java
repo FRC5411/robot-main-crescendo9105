@@ -1,11 +1,17 @@
-package frc.robot.subsystems.shooter.Angler;
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
 
-import edu.wpi.first.math.geometry.Rotation2d;
+package frc.robot.subsystems.shooter.angler;
+
 import org.littletonrobotics.junction.AutoLog;
 
-public interface AnglerIO {
+import edu.wpi.first.math.geometry.Rotation2d;
+
+/** Interface for representing the hardware */
+public interface AnglerIOi {
   @AutoLog
-  public static class AnglerInputs {
+  public static class AnglerIOInputs {
     public Rotation2d anglerAngle = new Rotation2d();
     public Rotation2d anglerAngleSetpoint = new Rotation2d();
     public Rotation2d anglerAngleGoal = new Rotation2d();
@@ -16,7 +22,7 @@ public interface AnglerIO {
     public boolean anglerAtSetpoint = false;
   }
 
-  public default void updateInputs(AnglerInputs inputs) {}
+  public default void updateInputs(AnglerIOInputs inputs) {}
 
   public default void setAnglerVolts(double volts) {}
 

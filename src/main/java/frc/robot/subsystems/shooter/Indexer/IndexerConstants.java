@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter.Indexer;
+package frc.robot.subsystems.shooter.indexer;
 
 public class IndexerConstants {
   public static final int kMotorIDLeft = 42;

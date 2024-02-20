@@ -1,9 +1,9 @@
-package frc.robot.subsystems.shooter.Indexer;
+package frc.robot.subsystems.shooter.indexer;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
-public class IndexerSim implements IndexerIO {
+public class IndexerIOSim implements IndexerIO {
   private DCMotorSim indexerMotorLeft =
       new DCMotorSim(
           DCMotor.getNEO(1), IndexerConstants.kGearing, IndexerConstants.kJKGMetersSquared);

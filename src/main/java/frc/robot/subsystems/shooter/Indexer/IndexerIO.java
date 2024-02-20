@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter.Indexer;
+package frc.robot.subsystems.shooter.indexer;
 
 import org.littletonrobotics.junction.AutoLog;
 

@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter.Flywheel;
+package frc.robot.subsystems.shooter.flywheel;
 
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -9,9 +9,9 @@ import com.revrobotics.SparkPIDController.ArbFFUnits;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import frc.robot.utils.LoggedTunableNumber;
+import frc.robot.utils.debugging.LoggedTunableNumber;
 
-public class ShooterWheelNEO implements ShooterWheelIO {
+public class ShooterWheelIOSparkMax implements ShooterWheelIO {
   private CANSparkMax shooter;
   private RelativeEncoder shooterEncoder;
   private SparkPIDController velocityController;
@@ -27,7 +27,7 @@ public class ShooterWheelNEO implements ShooterWheelIO {
   private LoggedTunableNumber shooterWheelControlI;
   private LoggedTunableNumber shooterWheelControlD;
 
-  public ShooterWheelNEO(
+  public ShooterWheelIOSparkMax(
       int id,
       PIDController pidController,
       SimpleMotorFeedforward feedforward,

@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter.Angler;
+package frc.robot.subsystems.shooter.angler;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.util.Color8Bit;
 import org.littletonrobotics.junction.Logger;
 
-public class AnglerSim implements AnglerIO {
+public class AnglerSim implements AnglerIOi {
   private SingleJointedArmSim armSim =
       new SingleJointedArmSim(
           DCMotor.getNEO(1),
@@ -44,7 +44,7 @@ public class AnglerSim implements AnglerIO {
       new AnglerController(() -> anglerAngle, this::setAnglerVolts);
 
   @Override
-  public void updateInputs(AnglerInputs inputs) {
+  public void updateInputs(AnglerIOInputs inputs) {
     armSim.update(0.02);
 
     anglerAngle = Rotation2d.fromRadians(armSim.getAngleRads());

@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter.Flywheel;
+package frc.robot.subsystems.shooter.flywheel;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -10,7 +10,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.SlewRateLimiter;
-import frc.robot.utils.LoggedTunableNumber;
+import frc.robot.utils.debugging.LoggedTunableNumber;
 
 public class ShooterWheelTalonFX implements ShooterWheelIO {
   private TalonFX flywheelMotor;

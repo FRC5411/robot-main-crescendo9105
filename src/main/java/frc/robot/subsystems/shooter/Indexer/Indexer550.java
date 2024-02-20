@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter.Indexer;
+package frc.robot.subsystems.shooter.indexer;
 
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkMax;

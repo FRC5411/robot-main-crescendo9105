@@ -2,7 +2,8 @@ package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-import frc.robot.subsystems.shooter.Angler.AnglerConstants;
+import frc.robot.subsystems.shooter.angler.AnglerConstants;
+
 import org.littletonrobotics.junction.Logger;
 
 public class TrajectoryAngleSolver {

@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter.Angler;
+package frc.robot.subsystems.shooter.angler;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;

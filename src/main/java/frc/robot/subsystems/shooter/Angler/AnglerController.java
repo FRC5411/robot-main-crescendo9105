@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter.Angler;
+package frc.robot.subsystems.shooter.angler;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
@@ -6,7 +6,8 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.RobotBase;
-import frc.robot.utils.LoggedTunableNumber;
+import frc.robot.utils.debugging.LoggedTunableNumber;
+
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 

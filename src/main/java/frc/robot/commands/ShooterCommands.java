@@ -19,7 +19,7 @@ public class ShooterCommands {
     currentCommand =
         Commands.run(
             () -> {
-              robotShooter.setLauncherVelocity(velocityMPS);
+              // robotShooter.setLauncherVelocity(velocityMPS);
             },
             robotShooter);
 
@@ -31,9 +31,9 @@ public class ShooterCommands {
     currentCommand =
         Commands.run(
             () -> {
-              robotShooter.setManualLauncher(launcherVolts);
-              robotShooter.setManualIndexer(indexerVolts);
-              robotShooter.setManualAngler(anglerVolts);
+              // robotShooter.setManualLauncher(launcherVolts);
+              // robotShooter.setManualIndexer(indexerVolts);
+              // robotShooter.setManualAngler(anglerVolts);
             },
             robotShooter);
 
@@ -45,8 +45,8 @@ public class ShooterCommands {
     if (currentCommand != null) {
       currentCommand.cancel();
     }
-    currentCommand =
-        Commands.runOnce(() -> robotShooter.stopMotors(true, true, true), robotShooter);
+    currentCommand = null;
+        // Commands.runOnce(() -> robotShooter.stopMotors(true, true, true), robotShooter);
 
     return currentCommand;
   }

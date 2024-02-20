@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter.Flywheel;
+package frc.robot.subsystems.shooter.flywheel;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
@@ -7,9 +7,9 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import frc.robot.utils.LoggedTunableNumber;
+import frc.robot.utils.debugging.LoggedTunableNumber;
 
-public class ShooterWheelSimIO implements ShooterWheelIO {
+public class ShooterIOSim implements ShooterWheelIO {
   private FlywheelSim flywheelMotor =
       new FlywheelSim(
           DCMotor.getFalcon500(1),
@@ -30,7 +30,7 @@ public class ShooterWheelSimIO implements ShooterWheelIO {
   private LoggedTunableNumber shooterWheelControlI;
   private LoggedTunableNumber shooterWheelControlD;
 
-  public ShooterWheelSimIO(
+  public ShooterIOSim(
       PIDController flywheelPID,
       SimpleMotorFeedforward flywheelFeedforward,
       double flywheelRateLimit,

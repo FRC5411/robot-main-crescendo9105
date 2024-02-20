@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter.Flywheel;
+package frc.robot.subsystems.shooter.flywheel;
 
 public class ShooterWheelConstants {
   public static int kTopMotorID = 43;
