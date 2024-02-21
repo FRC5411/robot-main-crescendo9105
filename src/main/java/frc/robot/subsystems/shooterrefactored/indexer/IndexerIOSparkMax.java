@@ -4,5 +4,47 @@
 
 package frc.robot.subsystems.shooterrefactored.indexer;
 
-/** Add your docs here. */
-public class IndexerIOSparkMax {}
+import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
+import edu.wpi.first.math.MathUtil;
+
+/** Class to interact with the physical indexer structure */
+public class IndexerIOSparkMax implements IndexerIO {
+  private final double GEARING = 5.0 / 1.0;
+
+  private CANSparkMax indexerMotor = new CANSparkMax(42, MotorType.kBrushless);
+  private RelativeEncoder indexerEncoder = indexerMotor.getEncoder();
+
+  private double appliedVolts = 0.0;
+
+  /** Create a new hardware implementation of the indexer */
+  public IndexerIOSparkMax() {
+    indexerMotor.clearFaults();
+    indexerMotor.restoreFactoryDefaults();
+
+    indexerMotor.setSmartCurrentLimit(20);
+    indexerMotor.enableVoltageCompensation(12.0);
+    indexerMotor.setIdleMode(IdleMode.kBrake);
+
+    indexerMotor.setInverted(false);
+
+    indexerMotor.burnFlash();
+  }
+
+  @Override
+  public void updateInputs(IndexerIOInputs inputs) {
+    inputs.indexerVelocityRPM = indexerEncoder.getVelocity() / GEARING;
+    inputs.appliedVolts = appliedVolts;
+    inputs.appliedCurrentAmps = new double[] {indexerMotor.getOutputCurrent()};
+    inputs.temperatureCelsius = new double[] {indexerMotor.getMotorTemperature()};
+  }
+
+  @Override
+  public void setVolts(double volts) {
+    appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+
+    indexerMotor.setVoltage(volts);
+  }
+}

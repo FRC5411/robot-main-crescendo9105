@@ -29,6 +29,9 @@ import frc.robot.subsystems.shooterrefactored.Shooter;
 import frc.robot.subsystems.shooterrefactored.angler.AnglerIO;
 import frc.robot.subsystems.shooterrefactored.angler.AnglerIOSim;
 import frc.robot.subsystems.shooterrefactored.angler.AnglerIOSparkMax;
+import frc.robot.subsystems.shooterrefactored.indexer.IndexerIO;
+import frc.robot.subsystems.shooterrefactored.indexer.IndexerIOSim;
+import frc.robot.subsystems.shooterrefactored.indexer.IndexerIOSparkMax;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -66,7 +69,7 @@ public class RobotContainer {
                 new ModuleIOSparkMax(3),
                 new GyroIOPigeon2(false));
         robotIntake = new Intake(new IntakeIOSparkMax());
-        robotShooter = new Shooter(new AnglerIOSparkMax());
+        robotShooter = new Shooter(new AnglerIOSparkMax(), new IndexerIOSparkMax());
         break;
       case SIM:
         robotDrive =
@@ -77,7 +80,7 @@ public class RobotContainer {
                 new ModuleIOSim(3),
                 new GyroIO() {});
         robotIntake = new Intake(new IntakeIOSim());
-        robotShooter = new Shooter(new AnglerIOSim());
+        robotShooter = new Shooter(new AnglerIOSim(), new IndexerIOSim());
         break;
       default:
         robotDrive =
@@ -88,7 +91,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new GyroIO() {});
         robotIntake = new Intake(new IntakeIO() {});
-        robotShooter = new Shooter(new AnglerIO() {});
+        robotShooter = new Shooter(new AnglerIO() {}, new IndexerIO() {});
         break;
     }
   }
@@ -128,14 +131,14 @@ public class RobotContainer {
                     robotDrive)
                 .ignoringDisable(true)); // Reset even when disabled
 
-    // pilotController
-    //     .a()
-    //     .whileTrue(Commands.run(() -> robotShooter.setAnglerVolts(12.0), robotShooter))
-    //     .whileFalse(Commands.run(() -> robotShooter.setAnglerVolts(0.0), robotShooter));
-    // pilotController
-    //     .b()
-    //     .whileTrue(Commands.run(() -> robotShooter.setAnglerVolts(-12.0), robotShooter))
-    //     .whileFalse(Commands.run(() -> robotShooter.setAnglerVolts(0.0), robotShooter));
+    pilotController
+        .a()
+        .whileTrue(Commands.run(() -> robotShooter.setIndexerVolts(12.0), robotShooter))
+        .whileFalse(Commands.run(() -> robotShooter.setIndexerVolts(0.0), robotShooter));
+    pilotController
+        .b()
+        .whileTrue(Commands.run(() -> robotShooter.setIndexerVolts(-12.0), robotShooter))
+        .whileFalse(Commands.run(() -> robotShooter.setIndexerVolts(0.0), robotShooter));
 
     // /* Reset drive pose | Debugging */
     // pilotController.a().onTrue(Commands.runOnce(robotDrive::resetPose, robotDrive));
