@@ -25,8 +25,10 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
-import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.TrajectoryAngleSolver;
+import frc.robot.subsystems.shooterrefactored.Shooter;
+import frc.robot.subsystems.shooterrefactored.angler.AnglerIO;
+import frc.robot.subsystems.shooterrefactored.angler.AnglerIOSim;
+import frc.robot.subsystems.shooterrefactored.angler.AnglerIOSparkMax;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -64,7 +66,7 @@ public class RobotContainer {
                 new ModuleIOSparkMax(3),
                 new GyroIOPigeon2(false));
         robotIntake = new Intake(new IntakeIOSparkMax());
-        // robotClimb = new Climb(new ClimbIOSparkMax());
+        robotShooter = new Shooter(new AnglerIOSparkMax());
         break;
       case SIM:
         robotDrive =
@@ -75,7 +77,7 @@ public class RobotContainer {
                 new ModuleIOSim(3),
                 new GyroIO() {});
         robotIntake = new Intake(new IntakeIOSim());
-        // robotClimb = new Climb(new ClimbIOSim());
+        robotShooter = new Shooter(new AnglerIOSim());
         break;
       default:
         robotDrive =
@@ -86,11 +88,9 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new GyroIO() {});
         robotIntake = new Intake(new IntakeIO() {});
-        // robotClimb = new Climb(new ClimbIO() {});
+        robotShooter = new Shooter(new AnglerIO() {});
         break;
     }
-
-    robotShooter = new Shooter();
   }
 
   /** Register commands with PathPlanner and add default autos to chooser */
@@ -128,55 +128,64 @@ public class RobotContainer {
                     robotDrive)
                 .ignoringDisable(true)); // Reset even when disabled
 
-    /* Reset drive pose | Debugging */
-    pilotController.a().onTrue(Commands.runOnce(robotDrive::resetPose, robotDrive));
-
-    // /* Run intake (NEO) at half speed */
+    // pilotController
+    //     .a()
+    //     .whileTrue(Commands.run(() -> robotShooter.setAnglerVolts(12.0), robotShooter))
+    //     .whileFalse(Commands.run(() -> robotShooter.setAnglerVolts(0.0), robotShooter));
     // pilotController
     //     .b()
-    //     //        .whileTrue(IntakeCommands.runIntake(robotIntake, 5676.0 / 2.0))
-    //     .whileTrue(IntakeCommands.runIntake(robotIntake, 1500.0))
+    //     .whileTrue(Commands.run(() -> robotShooter.setAnglerVolts(-12.0), robotShooter))
+    //     .whileFalse(Commands.run(() -> robotShooter.setAnglerVolts(0.0), robotShooter));
+
+    // /* Reset drive pose | Debugging */
+    // pilotController.a().onTrue(Commands.runOnce(robotDrive::resetPose, robotDrive));
+
+    // // /* Run intake (NEO) at half speed */
+    // // pilotController
+    // //     .b()
+    // //     //        .whileTrue(IntakeCommands.runIntake(robotIntake, 5676.0 / 2.0))
+    // //     .whileTrue(IntakeCommands.runIntake(robotIntake, 1500.0))
+    // //     .whileFalse(IntakeCommands.stopIntake(robotIntake));
+    // pilotController
+    //     .leftBumper()
+    //     .whileTrue(IntakeCommands.intakePiece(robotIntake, 12.0))
     //     .whileFalse(IntakeCommands.stopIntake(robotIntake));
-    pilotController
-        .leftBumper()
-        .whileTrue(IntakeCommands.intakePiece(robotIntake, 12.0))
-        .whileFalse(IntakeCommands.stopIntake(robotIntake));
-    pilotController
-        .rightBumper()
-        .whileTrue(IntakeCommands.intakePiece(robotIntake, -12.0))
-        .whileFalse(IntakeCommands.stopIntake(robotIntake));
+    // pilotController
+    //     .rightBumper()
+    //     .whileTrue(IntakeCommands.intakePiece(robotIntake, -12.0))
+    //     .whileFalse(IntakeCommands.stopIntake(robotIntake));
+    // // pilotController
+    // //     .b()
+    // //     .toggleOnTrue(
+    // //         IntakeCommands.intakePiece(robotIntake, 12.0)
+    // //             .finallyDo(() -> robotIntake.setVolts(0.0)));
+
+    // pilotController
+    //     .a()
+    //     .whileTrue(
+    //         robotShooter
+    //             .setShooterVoltageSetpointCommand(12, 12)
+    //             .andThen(robotShooter.setIndexerVoltage(12)))
+    //     .onFalse(
+    //         robotShooter
+    //             .setShooterVoltageSetpointCommand(0, 0)
+    //             .andThen(robotShooter.setIndexerVoltage(0)));
     // pilotController
     //     .b()
-    //     .toggleOnTrue(
-    //         IntakeCommands.intakePiece(robotIntake, 12.0)
-    //             .finallyDo(() -> robotIntake.setVolts(0.0)));
+    //     .onTrue(robotShooter.setIndexerVoltage(-12))
+    //     .onFalse(robotShooter.setIndexerVoltage(0));
+    // pilotController
+    //     .x()
+    //     .onTrue(robotShooter.getSysIDTests())
+    //     .onFalse(robotShooter.setShooterVoltageSetpointCommand(0, 0));
 
-    pilotController
-        .a()
-        .whileTrue(
-            robotShooter
-                .setShooterVoltageSetpointCommand(12, 12)
-                .andThen(robotShooter.setIndexerVoltage(12)))
-        .onFalse(
-            robotShooter
-                .setShooterVoltageSetpointCommand(0, 0)
-                .andThen(robotShooter.setIndexerVoltage(0)));
-    pilotController
-        .b()
-        .onTrue(robotShooter.setIndexerVoltage(-12))
-        .onFalse(robotShooter.setIndexerVoltage(0));
-    pilotController
-        .x()
-        .onTrue(robotShooter.getSysIDTests())
-        .onFalse(robotShooter.setShooterVoltageSetpointCommand(0, 0));
-
-    pilotController
-        .povUp()
-        .whileTrue(robotShooter.setShooterVelocitySetpointCommand(5, 5))
-        .whileTrue(
-            robotShooter.setShooterAngleCommand(
-                new Rotation2d(TrajectoryAngleSolver.newtonRaphsonSolver(3, 5))))
-        .onFalse(robotShooter.setShooterVelocitySetpointCommand(0, 0));
+    // pilotController
+    //     .povUp()
+    //     .whileTrue(robotShooter.setShooterVelocitySetpointCommand(5, 5))
+    //     .whileTrue(
+    //         robotShooter.setShooterAngleCommand(
+    //             new Rotation2d(TrajectoryAngleSolver.newtonRaphsonSolver(3, 5))))
+    //     .onFalse(robotShooter.setShooterVelocitySetpointCommand(0, 0));
 
     // pilotController
     //     .y()

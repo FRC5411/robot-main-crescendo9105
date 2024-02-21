@@ -5,14 +5,23 @@
 package frc.robot.subsystems.shooterrefactored;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.shooterrefactored.angler.AnglerIO;
+import frc.robot.subsystems.shooterrefactored.angler.AnglerIOInputsAutoLogged;
+import org.littletonrobotics.junction.Logger;
 
 /** Shooter subsystem */
 public class Shooter extends SubsystemBase {
+  private AnglerIO anglerIO;
+  private AnglerIOInputsAutoLogged anglerIOInputs = new AnglerIOInputsAutoLogged();
+
   /** Creates a new Shooter. */
-  public Shooter() {}
+  public Shooter(AnglerIO anglerIO) {
+    this.anglerIO = anglerIO;
+  }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    anglerIO.updateInputs(anglerIOInputs);
+    Logger.processInputs("Shooter/Angler/Inputs", anglerIOInputs);
   }
 }

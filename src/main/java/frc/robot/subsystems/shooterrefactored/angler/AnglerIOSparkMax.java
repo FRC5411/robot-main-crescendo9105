@@ -5,4 +5,4 @@
 package frc.robot.subsystems.shooterrefactored.angler;
 
 /** Add your docs here. */
-public class AnglerIOSparkMax {}
+public class AnglerIOSparkMax implements AnglerIO {}
