@@ -4,5 +4,52 @@
 
 package frc.robot.subsystems.shooterrefactored.angler;
 
-/** Add your docs here. */
-public class AnglerIOSparkMax implements AnglerIO {}
+import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkMax;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
+
+/** Class to interact with the physical angler structure */
+public class AnglerIOSparkMax implements AnglerIO {
+  private final double GEARING = 1.0 / 1.0;
+  private final Rotation2d OFFSET = Rotation2d.fromDegrees(98.0);
+
+  private CANSparkMax anglerMotor = new CANSparkMax(41, MotorType.kBrushless);
+  private DutyCycleEncoder anglerEncoder = new DutyCycleEncoder(0);
+
+  private double appliedVolts = 0.0;
+
+  /** Create a new hardware implementation of the angler */
+  public AnglerIOSparkMax() {
+    anglerMotor.clearFaults();
+    anglerMotor.restoreFactoryDefaults();
+
+    anglerMotor.setSmartCurrentLimit(40);
+    anglerMotor.enableVoltageCompensation(12.0);
+    anglerMotor.setIdleMode(IdleMode.kBrake);
+
+    anglerMotor.setInverted(true);
+
+    anglerMotor.burnFlash();
+  }
+
+  @Override
+  public void updateInputs(AnglerIOInputs inputs) {
+    // TODO Fix velocity to accurately reflect encoder readings
+    inputs.anglerPosition =
+        Rotation2d.fromRadians(GEARING * anglerEncoder.getAbsolutePosition() - OFFSET.getRadians());
+    inputs.anglerVelocityRadiansPerSecond = anglerEncoder.getDistance();
+    inputs.appliedVolts = appliedVolts;
+    inputs.appliedCurrentAmps = new double[] {anglerMotor.getOutputCurrent()};
+    inputs.temperatureCelsius = new double[] {anglerMotor.getMotorTemperature()};
+  }
+
+  @Override
+  public void setVolts(double volts) {
+    appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+
+    anglerMotor.setVoltage(appliedVolts);
+  }
+}
