@@ -4,5 +4,25 @@
 
 package frc.robot.subsystems.shooterrefactored.angler;
 
-/** Add your docs here. */
-public class AnglerIO {}
+import org.littletonrobotics.junction.AutoLog;
+
+import edu.wpi.first.math.geometry.Rotation2d;
+
+/** Hardware interface for the angler */
+public interface AnglerIO {
+  /** Shooter subsystem angler sensor data */
+  @AutoLog
+  public static class AnglerIOInputsR {
+    public Rotation2d anglerPosition = new Rotation2d();
+    public double anglerVelocityRadiansPerSecond = 0.0;
+    public double appliedVolts = 0.0;
+    public double[] appliedCurrentAmps = new double[] {0.0};
+    public double[] temperatureCelsius = new double[] {0.0}; 
+  }
+
+  /** Update the inputs from the sensors */
+  public default void updateInputs(AnglerIOInputsR inputs) {}
+
+  /** Set the voltage of the intake motor */
+  public default void setVolts(double volts) {}
+}
