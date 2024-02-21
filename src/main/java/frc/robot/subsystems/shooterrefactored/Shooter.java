@@ -6,6 +6,7 @@ package frc.robot.subsystems.shooterrefactored;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+/** Shooter subsystem */
 public class Shooter extends SubsystemBase {
   /** Creates a new Shooter. */
   public Shooter() {}
