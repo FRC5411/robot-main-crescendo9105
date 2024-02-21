@@ -9,14 +9,15 @@ import org.littletonrobotics.junction.AutoLog;
 
 /** Hardware interface for gyros */
 public interface GyroIO {
+  /** Drive subsystem gyro sensor data */
   @AutoLog
   public static class GyroIOInputs {
     public boolean connected = false;
     public Rotation2d yawPosition = new Rotation2d();
-    public double yawVelocityRPS = 0.0;
+    public double yawVelocityRadiansPerSecond = 0.0;
   }
 
-  /** Update the inputs for gyro */
+  /** Update the inputs from the sensors */
   public default void updateInputs(GyroIOInputs inputs) {}
 
   /** Reset the gyro */

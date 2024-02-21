@@ -53,8 +53,7 @@ public class Intake extends SubsystemBase {
     }
 
     if (velocitySetpointRPM != null) {
-      var motorOutput = (intakeFeedback.calculate(inputs.velocityRPM, velocitySetpointRPM));
-      // + intakeFeedforward.calculate(intakeFeedback.getGoal().velocity));
+      var motorOutput = (intakeFeedback.calculate(inputs.velocityRPM, velocitySetpointRPM)) + intakeFeedforward.calculate(intakeFeedback.getGoal().velocity);
 
       io.setVolts(motorOutput / 12.0);
       Logger.recordOutput("Intake/Feedback/Outupt", motorOutput);

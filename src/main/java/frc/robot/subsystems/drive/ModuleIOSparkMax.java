@@ -17,7 +17,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 
-/** An SDS MK4i L3 swerve module */
+/** Class to interact with the physical swerve module structure, SDS L2+ */
 public class ModuleIOSparkMax implements ModuleIO {
   // TODO Update these for our latest swerve modules
   private final double DRIVE_GEAR_RATIO = 6.75 / 1.0;
@@ -52,6 +52,7 @@ public class ModuleIOSparkMax implements ModuleIO {
   private LoggedTunableNumber azimuthFeedbackD =
       new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/D", 0.0);
 
+  /** Create a new hardware implementation of a swerve module */
   public ModuleIOSparkMax(int module) {
     switch (module) {
       case 0:

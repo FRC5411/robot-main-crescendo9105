@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 
 /** Class to interact with the physical climb structure */
 public class ClimbIOSparkMax implements ClimbIO {
@@ -46,13 +47,13 @@ public class ClimbIOSparkMax implements ClimbIO {
   @Override
   public void updateInputs(ClimbIOInputs inputs) {
     // TODO Add conversion factors as needed
-    inputs.leftAngleRadians = leftEncoder.getPosition();
+    inputs.leftAngle = Rotation2d.fromRadians(leftEncoder.getPosition());
     inputs.leftVelocityRPS = leftEncoder.getVelocity();
     inputs.leftAppliedVolts = leftAppliedVolts;
     inputs.leftCurrentAmps = new double[] {leftMotor.getOutputCurrent()};
     inputs.leftTemperatureCelsius = new double[] {leftMotor.getMotorTemperature()};
 
-    inputs.rightAngleRadians = rightEncoder.getPosition();
+    inputs.rightAngle = Rotation2d.fromRadians(rightEncoder.getPosition());
     inputs.rightVelocityRPS = rightEncoder.getVelocity();
     inputs.rightAppliedVolts = rightAppliedVolts;
     inputs.rightCurrentAmps = new double[] {rightMotor.getOutputCurrent()};

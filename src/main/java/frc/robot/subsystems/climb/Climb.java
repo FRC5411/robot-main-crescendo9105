@@ -6,7 +6,6 @@ package frc.robot.subsystems.climb;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -79,11 +78,11 @@ public class Climb extends SubsystemBase {
 
     if (leftAngleSetpointRadians != null) {
       var leftFeedbackOutput =
-          leftClimbFeedback.calculate(inputs.leftAngleRadians, leftAngleSetpointRadians);
+          leftClimbFeedback.calculate(inputs.leftAngle.getRadians(), leftAngleSetpointRadians);
       // TODO Need to add angle offset
       var leftFeedforwardOutput =
           leftClimbFeedforward.calculate(
-              inputs.leftAngleRadians, leftClimbFeedback.getSetpoint().velocity);
+              inputs.leftAngle.getRadians(), leftClimbFeedback.getSetpoint().velocity);
 
       Logger.recordOutput("Climb/LeftArm/Feedback/Output", leftFeedbackOutput);
       Logger.recordOutput("Climb/LeftArm/Feedforward/Output", leftFeedforwardOutput);
@@ -93,11 +92,11 @@ public class Climb extends SubsystemBase {
 
     if (rightAngleSetpointRadians != null) {
       var rightFeedbackOutput =
-          rightClimbFeedback.calculate(inputs.rightAngleRadians, rightAngleSetpointRadians);
+          rightClimbFeedback.calculate(inputs.rightAngle.getRadians(), rightAngleSetpointRadians);
       // TODO Need to add angle offset
       var rightFeedforwardOutput =
           rightClimbFeedforward.calculate(
-              inputs.rightAngleRadians, rightClimbFeedback.getSetpoint().velocity);
+              inputs.rightAngle.getRadians(), rightClimbFeedback.getSetpoint().velocity);
 
       Logger.recordOutput("Climb/RightArm/Feedback/Output", rightFeedbackOutput);
       Logger.recordOutput("Climb/RightArm/Feedforward/Output", rightFeedforwardOutput);
@@ -107,8 +106,8 @@ public class Climb extends SubsystemBase {
 
     updateTunableNumbers();
 
-    leftVisualizer.updateClimbAngle(Rotation2d.fromRadians(inputs.leftAngleRadians));
-    rightVisualizer.updateClimbAngle(Rotation2d.fromRadians(inputs.rightAngleRadians));
+    leftVisualizer.updateClimbAngle(inputs.leftAngle);
+    rightVisualizer.updateClimbAngle(inputs.rightAngle);
   }
 
   /** Checks if tunable numbers have changed, if so update controllers */

@@ -5,6 +5,7 @@
 package frc.robot.subsystems.intake;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
@@ -27,7 +28,7 @@ public class IntakeIOSim implements IntakeIO {
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(intakeMotor.getCurrentDrawAmps()));
 
-    inputs.angleRotations = 0.0; // Flywheel sim doesn't have pose methods
+    inputs.angleRotations = new Rotation2d(); // Flywheel sim doesn't have pose methods
     inputs.velocityRPM = intakeMotor.getAngularVelocityRPM();
     inputs.appliedVolts =
         BatterySim.calculateDefaultBatteryLoadedVoltage(
