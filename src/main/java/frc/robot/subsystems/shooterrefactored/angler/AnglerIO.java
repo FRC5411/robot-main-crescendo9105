@@ -22,6 +22,6 @@ public interface AnglerIO {
   /** Update the inputs from the sensors */
   public default void updateInputs(AnglerIOInputs inputs) {}
 
-  /** Set the voltage of the intake motor */
+  /** Set the voltage of the angler motor */
   public default void setVolts(double volts) {}
 }

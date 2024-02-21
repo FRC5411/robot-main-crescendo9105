@@ -4,5 +4,24 @@
 
 package frc.robot.subsystems.shooterrefactored.indexer;
 
-/** Add your docs here. */
-public class IndexerIO {}
+import edu.wpi.first.math.geometry.Rotation2d;
+import org.littletonrobotics.junction.AutoLog;
+
+/** Hardware interface for the indexer */
+public interface IndexerIO {
+  /** Shooter subsystem indexer sensor data */
+  @AutoLog
+  public static class IndexerIOInputs {
+    public Rotation2d indexerPosition = new Rotation2d();
+    public double indexerVelocityRPM = 0.0;
+    public double appliedVolts = 0.0;
+    public double[] appliedCurrentAmps = new double[] {0.0};
+    public double[] temperatureCelsius = new double[] {0.0};
+  }
+
+  /** Update the inputs from the sensors */
+  public default void updateInputs(IndexerIOInputs inputs) {}
+
+  /** Set the voltage of the indexer motor */
+  public default void setVolts(double volts) {}
+}
