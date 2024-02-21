@@ -20,7 +20,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.subsystems.shooter.angler.AnglerConstants;
-import frc.robot.subsystems.shooter.angler.AnglerIOInputsAutoLogged;
+import frc.robot.subsystems.shooter.angler.AnglerIOInputsIAutoLogged;
 import frc.robot.subsystems.shooter.angler.AnglerIOi;
 import frc.robot.subsystems.shooter.angler.AnglerNEO;
 import frc.robot.subsystems.shooter.angler.AnglerSim;
@@ -31,7 +31,7 @@ import frc.robot.subsystems.shooter.flywheel.ShooterWheelIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.flywheel.ShooterWheelTalonFX;
 import frc.robot.subsystems.shooter.indexer.Indexer550;
 import frc.robot.subsystems.shooter.indexer.IndexerIO;
-import frc.robot.subsystems.shooter.indexer.IndexerIOInputsAutoLogged;
+import frc.robot.subsystems.shooter.indexer.IndexerIOInputsIAutoLogged;
 import frc.robot.subsystems.shooter.indexer.IndexerIOSim;
 import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
@@ -54,8 +54,8 @@ public class Shooter extends SubsystemBase {
       new ShooterWheelIOInputsAutoLogged();
   private ShooterWheelIOInputsAutoLogged shooterWheelIOInputsAutoLoggedBottom =
       new ShooterWheelIOInputsAutoLogged();
-  private AnglerIOInputsAutoLogged anglerInputsAutoLogged = new AnglerIOInputsAutoLogged();
-  private IndexerIOInputsAutoLogged indexerIOInputsAutoLogged = new IndexerIOInputsAutoLogged();
+  private AnglerIOInputsIAutoLogged anglerInputsAutoLogged = new AnglerIOInputsIAutoLogged();
+  private IndexerIOInputsIAutoLogged indexerIOInputsAutoLogged = new IndexerIOInputsIAutoLogged();
 
   private boolean runShooter = false;
   private boolean runClosedLoop = false;

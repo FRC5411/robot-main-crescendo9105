@@ -33,7 +33,7 @@ public class AnglerNEO implements AnglerIOi {
   }
 
   @Override
-  public void updateInputs(AnglerIOInputs inputs) {
+  public void updateInputs(AnglerIOInputsI inputs) {
     anglerAngle = Rotation2d.fromRotations(anglerPivotAbsoluteEncoder.getAbsolutePosition());
     inputs.anglerAngle = anglerAngle;
     inputs.anglerAngleGoal = anglerController.getGoal();

@@ -13,7 +13,7 @@ public class Indexer550 implements IndexerIO {
   }
 
   @Override
-  public void updateInputs(IndexerIOInputs inputs) {
+  public void updateInputs(IndexerIOInputsI inputs) {
     inputs.indexerVelocityRPMLeft = indexerLeft.getEncoder().getVelocity();
     inputs.indexerAppliedVoltsLeft = indexerLeft.getAppliedOutput();
     inputs.indexerCurrentAmpsLeft = indexerLeft.getOutputCurrent();

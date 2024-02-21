@@ -85,7 +85,7 @@ public class LauncherIOSparkMax implements LauncherIO {
   }
 
   @Override
-  public void updateInputs(LauncherIOInputs inputs) {
+  public void updateInputs(LauncherIOInputsI inputs) {
     // TODO Update as needed
     inputs.topAngleRadians = topEncoder.getPosition();
     inputs.topVelocityRPM = topEncoder.getVelocity();

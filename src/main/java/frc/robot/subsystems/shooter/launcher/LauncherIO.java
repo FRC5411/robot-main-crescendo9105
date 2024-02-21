@@ -10,7 +10,7 @@ import org.littletonrobotics.junction.AutoLog;
 public interface LauncherIO {
   /** Launcher sensor data */
   @AutoLog
-  public static class LauncherIOInputs {
+  public static class LauncherIOInputsI {
     public double topAngleRadians = 0.0;
     public double topVelocityRPM = 0.0;
     public double topAppliedVolts = 0.0;
@@ -25,7 +25,7 @@ public interface LauncherIO {
   }
 
   /** Update the inputs from the sensors */
-  public default void updateInputs(LauncherIOInputs inputs) {}
+  public default void updateInputs(LauncherIOInputsI inputs) {}
 
   /** Set the volts for the launcher motor */
   public default void setVolts(double topVolts, double bottomVolts) {}

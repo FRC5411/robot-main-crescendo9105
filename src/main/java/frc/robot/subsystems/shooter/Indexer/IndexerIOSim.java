@@ -12,7 +12,7 @@ public class IndexerIOSim implements IndexerIO {
   public double indexerAppliedVoltsRight = 0;
 
   @Override
-  public void updateInputs(IndexerIOInputs inputs) {
+  public void updateInputs(IndexerIOInputsI inputs) {
     inputs.indexerVelocityRPMLeft = indexerMotorLeft.getAngularVelocityRPM();
     inputs.indexerAppliedVoltsLeft = indexerAppliedVoltsLeft;
     inputs.indexerCurrentAmpsLeft = indexerMotorLeft.getCurrentDrawAmps();

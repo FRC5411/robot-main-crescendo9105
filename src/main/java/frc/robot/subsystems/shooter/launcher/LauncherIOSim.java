@@ -51,7 +51,7 @@ public class LauncherIOSim implements LauncherIO {
   public LauncherIOSim() {}
 
   @Override
-  public void updateInputs(LauncherIOInputs inputs) {
+  public void updateInputs(LauncherIOInputsI inputs) {
     topMotor.update(LOOP_PERIOD_S);
     bottomMotor.update(LOOP_PERIOD_S);
 

@@ -44,7 +44,7 @@ public class AnglerSim implements AnglerIOi {
       new AnglerController(() -> anglerAngle, this::setAnglerVolts);
 
   @Override
-  public void updateInputs(AnglerIOInputs inputs) {
+  public void updateInputs(AnglerIOInputsI inputs) {
     armSim.update(0.02);
 
     anglerAngle = Rotation2d.fromRadians(armSim.getAngleRads());

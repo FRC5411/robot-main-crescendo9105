@@ -10,7 +10,7 @@ import org.littletonrobotics.junction.AutoLog;
 /** Interface for representing the hardware */
 public interface AnglerIOi {
   @AutoLog
-  public static class AnglerIOInputs {
+  public static class AnglerIOInputsI {
     public Rotation2d anglerAngle = new Rotation2d();
     public Rotation2d anglerAngleSetpoint = new Rotation2d();
     public Rotation2d anglerAngleGoal = new Rotation2d();
@@ -21,7 +21,7 @@ public interface AnglerIOi {
     public boolean anglerAtSetpoint = false;
   }
 
-  public default void updateInputs(AnglerIOInputs inputs) {}
+  public default void updateInputs(AnglerIOInputsI inputs) {}
 
   public default void setAnglerVolts(double volts) {}
 
