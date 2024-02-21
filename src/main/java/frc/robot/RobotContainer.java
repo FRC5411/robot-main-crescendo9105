@@ -15,8 +15,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.SwerveCommands;
-import frc.robot.subsystems.climb.Climb;
-import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -36,7 +34,6 @@ public class RobotContainer {
   private Drive robotDrive;
   private Intake robotIntake;
   private Shooter robotShooter;
-  private Climb robotClimb;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
 
@@ -89,7 +86,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new GyroIO() {});
         robotIntake = new Intake(new IntakeIO() {});
-        robotClimb = new Climb(new ClimbIO() {});
+        // robotClimb = new Climb(new ClimbIO() {});
         break;
     }
 
