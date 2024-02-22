@@ -11,13 +11,13 @@ public interface LauncherIO {
   /** Shooter subsystem launcher sensor data */
   @AutoLog
   public static class LauncherIOInputs {
-    public double topFlywheelVelocityRPM = 0.0;
+    public double topFlywheelVelocityMPS = 0.0;
     public double topFlywheelAppliedVolts = 0.0;
     public double[] topFlywheelAppliedCurrentAmps = new double[] {0.0};
     public double[] topFlywheelTemperatureCelsius = new double[] {0.0};
     public double topFlywheelSetpointRPM = 0.0;
 
-    public double bottomFlywheelVelocityRPM = 0.0;
+    public double bottomFlywheelVelocityMPS = 0.0;
     public double bottomFlywheelAppliedVolts = 0.0;
     public double[] bottomFlywheelAppliedCurrentAmps = new double[] {0.0};
     public double[] bottomFlywheelTemperatureCelsius = new double[] {0.0};
@@ -34,8 +34,8 @@ public interface LauncherIO {
   public default void setBottomVolts(double volts) {}
 
   /** Set the top motor velocity setpoint for closed-loop control */
-  public default void setTopVelocity(double velocityRPM) {}
+  public default void setTopVelocity(double velocityMPS) {}
 
   /** Set the bottom motor velocity setpoint for closed-loop control */
-  public default void setBottomVelocity(double velocityRPM) {}
+  public default void setBottomVelocity(double velocityMPS) {}
 }

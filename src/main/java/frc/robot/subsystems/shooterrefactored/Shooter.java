@@ -39,6 +39,10 @@ public class Shooter extends SubsystemBase {
     Logger.processInputs("Shooter/Launcher/Inputs", launcherIOInputs);
   }
 
+  public void setAnglerVolts(double volts) {
+    anglerIO.setVolts(volts);
+  }
+
   public void setLauncherVolts(double topVolts, double bottomVolts) {
     launcherIO.setTopVolts(topVolts);
     launcherIO.setBottomVolts(bottomVolts);

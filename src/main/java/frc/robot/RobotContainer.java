@@ -8,13 +8,16 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.ClimbCommands;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.SwerveCommands;
+import frc.robot.subsystems.climb.Climb;
+import frc.robot.subsystems.climb.ClimbIO;
+import frc.robot.subsystems.climb.ClimbIOSim;
+import frc.robot.subsystems.climb.ClimbIOSparkMax;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -42,6 +45,7 @@ public class RobotContainer {
   private Drive robotDrive;
   private Intake robotIntake;
   private Shooter robotShooter;
+  private Climb robotClimb;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
 
@@ -74,6 +78,7 @@ public class RobotContainer {
         robotIntake = new Intake(new IntakeIOSparkMax());
         robotShooter =
             new Shooter(new AnglerIOSparkMax(), new IndexerIOSparkMax(), new LauncherIOTalonFX());
+        robotClimb = new Climb(new ClimbIOSparkMax());
         break;
       case SIM:
         robotDrive =
@@ -85,6 +90,7 @@ public class RobotContainer {
                 new GyroIO() {});
         robotIntake = new Intake(new IntakeIOSim());
         robotShooter = new Shooter(new AnglerIOSim(), new IndexerIOSim(), new LauncherIOSim());
+        robotClimb = new Climb(new ClimbIOSim());
         break;
       default:
         robotDrive =
@@ -96,6 +102,7 @@ public class RobotContainer {
                 new GyroIO() {});
         robotIntake = new Intake(new IntakeIO() {});
         robotShooter = new Shooter(new AnglerIO() {}, new IndexerIO() {}, new LauncherIO() {});
+        robotClimb = new Climb(new ClimbIO() {});
         break;
     }
   }
@@ -123,28 +130,46 @@ public class RobotContainer {
             () -> -pilotController.getLeftX(),
             () -> -pilotController.getRightX()));
 
-    /* Reset drive heading | Debugging */
-    pilotController
-        .y()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        robotDrive.setPose(
-                            new Pose2d(
-                                robotDrive.getPosition().getTranslation(), new Rotation2d())),
-                    robotDrive)
-                .ignoringDisable(true)); // Reset even when disabled
+    // /* Reset drive heading | Debugging */
+    // pilotController
+    //     .y()
+    //     .onTrue(
+    //         Commands.runOnce(
+    //                 () ->
+    //                     robotDrive.setPose(
+    //                         new Pose2d(
+    //                             robotDrive.getPosition().getTranslation(), new Rotation2d())),
+    //                 robotDrive)
+    //             .ignoringDisable(true)); // Reset even when disabled
+
+    /* Reset gyro */
+    pilotController.y().onTrue(Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive));
 
     pilotController
         .a()
-        .whileTrue(
-            Commands.run(() -> robotShooter.setLauncherVelocity(4000.0, 4000.0), robotShooter))
+        .whileTrue(Commands.run(() -> robotShooter.setLauncherVelocity(10.0, 10.0), robotShooter))
         .whileFalse(Commands.run(() -> robotShooter.setLauncherVelocity(0.0, 0.0), robotShooter));
     pilotController
         .b()
-        .whileTrue(
-            Commands.run(() -> robotShooter.setLauncherVelocity(-4000.0, -4000.0), robotShooter))
+        .whileTrue(Commands.run(() -> robotShooter.setLauncherVelocity(-10.0, -10.0), robotShooter))
         .whileFalse(Commands.run(() -> robotShooter.setLauncherVelocity(0.0, 0.0), robotShooter));
+
+    pilotController.leftTrigger().whileTrue(ClimbCommands.runManual(robotClimb, 12.0, 12.0, false));
+    pilotController.leftTrigger().whileFalse(ClimbCommands.stopClimb(robotClimb));
+
+    pilotController
+        .rightTrigger()
+        .whileTrue(ClimbCommands.runManual(robotClimb, -12.0, -12.0, false));
+    pilotController.rightTrigger().whileFalse(ClimbCommands.stopClimb(robotClimb));
+
+    pilotController
+        .povUp()
+        .whileTrue(Commands.run(() -> robotShooter.setAnglerVolts(6.0), robotShooter))
+        .whileFalse(Commands.run(() -> robotShooter.setAnglerVolts(0.0)));
+    pilotController
+        .povDown()
+        .whileTrue(Commands.run(() -> robotShooter.setAnglerVolts(-6.0), robotShooter))
+        .whileFalse(Commands.run(() -> robotShooter.setAnglerVolts(0.0)));
 
     // /* Reset drive pose | Debugging */
     // pilotController.a().onTrue(Commands.runOnce(robotDrive::resetPose, robotDrive));

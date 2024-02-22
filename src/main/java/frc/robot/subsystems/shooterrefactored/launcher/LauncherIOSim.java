@@ -19,17 +19,19 @@ import org.littletonrobotics.junction.Logger;
 public class LauncherIOSim implements LauncherIO {
   private final double LOOP_PERIOD_S = 0.02;
   private final double GEARING = 1.0 / 1.0;
+  private final double RADIUS_M = 2.5 / 100;
+  private final double CIRCUMFRENCE_M = 2.0 * Math.PI * RADIUS_M;
 
   private FlywheelSim topMotor = new FlywheelSim(DCMotor.getFalcon500(1), GEARING, 0.003);
   private FlywheelSim bottomMotor = new FlywheelSim(DCMotor.getFalcon500(1), GEARING, 0.003);
 
   private PIDController topFeedback = new PIDController(0.019, 0.0, 0.0);
   private SimpleMotorFeedforward topFeedforward = new SimpleMotorFeedforward(0.0, 0.237);
-  private SlewRateLimiter topLimiter = new SlewRateLimiter(2000.0);
+  private SlewRateLimiter topLimiter = new SlewRateLimiter(25.0);
 
   private PIDController bottomFeedback = new PIDController(0.019, 0.0, 0.0);
   private SimpleMotorFeedforward bottomFeedforward = new SimpleMotorFeedforward(0.0, 0.237);
-  private SlewRateLimiter bottomLimiter = new SlewRateLimiter(2000.0);
+  private SlewRateLimiter bottomLimiter = new SlewRateLimiter(25.0);
 
   private LoggedTunableNumber topFeedbackP =
       new LoggedTunableNumber("Shooter/LauncherTop/Feedback/P", topFeedback.getP());
@@ -46,15 +48,15 @@ public class LauncherIOSim implements LauncherIO {
       new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/D", bottomFeedback.getD());
 
   private LoggedTunableNumber topLimiterValue =
-      new LoggedTunableNumber("Shooter/LauncherTop/Limiter/Value", 0.0);
+      new LoggedTunableNumber("Shooter/LauncherTop/Limiter/Value", 25.0);
   private LoggedTunableNumber bottomLimiterValue =
-      new LoggedTunableNumber("Shooter/LauncherBottom/Limiter/Value", 0.0);
+      new LoggedTunableNumber("Shooter/LauncherBottom/Limiter/Value", 25.0);
 
   private double topAppliedVolts = 0.0;
   private double bottomAppliedVolts = 0.0;
 
-  private double topVelocitySetpointRPM = 0.0;
-  private double bottomVelocitySetpointRPM = 0.0;
+  private double topVelocitySetpointMPS = 0.0;
+  private double bottomVelocitySetpointMPS = 0.0;
 
   /** Create a new virtual implementation of the launcher */
   public LauncherIOSim() {
@@ -71,17 +73,18 @@ public class LauncherIOSim implements LauncherIO {
         BatterySim.calculateDefaultBatteryLoadedVoltage(
             topMotor.getCurrentDrawAmps() + bottomMotor.getCurrentDrawAmps()));
 
-    inputs.topFlywheelVelocityRPM = topMotor.getAngularVelocityRPM();
+    inputs.topFlywheelVelocityMPS = (topMotor.getAngularVelocityRPM() * CIRCUMFRENCE_M) / 60.0;
     inputs.topFlywheelAppliedVolts = topAppliedVolts;
     inputs.topFlywheelAppliedCurrentAmps = new double[] {topMotor.getCurrentDrawAmps()};
     inputs.topFlywheelTemperatureCelsius = new double[] {0.0};
-    inputs.topFlywheelSetpointRPM = topVelocitySetpointRPM;
+    inputs.topFlywheelSetpointRPM = topVelocitySetpointMPS;
 
-    inputs.bottomFlywheelVelocityRPM = bottomMotor.getAngularVelocityRPM();
+    inputs.bottomFlywheelVelocityMPS =
+        (bottomMotor.getAngularVelocityRPM() * CIRCUMFRENCE_M) / 60.0;
     inputs.bottomFlywheelAppliedVolts = bottomAppliedVolts;
     inputs.bottomFlywheelAppliedCurrentAmps = new double[] {bottomMotor.getCurrentDrawAmps()};
     inputs.bottomFlywheelTemperatureCelsius = new double[] {0.0};
-    inputs.bottomFlywheelSetpointRPM = bottomVelocitySetpointRPM;
+    inputs.bottomFlywheelSetpointRPM = bottomVelocitySetpointMPS;
 
     updateTunableNumbers();
   }
@@ -101,12 +104,13 @@ public class LauncherIOSim implements LauncherIO {
   }
 
   @Override
-  public void setTopVelocity(double velocityRPM) {
-    topVelocitySetpointRPM = topLimiter.calculate(velocityRPM);
+  public void setTopVelocity(double velocityMPS) {
+    topVelocitySetpointMPS = topLimiter.calculate(velocityMPS);
 
     double topFeedbackOutput =
-        topFeedback.calculate(topMotor.getAngularVelocityRPM(), topVelocitySetpointRPM);
-    double topFeedforwardOutput = topFeedforward.calculate(topVelocitySetpointRPM);
+        topFeedback.calculate(
+            (topMotor.getAngularVelocityRPM() * CIRCUMFRENCE_M) / 60.0, topVelocitySetpointMPS);
+    double topFeedforwardOutput = topFeedforward.calculate(topVelocitySetpointMPS);
 
     double topCombinedOutput = (topFeedbackOutput + topFeedforwardOutput) / 12.0;
 
@@ -124,12 +128,14 @@ public class LauncherIOSim implements LauncherIO {
   }
 
   @Override
-  public void setBottomVelocity(double velocityRPM) {
-    bottomVelocitySetpointRPM = bottomLimiter.calculate(velocityRPM);
+  public void setBottomVelocity(double velocityMPS) {
+    bottomVelocitySetpointMPS = bottomLimiter.calculate(velocityMPS);
 
     double bottomFeedbackOutput =
-        bottomFeedback.calculate(bottomMotor.getAngularVelocityRPM(), bottomVelocitySetpointRPM);
-    double bottomFeedforwardOutput = bottomFeedforward.calculate(bottomVelocitySetpointRPM);
+        bottomFeedback.calculate(
+            (bottomMotor.getAngularVelocityRPM() * CIRCUMFRENCE_M) / 60.0,
+            bottomVelocitySetpointMPS);
+    double bottomFeedforwardOutput = bottomFeedforward.calculate(bottomVelocitySetpointMPS);
 
     double bottomCombinedOutput = (bottomFeedbackOutput + bottomFeedforwardOutput) * 12.0;
     setBottomVolts(bottomCombinedOutput);

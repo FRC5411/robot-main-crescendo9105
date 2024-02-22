@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 /** Class to interact with the physical angler structure */
 public class AnglerIOSparkMax implements AnglerIO {
   private final double GEARING = 1.0 / 1.0;
-  private final Rotation2d OFFSET = Rotation2d.fromDegrees(98.0);
+  private final Rotation2d OFFSET = Rotation2d.fromDegrees(33.0);
 
   private CANSparkMax anglerMotor = new CANSparkMax(41, MotorType.kBrushless);
   private DutyCycleEncoder anglerEncoder = new DutyCycleEncoder(0);
