@@ -14,7 +14,7 @@ import org.littletonrobotics.junction.Logger;
 
 /** Class to interact with the physical intake structure */
 public class IntakeIOSparkMax implements IntakeIO {
-  // private final double GEARING = 9.0 / 1.0;
+  private final double GEARING = 9.0 / 1.0;
 
   // TODO Update IDs and constatns as needed
   private CANSparkMax intakeMotor = new CANSparkMax(51, MotorType.kBrushless);
@@ -38,8 +38,8 @@ public class IntakeIOSparkMax implements IntakeIO {
 
   @Override
   public void updateInputs(IntakeIOInputs inputs) {
-    inputs.angleRotations = Rotation2d.fromRotations(intakeEncoder.getPosition());
-    inputs.velocityRPM = intakeEncoder.getVelocity();
+    inputs.angleRotations = Rotation2d.fromRotations(intakeEncoder.getPosition() / GEARING);
+    inputs.velocityRPM = intakeEncoder.getVelocity() / GEARING;
     inputs.appliedVolts = appliedVolts;
     inputs.appliedCurrentAmps = new double[] {intakeMotor.getOutputCurrent()};
     inputs.temperatureCelsius = new double[] {intakeMotor.getMotorTemperature()};

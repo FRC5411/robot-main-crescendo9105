@@ -84,7 +84,7 @@ public class LauncherIOSim implements LauncherIO {
     inputs.bottomFlywheelAppliedVolts = bottomAppliedVolts;
     inputs.bottomFlywheelAppliedCurrentAmps = new double[] {bottomMotor.getCurrentDrawAmps()};
     inputs.bottomFlywheelTemperatureCelsius = new double[] {0.0};
-    inputs.bottomFlywheelSetpointRPM = bottomVelocitySetpointMPS;
+    inputs.bottomFlywheelSetpointMPS = bottomVelocitySetpointMPS;
 
     updateTunableNumbers();
   }

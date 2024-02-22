@@ -21,7 +21,7 @@ public interface LauncherIO {
     public double bottomFlywheelAppliedVolts = 0.0;
     public double[] bottomFlywheelAppliedCurrentAmps = new double[] {0.0};
     public double[] bottomFlywheelTemperatureCelsius = new double[] {0.0};
-    public double bottomFlywheelSetpointRPM = 0.0;
+    public double bottomFlywheelSetpointMPS = 0.0;
   }
 
   /** Update the inputs from the sensors */

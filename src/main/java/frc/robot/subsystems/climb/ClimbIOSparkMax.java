@@ -13,6 +13,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 
 /** Class to interact with the physical climb structure */
 public class ClimbIOSparkMax implements ClimbIO {
+  private final double GEARING = 625.0 / 1.0;
+
   // TODO Adjust values as needed
   private CANSparkMax leftMotor = new CANSparkMax(61, MotorType.kBrushless);
   private CANSparkMax rightMotor = new CANSparkMax(62, MotorType.kBrushless);
