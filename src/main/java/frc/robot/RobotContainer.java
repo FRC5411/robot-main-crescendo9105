@@ -32,6 +32,9 @@ import frc.robot.subsystems.shooterrefactored.angler.AnglerIOSparkMax;
 import frc.robot.subsystems.shooterrefactored.indexer.IndexerIO;
 import frc.robot.subsystems.shooterrefactored.indexer.IndexerIOSim;
 import frc.robot.subsystems.shooterrefactored.indexer.IndexerIOSparkMax;
+import frc.robot.subsystems.shooterrefactored.launcher.LauncherIO;
+import frc.robot.subsystems.shooterrefactored.launcher.LauncherIOSim;
+import frc.robot.subsystems.shooterrefactored.launcher.LauncherIOTalonFX;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -69,7 +72,8 @@ public class RobotContainer {
                 new ModuleIOSparkMax(3),
                 new GyroIOPigeon2(false));
         robotIntake = new Intake(new IntakeIOSparkMax());
-        robotShooter = new Shooter(new AnglerIOSparkMax(), new IndexerIOSparkMax());
+        robotShooter =
+            new Shooter(new AnglerIOSparkMax(), new IndexerIOSparkMax(), new LauncherIOTalonFX());
         break;
       case SIM:
         robotDrive =
@@ -80,7 +84,7 @@ public class RobotContainer {
                 new ModuleIOSim(3),
                 new GyroIO() {});
         robotIntake = new Intake(new IntakeIOSim());
-        robotShooter = new Shooter(new AnglerIOSim(), new IndexerIOSim());
+        robotShooter = new Shooter(new AnglerIOSim(), new IndexerIOSim(), new LauncherIOSim());
         break;
       default:
         robotDrive =
@@ -91,7 +95,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new GyroIO() {});
         robotIntake = new Intake(new IntakeIO() {});
-        robotShooter = new Shooter(new AnglerIO() {}, new IndexerIO() {});
+        robotShooter = new Shooter(new AnglerIO() {}, new IndexerIO() {}, new LauncherIO() {});
         break;
     }
   }
@@ -133,12 +137,14 @@ public class RobotContainer {
 
     pilotController
         .a()
-        .whileTrue(Commands.run(() -> robotShooter.setIndexerVolts(12.0), robotShooter))
-        .whileFalse(Commands.run(() -> robotShooter.setIndexerVolts(0.0), robotShooter));
+        .whileTrue(
+            Commands.run(() -> robotShooter.setLauncherVelocity(4000.0, 4000.0), robotShooter))
+        .whileFalse(Commands.run(() -> robotShooter.setLauncherVelocity(0.0, 0.0), robotShooter));
     pilotController
         .b()
-        .whileTrue(Commands.run(() -> robotShooter.setIndexerVolts(-12.0), robotShooter))
-        .whileFalse(Commands.run(() -> robotShooter.setIndexerVolts(0.0), robotShooter));
+        .whileTrue(
+            Commands.run(() -> robotShooter.setLauncherVelocity(-4000.0, -4000.0), robotShooter))
+        .whileFalse(Commands.run(() -> robotShooter.setLauncherVelocity(0.0, 0.0), robotShooter));
 
     // /* Reset drive pose | Debugging */
     // pilotController.a().onTrue(Commands.runOnce(robotDrive::resetPose, robotDrive));

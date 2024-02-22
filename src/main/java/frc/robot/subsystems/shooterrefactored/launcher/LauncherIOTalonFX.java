@@ -4,5 +4,5 @@
 
 package frc.robot.subsystems.shooterrefactored.launcher;
 
-/** Add your docs here. */
-public class LauncherIOTalonFX {}
+/** Class to interact with the physical launcher structure */
+public class LauncherIOTalonFX implements LauncherIO {}

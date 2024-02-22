@@ -9,6 +9,8 @@ import frc.robot.subsystems.shooterrefactored.angler.AnglerIO;
 import frc.robot.subsystems.shooterrefactored.angler.AnglerIOInputsAutoLogged;
 import frc.robot.subsystems.shooterrefactored.indexer.IndexerIO;
 import frc.robot.subsystems.shooterrefactored.indexer.IndexerIOInputsAutoLogged;
+import frc.robot.subsystems.shooterrefactored.launcher.LauncherIO;
+import frc.robot.subsystems.shooterrefactored.launcher.LauncherIOInputsAutoLogged;
 import org.littletonrobotics.junction.Logger;
 
 /** Shooter subsystem */
@@ -17,11 +19,14 @@ public class Shooter extends SubsystemBase {
   private AnglerIOInputsAutoLogged anglerIOInputs = new AnglerIOInputsAutoLogged();
   private IndexerIO indexerIO;
   private IndexerIOInputsAutoLogged indexerIOInputs = new IndexerIOInputsAutoLogged();
+  private LauncherIO launcherIO;
+  private LauncherIOInputsAutoLogged launcherIOInputs = new LauncherIOInputsAutoLogged();
 
   /** Creates a new Shooter. */
-  public Shooter(AnglerIO anglerIO, IndexerIO indexerIO) {
+  public Shooter(AnglerIO anglerIO, IndexerIO indexerIO, LauncherIO launcherIO) {
     this.anglerIO = anglerIO;
     this.indexerIO = indexerIO;
+    this.launcherIO = launcherIO;
   }
 
   @Override
@@ -30,9 +35,17 @@ public class Shooter extends SubsystemBase {
     Logger.processInputs("Shooter/Angler/Inputs", anglerIOInputs);
     indexerIO.updateInputs(indexerIOInputs);
     Logger.processInputs("Shooter/Indexer/Inputs", indexerIOInputs);
+    launcherIO.updateInputs(launcherIOInputs);
+    Logger.processInputs("Shooter/Launcher/Inputs", launcherIOInputs);
   }
 
-  public void setIndexerVolts(double volts) {
-    indexerIO.setVolts(volts);
+  public void setLauncherVolts(double topVolts, double bottomVolts) {
+    launcherIO.setTopVolts(topVolts);
+    launcherIO.setBottomVolts(bottomVolts);
+  }
+
+  public void setLauncherVelocity(double topVeloicty, double bottomVelocity) {
+    launcherIO.setTopVelocity(topVeloicty);
+    launcherIO.setBottomVelocity(bottomVelocity);
   }
 }
