@@ -200,15 +200,16 @@ public class LauncherIOTalonFX implements LauncherIO {
       topConfiguration.Slot0.kI = topFeedbackI.get();
       topConfiguration.Slot0.kD = topFeedbackD.get();
 
-      if (topFeedbackS.hasChanged(hashCode())
-          || topFeedbackG.hasChanged(hashCode())
-          || topFeedbackV.hasChanged(hashCode())
-          || topFeedbackA.hasChanged(hashCode())) {
-        topConfiguration.Slot0.kS = topFeedbackS.get();
-        topConfiguration.Slot0.kG = topFeedbackG.get();
-        topConfiguration.Slot0.kV = topFeedbackV.get();
-        topConfiguration.Slot0.kA = topFeedbackA.get();
-      }
+      topMotor.getConfigurator().apply(topConfiguration);
+    }
+    if (topFeedbackS.hasChanged(hashCode())
+        || topFeedbackG.hasChanged(hashCode())
+        || topFeedbackV.hasChanged(hashCode())
+        || topFeedbackA.hasChanged(hashCode())) {
+      topConfiguration.Slot0.kS = topFeedbackS.get();
+      topConfiguration.Slot0.kG = topFeedbackG.get();
+      topConfiguration.Slot0.kV = topFeedbackV.get();
+      topConfiguration.Slot0.kA = topFeedbackA.get();
 
       topMotor.getConfigurator().apply(topConfiguration);
     }
@@ -220,15 +221,16 @@ public class LauncherIOTalonFX implements LauncherIO {
       bottomConfiguration.Slot0.kI = bottomFeedbackI.get();
       bottomConfiguration.Slot0.kD = bottomFeedbackD.get();
 
-      if (bottomFeedbackS.hasChanged(hashCode())
-          || bottomFeedbackG.hasChanged(hashCode())
-          || bottomFeedbackV.hasChanged(hashCode())
-          || bottomFeedbackA.hasChanged(hashCode())) {
-        bottomConfiguration.Slot0.kS = bottomFeedbackS.get();
-        bottomConfiguration.Slot0.kG = bottomFeedbackG.get();
-        bottomConfiguration.Slot0.kV = bottomFeedbackV.get();
-        bottomConfiguration.Slot0.kA = bottomFeedbackA.get();
-      }
+      bottomMotor.getConfigurator().apply(bottomConfiguration);
+    }
+    if (bottomFeedbackS.hasChanged(hashCode())
+        || bottomFeedbackG.hasChanged(hashCode())
+        || bottomFeedbackV.hasChanged(hashCode())
+        || bottomFeedbackA.hasChanged(hashCode())) {
+      bottomConfiguration.Slot0.kS = bottomFeedbackS.get();
+      bottomConfiguration.Slot0.kG = bottomFeedbackG.get();
+      bottomConfiguration.Slot0.kV = bottomFeedbackV.get();
+      bottomConfiguration.Slot0.kA = bottomFeedbackA.get();
 
       bottomMotor.getConfigurator().apply(bottomConfiguration);
     }

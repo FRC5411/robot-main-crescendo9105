@@ -49,13 +49,13 @@ public class ClimbIOSparkMax implements ClimbIO {
   @Override
   public void updateInputs(ClimbIOInputs inputs) {
     // TODO Add conversion factors as needed
-    inputs.leftAngle = Rotation2d.fromRadians(leftEncoder.getPosition());
+    inputs.leftAngle = Rotation2d.fromRadians(leftEncoder.getPosition() / GEARING);
     inputs.leftVelocityRPS = leftEncoder.getVelocity();
     inputs.leftAppliedVolts = leftAppliedVolts;
     inputs.leftCurrentAmps = new double[] {leftMotor.getOutputCurrent()};
     inputs.leftTemperatureCelsius = new double[] {leftMotor.getMotorTemperature()};
 
-    inputs.rightAngle = Rotation2d.fromRadians(rightEncoder.getPosition());
+    inputs.rightAngle = Rotation2d.fromRadians(rightEncoder.getPosition() / GEARING);
     inputs.rightVelocityRPS = rightEncoder.getVelocity();
     inputs.rightAppliedVolts = rightAppliedVolts;
     inputs.rightCurrentAmps = new double[] {rightMotor.getOutputCurrent()};
