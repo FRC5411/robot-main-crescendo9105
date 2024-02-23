@@ -9,6 +9,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.shooterrefactored.angler.AnglerIO;
 import frc.robot.subsystems.shooterrefactored.angler.AnglerIOInputsAutoLogged;
@@ -17,7 +18,6 @@ import frc.robot.subsystems.shooterrefactored.indexer.IndexerIOInputsAutoLogged;
 import frc.robot.subsystems.shooterrefactored.launcher.LauncherIO;
 import frc.robot.subsystems.shooterrefactored.launcher.LauncherIOInputsAutoLogged;
 import frc.robot.utils.debugging.LoggedTunableNumber;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -73,6 +73,10 @@ public class Shooter extends SubsystemBase {
     launcherIO.updateInputs(launcherIOInputs);
     Logger.processInputs("Shooter/Launcher/Inputs", launcherIOInputs);
 
+    if (DriverStation.isDisabled()) {
+      stopMotors(true, true, true);
+    }
+
     if (anglerSetpoint != null) {
       double anglerFeedbackOutput =
           anglerFeedback.calculate(
@@ -118,6 +122,22 @@ public class Shooter extends SubsystemBase {
       anglerFeedforward =
           new ArmFeedforward(
               anglerFeedforwardS.get(), anglerFeedforwardG.get(), anglerFeedforwardG.get());
+    }
+  }
+
+  /** Stop specified motors and set their setpoints to null */
+  public void stopMotors(boolean stopIndexer, boolean stopAngler, boolean stopLaunchers) {
+    if (stopIndexer) {
+      indexerIO.setVolts(0.0);
+    }
+    if (stopAngler) {
+      anglerSetpoint = null;
+      anglerIO.setVolts(0.0);
+    }
+    if (stopLaunchers) {
+      launcherSetpointMPS = null;
+      launcherIO.setTopVolts(0.0);
+      launcherIO.setBottomVolts(0.0);
     }
   }
 
