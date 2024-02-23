@@ -130,29 +130,8 @@ public class RobotContainer {
             () -> -pilotController.getLeftX(),
             () -> -pilotController.getRightX()));
 
-    // /* Reset drive heading | Debugging */
-    // pilotController
-    //     .y()
-    //     .onTrue(
-    //         Commands.runOnce(
-    //                 () ->
-    //                     robotDrive.setPose(
-    //                         new Pose2d(
-    //                             robotDrive.getPosition().getTranslation(), new Rotation2d())),
-    //                 robotDrive)
-    //             .ignoringDisable(true)); // Reset even when disabled
-
     /* Reset gyro */
     pilotController.y().onTrue(Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive));
-
-    pilotController
-        .a()
-        .whileTrue(Commands.run(() -> robotShooter.setLauncherVelocity(10.0, 10.0), robotShooter))
-        .whileFalse(Commands.run(() -> robotShooter.setLauncherVelocity(0.0, 0.0), robotShooter));
-    pilotController
-        .b()
-        .whileTrue(Commands.run(() -> robotShooter.setLauncherVelocity(-10.0, -10.0), robotShooter))
-        .whileFalse(Commands.run(() -> robotShooter.setLauncherVelocity(0.0, 0.0), robotShooter));
 
     pilotController.leftTrigger().whileTrue(ClimbCommands.runManual(robotClimb, 12.0, 12.0, false));
     pilotController.leftTrigger().whileFalse(ClimbCommands.stopClimb(robotClimb));
@@ -161,87 +140,6 @@ public class RobotContainer {
         .rightTrigger()
         .whileTrue(ClimbCommands.runManual(robotClimb, -12.0, -12.0, false));
     pilotController.rightTrigger().whileFalse(ClimbCommands.stopClimb(robotClimb));
-
-    pilotController
-        .povUp()
-        .whileTrue(Commands.run(() -> robotShooter.setAnglerVolts(6.0), robotShooter))
-        .whileFalse(Commands.run(() -> robotShooter.setAnglerVolts(0.0)));
-    pilotController
-        .povDown()
-        .whileTrue(Commands.run(() -> robotShooter.setAnglerVolts(-6.0), robotShooter))
-        .whileFalse(Commands.run(() -> robotShooter.setAnglerVolts(0.0)));
-
-    // /* Reset drive pose | Debugging */
-    // pilotController.a().onTrue(Commands.runOnce(robotDrive::resetPose, robotDrive));
-
-    // // /* Run intake (NEO) at half speed */
-    // // pilotController
-    // //     .b()
-    // //     //        .whileTrue(IntakeCommands.runIntake(robotIntake, 5676.0 / 2.0))
-    // //     .whileTrue(IntakeCommands.runIntake(robotIntake, 1500.0))
-    // //     .whileFalse(IntakeCommands.stopIntake(robotIntake));
-    // pilotController
-    //     .leftBumper()
-    //     .whileTrue(IntakeCommands.intakePiece(robotIntake, 12.0))
-    //     .whileFalse(IntakeCommands.stopIntake(robotIntake));
-    // pilotController
-    //     .rightBumper()
-    //     .whileTrue(IntakeCommands.intakePiece(robotIntake, -12.0))
-    //     .whileFalse(IntakeCommands.stopIntake(robotIntake));
-    // // pilotController
-    // //     .b()
-    // //     .toggleOnTrue(
-    // //         IntakeCommands.intakePiece(robotIntake, 12.0)
-    // //             .finallyDo(() -> robotIntake.setVolts(0.0)));
-
-    // pilotController
-    //     .a()
-    //     .whileTrue(
-    //         robotShooter
-    //             .setShooterVoltageSetpointCommand(12, 12)
-    //             .andThen(robotShooter.setIndexerVoltage(12)))
-    //     .onFalse(
-    //         robotShooter
-    //             .setShooterVoltageSetpointCommand(0, 0)
-    //             .andThen(robotShooter.setIndexerVoltage(0)));
-    // pilotController
-    //     .b()
-    //     .onTrue(robotShooter.setIndexerVoltage(-12))
-    //     .onFalse(robotShooter.setIndexerVoltage(0));
-    // pilotController
-    //     .x()
-    //     .onTrue(robotShooter.getSysIDTests())
-    //     .onFalse(robotShooter.setShooterVoltageSetpointCommand(0, 0));
-
-    // pilotController
-    //     .povUp()
-    //     .whileTrue(robotShooter.setShooterVelocitySetpointCommand(5, 5))
-    //     .whileTrue(
-    //         robotShooter.setShooterAngleCommand(
-    //             new Rotation2d(TrajectoryAngleSolver.newtonRaphsonSolver(3, 5))))
-    //     .onFalse(robotShooter.setShooterVelocitySetpointCommand(0, 0));
-
-    // pilotController
-    //     .y()
-    //     .onTrue()
-    //     .onFalse();
-
-    // .toggleOnFalse(IntakeCommands.stopIntake(robotIntake));
-
-    // /* Set climb to angle */
-    // pilotController
-    //     .a()
-    //     .whileTrue(ClimbCommands.setAngle(robotClimb, 1.0, 1.0))
-    //     .whileFalse(ClimbCommands.setAngle(robotClimb, 0.0, 0.0));
-
-    // /* Print commands for debugging purposes */
-    // pilotController
-    //     .b()
-    //     .whileTrue(Commands.print("B Button | whileTrue"))
-    //     .whileFalse(Commands.print("B Button | whileFalse"));
-    // pilotController.a().whileTrue(Commands.print("A Button | whileTrue"));
-    // pilotController.y().whileTrue(Commands.print("Y Button | whileTrue"));
-    // pilotController.x().whileTrue(Commands.print("X Button | whileTrue"));
   }
 
   /** Returns the selected autonomous */
