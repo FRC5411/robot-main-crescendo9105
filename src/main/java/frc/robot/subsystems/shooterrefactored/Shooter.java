@@ -8,6 +8,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.shooterrefactored.angler.AnglerIO;
 import frc.robot.subsystems.shooterrefactored.angler.AnglerIOInputsAutoLogged;
@@ -16,6 +17,8 @@ import frc.robot.subsystems.shooterrefactored.indexer.IndexerIOInputsAutoLogged;
 import frc.robot.subsystems.shooterrefactored.launcher.LauncherIO;
 import frc.robot.subsystems.shooterrefactored.launcher.LauncherIOInputsAutoLogged;
 import frc.robot.utils.debugging.LoggedTunableNumber;
+
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /** Shooter subsystem */
@@ -142,5 +145,47 @@ public class Shooter extends SubsystemBase {
   /** Set the velocity setpoint of the launcher flywheels */
   public void setLauncherVelocityMPS(double velocityMPS) {
     launcherSetpointMPS = velocityMPS;
+  }
+
+  /** Returns the speed of the indexer flyhweels */
+  @AutoLogOutput(key = "Shooter/Indexer/VelocityMPS")
+  public double getIndexerVelocityRPM() {
+    return indexerIOInputs.indexerVelocityRPM;
+  }
+
+  /** Returns the angle of the pivot */
+  @AutoLogOutput(key = "Shooter/Angler/Position")
+  public Rotation2d getAnglerPosition() {
+    return anglerIOInputs.anglerPosition;
+  }
+
+  /** Returns the setpoint state of the angler feedback */
+  @AutoLogOutput(key = "Shooter/Angler/Feedback/Setpoint")
+  public State getAnglerSetpoint() {
+    return anglerFeedback.getSetpoint();
+  }
+
+  /** Returns the position error of the angler feedback */
+  @AutoLogOutput(key = "Shooter/Angler/Feedback/PositionError")
+  public double getAnglerPositionError() {
+    return anglerFeedback.getPositionError();
+  }
+
+  /** Returns the velocity error of the angler feedback */
+  @AutoLogOutput(key = "Shooter/Angler/Feedback/VelocityError")
+  public double getAnglerVelocityError() {
+    return anglerFeedback.getVelocityError();
+  }
+
+  /** Returns the velocity of the top launcher flywheel */
+  @AutoLogOutput(key = "Shooter/TopLauncher/VelocityMPS")
+  public double getTopLauncherVelocityMPS() {
+    return launcherIOInputs.topFlywheelVelocityMPS;
+  }
+
+  /** Returns the velocity of the bottom launcher flyhweel */
+  @AutoLogOutput(key = "Shooter/BottomLauncher/VelocityMPS")
+  public double getBottomLauncherVelocityMPS() {
+    return launcherIOInputs.bottomFlywheelVelocityMPS;
   }
 }
