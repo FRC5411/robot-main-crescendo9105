@@ -70,6 +70,28 @@ public class Shooter extends SubsystemBase {
     launcherIO.updateInputs(launcherIOInputs);
     Logger.processInputs("Shooter/Launcher/Inputs", launcherIOInputs);
 
+    if (anglerSetpoint != null) {
+      double anglerFeedbackOutput =
+          anglerFeedback.calculate(
+              anglerIOInputs.anglerPosition.getDegrees(), anglerSetpoint.getDegrees());
+      double anglerFeedforwardOutput =
+          anglerFeedforward.calculate(
+              anglerFeedback.getSetpoint().position, anglerFeedback.getSetpoint().velocity);
+
+      double anglerCombinedOutput = (anglerFeedbackOutput + anglerFeedforwardOutput) / 12.0;
+
+      anglerIO.setVolts(anglerCombinedOutput);
+
+      Logger.recordOutput("Shooter/Angler/Feedback/Output", anglerFeedbackOutput);
+      Logger.recordOutput("Shooter/Angler/Feedforward/Output", anglerFeedforwardOutput);
+      Logger.recordOutput("Shooter/Angler/CombinedOutput", anglerCombinedOutput);
+    }
+
+    if (launcherSetpointMPS != null) {
+      launcherIO.setTopVelocity(launcherSetpointMPS);
+      launcherIO.setBottomVelocity(launcherSetpointMPS);
+    }
+
     updateTunableNumbers();
   }
 
@@ -94,5 +116,31 @@ public class Shooter extends SubsystemBase {
           new ArmFeedforward(
               anglerFeedforwardS.get(), anglerFeedforwardG.get(), anglerFeedforwardG.get());
     }
+  }
+
+  /** Set the voltage of the indexer motor */
+  public void setIndexerVolts(double volts) {
+    indexerIO.setVolts(volts);
+  }
+
+  /** Set the voltage of the angler motor */
+  public void setAnglerVolts(double volts) {
+    anglerIO.setVolts(volts);
+  }
+
+  /** Set the voltage of the launcher motors */
+  public void setLauncherVolts(double topFlywheelVolts, double bottomFlywheelVolts) {
+    launcherIO.setTopVolts(topFlywheelVolts);
+    launcherIO.setBottomVolts(bottomFlywheelVolts);
+  }
+
+  /** Set the position setpoint of the angler mechanism */
+  public void setAnglerPosition(Rotation2d position) {
+    anglerSetpoint = position;
+  }
+
+  /** Set the velocity setpoint of the launcher flywheels */
+  public void setLauncherVelocityMPS(double velocityMPS) {
+    launcherSetpointMPS = velocityMPS;
   }
 }
