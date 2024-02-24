@@ -10,6 +10,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import frc.robot.utils.debugging.LoggedTunableNumber;
 
 /** Class to represent the indexer mechanism in simulation */
 public class IndexerIOSim implements IndexerIO {
@@ -18,6 +19,9 @@ public class IndexerIOSim implements IndexerIO {
 
   private FlywheelSim indexerMotor =
       new FlywheelSim(DCMotor.getNEO(1), GEARING, 0.0002, VecBuilder.fill(0.01));
+
+  // 1 = true, 0 = false
+  private LoggedTunableNumber beamBreakSensorSim = new LoggedTunableNumber("Indexer/IR/Value", 0.0);
 
   private double appliedVolts = 0.0;
 
@@ -35,6 +39,7 @@ public class IndexerIOSim implements IndexerIO {
     inputs.appliedVolts = appliedVolts;
     inputs.appliedCurrentAmps = new double[] {indexerMotor.getCurrentDrawAmps()};
     inputs.temperatureCelsius = new double[] {0.0};
+    inputs.isBeamBroken = (beamBreakSensorSim.get() == 1.0) ? true : false;
   }
 
   @Override

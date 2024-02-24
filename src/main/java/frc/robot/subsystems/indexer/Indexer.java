@@ -4,16 +4,12 @@
 
 package frc.robot.subsystems.indexer;
 
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 
 public class Indexer extends SubsystemBase {
   private IndexerIO indexerIO;
   private IndexerIOInputsAutoLogged indexerIOInputs = new IndexerIOInputsAutoLogged();
-
-  // TODO Update source
-  private DigitalInput beamBreakSensor = new DigitalInput(4);
 
   /** Creates a new Indexer. */
   public Indexer(IndexerIO indexerIO) {
@@ -38,6 +34,6 @@ public class Indexer extends SubsystemBase {
 
   /** Returns the status of the beam break sensor; checks if a note is stowed or not */
   public boolean isBeamBroken() {
-    return beamBreakSensor.get();
+    return indexerIOInputs.isBeamBroken;
   }
 }

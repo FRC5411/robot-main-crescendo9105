@@ -9,6 +9,7 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.DigitalInput;
 
 /** Class to interact with the physical indexer structure */
 public class IndexerIOSparkMax implements IndexerIO {
@@ -16,6 +17,8 @@ public class IndexerIOSparkMax implements IndexerIO {
 
   private CANSparkMax indexerMotor = new CANSparkMax(42, MotorType.kBrushless);
   private RelativeEncoder indexerEncoder = indexerMotor.getEncoder();
+
+  private DigitalInput beamBreakSensor = new DigitalInput(1);
 
   private double appliedVolts = 0.0;
 
@@ -39,6 +42,7 @@ public class IndexerIOSparkMax implements IndexerIO {
     inputs.appliedVolts = appliedVolts;
     inputs.appliedCurrentAmps = new double[] {indexerMotor.getOutputCurrent()};
     inputs.temperatureCelsius = new double[] {indexerMotor.getMotorTemperature()};
+    inputs.isBeamBroken = beamBreakSensor.get();
   }
 
   @Override
