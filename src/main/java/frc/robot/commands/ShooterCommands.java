@@ -65,6 +65,9 @@ public class ShooterCommands {
     if (currentCommand != null) {
       currentCommand.cancel();
     }
+    anglerPosition = null;
+    laucnherVelocityMPS = 0.0;
+    
     currentCommand = Commands.run(() -> robotsShooter.stopMotors(true, true), robotsShooter);
 
     return currentCommand;

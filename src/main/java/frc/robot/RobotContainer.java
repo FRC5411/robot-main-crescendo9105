@@ -8,12 +8,17 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.ClimbCommands;
+import frc.robot.commands.IndexerCommands;
 import frc.robot.commands.IntakeCommands;
+import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.SwerveCommands;
+import frc.robot.commands.IndexerCommands.IndexerDirection;
+import frc.robot.commands.IntakeCommands.IntakeDirection;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
@@ -24,6 +29,10 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerIO;
+import frc.robot.subsystems.indexer.IndexerIOSim;
+import frc.robot.subsystems.indexer.IndexerIOSparkMax;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
@@ -35,6 +44,8 @@ import frc.robot.subsystems.shooter.angler.AnglerIOSparkMax;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOSim;
 import frc.robot.subsystems.shooter.launcher.LauncherIOTalonFX;
+import frc.robot.utils.debugging.LoggedTunableNumber;
+
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -43,10 +54,12 @@ public class RobotContainer {
   private Intake robotIntake;
   private Shooter robotShooter;
   private Climb robotClimb;
+  private Indexer robotIndexer;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
 
   private LoggedDashboardChooser<Command> autoChooser;
+  private LoggedTunableNumber angleSetter = new LoggedTunableNumber("Shooter/Angler/Debugging/SetpointDegrees", 30.0);
 
   public RobotContainer() {
     initializeSubsystems();
@@ -75,6 +88,7 @@ public class RobotContainer {
         robotIntake = new Intake(new IntakeIOSparkMax());
         robotShooter = new Shooter(new AnglerIOSparkMax(), new LauncherIOTalonFX());
         robotClimb = new Climb(new ClimbIOSparkMax());
+        robotIndexer = new Indexer(new IndexerIOSparkMax());
         break;
       case SIM:
         robotDrive =
@@ -87,6 +101,7 @@ public class RobotContainer {
         robotIntake = new Intake(new IntakeIOSim());
         robotShooter = new Shooter(new AnglerIOSim(), new LauncherIOSim());
         robotClimb = new Climb(new ClimbIOSim());
+        robotIndexer = new Indexer(new IndexerIOSim());
         break;
       default:
         robotDrive =
@@ -99,6 +114,7 @@ public class RobotContainer {
         robotIntake = new Intake(new IntakeIO() {});
         robotShooter = new Shooter(new AnglerIO() {}, new LauncherIO() {});
         robotClimb = new Climb(new ClimbIO() {});
+        robotIndexer = new Indexer(new IndexerIO() {});
         break;
     }
   }
@@ -109,8 +125,6 @@ public class RobotContainer {
     // Register commands with PathPlanner's AutoBuilder so it can call them
     NamedCommands.registerCommand(
         "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));
-    NamedCommands.registerCommand("Intake", IntakeCommands.intakePiece(robotIntake, 12.0));
-    NamedCommands.registerCommand("Stop Intake", IntakeCommands.stopIntake(robotIntake));
   }
 
   /** Configure controllers */
@@ -123,17 +137,36 @@ public class RobotContainer {
             () -> -pilotController.getLeftY(),
             () -> -pilotController.getLeftX(),
             () -> -pilotController.getRightX()));
+    /* Stop intake by default */
+    robotIntake.setDefaultCommand(IntakeCommands.stopIntake(robotIntake));
+    /* Idle shooter by default */
+    robotShooter.setDefaultCommand(ShooterCommands.stopShooter(robotShooter));
+    /* Stop indexer by default */
+    robotIndexer.setDefaultCommand(IndexerCommands.stopIndexer(robotIndexer));
 
     /* Reset gyro */
     pilotController.y().onTrue(Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive));
 
-    pilotController.leftTrigger().whileTrue(ClimbCommands.runManual(robotClimb, 12.0, 12.0, false));
-    pilotController.leftTrigger().whileFalse(ClimbCommands.stopClimb(robotClimb));
+    /* Run intake */
+    pilotController.leftBumper().whileTrue(IntakeCommands.runIntake(robotIntake, IntakeDirection.IN).alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN)));
+    
+    /* Run outtake */
+    pilotController.rightBumper().whileTrue(IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT).alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)));
 
-    pilotController
-        .rightTrigger()
-        .whileTrue(ClimbCommands.runManual(robotClimb, -12.0, -12.0, false));
-    pilotController.rightTrigger().whileFalse(ClimbCommands.stopClimb(robotClimb));
+    /* Run angler setpoint */
+    pilotController.b().whileTrue(ShooterCommands.runAngler(robotShooter, Rotation2d.fromDegrees(angleSetter.get())));
+
+    /* Run angler manual up */
+    pilotController.povUp().whileTrue(ShooterCommands.runAnglerManual(robotShooter, 12.0));
+
+    /* Run angler manual down */
+    pilotController.povDown().whileTrue(ShooterCommands.runAnglerManual(robotShooter, -12.0));
+
+    /* Run launcher setpoint */
+    pilotController.x().whileTrue(ShooterCommands.runLauncher(robotShooter, 10.0));
+
+    /* Run launcher manual */
+    pilotController.a().whileTrue(ShooterCommands.runLauncherManual(robotShooter, 12.0));
   }
 
   /** Returns the selected autonomous */

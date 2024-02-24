@@ -60,9 +60,9 @@ public class IndexerCommands {
 
   /** Direction of the indexer */
   public static enum IndexerDirection {
-    /** Run the Indxer wheels in to the Shooter */
+    /** Run the Indexer wheels in to the Shooter */
     IN,
-    /** Run the Indxer wheels out of the Shooter */
+    /** Run the Indexer wheels out of the Shooter */
     OUT,
     /** Stop the Indexer wheels */
     STOP
