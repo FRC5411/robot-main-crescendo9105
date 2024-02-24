@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.shooter.Shooter;
 
-/** Class to hold all of the commands for the Intake */
+/** Class to hold all of the commands for the Shooter */
 public class ShooterCommands {
   private static Command currentCommand = null;
 
