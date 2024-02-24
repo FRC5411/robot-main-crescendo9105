@@ -39,7 +39,7 @@ public class IndexerCommands {
 
   /** Set the state of the indexer direciton */
   private static void setIndexerVolts(IndexerDirection direction) {
-    switch(direction) {
+    switch (direction) {
       case IN:
         indexerVolts = -12.0;
         break;
@@ -54,7 +54,8 @@ public class IndexerCommands {
         break;
     }
 
-    System.out.println("\nIndexerVolts: " + indexerVolts + "\nIndexerDirection: " + direction + "\n");
+    System.out.println(
+        "\nIndexerVolts: " + indexerVolts + "\nIndexerDirection: " + direction + "\n");
   }
 
   /** Direction of the indexer */

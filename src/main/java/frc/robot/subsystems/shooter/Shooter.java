@@ -12,9 +12,9 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
+import frc.robot.subsystems.shooter.angler.AnglerIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
-import frc.robot.subsystems.shooterrefactored.angler.AnglerIOInputsAutoLogged;
-import frc.robot.subsystems.shooterrefactored.launcher.LauncherIOInputsAutoLogged;
+import frc.robot.subsystems.shooter.launcher.LauncherIOInputsAutoLogged;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -57,6 +57,8 @@ public class Shooter extends SubsystemBase {
   public Shooter(AnglerIO anglerIO, LauncherIO launcherIO) {
     this.anglerIO = anglerIO;
     this.launcherIO = launcherIO;
+
+    resetAnglerFeedback();
   }
 
   @Override
@@ -129,6 +131,11 @@ public class Shooter extends SubsystemBase {
       launcherIO.setTopVolts(0.0);
       launcherIO.setBottomVolts(0.0);
     }
+  }
+
+  /** Reset the angler controller profile */
+  public void resetAnglerFeedback() {
+    anglerFeedback.reset(anglerIOInputs.anglerPosition.getDegrees(), anglerIOInputs.anglerVelocityRadiansPerSecond);
   }
 
   /** Set the voltage of the angler motor */

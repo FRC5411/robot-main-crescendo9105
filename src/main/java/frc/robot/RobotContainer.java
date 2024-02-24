@@ -35,7 +35,6 @@ import frc.robot.subsystems.shooter.angler.AnglerIOSparkMax;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOSim;
 import frc.robot.subsystems.shooter.launcher.LauncherIOTalonFX;
-
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -74,8 +73,7 @@ public class RobotContainer {
                 new ModuleIOSparkMax(3),
                 new GyroIOPigeon2(false));
         robotIntake = new Intake(new IntakeIOSparkMax());
-        robotShooter =
-            new Shooter(new AnglerIOSparkMax(), new LauncherIOTalonFX());
+        robotShooter = new Shooter(new AnglerIOSparkMax(), new LauncherIOTalonFX());
         robotClimb = new Climb(new ClimbIOSparkMax());
         break;
       case SIM:
