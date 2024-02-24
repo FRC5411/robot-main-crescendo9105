@@ -46,10 +46,15 @@ public class IndexerCommands {
       case OUT:
         indexerVolts = 12.0;
         break;
+      case STOP:
+        indexerVolts = 0.0;
+        break;
       default:
         indexerVolts = 0.0;
         break;
     }
+
+    System.out.println("\nIndexerVolts: " + indexerVolts + "\nIndexerDirection: " + direction + "\n");
   }
 
   /** Direction of the indexer */
