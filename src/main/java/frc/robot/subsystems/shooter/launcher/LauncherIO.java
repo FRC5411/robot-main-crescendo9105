@@ -6,30 +6,36 @@ package frc.robot.subsystems.shooter.launcher;
 
 import org.littletonrobotics.junction.AutoLog;
 
-/** Interface for representing the hardware */
+/** Hardware interface for the launcher */
 public interface LauncherIO {
-  /** Launcher sensor data */
+  /** Shooter subsystem launcher sensor data */
   @AutoLog
-  public static class LauncherIOInputsI {
-    public double topAngleRadians = 0.0;
-    public double topVelocityRPM = 0.0;
-    public double topAppliedVolts = 0.0;
-    public double[] topAppliedCurrentAmps = new double[] {0.0};
-    public double[] topTemperatureCelsius = new double[] {0.0};
+  public static class LauncherIOInputs {
+    public double topFlywheelVelocityMPS = 0.0;
+    public double topFlywheelAppliedVolts = 0.0;
+    public double[] topFlywheelAppliedCurrentAmps = new double[] {0.0};
+    public double[] topFlywheelTemperatureCelsius = new double[] {0.0};
+    public double topFlywheelSetpointRPM = 0.0;
 
-    public double bottomAngleRadians = 0.0;
-    public double bottomVelocityRPM = 0.0;
-    public double bottomAppliedVolts = 0.0;
-    public double[] bottomAppliedCurrentAmps = new double[] {0.0};
-    public double[] bottomTemperatureCelsius = new double[] {0.0};
+    public double bottomFlywheelVelocityMPS = 0.0;
+    public double bottomFlywheelAppliedVolts = 0.0;
+    public double[] bottomFlywheelAppliedCurrentAmps = new double[] {0.0};
+    public double[] bottomFlywheelTemperatureCelsius = new double[] {0.0};
+    public double bottomFlywheelSetpointMPS = 0.0;
   }
 
   /** Update the inputs from the sensors */
-  public default void updateInputs(LauncherIOInputsI inputs) {}
+  public default void updateInputs(LauncherIOInputs inputs) {}
 
-  /** Set the volts for the launcher motor */
-  public default void setVolts(double topVolts, double bottomVolts) {}
+  /** Set the voltage of the top launcher motor */
+  public default void setTopVolts(double volts) {}
 
-  /** Set the closed-loop velocity for the motors */
-  public default void setVelocity(double velocityMPS) {}
+  /** Set the voltage of the bottom launcher motor */
+  public default void setBottomVolts(double volts) {}
+
+  /** Set the top motor velocity setpoint for closed-loop control */
+  public default void setTopVelocity(double velocityMPS) {}
+
+  /** Set the bottom motor velocity setpoint for closed-loop control */
+  public default void setBottomVelocity(double velocityMPS) {}
 }

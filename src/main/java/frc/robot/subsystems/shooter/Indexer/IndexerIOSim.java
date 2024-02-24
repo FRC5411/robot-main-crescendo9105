@@ -1,29 +1,46 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
 package frc.robot.subsystems.shooter.indexer;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import edu.wpi.first.wpilibj.simulation.BatterySim;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 
+/** Class to represent the indexer mechanism in simulation */
 public class IndexerIOSim implements IndexerIO {
-  private DCMotorSim indexerMotorLeft =
-      new DCMotorSim(
-          DCMotor.getNEO(1), IndexerConstants.kGearing, IndexerConstants.kJKGMetersSquared);
+  private final double LOOP_PERIOD_S = 0.02;
+  private final double GEARING = 5.0 / 1.0;
 
-  public double indexerAppliedVoltsLeft = 0;
-  public double indexerAppliedVoltsRight = 0;
+  private FlywheelSim indexerMotor =
+      new FlywheelSim(DCMotor.getNEO(1), GEARING, 0.0002, VecBuilder.fill(0.01));
+
+  private double appliedVolts = 0.0;
+
+  /** Create a new virtual implementation of the indexer */
+  public IndexerIOSim() {}
 
   @Override
-  public void updateInputs(IndexerIOInputsI inputs) {
-    inputs.indexerVelocityRPMLeft = indexerMotorLeft.getAngularVelocityRPM();
-    inputs.indexerAppliedVoltsLeft = indexerAppliedVoltsLeft;
-    inputs.indexerCurrentAmpsLeft = indexerMotorLeft.getCurrentDrawAmps();
-    inputs.indexerTemperatureLeftC = 0.0;
+  public void updateInputs(IndexerIOInputs inputs) {
+    indexerMotor.update(LOOP_PERIOD_S);
 
-    indexerMotorLeft.update(0.02);
+    RoboRioSim.setVInVoltage(
+        BatterySim.calculateDefaultBatteryLoadedVoltage(indexerMotor.getCurrentDrawAmps()));
+
+    inputs.indexerVelocityRPM = indexerMotor.getAngularVelocityRPM();
+    inputs.appliedVolts = appliedVolts;
+    inputs.appliedCurrentAmps = new double[] {indexerMotor.getCurrentDrawAmps()};
+    inputs.temperatureCelsius = new double[] {0.0};
   }
 
   @Override
-  public void setIndexerVolts(double volts) {
-    indexerAppliedVoltsLeft = volts;
-    indexerMotorLeft.setInputVoltage(volts);
+  public void setVolts(double volts) {
+    appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+
+    indexerMotor.setInputVoltage(appliedVolts);
   }
 }

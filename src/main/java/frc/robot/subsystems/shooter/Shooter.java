@@ -4,276 +4,216 @@
 
 package frc.robot.subsystems.shooter;
 
-import com.ctre.phoenix6.SignalLogger;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.Units;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.subsystems.shooter.angler.AnglerConstants;
-import frc.robot.subsystems.shooter.angler.AnglerIOInputsIAutoLogged;
-import frc.robot.subsystems.shooter.angler.AnglerIOi;
-import frc.robot.subsystems.shooter.angler.AnglerNEO;
-import frc.robot.subsystems.shooter.angler.AnglerSim;
-import frc.robot.subsystems.shooter.flywheel.ShooterIOSim;
-import frc.robot.subsystems.shooter.flywheel.ShooterWheelConstants;
-import frc.robot.subsystems.shooter.flywheel.ShooterWheelIO;
-import frc.robot.subsystems.shooter.flywheel.ShooterWheelIOInputsAutoLogged;
-import frc.robot.subsystems.shooter.flywheel.ShooterWheelTalonFX;
-import frc.robot.subsystems.shooter.indexer.Indexer550;
+import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.indexer.IndexerIO;
-import frc.robot.subsystems.shooter.indexer.IndexerIOInputsIAutoLogged;
-import frc.robot.subsystems.shooter.indexer.IndexerIOSim;
-import java.util.function.BooleanSupplier;
+import frc.robot.subsystems.shooter.launcher.LauncherIO;
+import frc.robot.subsystems.shooterrefactored.angler.AnglerIOInputsAutoLogged;
+import frc.robot.subsystems.shooterrefactored.indexer.IndexerIOInputsAutoLogged;
+import frc.robot.subsystems.shooterrefactored.launcher.LauncherIOInputsAutoLogged;
+import frc.robot.utils.debugging.LoggedTunableNumber;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
+/** Shooter subsystem */
 public class Shooter extends SubsystemBase {
-  private ShooterWheelIO shooterWheelTop;
-  private ShooterWheelIO shooterWheelBottom;
+  private AnglerIO anglerIO;
+  private AnglerIOInputsAutoLogged anglerIOInputs = new AnglerIOInputsAutoLogged();
   private IndexerIO indexerIO;
-  private AnglerIOi anglerIO;
+  private IndexerIOInputsAutoLogged indexerIOInputs = new IndexerIOInputsAutoLogged();
+  private LauncherIO launcherIO;
+  private LauncherIOInputsAutoLogged launcherIOInputs = new LauncherIOInputsAutoLogged();
 
-  private double topVelocityMPS = 0;
-  private double bottomVelocityMPS = 0;
+  private ProfiledPIDController anglerFeedback =
+      new ProfiledPIDController(1.45, 0.0, 0.0, new TrapezoidProfile.Constraints(600.0, 300.0));
+  private ArmFeedforward anglerFeedforward = new ArmFeedforward(0.0, 0.25, 0.0);
 
-  private double topVolts = 0;
-  private double bottomVolts = 0;
+  private LoggedTunableNumber anglerFeedbackP =
+      new LoggedTunableNumber("Shooter/Angler/Feedback/P", anglerFeedback.getP());
+  private LoggedTunableNumber anglerFeedbackI =
+      new LoggedTunableNumber("Shooter/Angler/Feedback/I", anglerFeedback.getI());
+  private LoggedTunableNumber anglerFeedbackD =
+      new LoggedTunableNumber("Shooter/Angler/Feedback/D", anglerFeedback.getD());
+  private LoggedTunableNumber anglerFeedbackV =
+      new LoggedTunableNumber(
+          "Shooter/Angler/Feedback/V", anglerFeedback.getConstraints().maxVelocity);
+  private LoggedTunableNumber anglerFeedbackA =
+      new LoggedTunableNumber(
+          "Shooter/Angler/Feedback/A", anglerFeedback.getConstraints().maxAcceleration);
 
-  private double indexerVoltage = 0;
+  private LoggedTunableNumber anglerFeedforwardS =
+      new LoggedTunableNumber("Shooter/Angler/Feedforward/S", anglerFeedforward.ks);
+  private LoggedTunableNumber anglerFeedforwardG =
+      new LoggedTunableNumber("Shooter/Angler/Feedforward/G", anglerFeedforward.kg);
+  private LoggedTunableNumber anglerFeedforwardV =
+      new LoggedTunableNumber("Shooter/Angler/Feedforward/V", anglerFeedforward.kv);
 
-  private ShooterWheelIOInputsAutoLogged shooterWheelIOInputsAutoLoggedTop =
-      new ShooterWheelIOInputsAutoLogged();
-  private ShooterWheelIOInputsAutoLogged shooterWheelIOInputsAutoLoggedBottom =
-      new ShooterWheelIOInputsAutoLogged();
-  private AnglerIOInputsIAutoLogged anglerInputsAutoLogged = new AnglerIOInputsIAutoLogged();
-  private IndexerIOInputsIAutoLogged indexerIOInputsAutoLogged = new IndexerIOInputsIAutoLogged();
+  private Rotation2d anglerSetpoint = null;
+  private Double launcherSetpointMPS = null;
 
-  private boolean runShooter = false;
-  private boolean runClosedLoop = false;
-
-  public Shooter() {
-    if (RobotBase.isReal()) {
-      shooterWheelTop =
-          new ShooterWheelTalonFX(
-              ShooterWheelConstants.kTopMotorID,
-              false,
-              new PIDController(
-                  ShooterWheelConstants.kP, ShooterWheelConstants.kI, ShooterWheelConstants.kD),
-              new SimpleMotorFeedforward(
-                  ShooterWheelConstants.kS, ShooterWheelConstants.kV, ShooterWheelConstants.kA),
-              ShooterWheelConstants.kFlywheelRateLimit,
-              "TopWheel");
-      shooterWheelBottom =
-          new ShooterWheelTalonFX(
-              ShooterWheelConstants.kBottomMotorID,
-              false,
-              new PIDController(
-                  ShooterWheelConstants.kP, ShooterWheelConstants.kI, ShooterWheelConstants.kD),
-              new SimpleMotorFeedforward(
-                  ShooterWheelConstants.kS, ShooterWheelConstants.kV, ShooterWheelConstants.kA),
-              ShooterWheelConstants.kFlywheelRateLimit,
-              "BottomWheel");
-
-      indexerIO = new Indexer550();
-      anglerIO = new AnglerNEO(AnglerConstants.kMotorID);
-    } else if (RobotBase.isSimulation()) {
-      shooterWheelTop =
-          new ShooterIOSim(
-              new PIDController(
-                  ShooterWheelConstants.kSimP,
-                  ShooterWheelConstants.kSimI,
-                  ShooterWheelConstants.kSimD),
-              new SimpleMotorFeedforward(
-                  ShooterWheelConstants.kSimS,
-                  ShooterWheelConstants.kSimV,
-                  ShooterWheelConstants.kSimA),
-              ShooterWheelConstants.kFlywheelRateLimit,
-              "TopWheel");
-      shooterWheelBottom =
-          new ShooterIOSim(
-              new PIDController(
-                  ShooterWheelConstants.kSimP,
-                  ShooterWheelConstants.kSimI,
-                  ShooterWheelConstants.kSimD),
-              new SimpleMotorFeedforward(
-                  ShooterWheelConstants.kSimS,
-                  ShooterWheelConstants.kSimV,
-                  ShooterWheelConstants.kSimA),
-              ShooterWheelConstants.kFlywheelRateLimit,
-              "BottomWheel");
-
-      indexerIO = new IndexerIOSim();
-      anglerIO = new AnglerSim();
-    } else {
-      shooterWheelTop = new ShooterWheelIO() {};
-      shooterWheelBottom = new ShooterWheelIO() {};
-      indexerIO = new IndexerIO() {};
-      anglerIO = new AnglerIOi() {};
-    }
-
-    anglerIO.setGoal(Rotation2d.fromDegrees(15));
-    anglerIO.initPID();
-  }
-
-  public Command shootToSpeakerCommand(
-      Pose2d robotPose, BooleanSupplier isRobotInPosition, double desiredMPS) {
-    return new SequentialCommandGroup(
-        setShooterSepointsCommand(
-            ShooterWheelConstants.kShootMPS,
-            ShooterWheelConstants.kShootMPS,
-            Rotation2d.fromDegrees(
-                TrajectoryAngleSolver.newtonRaphsonSolver(
-                    ShooterConstants.kSpeaker3DPose
-                        .toPose2d()
-                        .minus(robotPose)
-                        .getTranslation()
-                        .getNorm(),
-                    ShooterWheelConstants.kShootMPS))),
-        new WaitUntilCommand(isRobotInPosition),
-        new InstantCommand(() -> indexerVoltage = 12.0, this));
-  }
-
-  public Command setShooterSepointsCommand(
-      double topVelocityMPSSetpoint, double bottomVelocityMPSSetpoint, Rotation2d angle) {
-    return new SequentialCommandGroup(
-        setShooterVelocitySetpointCommand(
-            topVelocityMPSSetpoint, bottomVelocityMPSSetpoint)); // setShooterAngleCommand(angle));
-  }
-
-  public Command setShooterVelocitySetpointCommand(
-      double topVelocityMPSSetpoint, double bottomVelocityMPSSetpoint) {
-    return new InstantCommand(
-        () -> {
-          runClosedLoop = true;
-          topVelocityMPS = topVelocityMPSSetpoint;
-          bottomVelocityMPS = bottomVelocityMPSSetpoint;
-        });
-  }
-
-  public Command setShooterVoltageSetpointCommand(
-      double topVoltsSetpoint, double bottomVoltsSetpoint) {
-    return new InstantCommand(
-        () -> {
-          runClosedLoop = false;
-          shooterWheelTop.setFlywheelsVolts(topVoltsSetpoint);
-          shooterWheelBottom.setFlywheelsVolts(bottomVoltsSetpoint);
-        });
-  }
-
-  public Command setShooterAngleCommand(Rotation2d angle) {
-    return new InstantCommand(
-        () -> {
-          anglerIO.setGoal(angle);
-          anglerIO.initPID();
-        },
-        this);
-  }
-
-  public Command setIndexerVoltage(double volts) {
-    return new InstantCommand(() -> indexerVoltage = volts);
-  }
-
-  public boolean isShooterAtSetpoint() {
-    return Math.abs(
-                shooterWheelIOInputsAutoLoggedTop.flywheelVelocityMPSSetpoint
-                    - shooterWheelIOInputsAutoLoggedTop.flywheelVelocityMPS)
-            < 0.5
-        && Math.abs(
-                shooterWheelIOInputsAutoLoggedTop.flywheelVelocityMPSSetpoint
-                    - shooterWheelIOInputsAutoLoggedTop.flywheelVelocityMPS)
-            < 0.5
-        && Math.abs(
-                anglerInputsAutoLogged.anglerAngleSetpoint.getDegrees()
-                    - anglerInputsAutoLogged.anglerAngle.getDegrees())
-            < 0.5;
+  /** Creates a new Shooter. */
+  public Shooter(AnglerIO anglerIO, IndexerIO indexerIO, LauncherIO launcherIO) {
+    this.anglerIO = anglerIO;
+    this.indexerIO = indexerIO;
+    this.launcherIO = launcherIO;
   }
 
   @Override
   public void periodic() {
-    shooterWheelTop.updateInputs(shooterWheelIOInputsAutoLoggedTop);
-    shooterWheelBottom.updateInputs(shooterWheelIOInputsAutoLoggedBottom);
-    // anglerIO.updateInputs(anglerInputsAutoLogged);
-    indexerIO.updateInputs(indexerIOInputsAutoLogged);
-
-    Logger.processInputs("Shooter/TopWheel", shooterWheelIOInputsAutoLoggedTop);
-    Logger.processInputs("Shooter/BottomWheel", shooterWheelIOInputsAutoLoggedBottom);
-    Logger.processInputs("Shooter/Angler", anglerInputsAutoLogged);
-    Logger.processInputs("Shooter/Indexer", indexerIOInputsAutoLogged);
+    anglerIO.updateInputs(anglerIOInputs);
+    Logger.processInputs("Shooter/Angler/Inputs", anglerIOInputs);
+    indexerIO.updateInputs(indexerIOInputs);
+    Logger.processInputs("Shooter/Indexer/Inputs", indexerIOInputs);
+    launcherIO.updateInputs(launcherIOInputs);
+    Logger.processInputs("Shooter/Launcher/Inputs", launcherIOInputs);
 
     if (DriverStation.isDisabled()) {
-      shooterWheelTop.setFlywheelsVolts(0.0);
-      shooterWheelBottom.setFlywheelsVolts(0.0);
-      indexerIO.setIndexerVolts(0.0);
-      anglerIO.setAnglerVolts(0.0);
+      stopMotors(true, true, true);
     }
 
-    if (runShooter) {
-      if (runClosedLoop) {
-        shooterWheelTop.setFlywheelsVelocity(topVelocityMPS);
-        shooterWheelBottom.setFlywheelsVelocity(bottomVelocityMPS);
-      } else {
-        shooterWheelTop.setFlywheelsVolts(topVolts);
-        shooterWheelBottom.setFlywheelsVolts(bottomVolts);
-      }
+    if (anglerSetpoint != null) {
+      double anglerFeedbackOutput =
+          anglerFeedback.calculate(
+              anglerIOInputs.anglerPosition.getDegrees(), anglerSetpoint.getDegrees());
+      double anglerFeedforwardOutput =
+          anglerFeedforward.calculate(
+              anglerFeedback.getSetpoint().position, anglerFeedback.getSetpoint().velocity);
+
+      double anglerCombinedOutput = (anglerFeedbackOutput + anglerFeedforwardOutput) / 12.0;
+
+      anglerIO.setVolts(anglerCombinedOutput);
+
+      Logger.recordOutput("Shooter/Angler/Feedback/Output", anglerFeedbackOutput);
+      Logger.recordOutput("Shooter/Angler/Feedforward/Output", anglerFeedforwardOutput);
+      Logger.recordOutput("Shooter/Angler/CombinedOutput", anglerCombinedOutput);
     }
 
-    anglerIO.executePID();
+    if (launcherSetpointMPS != null) {
+      launcherIO.setTopVelocity(launcherSetpointMPS);
+      launcherIO.setBottomVelocity(launcherSetpointMPS);
+    }
 
-    indexerIO.setIndexerVolts(indexerVoltage);
+    updateTunableNumbers();
   }
 
-  public Command getSysIDTests() {
-    SysIdRoutine sysIdRoutine =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(
-                Units.Volts.of(1).per(Units.Seconds.of(1)),
-                Units.Volts.of(4),
-                Units.Seconds.of(15),
-                (state) -> sysIDStateLogger(state.toString())),
-            new SysIdRoutine.Mechanism(
-                (voltage) -> {
-                  shooterWheelBottom.setFlywheelsVolts(voltage.magnitude());
-                  shooterWheelTop.setFlywheelsVolts(voltage.magnitude());
-                },
-                null, // No log consumer, since external logger
-                this));
+  /** Checks if tunable numbers have changed, if so update controllers */
+  private void updateTunableNumbers() {
+    if (anglerFeedbackP.hasChanged(hashCode())
+        || anglerFeedbackI.hasChanged(hashCode())
+        || anglerFeedbackD.hasChanged(hashCode())
+        || anglerFeedbackV.hasChanged(hashCode())
+        || anglerFeedbackA.hasChanged(hashCode())) {
+      anglerFeedback.setP(anglerFeedbackP.get());
+      anglerFeedback.setI(anglerFeedbackI.get());
+      anglerFeedback.setD(anglerFeedbackD.get());
 
-    return new SequentialCommandGroup(
-        startLoggingRoutine(),
-        Commands.waitSeconds(3),
-        sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward),
-        Commands.waitSeconds(3),
-        sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse),
-        Commands.waitSeconds(3),
-        sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward),
-        Commands.waitSeconds(3),
-        sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse),
-        Commands.waitSeconds(3),
-        stopLoggingRoutine());
-    // For rev logs extract using wpilib's data log tool:
-    // https://docs.wpilib.org/en/stable/docs/software/telemetry/datalog-download.html
-    // For talon logs extract using phoenix tuner x:
-    // https://pro.docs.ctr-electronics.com/en/latest/docs/tuner/tools/log-extractor.html
+      anglerFeedback.setConstraints(
+          new TrapezoidProfile.Constraints(anglerFeedbackV.get(), anglerFeedbackA.get()));
+    }
+    if (anglerFeedforwardS.hasChanged(hashCode())
+        || anglerFeedforwardG.hasChanged(hashCode())
+        || anglerFeedforwardV.hasChanged(hashCode())) {
+      anglerFeedforward =
+          new ArmFeedforward(
+              anglerFeedforwardS.get(), anglerFeedforwardG.get(), anglerFeedforwardG.get());
+    }
   }
 
-  public Command startLoggingRoutine() {
-    return Commands.runOnce(() -> SignalLogger.start(), this);
+  /** Stop specified motors and set their setpoints to null */
+  public void stopMotors(boolean stopIndexer, boolean stopAngler, boolean stopLaunchers) {
+    if (stopIndexer) {
+      indexerIO.setVolts(0.0);
+    }
+    if (stopAngler) {
+      anglerSetpoint = null;
+      anglerIO.setVolts(0.0);
+    }
+    if (stopLaunchers) {
+      launcherSetpointMPS = null;
+      launcherIO.setTopVolts(0.0);
+      launcherIO.setBottomVolts(0.0);
+    }
   }
 
-  public void sysIDStateLogger(String state) {
-    SignalLogger.writeString("Shooter/sysIDTestState", state);
+  /** Set the voltage of the indexer motor */
+  public void setIndexerVolts(double volts) {
+    indexerIO.setVolts(volts);
   }
 
-  public Command stopLoggingRoutine() {
-    return Commands.runOnce(() -> SignalLogger.stop(), this);
+  /** Set the voltage of the angler motor */
+  public void setAnglerVolts(double volts) {
+    anglerIO.setVolts(volts);
+  }
+
+  /** Set the voltage of the launcher motors */
+  public void setLauncherVolts(double topFlywheelVolts, double bottomFlywheelVolts) {
+    launcherIO.setTopVolts(topFlywheelVolts);
+    launcherIO.setBottomVolts(bottomFlywheelVolts);
+  }
+
+  /** Set the position setpoint of the angler mechanism */
+  public void setAnglerPosition(Rotation2d position) {
+    anglerSetpoint = position;
+  }
+
+  /** Set the velocity setpoint of the launcher flywheels */
+  public void setLauncherVelocityMPS(double velocityMPS) {
+    launcherSetpointMPS = velocityMPS;
+  }
+
+  /** Set all of the motors to a desired state */
+  public void setAllMotors(
+      double indexerVolts, Rotation2d anglerPosition, double launcherVelocityMPS) {
+    setIndexerVolts(indexerVolts);
+    setAnglerPosition(anglerPosition);
+    setLauncherVelocityMPS(launcherVelocityMPS);
+  }
+
+  /** Returns the speed of the indexer flyhweels */
+  @AutoLogOutput(key = "Shooter/Indexer/VelocityMPS")
+  public double getIndexerVelocityRPM() {
+    return indexerIOInputs.indexerVelocityRPM;
+  }
+
+  /** Returns the angle of the pivot */
+  @AutoLogOutput(key = "Shooter/Angler/Position")
+  public Rotation2d getAnglerPosition() {
+    return anglerIOInputs.anglerPosition;
+  }
+
+  /** Returns the setpoint state of the angler feedback */
+  @AutoLogOutput(key = "Shooter/Angler/Feedback/Setpoint")
+  public State getAnglerSetpoint() {
+    return anglerFeedback.getSetpoint();
+  }
+
+  /** Returns the position error of the angler feedback */
+  @AutoLogOutput(key = "Shooter/Angler/Feedback/PositionError")
+  public double getAnglerPositionError() {
+    return anglerFeedback.getPositionError();
+  }
+
+  /** Returns the velocity error of the angler feedback */
+  @AutoLogOutput(key = "Shooter/Angler/Feedback/VelocityError")
+  public double getAnglerVelocityError() {
+    return anglerFeedback.getVelocityError();
+  }
+
+  /** Returns the velocity of the top launcher flywheel */
+  @AutoLogOutput(key = "Shooter/TopLauncher/VelocityMPS")
+  public double getTopLauncherVelocityMPS() {
+    return launcherIOInputs.topFlywheelVelocityMPS;
+  }
+
+  /** Returns the velocity of the bottom launcher flyhweel */
+  @AutoLogOutput(key = "Shooter/BottomLauncher/VelocityMPS")
+  public double getBottomLauncherVelocityMPS() {
+    return launcherIOInputs.bottomFlywheelVelocityMPS;
   }
 }

@@ -28,16 +28,17 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
-import frc.robot.subsystems.shooterrefactored.Shooter;
-import frc.robot.subsystems.shooterrefactored.angler.AnglerIO;
-import frc.robot.subsystems.shooterrefactored.angler.AnglerIOSim;
-import frc.robot.subsystems.shooterrefactored.angler.AnglerIOSparkMax;
-import frc.robot.subsystems.shooterrefactored.indexer.IndexerIO;
-import frc.robot.subsystems.shooterrefactored.indexer.IndexerIOSim;
-import frc.robot.subsystems.shooterrefactored.indexer.IndexerIOSparkMax;
-import frc.robot.subsystems.shooterrefactored.launcher.LauncherIO;
-import frc.robot.subsystems.shooterrefactored.launcher.LauncherIOSim;
-import frc.robot.subsystems.shooterrefactored.launcher.LauncherIOTalonFX;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.angler.AnglerIO;
+import frc.robot.subsystems.shooter.angler.AnglerIOSim;
+import frc.robot.subsystems.shooter.angler.AnglerIOSparkMax;
+import frc.robot.subsystems.shooter.indexer.IndexerIO;
+import frc.robot.subsystems.shooter.indexer.IndexerIOSim;
+import frc.robot.subsystems.shooter.indexer.IndexerIOSparkMax;
+import frc.robot.subsystems.shooter.launcher.LauncherIO;
+import frc.robot.subsystems.shooter.launcher.LauncherIOSim;
+import frc.robot.subsystems.shooter.launcher.LauncherIOTalonFX;
+
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
