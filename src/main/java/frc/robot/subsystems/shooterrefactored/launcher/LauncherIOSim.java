@@ -19,7 +19,7 @@ import org.littletonrobotics.junction.Logger;
 public class LauncherIOSim implements LauncherIO {
   private final double LOOP_PERIOD_S = 0.02;
   private final double GEARING = 1.0 / 1.0;
-  private final double RADIUS_M = 2.5 / 100;
+  private final double RADIUS_M = 6.35 / 100;
   private final double CIRCUMFRENCE_M = 2.0 * Math.PI * RADIUS_M;
 
   private FlywheelSim topMotor = new FlywheelSim(DCMotor.getFalcon500(1), GEARING, 0.003);

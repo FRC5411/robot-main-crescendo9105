@@ -17,7 +17,7 @@ import frc.robot.utils.debugging.LoggedTunableNumber;
 /** Class to interact with the physical launcher structure */
 public class LauncherIOTalonFX implements LauncherIO {
   private final double GEARING = 1.0 / 1.0;
-  private final double RADIUS_M = 2.5 / 100;
+  private final double RADIUS_M = 6.35 / 100;
   private final double CIRCUMFRENCE_M = 2.0 * Math.PI * RADIUS_M;
   private final double RATE_LIMIT = 25.0;
 

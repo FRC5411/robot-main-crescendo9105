@@ -167,6 +167,14 @@ public class Shooter extends SubsystemBase {
     launcherSetpointMPS = velocityMPS;
   }
 
+  /** Set all of the motors to a desired state */
+  public void setAllMotors(
+      double indexerVolts, Rotation2d anglerPosition, double launcherVelocityMPS) {
+    setIndexerVolts(indexerVolts);
+    setAnglerPosition(anglerPosition);
+    setLauncherVelocityMPS(launcherVelocityMPS);
+  }
+
   /** Returns the speed of the indexer flyhweels */
   @AutoLogOutput(key = "Shooter/Indexer/VelocityMPS")
   public double getIndexerVelocityRPM() {
