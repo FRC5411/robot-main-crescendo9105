@@ -21,9 +21,11 @@ public class ShooterCommands {
   /** Returns a command to run the angler motor */
   public static Command runAngler(Shooter robotShooter, Rotation2d anglerPositionSetpoint) {
     anglerPosition = anglerPositionSetpoint;
-    
+
     robotShooter.resetAnglerFeedback();
-    currentCommand = Commands.runOnce(() -> robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS), robotShooter);
+    currentCommand =
+        Commands.runOnce(
+            () -> robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS), robotShooter);
 
     return currentCommand;
   }
@@ -31,7 +33,29 @@ public class ShooterCommands {
   /** Returns a command to run the launcher motors */
   public static Command runLauncher(Shooter robotsShooter, double launcherVelocityMPSSetpoint) {
     laucnherVelocityMPS = launcherVelocityMPSSetpoint;
-    currentCommand = Commands.runOnce(() -> robotsShooter.setAllMotors(anglerPosition, laucnherVelocityMPS), robotsShooter);
+    currentCommand =
+        Commands.runOnce(
+            () -> robotsShooter.setAllMotors(anglerPosition, laucnherVelocityMPS), robotsShooter);
+
+    return currentCommand;
+  }
+
+  /** Returns a command to run the angler manually */
+  public static Command runAnglerManual(Shooter robotShooter, double anglerVolts) {
+    robotShooter.setAnglerPosition(null);
+
+    currentCommand = Commands.runOnce(() -> robotShooter.setAnglerVolts(anglerVolts), robotShooter);
+
+    return currentCommand;
+  }
+
+  /** Returns a command to run the launcher manually */
+  public static Command runLauncherManual(Shooter robotShooter, double launcherVolts) {
+    robotShooter.setLauncherVelocityMPS(null);
+
+    currentCommand =
+        Commands.runOnce(
+            () -> robotShooter.setLauncherVolts(launcherVolts, launcherVolts), robotShooter);
 
     return currentCommand;
   }

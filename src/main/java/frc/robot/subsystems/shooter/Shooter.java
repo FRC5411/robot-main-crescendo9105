@@ -135,7 +135,8 @@ public class Shooter extends SubsystemBase {
 
   /** Reset the angler controller profile */
   public void resetAnglerFeedback() {
-    anglerFeedback.reset(anglerIOInputs.anglerPosition.getDegrees(), anglerIOInputs.anglerVelocityRadiansPerSecond);
+    anglerFeedback.reset(
+        anglerIOInputs.anglerPosition.getDegrees(), anglerIOInputs.anglerVelocityRadiansPerSecond);
   }
 
   /** Set the voltage of the angler motor */
@@ -155,7 +156,7 @@ public class Shooter extends SubsystemBase {
   }
 
   /** Set the velocity setpoint of the launcher flywheels */
-  public void setLauncherVelocityMPS(double velocityMPS) {
+  public void setLauncherVelocityMPS(Double velocityMPS) {
     launcherSetpointMPS = velocityMPS;
   }
 
