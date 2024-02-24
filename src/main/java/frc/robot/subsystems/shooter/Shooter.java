@@ -12,10 +12,8 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
-import frc.robot.subsystems.shooter.indexer.IndexerIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooterrefactored.angler.AnglerIOInputsAutoLogged;
-import frc.robot.subsystems.shooterrefactored.indexer.IndexerIOInputsAutoLogged;
 import frc.robot.subsystems.shooterrefactored.launcher.LauncherIOInputsAutoLogged;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -25,8 +23,6 @@ import org.littletonrobotics.junction.Logger;
 public class Shooter extends SubsystemBase {
   private AnglerIO anglerIO;
   private AnglerIOInputsAutoLogged anglerIOInputs = new AnglerIOInputsAutoLogged();
-  private IndexerIO indexerIO;
-  private IndexerIOInputsAutoLogged indexerIOInputs = new IndexerIOInputsAutoLogged();
   private LauncherIO launcherIO;
   private LauncherIOInputsAutoLogged launcherIOInputs = new LauncherIOInputsAutoLogged();
 
@@ -58,9 +54,8 @@ public class Shooter extends SubsystemBase {
   private Double launcherSetpointMPS = null;
 
   /** Creates a new Shooter. */
-  public Shooter(AnglerIO anglerIO, IndexerIO indexerIO, LauncherIO launcherIO) {
+  public Shooter(AnglerIO anglerIO, LauncherIO launcherIO) {
     this.anglerIO = anglerIO;
-    this.indexerIO = indexerIO;
     this.launcherIO = launcherIO;
   }
 
@@ -68,13 +63,11 @@ public class Shooter extends SubsystemBase {
   public void periodic() {
     anglerIO.updateInputs(anglerIOInputs);
     Logger.processInputs("Shooter/Angler/Inputs", anglerIOInputs);
-    indexerIO.updateInputs(indexerIOInputs);
-    Logger.processInputs("Shooter/Indexer/Inputs", indexerIOInputs);
     launcherIO.updateInputs(launcherIOInputs);
     Logger.processInputs("Shooter/Launcher/Inputs", launcherIOInputs);
 
     if (DriverStation.isDisabled()) {
-      stopMotors(true, true, true);
+      stopMotors(true, true);
     }
 
     if (anglerSetpoint != null) {
@@ -126,10 +119,7 @@ public class Shooter extends SubsystemBase {
   }
 
   /** Stop specified motors and set their setpoints to null */
-  public void stopMotors(boolean stopIndexer, boolean stopAngler, boolean stopLaunchers) {
-    if (stopIndexer) {
-      indexerIO.setVolts(0.0);
-    }
+  public void stopMotors(boolean stopAngler, boolean stopLaunchers) {
     if (stopAngler) {
       anglerSetpoint = null;
       anglerIO.setVolts(0.0);
@@ -139,11 +129,6 @@ public class Shooter extends SubsystemBase {
       launcherIO.setTopVolts(0.0);
       launcherIO.setBottomVolts(0.0);
     }
-  }
-
-  /** Set the voltage of the indexer motor */
-  public void setIndexerVolts(double volts) {
-    indexerIO.setVolts(volts);
   }
 
   /** Set the voltage of the angler motor */
@@ -168,17 +153,9 @@ public class Shooter extends SubsystemBase {
   }
 
   /** Set all of the motors to a desired state */
-  public void setAllMotors(
-      double indexerVolts, Rotation2d anglerPosition, double launcherVelocityMPS) {
-    setIndexerVolts(indexerVolts);
+  public void setAllMotors(Rotation2d anglerPosition, double launcherVelocityMPS) {
     setAnglerPosition(anglerPosition);
     setLauncherVelocityMPS(launcherVelocityMPS);
-  }
-
-  /** Returns the speed of the indexer flyhweels */
-  @AutoLogOutput(key = "Shooter/Indexer/VelocityMPS")
-  public double getIndexerVelocityRPM() {
-    return indexerIOInputs.indexerVelocityRPM;
   }
 
   /** Returns the angle of the pivot */

@@ -13,26 +13,10 @@ import frc.robot.subsystems.shooter.Shooter;
 public class ShooterCommands {
   private static Command currentCommand = null;
 
-  private static double indexerVelocityPercent = 0.0;
   private static Rotation2d anglerPosition = null;
   private static double laucnherVelocityMPS = 0.0;
 
   private ShooterCommands() {}
-
-  /** Run the indexer */
-  public static Command runIndexer(Shooter robotShooter, double indexerVelocityPercentSetpoint) {
-    indexerVelocityPercent = indexerVelocityPercentSetpoint;
-
-    cancelCurrentCommand();
-    currentCommand =
-        Commands.run(
-            () ->
-                robotShooter.setAllMotors(
-                    indexerVelocityPercent * 12.0, anglerPosition, laucnherVelocityMPS),
-            robotShooter);
-
-    return currentCommand;
-  }
 
   /** Run the angler */
   public static Command runAngler(Shooter robotShooter, Rotation2d anglerSetpoint) {
@@ -42,8 +26,7 @@ public class ShooterCommands {
     currentCommand =
         Commands.run(
             () ->
-                robotShooter.setAllMotors(
-                    indexerVelocityPercent * 12.0, anglerPosition, laucnherVelocityMPS),
+                robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS),
             robotShooter);
 
     return currentCommand;
@@ -57,8 +40,7 @@ public class ShooterCommands {
     currentCommand =
         Commands.run(
             () ->
-                robotShooter.setAllMotors(
-                    indexerVelocityPercent * 12.0, anglerPosition, laucnherVelocityMPS),
+                robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS),
             robotShooter);
 
     return currentCommand;
@@ -66,12 +48,11 @@ public class ShooterCommands {
 
   /** Stop the shooter */
   public static Command stopShooter(Shooter robotsShooter) {
-    indexerVelocityPercent = 0.0;
     anglerPosition = null;
     laucnherVelocityMPS = 0.0;
 
     cancelCurrentCommand();
-    currentCommand = Commands.run(() -> robotsShooter.stopMotors(true, true, true), robotsShooter);
+    currentCommand = Commands.run(() -> robotsShooter.stopMotors(true, true), robotsShooter);
 
     return currentCommand;
   }
