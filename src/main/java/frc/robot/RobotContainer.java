@@ -44,7 +44,6 @@ import frc.robot.subsystems.shooter.angler.AnglerIOSparkMax;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOSim;
 import frc.robot.subsystems.shooter.launcher.LauncherIOTalonFX;
-import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -118,7 +117,6 @@ public class RobotContainer {
 
   /** Register commands with PathPlanner and add default autos to chooser */
   private void configureAutonomous() {
-    Logger.recordOutput("Command Running", "Not Running");
     // Register commands with PathPlanner's AutoBuilder so it can call them
     NamedCommands.registerCommand(
         "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));
