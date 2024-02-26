@@ -7,6 +7,7 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.intake.Intake;
+import org.littletonrobotics.junction.Logger;
 
 /** Class to hold all of the commands for the Intake */
 public class IntakeCommands {
@@ -18,21 +19,29 @@ public class IntakeCommands {
 
   /** Returns a command to run the Intake motor with a given direction */
   public static Command runIntake(Intake robotIntake, IntakeDirection direction) {
-    setIntakeVolts(direction);
-
-    currentCommand = Commands.run(() -> robotIntake.setVolts(intakeVolts), robotIntake);
+    currentCommand =
+        Commands.runOnce(
+                () -> {
+                  setIntakeVolts(direction);
+                },
+                robotIntake)
+            .andThen(Commands.run(() -> robotIntake.setVolts(intakeVolts), robotIntake));
 
     return currentCommand;
   }
 
   /** Returns a command to stop the Intake motor */
   public static Command stopIntake(Intake robotIntake) {
-    setIntakeVolts(IntakeDirection.STOP);
-
     if (currentCommand != null) {
       currentCommand.cancel();
     }
-    currentCommand = Commands.run(() -> robotIntake.setVolts(intakeVolts), robotIntake);
+    currentCommand =
+        Commands.runOnce(
+                () -> {
+                  setIntakeVolts(IntakeDirection.STOP);
+                },
+                robotIntake)
+            .andThen(Commands.run(() -> robotIntake.setVolts(intakeVolts), robotIntake));
 
     return currentCommand;
   }
@@ -42,20 +51,23 @@ public class IntakeCommands {
     switch (direction) {
       case IN:
         intakeVolts = -12.0;
+        Logger.recordOutput("Intake/Direction", "IN");
         break;
       case OUT:
         intakeVolts = 12.0;
+        Logger.recordOutput("Intake/Direction", "OUT");
         break;
       case STOP:
         intakeVolts = 0.0;
+        Logger.recordOutput("Intake/Direction", "STOP");
         break;
       default:
         intakeVolts = 0.0;
+        Logger.recordOutput("Intake/Direction", "STOPDEF");
         break;
     }
 
-    System.out.println(
-        "\nIntakeVolts: " + intakeVolts + "\nIntakeDirection: " + direction + "\n");
+    System.out.println("\nIntakeVolts: " + intakeVolts + "\nIntakeDirection: " + direction + "\n");
   }
 
   /** Direction of the Intake */

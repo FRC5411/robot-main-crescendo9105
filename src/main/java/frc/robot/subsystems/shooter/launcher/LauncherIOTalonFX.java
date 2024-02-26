@@ -34,34 +34,34 @@ public class LauncherIOTalonFX implements LauncherIO {
   private SlewRateLimiter bottomLimiter = new SlewRateLimiter(RATE_LIMIT);
 
   private LoggedTunableNumber topFeedbackP =
-      new LoggedTunableNumber("Shooter/LauncherTop/Feedback/P", 0.0);
+      new LoggedTunableNumber("Shooter/LauncherTop/Feedback/P", 0.01901);
   private LoggedTunableNumber topFeedbackI =
       new LoggedTunableNumber("Shooter/LauncherTop/Feedback/I", 0.0);
   private LoggedTunableNumber topFeedbackD =
       new LoggedTunableNumber("Shooter/LauncherTop/Feedback/D", 0.0);
 
   private LoggedTunableNumber bottomFeedbackP =
-      new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/P", 0.0);
+      new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/P", 0.01901);
   private LoggedTunableNumber bottomFeedbackI =
       new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/I", 0.0);
   private LoggedTunableNumber bottomFeedbackD =
       new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/D", 0.0);
 
   private LoggedTunableNumber topFeedbackS =
-      new LoggedTunableNumber("Shooter/LauncherTop/Feedback/S", 0.0);
+      new LoggedTunableNumber("Shooter/LauncherTop/Feedback/S", 0.083384);
   private LoggedTunableNumber topFeedbackG =
       new LoggedTunableNumber("Shooter/LauncherTop/Feedback/G", 0.0);
   private LoggedTunableNumber topFeedbackV =
-      new LoggedTunableNumber("Shooter/LauncherTop/Feedback/V", 0.0);
+      new LoggedTunableNumber("Shooter/LauncherTop/Feedback/V", 0.10996);
   private LoggedTunableNumber topFeedbackA =
       new LoggedTunableNumber("Shooter/LauncherTop/Feedback/A", 0.0);
 
   private LoggedTunableNumber bottomFeedbackS =
-      new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/S", 0.0);
+      new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/S", 0.083384);
   private LoggedTunableNumber bottomFeedbackG =
       new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/G", 0.0);
   private LoggedTunableNumber bottomFeedbackV =
-      new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/V", 0.0);
+      new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/V", 0.10996);
   private LoggedTunableNumber bottomFeedbackA =
       new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/A", 0.0);
 

@@ -8,17 +8,14 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.IndexerCommands;
-import frc.robot.commands.IntakeCommands;
-import frc.robot.commands.ShooterCommands;
-import frc.robot.commands.SwerveCommands;
 import frc.robot.commands.IndexerCommands.IndexerDirection;
+import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.IntakeCommands.IntakeDirection;
+import frc.robot.commands.SwerveCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
@@ -45,7 +42,6 @@ import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOSim;
 import frc.robot.subsystems.shooter.launcher.LauncherIOTalonFX;
 import frc.robot.utils.debugging.LoggedTunableNumber;
-
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -59,7 +55,8 @@ public class RobotContainer {
   private CommandXboxController pilotController = new CommandXboxController(0);
 
   private LoggedDashboardChooser<Command> autoChooser;
-  private LoggedTunableNumber angleSetter = new LoggedTunableNumber("Shooter/Angler/Debugging/SetpointDegrees", 30.0);
+  private LoggedTunableNumber angleSetter =
+      new LoggedTunableNumber("Shooter/Angler/Debugging/SetpointDegrees", 30.0);
 
   public RobotContainer() {
     initializeSubsystems();
@@ -137,36 +134,53 @@ public class RobotContainer {
             () -> -pilotController.getLeftY(),
             () -> -pilotController.getLeftX(),
             () -> -pilotController.getRightX()));
-    /* Stop intake by default */
-    robotIntake.setDefaultCommand(IntakeCommands.stopIntake(robotIntake));
-    /* Idle shooter by default */
-    robotShooter.setDefaultCommand(ShooterCommands.stopShooter(robotShooter));
-    /* Stop indexer by default */
-    robotIndexer.setDefaultCommand(IndexerCommands.stopIndexer(robotIndexer));
+    // /* Stop intake by default */
+    // robotIntake.setDefaultCommand(IntakeCommands.stopIntake(robotIntake));
+    // /* Idle shooter by default */
+    // robotShooter.setDefaultCommand(ShooterCommands.stopShooter(robotShooter));
+    // /* Stop indexer by default */
+    // robotIndexer.setDefaultCommand(IndexerCommands.stopIndexer(robotIndexer));
 
     /* Reset gyro */
     pilotController.y().onTrue(Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive));
 
     /* Run intake */
-    pilotController.leftBumper().whileTrue(IntakeCommands.runIntake(robotIntake, IntakeDirection.IN).alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN)));
-    
+    pilotController
+        .leftBumper()
+        .whileTrue(
+            IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
+                .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN)))
+        .whileFalse(
+            IntakeCommands.stopIntake(robotIntake)
+                .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
+
     /* Run outtake */
-    pilotController.rightBumper().whileTrue(IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT).alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)));
+    pilotController
+        .rightBumper()
+        .whileTrue(
+            IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)
+                .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)))
+        .whileFalse(
+            IntakeCommands.stopIntake(robotIntake)
+                .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
 
-    /* Run angler setpoint */
-    pilotController.b().whileTrue(ShooterCommands.runAngler(robotShooter, Rotation2d.fromDegrees(angleSetter.get())));
+    // /* Run angler setpoint */
+    // pilotController
+    //     .b()
+    //     .whileTrue(
+    //         ShooterCommands.runAngler(robotShooter, Rotation2d.fromDegrees(angleSetter.get())));
 
-    /* Run angler manual up */
-    pilotController.povUp().whileTrue(ShooterCommands.runAnglerManual(robotShooter, 12.0));
+    // /* Run angler manual up */
+    // pilotController.povUp().whileTrue(ShooterCommands.runAnglerManual(robotShooter, 12.0));
 
-    /* Run angler manual down */
-    pilotController.povDown().whileTrue(ShooterCommands.runAnglerManual(robotShooter, -12.0));
+    // /* Run angler manual down */
+    // pilotController.povDown().whileTrue(ShooterCommands.runAnglerManual(robotShooter, -12.0));
 
-    /* Run launcher setpoint */
-    pilotController.x().whileTrue(ShooterCommands.runLauncher(robotShooter, 10.0));
+    // /* Run launcher setpoint */
+    // pilotController.x().whileTrue(ShooterCommands.runLauncher(robotShooter, 10.0));
 
-    /* Run launcher manual */
-    pilotController.a().whileTrue(ShooterCommands.runLauncherManual(robotShooter, 12.0));
+    // /* Run launcher manual */
+    // pilotController.a().whileTrue(ShooterCommands.runLauncherManual(robotShooter, 12.0));
   }
 
   /** Returns the selected autonomous */

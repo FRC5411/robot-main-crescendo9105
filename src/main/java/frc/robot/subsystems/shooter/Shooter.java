@@ -8,7 +8,6 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
@@ -27,8 +26,8 @@ public class Shooter extends SubsystemBase {
   private LauncherIOInputsAutoLogged launcherIOInputs = new LauncherIOInputsAutoLogged();
 
   private ProfiledPIDController anglerFeedback =
-      new ProfiledPIDController(1.45, 0.0, 0.0, new TrapezoidProfile.Constraints(600.0, 300.0));
-  private ArmFeedforward anglerFeedforward = new ArmFeedforward(0.0, 0.25, 0.0);
+      new ProfiledPIDController(1.4, 0.0, 0.0, new TrapezoidProfile.Constraints(600.0, 300.0));
+  private ArmFeedforward anglerFeedforward = new ArmFeedforward(0.07, 0.0, 0.0);
 
   private LoggedTunableNumber anglerFeedbackP =
       new LoggedTunableNumber("Shooter/Angler/Feedback/P", anglerFeedback.getP());
@@ -172,10 +171,16 @@ public class Shooter extends SubsystemBase {
     return anglerIOInputs.anglerPosition;
   }
 
-  /** Returns the setpoint state of the angler feedback */
-  @AutoLogOutput(key = "Shooter/Angler/Feedback/Setpoint")
-  public State getAnglerSetpoint() {
-    return anglerFeedback.getSetpoint();
+  /** Returns the setpoint state position of the angler feedback */
+  @AutoLogOutput(key = "Shooter/Angler/Feedback/SetpointPosition")
+  public double getAnglerSetpointPosition() {
+    return anglerFeedback.getSetpoint().position;
+  }
+
+  /** Returns the setpoint state velocity of the angler feedback */
+  @AutoLogOutput(key = "Shooter/Angler/Feedback/SetpointVelocity")
+  public double getAnglerSetpointVelocity() {
+    return anglerFeedback.getSetpoint().velocity;
   }
 
   /** Returns the position error of the angler feedback */
