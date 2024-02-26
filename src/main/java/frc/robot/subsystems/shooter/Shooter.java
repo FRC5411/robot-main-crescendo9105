@@ -79,7 +79,7 @@ public class Shooter extends SubsystemBase {
           anglerFeedforward.calculate(
               anglerFeedback.getSetpoint().position, anglerFeedback.getSetpoint().velocity);
 
-      double anglerCombinedOutput = (anglerFeedbackOutput + anglerFeedforwardOutput) / 12.0;
+      double anglerCombinedOutput = (anglerFeedbackOutput + anglerFeedforwardOutput);
 
       anglerIO.setVolts(anglerCombinedOutput);
 

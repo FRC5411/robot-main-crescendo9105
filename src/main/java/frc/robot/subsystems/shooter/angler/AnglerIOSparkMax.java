@@ -13,9 +13,6 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 /** Class to interact with the physical angler structure */
 public class AnglerIOSparkMax implements AnglerIO {
-  private final double GEARING = 1.0 / 1.0;
-  private final Rotation2d OFFSET = Rotation2d.fromDegrees(33.0);
-
   private CANSparkMax anglerMotor = new CANSparkMax(41, MotorType.kBrushless);
   private DutyCycleEncoder anglerEncoder = new DutyCycleEncoder(0);
 
@@ -39,7 +36,9 @@ public class AnglerIOSparkMax implements AnglerIO {
   public void updateInputs(AnglerIOInputs inputs) {
     // TODO Fix velocity to accurately reflect encoder readings
     inputs.anglerPosition =
-        Rotation2d.fromRadians(GEARING * anglerEncoder.getAbsolutePosition() - OFFSET.getRadians());
+        Rotation2d.fromDegrees(360.0)
+            .minus(Rotation2d.fromRotations((anglerEncoder.getAbsolutePosition())))
+            .plus(Rotation2d.fromDegrees(5.0));
     inputs.anglerVelocityRadiansPerSecond = anglerEncoder.getDistance();
     inputs.appliedVolts = appliedVolts;
     inputs.appliedCurrentAmps = new double[] {anglerMotor.getOutputCurrent()};

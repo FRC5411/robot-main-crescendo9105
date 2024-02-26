@@ -183,7 +183,7 @@ public class RobotContainer {
     /* Run launcher manual */
     pilotController
         .a()
-        .whileTrue(ShooterCommands.runLauncherManual(robotShooter, FlywheelSpeeds.HALF))
+        .whileTrue(ShooterCommands.runLauncherManual(robotShooter, FlywheelSpeeds.FULL))
         .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
   }
 

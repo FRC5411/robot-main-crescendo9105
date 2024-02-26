@@ -5,9 +5,13 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 
@@ -75,17 +79,17 @@ public class ShooterCommands {
   }
 
   /** Returns a command to run the launcher motors */
-  public static Command runLauncher(Shooter robotsShooter, double launcherVelocityMPSSetpoint) {
+  public static Command runLauncher(Shooter robotShooter, double launcherVelocityMPSSetpoint) {
     currentCommand =
         Commands.runOnce(
                 () -> {
                   laucnherVelocityMPS = launcherVelocityMPSSetpoint;
                 },
-                robotsShooter)
+                robotShooter)
             .andThen(
                 Commands.run(
-                    () -> robotsShooter.setAllMotors(anglerPosition, laucnherVelocityMPS),
-                    robotsShooter));
+                    () -> robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS),
+                    robotShooter));
 
     return currentCommand;
   }
@@ -117,13 +121,13 @@ public class ShooterCommands {
 
   /** Returns a command to stop all Shooter motors */
   public static Command stopShooter(
-      Shooter robotsShooter, boolean stopAngler, boolean stopLauncher) {
+      Shooter robotShooter, boolean stopAngler, boolean stopLauncher) {
     if (currentCommand != null) {
       currentCommand.cancel();
     }
 
     currentCommand =
-        Commands.run(() -> robotsShooter.stopMotors(stopAngler, stopLauncher), robotsShooter)
+        Commands.run(() -> robotShooter.stopMotors(stopAngler, stopLauncher), robotShooter)
             .alongWith(
                 new InstantCommand(
                     () -> {
@@ -136,6 +140,34 @@ public class ShooterCommands {
                     }));
 
     return currentCommand;
+  }
+
+  public static Command systemIdentificationDynamic(Shooter robotShooter, Direction direction) {
+    SysIdRoutine routine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(),
+            new SysIdRoutine.Mechanism(
+                (Measure<Voltage> volts) -> {
+                  robotShooter.setLauncherVolts(volts.magnitude(), volts.magnitude());
+                },
+                null,
+                robotShooter));
+
+    return routine.dynamic(direction);
+  }
+
+  public static Command systemIdentificationQuasistatic(Shooter robotShooter, Direction direction) {
+    SysIdRoutine routine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(),
+            new SysIdRoutine.Mechanism(
+                (Measure<Voltage> volts) -> {
+                  robotShooter.setLauncherVolts(volts.magnitude(), volts.magnitude());
+                },
+                null,
+                robotShooter));
+
+    return routine.quasistatic(direction);
   }
 
   /** Write the direction of the Angler to console */

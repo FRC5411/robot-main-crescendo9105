@@ -95,7 +95,7 @@ public class LauncherIOTalonFX implements LauncherIO {
     topConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     bottomConfiguration.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
-    topConfiguration.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    topConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
     bottomConfiguration.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     topConfiguration.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
