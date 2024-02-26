@@ -9,10 +9,17 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.utils.debugging.LoggedTunableNumber;
 
 /** Class to hold all of the commands for the Shooter */
 public class ShooterCommands {
   private static Command currentCommand = null;
+
+  private static LoggedTunableNumber angleSetter =
+      new LoggedTunableNumber("Shooter/Angler/Debugging/SetpointDegrees", 35.0);
+
+  private static LoggedTunableNumber launcherSetter =
+      new LoggedTunableNumber("Shooter/Launcher/Debugging/SetpointMPS", 10.0);
 
   private static Rotation2d anglerPosition = null;
   private static double laucnherVelocityMPS = 0.0;
@@ -20,31 +27,71 @@ public class ShooterCommands {
   private ShooterCommands() {}
 
   /** Returns a command to run the angler motor */
-  public static Command runAngler(Shooter robotShooter, Rotation2d anglerPositionSetpoint) {
-    anglerPosition = anglerPositionSetpoint;
-
-    robotShooter.resetAnglerFeedback();
+  public static Command runAngler(Shooter robotShooter) {
     currentCommand =
         Commands.runOnce(
-            () -> robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS), robotShooter);
+                () -> {
+                  anglerPosition = Rotation2d.fromDegrees(angleSetter.get());
+                },
+                robotShooter)
+            .andThen(
+                Commands.run(
+                    () -> robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS),
+                    robotShooter));
+
+    return currentCommand;
+  }
+
+  /** Returns a command to run the angler motor */
+  public static Command runAngler(Shooter robotShooter, Rotation2d anglerSetpoint) {
+    currentCommand =
+        Commands.runOnce(
+                () -> {
+                  anglerPosition = anglerSetpoint;
+                },
+                robotShooter)
+            .andThen(
+                Commands.run(
+                    () -> robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS),
+                    robotShooter));
+
+    return currentCommand;
+  }
+
+  /** Returns a command to run the launcher motors */
+  public static Command runLauncher(Shooter robotsShooter) {
+    currentCommand =
+        Commands.runOnce(
+                () -> {
+                  laucnherVelocityMPS = launcherSetter.get();
+                },
+                robotsShooter)
+            .andThen(
+                Commands.run(
+                    () -> robotsShooter.setAllMotors(anglerPosition, laucnherVelocityMPS),
+                    robotsShooter));
 
     return currentCommand;
   }
 
   /** Returns a command to run the launcher motors */
   public static Command runLauncher(Shooter robotsShooter, double launcherVelocityMPSSetpoint) {
-    laucnherVelocityMPS = launcherVelocityMPSSetpoint;
     currentCommand =
         Commands.runOnce(
-            () -> robotsShooter.setAllMotors(anglerPosition, laucnherVelocityMPS), robotsShooter);
+                () -> {
+                  laucnherVelocityMPS = launcherVelocityMPSSetpoint;
+                },
+                robotsShooter)
+            .andThen(
+                Commands.run(
+                    () -> robotsShooter.setAllMotors(anglerPosition, laucnherVelocityMPS),
+                    robotsShooter));
 
     return currentCommand;
   }
 
   /** Returns a command to run the angler manually */
   public static Command runAnglerManual(Shooter robotShooter, AnglerDirection direction) {
-    logDirection(direction);
-
     currentCommand =
         Commands.runOnce(() -> robotShooter.setAnglerPosition(null), robotShooter)
             .andThen(
@@ -57,8 +104,6 @@ public class ShooterCommands {
 
   /** Returns a command to run the launcher manually */
   public static Command runLauncherManual(Shooter robotShooter, FlywheelSpeeds speeds) {
-    logSpeeds(speeds);
-
     currentCommand =
         Commands.runOnce(() -> robotShooter.setLauncherVelocityMPS(null), robotShooter)
             .andThen(
@@ -75,12 +120,6 @@ public class ShooterCommands {
       Shooter robotsShooter, boolean stopAngler, boolean stopLauncher) {
     if (currentCommand != null) {
       currentCommand.cancel();
-    }
-    if (stopAngler) {
-      anglerPosition = null;
-    }
-    if (stopLauncher) {
-      laucnherVelocityMPS = 0.0;
     }
 
     currentCommand =

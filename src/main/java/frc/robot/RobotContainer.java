@@ -44,7 +44,6 @@ import frc.robot.subsystems.shooter.angler.AnglerIOSparkMax;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOSim;
 import frc.robot.subsystems.shooter.launcher.LauncherIOTalonFX;
-import frc.robot.utils.debugging.LoggedTunableNumber;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -58,8 +57,6 @@ public class RobotContainer {
   private CommandXboxController pilotController = new CommandXboxController(0);
 
   private LoggedDashboardChooser<Command> autoChooser;
-  private LoggedTunableNumber angleSetter =
-      new LoggedTunableNumber("Shooter/Angler/Debugging/SetpointDegrees", 30.0);
 
   public RobotContainer() {
     initializeSubsystems();
@@ -138,8 +135,8 @@ public class RobotContainer {
             () -> -pilotController.getLeftX(),
             () -> -pilotController.getRightX()));
 
-    // /* Reset gyro */
-    // pilotController.y().onTrue(Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive));
+    /* Reset gyro */
+    pilotController.y().onTrue(Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive));
 
     /* Run intake */
     pilotController
@@ -161,11 +158,11 @@ public class RobotContainer {
             IntakeCommands.stopIntake(robotIntake)
                 .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
 
-    // /* Run angler setpoint */
-    // pilotController
-    //     .b()
-    //     .whileTrue(
-    //         ShooterCommands.runAngler(robotShooter, Rotation2d.fromDegrees(angleSetter.get())));
+    /* Run angler setpoint */
+    pilotController
+        .x()
+        .whileTrue(ShooterCommands.runAngler(robotShooter))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
 
     /* Run angler manual up */
     pilotController
@@ -180,7 +177,10 @@ public class RobotContainer {
         .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
 
     // /* Run launcher setpoint */
-    // pilotController.x().whileTrue(ShooterCommands.runLauncher(robotShooter, 10.0));
+    pilotController
+        .b()
+        .whileTrue(ShooterCommands.runLauncher(robotShooter))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
 
     /* Run launcher manual */
     pilotController
