@@ -71,14 +71,30 @@ public class ShooterCommands {
   }
 
   /** Returns a command to stop all Shooter motors */
-  public static Command stopShooter(Shooter robotsShooter) {
+  public static Command stopShooter(
+      Shooter robotsShooter, boolean stopAngler, boolean stopLauncher) {
     if (currentCommand != null) {
       currentCommand.cancel();
     }
-    anglerPosition = null;
-    laucnherVelocityMPS = 0.0;
+    if (stopAngler) {
+      anglerPosition = null;
+    }
+    if (stopLauncher) {
+      laucnherVelocityMPS = 0.0;
+    }
 
-    currentCommand = Commands.run(() -> robotsShooter.stopMotors(true, true), robotsShooter);
+    currentCommand =
+        Commands.run(() -> robotsShooter.stopMotors(stopAngler, stopLauncher), robotsShooter)
+            .alongWith(
+                new InstantCommand(
+                    () -> {
+                      if (stopAngler) {
+                        logDirection(AnglerDirection.STOP);
+                      }
+                      if (stopLauncher) {
+                        logSpeeds(FlywheelSpeeds.STOP);
+                      }
+                    }));
 
     return currentCommand;
   }

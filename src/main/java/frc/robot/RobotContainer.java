@@ -15,6 +15,9 @@ import frc.robot.commands.IndexerCommands;
 import frc.robot.commands.IndexerCommands.IndexerDirection;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.IntakeCommands.IntakeDirection;
+import frc.robot.commands.ShooterCommands;
+import frc.robot.commands.ShooterCommands.AnglerDirection;
+import frc.robot.commands.ShooterCommands.FlywheelSpeeds;
 import frc.robot.commands.SwerveCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
@@ -135,8 +138,8 @@ public class RobotContainer {
             () -> -pilotController.getLeftX(),
             () -> -pilotController.getRightX()));
 
-    /* Reset gyro */
-    pilotController.y().onTrue(Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive));
+    // /* Reset gyro */
+    // pilotController.y().onTrue(Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive));
 
     /* Run intake */
     pilotController
@@ -164,17 +167,26 @@ public class RobotContainer {
     //     .whileTrue(
     //         ShooterCommands.runAngler(robotShooter, Rotation2d.fromDegrees(angleSetter.get())));
 
-    // /* Run angler manual up */
-    // pilotController.povUp().whileTrue(ShooterCommands.runAnglerManual(robotShooter, 12.0));
+    /* Run angler manual up */
+    pilotController
+        .povUp()
+        .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.UP))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
 
-    // /* Run angler manual down */
-    // pilotController.povDown().whileTrue(ShooterCommands.runAnglerManual(robotShooter, -12.0));
+    /* Run angler manual down */
+    pilotController
+        .povDown()
+        .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.DOWN))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
 
     // /* Run launcher setpoint */
     // pilotController.x().whileTrue(ShooterCommands.runLauncher(robotShooter, 10.0));
 
-    // /* Run launcher manual */
-    // pilotController.a().whileTrue(ShooterCommands.runLauncherManual(robotShooter, 12.0));
+    /* Run launcher manual */
+    pilotController
+        .a()
+        .whileTrue(ShooterCommands.runLauncherManual(robotShooter, FlywheelSpeeds.HALF))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
   }
 
   /** Returns the selected autonomous */
