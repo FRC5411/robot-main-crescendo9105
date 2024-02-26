@@ -12,59 +12,56 @@ import frc.robot.subsystems.indexer.Indexer;
 public class IndexerCommands {
   private static Command currentCommand = null;
 
-  private static double indexerVolts = 0.0;
-
   private IndexerCommands() {}
 
   /** Returns a command to run the indexer motor with a given direction */
   public static Command runIndexer(Indexer robotIndexer, IndexerDirection direction) {
-    setIndexerVolts(direction);
+    logDirection(direction);
 
-    currentCommand = Commands.run(() -> robotIndexer.setIndexerVolts(indexerVolts), robotIndexer);
+    currentCommand =
+        Commands.run(() -> robotIndexer.setIndexerVolts(direction.getVolts()), robotIndexer);
 
     return currentCommand;
   }
 
   /** Returns a command to stop the Indexer motor */
   public static Command stopIndexer(Indexer robotIndexer) {
-    setIndexerVolts(IndexerDirection.STOP);
+    IndexerDirection direction = IndexerDirection.STOP;
+    logDirection(direction);
 
     if (currentCommand != null) {
       currentCommand.cancel();
     }
-    currentCommand = Commands.run(() -> robotIndexer.setIndexerVolts(indexerVolts), robotIndexer);
+    currentCommand =
+        Commands.run(() -> robotIndexer.setIndexerVolts(direction.getVolts()), robotIndexer);
 
     return currentCommand;
   }
 
-  /** Set the state of the indexer direciton */
-  private static void setIndexerVolts(IndexerDirection direction) {
-    switch (direction) {
-      case IN:
-        indexerVolts = -12.0;
-        break;
-      case OUT:
-        indexerVolts = 12.0;
-        break;
-      case STOP:
-        indexerVolts = 0.0;
-        break;
-      default:
-        indexerVolts = 0.0;
-        break;
-    }
-
-    System.out.println(
-        "\nIndexerVolts: " + indexerVolts + "\nIndexerDirection: " + direction + "\n");
+  /** Write the direction of the Indexer to console */
+  private static void logDirection(IndexerDirection direction) {
+    System.out.println(direction);
   }
 
   /** Direction of the indexer */
   public static enum IndexerDirection {
     /** Run the Indexer wheels in to the Shooter */
-    IN,
+    IN(12.0),
     /** Run the Indexer wheels out of the Shooter */
-    OUT,
+    OUT(-12.0),
     /** Stop the Indexer wheels */
-    STOP
+    STOP(0.0);
+
+    private double volts;
+
+    /** Define the direction for the Indexer to spin */
+    IndexerDirection(double volts) {
+      this.volts = volts;
+    }
+
+    /** Returns the voltage based on the direction specified */
+    public double getVolts() {
+      return this.volts;
+    }
   }
 }

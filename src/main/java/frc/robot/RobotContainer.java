@@ -134,12 +134,6 @@ public class RobotContainer {
             () -> -pilotController.getLeftY(),
             () -> -pilotController.getLeftX(),
             () -> -pilotController.getRightX()));
-    // /* Stop intake by default */
-    // robotIntake.setDefaultCommand(IntakeCommands.stopIntake(robotIntake));
-    // /* Idle shooter by default */
-    // robotShooter.setDefaultCommand(ShooterCommands.stopShooter(robotShooter));
-    // /* Stop indexer by default */
-    // robotIndexer.setDefaultCommand(IndexerCommands.stopIndexer(robotIndexer));
 
     /* Reset gyro */
     pilotController.y().onTrue(Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive));

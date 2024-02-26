@@ -6,77 +6,65 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.subsystems.intake.Intake;
-import org.littletonrobotics.junction.Logger;
 
 /** Class to hold all of the commands for the Intake */
 public class IntakeCommands {
   private static Command currentCommand = null;
 
-  private static double intakeVolts = 0.0;
-
   private IntakeCommands() {}
 
   /** Returns a command to run the Intake motor with a given direction */
   public static Command runIntake(Intake robotIntake, IntakeDirection direction) {
+    logDirection(direction);
+
     currentCommand =
-        Commands.runOnce(
-                () -> {
-                  setIntakeVolts(direction);
-                },
-                robotIntake)
-            .andThen(Commands.run(() -> robotIntake.setVolts(intakeVolts), robotIntake));
+        Commands.run(() -> robotIntake.setVolts(direction.getVolts()), robotIntake)
+            .alongWith(new InstantCommand(() -> logDirection(direction)));
 
     return currentCommand;
   }
 
   /** Returns a command to stop the Intake motor */
   public static Command stopIntake(Intake robotIntake) {
+    IntakeDirection direction = IntakeDirection.STOP;
+    logDirection(direction);
+
     if (currentCommand != null) {
       currentCommand.cancel();
     }
     currentCommand =
-        Commands.runOnce(
-                () -> {
-                  setIntakeVolts(IntakeDirection.STOP);
-                },
-                robotIntake)
-            .andThen(Commands.run(() -> robotIntake.setVolts(intakeVolts), robotIntake));
+        Commands.run(() -> robotIntake.setVolts(direction.getVolts()), robotIntake)
+            .alongWith(new InstantCommand(() -> logDirection(direction)));
 
     return currentCommand;
   }
 
-  /** Set the state of the indexer direciton */
-  private static void setIntakeVolts(IntakeDirection direction) {
-    switch (direction) {
-      case IN:
-        intakeVolts = -12.0;
-        Logger.recordOutput("Intake/Direction", "IN");
-        break;
-      case OUT:
-        intakeVolts = 12.0;
-        Logger.recordOutput("Intake/Direction", "OUT");
-        break;
-      case STOP:
-        intakeVolts = 0.0;
-        Logger.recordOutput("Intake/Direction", "STOP");
-        break;
-      default:
-        intakeVolts = 0.0;
-        Logger.recordOutput("Intake/Direction", "STOPDEF");
-        break;
-    }
-
-    System.out.println("\nIntakeVolts: " + intakeVolts + "\nIntakeDirection: " + direction + "\n");
+  /** Write the direction of the Intake to console */
+  private static void logDirection(IntakeDirection direction) {
+    System.out.println(direction);
   }
 
   /** Direction of the Intake */
   public static enum IntakeDirection {
     /** Run the Intake wheels in to the Shooter */
-    IN,
+    IN(12.0),
     /** Run the Intake wheels out of the Shooter */
-    OUT,
+    OUT(-12.0),
     /** Stop the Intake wheels */
-    STOP
+    STOP(0.0);
+
+    private double volts;
+
+    /** Define the direction for the Intake to spin */
+    IntakeDirection(double volts) {
+      this.volts = volts;
+    }
+
+    /** Returns the voltage based on the direction specified */
+    public double getVolts() {
+      return this.volts;
+    }
   }
 }
