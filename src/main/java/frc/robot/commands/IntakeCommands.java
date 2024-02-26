@@ -17,8 +17,6 @@ public class IntakeCommands {
 
   /** Returns a command to run the Intake motor with a given direction */
   public static Command runIntake(Intake robotIntake, IntakeDirection direction) {
-    logDirection(direction);
-
     currentCommand =
         Commands.run(() -> robotIntake.setVolts(direction.getVolts()), robotIntake)
             .alongWith(new InstantCommand(() -> logDirection(direction)));
@@ -29,13 +27,12 @@ public class IntakeCommands {
   /** Returns a command to stop the Intake motor */
   public static Command stopIntake(Intake robotIntake) {
     IntakeDirection direction = IntakeDirection.STOP;
-    logDirection(direction);
 
     if (currentCommand != null) {
       currentCommand.cancel();
     }
     currentCommand =
-        Commands.run(() -> robotIntake.setVolts(direction.getVolts()), robotIntake)
+        Commands.run(() -> robotIntake.stopMotor(), robotIntake)
             .alongWith(new InstantCommand(() -> logDirection(direction)));
 
     return currentCommand;
@@ -43,7 +40,7 @@ public class IntakeCommands {
 
   /** Write the direction of the Intake to console */
   private static void logDirection(IntakeDirection direction) {
-    System.out.println(direction);
+    System.out.println("INTAKE: " + direction);
   }
 
   /** Direction of the Intake */

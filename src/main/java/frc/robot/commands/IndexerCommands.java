@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.subsystems.indexer.Indexer;
 
 /** Class to hold all of the commands for the Indexer */
@@ -19,7 +20,8 @@ public class IndexerCommands {
     logDirection(direction);
 
     currentCommand =
-        Commands.run(() -> robotIndexer.setIndexerVolts(direction.getVolts()), robotIndexer);
+        Commands.run(() -> robotIndexer.setIndexerVolts(direction.getVolts()), robotIndexer)
+            .alongWith(new InstantCommand(() -> logDirection(direction)));
 
     return currentCommand;
   }
@@ -33,14 +35,15 @@ public class IndexerCommands {
       currentCommand.cancel();
     }
     currentCommand =
-        Commands.run(() -> robotIndexer.setIndexerVolts(direction.getVolts()), robotIndexer);
+        Commands.run(() -> robotIndexer.stopMotors(), robotIndexer)
+            .alongWith(new InstantCommand(() -> logDirection(direction)));
 
     return currentCommand;
   }
 
   /** Write the direction of the Indexer to console */
   private static void logDirection(IndexerDirection direction) {
-    System.out.println(direction);
+    System.out.println("INDEXER: " + direction);
   }
 
   /** Direction of the indexer */
