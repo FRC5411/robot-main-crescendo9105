@@ -18,6 +18,8 @@ public class IntakeIOSim implements IntakeIO {
   // TODO Update values to reflect real world as needed
   private FlywheelSim intakeMotor = new FlywheelSim(DCMotor.getNEO(1), 1.0, 1.0);
 
+  double appliedVolts = 0.0;
+
   /** Create a new virtual implementation of the intake */
   public IntakeIOSim() {}
 
@@ -30,18 +32,15 @@ public class IntakeIOSim implements IntakeIO {
 
     inputs.angleRotations = new Rotation2d(); // Flywheel sim doesn't have pose methods
     inputs.velocityRPM = intakeMotor.getAngularVelocityRPM();
-    inputs.appliedVolts =
-        BatterySim.calculateDefaultBatteryLoadedVoltage(
-            intakeMotor.getCurrentDrawAmps()); // Might be broken lol
+    inputs.appliedVolts = appliedVolts;
     inputs.appliedCurrentAmps = new double[] {intakeMotor.getCurrentDrawAmps()};
     inputs.temperatureCelsius = new double[] {0.0};
   }
 
   @Override
   public void setVolts(double volts) {
-    var adjustedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+    appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
 
-    intakeMotor.setInputVoltage(adjustedVolts);
-    intakeMotor.setInput(adjustedVolts / 12.0);
+    intakeMotor.setInputVoltage(appliedVolts);
   }
 }
