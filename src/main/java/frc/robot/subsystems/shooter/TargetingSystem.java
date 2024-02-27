@@ -10,11 +10,15 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import org.littletonrobotics.junction.Logger;
 
 /** Class that calculates projectile motion given certain parameters */
 public class TargetingSystem {
   private Translation3d speakerOpeningBlue = new Translation3d(0.26, 5.49, 2.045);
   private Translation3d speakerOpeningRed = new Translation3d(16.26, 5.49, 2.045);
+
+  private boolean usingLaunchMap = true;
+  private final double LAUNCH_MAP_OFFSET_M = 0.62;
 
   /**
    * Tree Map that represents the robot's horizontal (X) distance from the Speaker (meters) and the
@@ -54,15 +58,55 @@ public class TargetingSystem {
 
   /** Returns the optimal angle given the robot's current pose */
   public Rotation2d getLaunchMapAngle(Pose2d robotPose) {
-    double distanceFromTargetM =
-        // Distances are flipped for both alliances
-        (DriverStation.getAlliance().get() == Alliance.Blue)
-            // Subtract minor offset not accounted for when getting shot data
-            ? (robotPose.getX() - speakerOpeningBlue.getX()) - 0.62
-            : (speakerOpeningRed.getX() - robotPose.getX()) - 0.62;
+    double distanceFromTarget = calculateDistanceM(robotPose);
 
-    Rotation2d angle = Rotation2d.fromDegrees(launchMap.get(distanceFromTargetM));
+    Rotation2d angle = Rotation2d.fromDegrees(launchMap.get(distanceFromTarget));
+
+    Logger.recordOutput("Shooter/TargetingSystem/Angle", angle);
 
     return angle;
+  }
+
+  /** Returns the optimal heading for shooting */
+  public Rotation2d getOptimalLaunchHeading(Pose2d robotPose) {
+    double distanceFromTarget = calculateDistanceM(robotPose);
+
+    Rotation2d heading = Rotation2d.fromDegrees(Math.atan(distanceFromTarget));
+
+    Logger.recordOutput("Shooter/TargetingSystem/Heading", heading);
+
+    return heading;
+  }
+
+  /** Calculate the tangental distance from target (X,Y) */
+  private double calculateDistanceM(Pose2d robotPose) {
+    double distanceM = 0.0;
+
+    // If we are using shot map values, we must account for a minor offset we experienced when
+    // measuring
+    if (usingLaunchMap) {
+      distanceM =
+          (DriverStation.getAlliance().get() == Alliance.Blue)
+              ? Math.sqrt(
+                  Math.pow(
+                          (robotPose.getX() - speakerOpeningBlue.getX()) - LAUNCH_MAP_OFFSET_M, 2.0)
+                      + Math.pow(robotPose.getY() - speakerOpeningBlue.getY(), 2.0))
+              : Math.sqrt(
+                  Math.pow((speakerOpeningRed.getX() - robotPose.getX()) - LAUNCH_MAP_OFFSET_M, 2.0)
+                      + Math.pow(speakerOpeningRed.getY() - robotPose.getY(), 2.0));
+    } else {
+      distanceM =
+          (DriverStation.getAlliance().get() == Alliance.Blue)
+              ? Math.sqrt(
+                  Math.pow((robotPose.getX() - speakerOpeningBlue.getX()), 2.0)
+                      + Math.pow(robotPose.getY() - speakerOpeningBlue.getY(), 2.0))
+              : Math.sqrt(
+                  Math.pow((speakerOpeningRed.getX() - robotPose.getX()), 2.0)
+                      + Math.pow(speakerOpeningRed.getY() - robotPose.getY(), 2.0));
+    }
+
+    Logger.recordOutput("Shooter/TargetingSystem/DistanceM", distanceM);
+
+    return distanceM;
   }
 }

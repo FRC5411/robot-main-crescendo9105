@@ -4,15 +4,18 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.TargetingSystem;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 
 /** Class to hold all of the commands for the Shooter */
@@ -60,6 +63,39 @@ public class ShooterCommands {
     return currentCommand;
   }
 
+  /** Returns a command to run the angler motor */
+  public static Command runAngler(Shooter robotShooter, Pose2d currentRobotPose) {
+    currentCommand =
+        new FunctionalCommand(
+            () -> {
+              TargetingSystem targetingSystem = new TargetingSystem();
+              anglerPosition = targetingSystem.getLaunchMapAngle(currentRobotPose);
+            },
+            () -> {
+              robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS);
+              System.out.println("TARGETING SYSTEM MAP: " + anglerPosition);
+            },
+            interrupted -> {
+              robotShooter.stopMotors(true, false);
+            },
+            () -> false,
+            robotShooter);
+
+    return currentCommand;
+  }
+
+  /** Returns a command to run the angler manually */
+  public static Command runAnglerManual(Shooter robotShooter, AnglerDirection direction) {
+    currentCommand =
+        Commands.runOnce(() -> robotShooter.setAnglerPosition(null), robotShooter)
+            .andThen(
+                Commands.runOnce(
+                    () -> robotShooter.setAnglerVolts(direction.getVolts()), robotShooter))
+            .alongWith(new InstantCommand(() -> logDirection(direction)));
+
+    return currentCommand;
+  }
+
   /** Returns a command to run the launcher motors */
   public static Command runLauncher(Shooter robotsShooter) {
     currentCommand =
@@ -88,18 +124,6 @@ public class ShooterCommands {
                 Commands.run(
                     () -> robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS),
                     robotShooter));
-
-    return currentCommand;
-  }
-
-  /** Returns a command to run the angler manually */
-  public static Command runAnglerManual(Shooter robotShooter, AnglerDirection direction) {
-    currentCommand =
-        Commands.runOnce(() -> robotShooter.setAnglerPosition(null), robotShooter)
-            .andThen(
-                Commands.runOnce(
-                    () -> robotShooter.setAnglerVolts(direction.getVolts()), robotShooter))
-            .alongWith(new InstantCommand(() -> logDirection(direction)));
 
     return currentCommand;
   }
@@ -139,6 +163,8 @@ public class ShooterCommands {
 
     return currentCommand;
   }
+
+  // TODO Fix SysID routines, verify with Anshul that these are correct
 
   public static Command systemIdentificationDynamic(Shooter robotShooter, Direction direction) {
     SysIdRoutine routine =
