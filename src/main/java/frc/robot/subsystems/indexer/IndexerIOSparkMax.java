@@ -42,7 +42,7 @@ public class IndexerIOSparkMax implements IndexerIO {
     inputs.appliedVolts = appliedVolts;
     inputs.appliedCurrentAmps = new double[] {indexerMotor.getOutputCurrent()};
     inputs.temperatureCelsius = new double[] {indexerMotor.getMotorTemperature()};
-    inputs.isBeamBroken = beamBreakSensor.get();
+    inputs.isBeamBroken = !beamBreakSensor.get();
   }
 
   @Override

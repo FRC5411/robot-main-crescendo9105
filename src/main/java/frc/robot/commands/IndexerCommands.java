@@ -6,6 +6,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.subsystems.indexer.Indexer;
 
@@ -17,7 +18,6 @@ public class IndexerCommands {
 
   /** Returns a command to run the indexer motor with a given direction */
   public static Command runIndexer(Indexer robotIndexer, IndexerDirection direction) {
-    logDirection(direction);
 
     currentCommand =
         Commands.run(() -> robotIndexer.setIndexerVolts(direction.getVolts()), robotIndexer)
@@ -29,7 +29,6 @@ public class IndexerCommands {
   /** Returns a command to stop the Indexer motor */
   public static Command stopIndexer(Indexer robotIndexer) {
     IndexerDirection direction = IndexerDirection.STOP;
-    logDirection(direction);
 
     if (currentCommand != null) {
       currentCommand.cancel();
@@ -37,6 +36,27 @@ public class IndexerCommands {
     currentCommand =
         Commands.run(() -> robotIndexer.stopMotors(), robotIndexer)
             .alongWith(new InstantCommand(() -> logDirection(direction)));
+
+    return currentCommand;
+  }
+
+  /** Returns a command to run the Indexer until a piece is stowed */
+  public static Command stowPiece(Indexer robotIndexer) {
+    currentCommand =
+        new FunctionalCommand(
+            () -> {},
+            () -> {
+              if (!robotIndexer.isBeamBroken()) {
+                robotIndexer.setIndexerVolts(IndexerDirection.IN.getVolts() / 2.0);
+              } else {
+                robotIndexer.stopMotors();
+              }
+            },
+            (interrupted) -> {
+              robotIndexer.stopMotors();
+            },
+            () -> robotIndexer.isBeamBroken(),
+            robotIndexer);
 
     return currentCommand;
   }
