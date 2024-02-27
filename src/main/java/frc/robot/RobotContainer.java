@@ -17,7 +17,6 @@ import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.IntakeCommands.IntakeDirection;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.ShooterCommands.AnglerDirection;
-import frc.robot.commands.ShooterCommands.FlywheelSpeeds;
 import frc.robot.commands.SwerveCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
@@ -141,7 +140,7 @@ public class RobotContainer {
         .leftBumper()
         .whileTrue(
             IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
-                .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN)))
+                .alongWith(IndexerCommands.stowPiece(robotIndexer)))
         .whileFalse(
             IntakeCommands.stopIntake(robotIntake)
                 .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
@@ -160,7 +159,7 @@ public class RobotContainer {
     pilotController
         .x()
         .whileTrue(ShooterCommands.runAngler(robotShooter))
-        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
 
     /* Run angler manual up */
     pilotController
@@ -183,8 +182,20 @@ public class RobotContainer {
     /* Run launcher manual */
     pilotController
         .a()
-        .whileTrue(ShooterCommands.runLauncherManual(robotShooter, FlywheelSpeeds.FULL))
-        .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+        .whileTrue(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN))
+        .whileFalse(IndexerCommands.stopIndexer(robotIndexer));
+
+    /* Move back slightly */
+    pilotController
+        .povLeft()
+        .whileTrue(SwerveCommands.swerveDrive(robotDrive, () -> -0.3, () -> 0.0, () -> 0.0))
+        .onFalse(SwerveCommands.stopDrive(robotDrive));
+
+    /* Move forward slightly */
+    pilotController
+        .povRight()
+        .whileTrue(SwerveCommands.swerveDrive(robotDrive, () -> 0.3, () -> 0.0, () -> 0.0))
+        .onFalse(SwerveCommands.stopDrive(robotDrive));
   }
 
   /** Returns the selected autonomous */

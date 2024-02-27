@@ -58,6 +58,7 @@ public class Shooter extends SubsystemBase {
     this.launcherIO = launcherIO;
 
     resetAnglerFeedback();
+    anglerFeedback.setTolerance(0.02);
   }
 
   @Override

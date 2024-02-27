@@ -10,6 +10,7 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 /** Class to interact with the physical climb structure */
 public class ClimbIOSparkMax implements ClimbIO {
@@ -21,6 +22,9 @@ public class ClimbIOSparkMax implements ClimbIO {
 
   private RelativeEncoder leftEncoder = leftMotor.getEncoder();
   private RelativeEncoder rightEncoder = rightMotor.getEncoder();
+
+  private DutyCycleEncoder leftAbsoluteEncoder = new DutyCycleEncoder(4);
+  private DutyCycleEncoder rightAbsoluteEncoder = new DutyCycleEncoder(3);
 
   private double leftAppliedVolts = 0.0;
   private double rightAppliedVolts = 0.0;
@@ -49,13 +53,13 @@ public class ClimbIOSparkMax implements ClimbIO {
   @Override
   public void updateInputs(ClimbIOInputs inputs) {
     // TODO Add conversion factors as needed
-    inputs.leftAngle = Rotation2d.fromRadians(leftEncoder.getPosition() / GEARING);
+    inputs.leftAngle = Rotation2d.fromRotations(leftAbsoluteEncoder.getAbsolutePosition());
     inputs.leftVelocityRPS = leftEncoder.getVelocity();
     inputs.leftAppliedVolts = leftAppliedVolts;
     inputs.leftCurrentAmps = new double[] {leftMotor.getOutputCurrent()};
     inputs.leftTemperatureCelsius = new double[] {leftMotor.getMotorTemperature()};
 
-    inputs.rightAngle = Rotation2d.fromRadians(rightEncoder.getPosition() / GEARING);
+    inputs.rightAngle = Rotation2d.fromRotations(rightAbsoluteEncoder.getAbsolutePosition());
     inputs.rightVelocityRPS = rightEncoder.getVelocity();
     inputs.rightAppliedVolts = rightAppliedVolts;
     inputs.rightCurrentAmps = new double[] {rightMotor.getOutputCurrent()};
