@@ -4,7 +4,6 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Voltage;
@@ -14,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.TargetingSystem;
 import frc.robot.utils.debugging.LoggedTunableNumber;
@@ -64,12 +64,12 @@ public class ShooterCommands {
   }
 
   /** Returns a command to run the angler motor */
-  public static Command runAngler(Shooter robotShooter, Pose2d currentRobotPose) {
+  public static Command runAngler(Shooter robotShooter, Drive robotDrive) {
     currentCommand =
         new FunctionalCommand(
             () -> {
               TargetingSystem targetingSystem = new TargetingSystem();
-              anglerPosition = targetingSystem.getLaunchMapAngle(currentRobotPose);
+              anglerPosition = targetingSystem.getLaunchMapAngle(robotDrive.getPosition());
             },
             () -> {
               robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS);

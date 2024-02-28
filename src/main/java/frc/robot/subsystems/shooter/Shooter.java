@@ -58,7 +58,7 @@ public class Shooter extends SubsystemBase {
     this.launcherIO = launcherIO;
 
     resetAnglerFeedback();
-    anglerFeedback.setTolerance(0.02);
+    anglerFeedback.setTolerance(0.002);
   }
 
   @Override
@@ -75,7 +75,7 @@ public class Shooter extends SubsystemBase {
     if (anglerSetpoint != null) {
       double anglerFeedbackOutput =
           anglerFeedback.calculate(
-              anglerIOInputs.anglerPosition.getDegrees(), anglerSetpoint.getDegrees());
+              anglerIOInputs.anglerAbsolutePosition.getDegrees(), anglerSetpoint.getDegrees());
       double anglerFeedforwardOutput =
           anglerFeedforward.calculate(
               anglerFeedback.getSetpoint().position, anglerFeedback.getSetpoint().velocity);
@@ -136,7 +136,8 @@ public class Shooter extends SubsystemBase {
   /** Reset the angler controller profile */
   public void resetAnglerFeedback() {
     anglerFeedback.reset(
-        anglerIOInputs.anglerPosition.getDegrees(), anglerIOInputs.anglerVelocityRadiansPerSecond);
+        anglerIOInputs.anglerAbsolutePosition.getDegrees(),
+        anglerIOInputs.anglerVelocityRadiansPerSecond);
   }
 
   /** Set the voltage of the angler motor */
@@ -169,7 +170,7 @@ public class Shooter extends SubsystemBase {
   /** Returns the angle of the pivot */
   @AutoLogOutput(key = "Shooter/Angler/Position")
   public Rotation2d getAnglerPosition() {
-    return anglerIOInputs.anglerPosition;
+    return anglerIOInputs.anglerAbsolutePosition;
   }
 
   /** Returns the setpoint state position of the angler feedback */

@@ -89,8 +89,8 @@ public class TargetingSystem {
           (DriverStation.getAlliance().get() == Alliance.Blue)
               ? Math.sqrt(
                   Math.pow(
-                          (robotPose.getX() - speakerOpeningBlue.getX()) - LAUNCH_MAP_OFFSET_M, 2.0)
-                      + Math.pow(robotPose.getY() - speakerOpeningBlue.getY(), 2.0))
+                          (speakerOpeningBlue.getX() - robotPose.getX()) - LAUNCH_MAP_OFFSET_M, 2.0)
+                      + Math.pow(speakerOpeningBlue.getY() - robotPose.getY(), 2.0))
               : Math.sqrt(
                   Math.pow((speakerOpeningRed.getX() - robotPose.getX()) - LAUNCH_MAP_OFFSET_M, 2.0)
                       + Math.pow(speakerOpeningRed.getY() - robotPose.getY(), 2.0));

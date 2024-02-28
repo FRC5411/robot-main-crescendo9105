@@ -11,6 +11,7 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import org.littletonrobotics.junction.Logger;
 
 /** Class to interact with the physical climb structure */
 public class ClimbIOSparkMax implements ClimbIO {
@@ -64,6 +65,9 @@ public class ClimbIOSparkMax implements ClimbIO {
     inputs.rightAppliedVolts = rightAppliedVolts;
     inputs.rightCurrentAmps = new double[] {rightMotor.getOutputCurrent()};
     inputs.rightTemperatureCelsius = new double[] {rightMotor.getMotorTemperature()};
+
+    Logger.recordOutput("MY/FATHER1", leftAbsoluteEncoder.getFrequency());
+    Logger.recordOutput("MY/FATHER2", rightAbsoluteEncoder.getFrequency());
   }
 
   @Override

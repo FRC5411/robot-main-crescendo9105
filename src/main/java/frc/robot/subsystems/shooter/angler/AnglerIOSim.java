@@ -41,7 +41,7 @@ public class AnglerIOSim implements AnglerIO {
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(anglerMotor.getCurrentDrawAmps()));
 
-    inputs.anglerPosition = Rotation2d.fromRadians(anglerMotor.getAngleRads());
+    inputs.anglerRelativePosition = Rotation2d.fromRadians(anglerMotor.getAngleRads());
     inputs.anglerVelocityRadiansPerSecond = anglerMotor.getVelocityRadPerSec();
     inputs.appliedVolts = appliedVolts;
     inputs.appliedCurrentAmps = new double[] {anglerMotor.getCurrentDrawAmps()};

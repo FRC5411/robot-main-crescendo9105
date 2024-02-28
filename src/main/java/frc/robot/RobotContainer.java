@@ -8,8 +8,6 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -134,8 +132,8 @@ public class RobotContainer {
             () -> -pilotController.getLeftX(),
             () -> -pilotController.getRightX()));
 
-    // /* Reset gyro */
-    // pilotController.y().onTrue(Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive));
+    /* Reset gyro */
+    pilotController.y().onTrue(Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive));
 
     /* Run intake */
     pilotController
@@ -181,11 +179,11 @@ public class RobotContainer {
         .whileTrue(ShooterCommands.runLauncher(robotShooter))
         .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
 
-    // /* Run launcher manual */
-    // pilotController
-    //     .a()
-    //     .whileTrue(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN))
-    //     .whileFalse(IndexerCommands.stopIndexer(robotIndexer));
+    /* Run launcher manual */
+    pilotController
+        .a()
+        .whileTrue(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN))
+        .whileFalse(IndexerCommands.stopIndexer(robotIndexer));
 
     /* Move back slightly */
     pilotController
@@ -199,16 +197,17 @@ public class RobotContainer {
         .whileTrue(SwerveCommands.swerveDrive(robotDrive, () -> 0.3, () -> 0.0, () -> 0.0))
         .onFalse(SwerveCommands.stopDrive(robotDrive));
 
-    pilotController
-        .y()
-        .whileTrue(ShooterCommands.runAngler(robotShooter, robotDrive.getPosition()))
-        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+    // pilotController
+    //     .y()
+    //     .whileTrue(ShooterCommands.runAngler(robotShooter, robotDrive))
+    //     .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
 
-    pilotController
-        .a()
-        .onTrue(
-            Commands.runOnce(
-                () -> robotDrive.setPose(new Pose2d(15.05, 5.81, new Rotation2d())), robotDrive));
+    // pilotController
+    //     .a()
+    //     .onTrue(
+    //         Commands.runOnce(
+    //             () -> robotDrive.setPose(new Pose2d(15.05, 5.81, new Rotation2d())),
+    // robotDrive));
   }
 
   /** Returns the selected autonomous */
