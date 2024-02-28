@@ -49,6 +49,8 @@ public class Shooter extends SubsystemBase {
   private LoggedTunableNumber anglerFeedforwardV =
       new LoggedTunableNumber("Shooter/Angler/Feedforward/V", anglerFeedforward.kv);
 
+  private ShooterVisualizer anglerVisualizer = new ShooterVisualizer();
+
   private Rotation2d anglerSetpoint = null;
   private Double launcherSetpointMPS = null;
 
@@ -94,6 +96,7 @@ public class Shooter extends SubsystemBase {
       launcherIO.setBottomVelocity(launcherSetpointMPS);
     }
 
+    anglerVisualizer.updateShooterAngle(anglerIOInputs.anglerRelativePosition);
     updateTunableNumbers();
   }
 

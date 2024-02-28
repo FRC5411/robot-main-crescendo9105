@@ -13,6 +13,10 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -80,4 +84,16 @@ public final class Constants {
     /** Drive sqaure inputs */
     SWERVE_SQUARE_INPUTS
   }
+
+  public static final Pose3d kSpeaker3DPose =
+      (DriverStation.getAlliance().isPresent())
+          ? new Pose3d(
+              new Translation3d(
+                  (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue)
+                      ? 0.23
+                      : 16.5 - 0.23,
+                  8.27 / 2 + 1.4478,
+                  2.045),
+              new Rotation3d())
+          : new Pose3d(new Translation3d(0.23, 8.27 / 2 + 1.4478, 2.045), new Rotation3d());
 }

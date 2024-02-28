@@ -41,6 +41,7 @@ public class Drive extends SubsystemBase {
 
   private final Translation2d[] MODULE_TRANSLATIONS = getModuleTranslations();
   private final SwerveDriveKinematics KINEMATICS = getKinematics();
+  private ChassisSpeeds desiredChassisSpeeds = new ChassisSpeeds();
 
   private SwerveSetpoint currentSetpoint =
       new SwerveSetpoint(
@@ -149,6 +150,7 @@ public class Drive extends SubsystemBase {
   /** Runs the swerve drive based on speeds */
   public void runSwerve(ChassisSpeeds speeds) {
     ChassisSpeeds discreteSpeeds = discretize(speeds); // Translational skew compensation
+    desiredChassisSpeeds = discreteSpeeds;
     SwerveModuleState[] setpointStates = KINEMATICS.toSwerveModuleStates(discreteSpeeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(
         setpointStates, MAX_LINEAR_SPEED_MPS); // Normalize speeds
@@ -187,6 +189,10 @@ public class Drive extends SubsystemBase {
 
     Logger.recordOutput("Drive/Swerve/Setpoints", setpointStates);
     Logger.recordOutput("Drive/Swerve/SetpointsOptimized", optimizedSetpointStates);
+  }
+
+  public ChassisSpeeds getDesiredChassisSpeeds() {
+    return desiredChassisSpeeds;
   }
 
   /** Custom method for discretizing swerve speeds */
