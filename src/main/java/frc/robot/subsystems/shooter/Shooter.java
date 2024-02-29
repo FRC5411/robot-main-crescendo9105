@@ -155,7 +155,9 @@ public class Shooter extends SubsystemBase {
   public void setAnglerPosition(Rotation2d position) {
     Rotation2d lastAnglerSetpoint = anglerSetpoint;
     anglerSetpoint = position;
-    if ( Math.abs( lastAnglerSetpoint.getDegrees() - position.getDegrees() ) > 5 ) {
+    if (lastAnglerSetpoint != null
+        && anglerSetpoint != null
+        && Math.abs(lastAnglerSetpoint.getDegrees() - anglerSetpoint.getDegrees()) > 5) {
       resetAnglerFeedback();
     }
   }
