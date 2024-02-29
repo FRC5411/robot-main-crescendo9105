@@ -153,7 +153,11 @@ public class Shooter extends SubsystemBase {
 
   /** Set the position setpoint of the angler mechanism */
   public void setAnglerPosition(Rotation2d position) {
+    Rotation2d lastAnglerSetpoint = anglerSetpoint;
     anglerSetpoint = position;
+    if ( Math.abs( lastAnglerSetpoint.getDegrees() - position.getDegrees() ) > 5 ) {
+      resetAnglerFeedback();
+    }
   }
 
   /** Set the velocity setpoint of the launcher flywheels */
