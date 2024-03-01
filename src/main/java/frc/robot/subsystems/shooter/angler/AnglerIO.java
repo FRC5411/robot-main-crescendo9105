@@ -12,12 +12,12 @@ public interface AnglerIO {
   /** Shooter subsystem angler sensor data */
   @AutoLog
   public static class AnglerIOInputs {
-    public Rotation2d anglerRelativePosition = new Rotation2d();
     public Rotation2d anglerAbsolutePosition = new Rotation2d();
-    public Rotation2d anglerWeightedPosition = new Rotation2d();
-
+    public Rotation2d anglerRelativePosition = new Rotation2d();
+    public int anglerDutyCycleFrequency = 0;
     public double anglerVelocityRadiansPerSecond = 0.0;
     public double appliedVolts = 0.0;
+    public double internalVolts = 0.0;
     public double[] appliedCurrentAmps = new double[] {0.0};
     public double[] temperatureCelsius = new double[] {0.0};
   }
