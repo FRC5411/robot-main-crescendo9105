@@ -6,6 +6,7 @@ package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
@@ -22,8 +23,10 @@ public class ModuleIOSim implements ModuleIO {
   private double driveAppliedVolts = 0.0;
   private double azimuthAppliedVolts = 0.0;
 
-  private PIDController driveFeedback = new PIDController(0.0, 0.0, 0.0);
-  private PIDController azimuthFeedback = new PIDController(0.0, 0.0, 0.0);
+  private PIDController driveFeedback = new PIDController(0.002, 0.0, 0.0);
+  private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0, 0.15, 0);
+
+  private PIDController azimuthFeedback = new PIDController(2.7, 0.0, 0.0);
 
   /** Create a new virtual implementation of a swerve module */
   public ModuleIOSim(int module) {
@@ -67,15 +70,17 @@ public class ModuleIOSim implements ModuleIO {
   public void setDriveVelocity(double velocityMPS) {
     // TODO Fix this too
     var feedbackOutput = driveFeedback.calculate(driveMotor.getAngularVelocityRPM(), velocityMPS);
-    setDriveVolts(feedbackOutput * 12.0);
+    feedbackOutput += driveFeedforward.calculate(velocityMPS);
+    setDriveVolts(feedbackOutput);
   }
 
   @Override
   public void setAzimuthPosition(Rotation2d position) {
     // TODO Fix this too
     var feedbackOutput =
-        driveFeedback.calculate(azimuthMotor.getAngularPositionRad(), position.getRadians());
-    setDriveVolts(feedbackOutput * 12.0);
+        azimuthFeedback.calculate(azimuthMotor.getAngularPositionRad(), position.getRadians());
+
+    setAzimuthVolts(feedbackOutput);
   }
 
   // TODO Add tunable numbers for sim

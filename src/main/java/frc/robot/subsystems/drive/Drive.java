@@ -142,7 +142,16 @@ public class Drive extends SubsystemBase {
       }
     }
 
-    poseEstimator.update(getRotation(), getModulePositions());
+    if (gyroIOInputs.connected) {
+      poseEstimator.update(getRotation(), getModulePositions());
+    } else {
+      poseEstimator.update(
+          Rotation2d.fromDegrees(
+              (poseEstimator.getEstimatedPosition().getRotation().getDegrees()
+                      + (180 / Math.PI) * getChassisSpeeds().omegaRadiansPerSecond * 0.02)
+                  % 360.0),
+          getModulePositions());
+    }
 
     currentPose = poseEstimator.getEstimatedPosition();
   }
@@ -189,10 +198,6 @@ public class Drive extends SubsystemBase {
 
     Logger.recordOutput("Drive/Swerve/Setpoints", setpointStates);
     Logger.recordOutput("Drive/Swerve/SetpointsOptimized", optimizedSetpointStates);
-  }
-
-  public ChassisSpeeds getDesiredChassisSpeeds() {
-    return desiredChassisSpeeds;
   }
 
   /** Custom method for discretizing swerve speeds */
@@ -282,6 +287,16 @@ public class Drive extends SubsystemBase {
   /** Returns the maximum allowed rotational speed */
   public double getMaxAngularSpeedMPS() {
     return MAX_ANGULAR_SPEED_MPS;
+  }
+
+  /** Returns the current chassis speeds of th erobot */
+  public ChassisSpeeds getChassisSpeeds() {
+    return KINEMATICS.toChassisSpeeds(getModuleStates());
+  }
+
+  /** Returns the current desired chassis speeds of the robot */
+  public ChassisSpeeds getDesiredChassisSpeeds() {
+    return desiredChassisSpeeds;
   }
 
   /** Returns the positions of the modules on the drive */

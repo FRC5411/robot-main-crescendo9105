@@ -11,6 +11,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.AutoAlignCommand;
 import frc.robot.commands.IndexerCommands;
 import frc.robot.commands.IndexerCommands.IndexerDirection;
 import frc.robot.commands.IntakeCommands;
@@ -130,7 +131,7 @@ public class RobotContainer {
             robotDrive,
             () -> -pilotController.getLeftY(),
             () -> -pilotController.getLeftX(),
-            () -> -pilotController.getRightX()));
+            () -> -pilotController.getRightY()));
 
     /* Reset gyro */
     pilotController.y().onTrue(Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive));
@@ -180,10 +181,11 @@ public class RobotContainer {
         .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
 
     /* Run launcher manual */
-    pilotController
-        .a()
-        .whileTrue(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN))
-        .whileFalse(IndexerCommands.stopIndexer(robotIndexer));
+    // pilotController
+    //     .a()
+    //     .whileTrue(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN))
+    //     .whileFalse(IndexerCommands.stopIndexer(robotIndexer));
+    pilotController.a().whileTrue(AutoAlignCommand.angleToSpeakerCommand(robotDrive));
 
     /* Move back slightly */
     pilotController

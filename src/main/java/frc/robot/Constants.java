@@ -91,7 +91,7 @@ public final class Constants {
               new Translation3d(
                   (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue)
                       ? 0.23
-                      : 16.5 - 0.23,
+                      : 16.54 - 0.23,
                   8.27 / 2 + 1.4478,
                   2.045),
               new Rotation3d())
