@@ -17,6 +17,7 @@ public interface VisionIO {
     public double latencySeconds = 0.0;
     public boolean hasTarget = false;
     public boolean hasTargetDebounced = false;
+    public int numberOfTargets = 0;
 
     // LIMELIGHT ONLY (Since we're using object detection)
     public Pose2d cameraToObject = new Pose2d();

@@ -65,6 +65,8 @@ public class VisionIOPhotonVision implements VisionIO {
       inputs.pitch = target.getPitch();
       inputs.area = target.getArea();
       inputs.latencySeconds = result.getLatencyMillis() / 1000.0;
+
+      inputs.numberOfTargets = getApriltagCount(result);
     }
 
     inputs.latestTimestamp = result.getTimestampSeconds();
@@ -114,5 +116,21 @@ public class VisionIOPhotonVision implements VisionIO {
     else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
 
     return estStdDevs;
+  }
+
+  public int getApriltagCount(PhotonPipelineResult result) {
+    List<PhotonTrackedTarget> targets = result.getTargets();
+    int numTags = 0;
+
+    for (PhotonTrackedTarget target : targets) {
+      Optional<Pose3d> tagPose = poseEstimator.getFieldTags().getTagPose(target.getFiducialId());
+
+      if (tagPose.isEmpty()) continue;
+
+      // Increase number of tags
+      numTags++;
+    }
+
+    return numTags;
   }
 }
