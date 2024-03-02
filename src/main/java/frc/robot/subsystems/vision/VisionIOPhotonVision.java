@@ -7,6 +7,7 @@ package frc.robot.subsystems.vision;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -27,14 +28,15 @@ public class VisionIOPhotonVision implements VisionIO {
   Transform3d cameraTransform;
   Matrix<N3, N1> singleTagStdDevs;
   Matrix<N3, N1> multiTagStdDevs;
+  Debouncer debouncer;
 
-  public VisionIOPhotonVision(String name) {
+  public VisionIOPhotonVision(String name, Transform3d cameraTransform, double debouncerTime) {
     AprilTagFields tagFields = AprilTagFields.k2024Crescendo;
 
     singleTagStdDevs = VecBuilder.fill(0.0, 0.0, 0.0);
     multiTagStdDevs = VecBuilder.fill(0.0, 0.0, 0.0);
     frontLimelight = new PhotonCamera(name);
-    cameraTransform = new Transform3d();
+    this.cameraTransform = cameraTransform;
     poseEstimator =
         new PhotonPoseEstimator(
             tagFields.loadAprilTagLayoutField(),
@@ -42,6 +44,8 @@ public class VisionIOPhotonVision implements VisionIO {
             frontLimelight,
             cameraTransform);
     poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+
+    debouncer = new Debouncer(debouncerTime);
   }
 
   @Override
@@ -49,9 +53,10 @@ public class VisionIOPhotonVision implements VisionIO {
     PhotonPipelineResult result = frontLimelight.getLatestResult();
     Optional<EstimatedRobotPose> estimatedRobotPose = poseEstimator.update(result);
 
+    inputs.hasTarget = result.hasTargets();
     if (result.hasTargets()) {
       PhotonTrackedTarget target = result.getBestTarget();
-      inputs.hasTarget = result.hasTargets();
+      inputs.hasTargetDebounced = debouncer.calculate(inputs.hasTarget);
       inputs.cameraToApriltag = target.getBestCameraToTarget();
       inputs.robotToApriltag = inputs.cameraToApriltag.plus(cameraTransform);
       inputs.aprilTagID = target.getFiducialId();
