@@ -187,6 +187,11 @@ public class RobotContainer {
     //     .whileFalse(IndexerCommands.stopIndexer(robotIndexer));
     pilotController.a().whileTrue(AutoAlignCommand.angleToSpeakerCommand(robotDrive));
 
+    // pilotController
+    //     .a()
+    //     .whileTrue(Commands.run(() -> robotShooter.setAnglerVolts(12.0), robotShooter))
+    //     .whileFalse(Commands.run(() -> robotShooter.setAnglerVolts(0.0), robotShooter));
+
     /* Move back slightly */
     pilotController
         .povLeft()

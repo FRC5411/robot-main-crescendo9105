@@ -207,9 +207,9 @@ public class ShooterCommands {
   /** Direction of the Angler */
   public static enum AnglerDirection {
     /** Run the Angler upwards */
-    UP(9.0),
+    UP(12.0),
     /** Run the Angler downwards */
-    DOWN(-9.0),
+    DOWN(-12.0),
     /** Stop the Intake wheels */
     STOP(0.0);
 
