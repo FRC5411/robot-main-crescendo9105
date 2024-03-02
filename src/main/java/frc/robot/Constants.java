@@ -92,7 +92,7 @@ public final class Constants {
                   (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue)
                       ? 0.23
                       : 16.54 - 0.23,
-                  8.27 / 2 + 1.4478,
+                  8.27 / 2.0 + 1.4478,
                   2.045),
               new Rotation3d())
           : new Pose3d(new Translation3d(0.23, 8.27 / 2 + 1.4478, 2.045), new Rotation3d());

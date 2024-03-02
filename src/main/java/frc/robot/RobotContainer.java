@@ -131,7 +131,7 @@ public class RobotContainer {
             robotDrive,
             () -> -pilotController.getLeftY(),
             () -> -pilotController.getLeftX(),
-            () -> -pilotController.getRightY()));
+            () -> -pilotController.getRightX()));
 
     /* Reset gyro */
     pilotController.y().onTrue(Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive));

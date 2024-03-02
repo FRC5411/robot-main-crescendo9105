@@ -2,6 +2,7 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -41,7 +42,17 @@ public class AutoAlignCommand {
           driveYLimiter.reset(desiredChassisSpeeds.vyMetersPerSecond);
 
           // Plus and negative logic have to be tested based of gyro readings
-          driveThetaController.reset(robotDrive.getRotation().getDegrees());
+          Rotation2d goalRotation =
+              new Rotation2d(
+                      Constants.kSpeaker3DPose.getX() - robotDrive.getPosition().getX(),
+                      Constants.kSpeaker3DPose.getY() - robotDrive.getPosition().getY())
+                  .plus(Rotation2d.fromDegrees(180));
+
+          Rotation2d currentRotation = robotDrive.getPosition().getRotation();
+
+          if (Math.abs(goalRotation.getDegrees() - currentRotation.getDegrees()) > 5) {
+            driveThetaController.setGoal(currentRotation.getDegrees() + 180);
+          }
         },
         () -> {
           double desiredXSpeed = driveXLimiter.calculate(0);
@@ -59,7 +70,8 @@ public class AutoAlignCommand {
           Logger.recordOutput("AutoAlign/DesiredX", desiredXSpeed);
           Logger.recordOutput("AutoAlign/DesiredY", desiredYSpeed);
           Logger.recordOutput("AutoAlign/DesiredTheta", desiredThetaDegrees);
-          Logger.recordOutput("AutooAlign/Controller/Goal", driveThetaController.getGoal().position);
+          Logger.recordOutput(
+              "AutooAlign/Controller/Goal", driveThetaController.getGoal().position);
           Logger.recordOutput(
               "AutoAlign/Controller/Setpoint", driveThetaController.getSetpoint().position);
           Logger.recordOutput(
