@@ -12,6 +12,7 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 import org.littletonrobotics.junction.Logger;
 
+/** Class to hold the command to control the robot's heading */
 public class AutoAlignCommand {
   private static SlewRateLimiter driveXLimiter = new SlewRateLimiter(5);
   private static SlewRateLimiter driveYLimiter = new SlewRateLimiter(5);
@@ -31,6 +32,10 @@ public class AutoAlignCommand {
       new LoggedTunableNumber(
           "AutoAlign/DriveTheta/A", driveThetaController.getConstraints().maxAcceleration);
 
+  /**
+   * Returns a command that will adjust the heading to the target, will override any current drive
+   * commands from the pilot
+   */
   public static Command angleToSpeakerCommand(Drive robotDrive) {
     driveThetaController.setTolerance(0.2);
     driveThetaController.enableContinuousInput(0, 360);
@@ -70,8 +75,7 @@ public class AutoAlignCommand {
           Logger.recordOutput("AutoAlign/DesiredX", desiredXSpeed);
           Logger.recordOutput("AutoAlign/DesiredY", desiredYSpeed);
           Logger.recordOutput("AutoAlign/DesiredTheta", desiredThetaDegrees);
-          Logger.recordOutput(
-              "AutooAlign/Controller/Goal", driveThetaController.getGoal().position);
+          Logger.recordOutput("AutoAlign/Controller/Goal", driveThetaController.getGoal().position);
           Logger.recordOutput(
               "AutoAlign/Controller/Setpoint", driveThetaController.getSetpoint().position);
           Logger.recordOutput(
@@ -84,6 +88,7 @@ public class AutoAlignCommand {
         robotDrive);
   }
 
+  /** Checks if tunable numbers have changed, if so update controllers */
   public static void updateTunables() {
     if (driveThetaP.hasChanged(driveThetaP.hashCode())
         || driveThetaI.hasChanged(driveThetaI.hashCode())
@@ -97,11 +102,11 @@ public class AutoAlignCommand {
       driveThetaController.setConstraints(new Constraints(driveThetaV.get(), driveThetaA.get()));
     }
   }
-
+  /** Initialize logged values so they aren't null before the command is called */
   public static void initLogTables() {
-    Logger.recordOutput("AutAlign/DesiredX", 0);
-    Logger.recordOutput("AutAlign/DesiredY", 0);
-    Logger.recordOutput("AutAlign/DesiredTheta", 0);
+    Logger.recordOutput("AutoAlign/DesiredX", 0);
+    Logger.recordOutput("AutoAlign/DesiredY", 0);
+    Logger.recordOutput("AutoAlign/DesiredTheta", 0);
     Logger.recordOutput("AutoAlign/Controller/Goal", 0);
     Logger.recordOutput("AutoAlign/Controller/Setpoint", 0);
     Logger.recordOutput("AutoAlign/Controller/Measure", 0);

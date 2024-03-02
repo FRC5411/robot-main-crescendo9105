@@ -78,4 +78,14 @@ public class SwerveCommands {
           robotDrive.runSwerve(new ChassisSpeeds());
         });
   }
+
+  /** Returns a command to reset the gyro heading */
+  public static Command resetGyro(Drive robotDrive) {
+    return Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive);
+  }
+
+  /** Returns a command to set the robot pose */
+  public static Command setPose(Drive robotDrive, Pose2d desiredPose) {
+    return Commands.runOnce(() -> robotDrive.setPose(desiredPose), robotDrive);
+  }
 }

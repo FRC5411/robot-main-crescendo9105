@@ -8,6 +8,8 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -18,6 +20,7 @@ import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.IntakeCommands.IntakeDirection;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.ShooterCommands.AnglerDirection;
+import frc.robot.commands.ShooterCommands.FlywheelSpeeds;
 import frc.robot.commands.SwerveCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
@@ -54,6 +57,7 @@ public class RobotContainer {
   private Indexer robotIndexer;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
+  private CommandXboxController copilotController = new CommandXboxController(1);
 
   private LoggedDashboardChooser<Command> autoChooser;
 
@@ -124,17 +128,29 @@ public class RobotContainer {
 
   /** Configure controllers */
   private void configureButtonBindings() {
+    /* Pilot bindings */
+
     /* Drive with joysticks */
     robotDrive.setDefaultCommand(
         SwerveCommands.swerveDrive(
-            // FIXME Figure out why joysticks are being goofy
             robotDrive,
             () -> -pilotController.getLeftY(),
             () -> -pilotController.getLeftX(),
-            () -> -pilotController.getRightX()));
+            () -> pilotController.getRightX()));
 
     /* Reset gyro */
-    pilotController.y().onTrue(Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive));
+    pilotController.y().onTrue(SwerveCommands.resetGyro(robotDrive));
+
+    /* Auto heading to speaker */
+    pilotController
+        .a()
+        .whileTrue(AutoAlignCommand.angleToSpeakerCommand(robotDrive))
+        .onFalse(SwerveCommands.stopDrive(robotDrive));
+
+    /* Reset pose to infront of blue alliance speaker */
+    pilotController
+        .b()
+        .onTrue(SwerveCommands.setPose(robotDrive, new Pose2d(1.33, 5.50, new Rotation2d())));
 
     /* Run intake */
     pilotController
@@ -156,42 +172,6 @@ public class RobotContainer {
             IntakeCommands.stopIntake(robotIntake)
                 .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
 
-    /* Run angler setpoint */
-    pilotController
-        .x()
-        .whileTrue(ShooterCommands.runAngler(robotShooter))
-        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
-
-    /* Run angler manual up */
-    pilotController
-        .povUp()
-        .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.UP))
-        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
-
-    /* Run angler manual down */
-    pilotController
-        .povDown()
-        .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.DOWN))
-        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
-
-    // /* Run launcher setpoint */
-    pilotController
-        .b()
-        .whileTrue(ShooterCommands.runLauncher(robotShooter))
-        .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
-
-    /* Run launcher manual */
-    // pilotController
-    //     .a()
-    //     .whileTrue(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN))
-    //     .whileFalse(IndexerCommands.stopIndexer(robotIndexer));
-    pilotController.a().whileTrue(AutoAlignCommand.angleToSpeakerCommand(robotDrive));
-
-    // pilotController
-    //     .a()
-    //     .whileTrue(Commands.run(() -> robotShooter.setAnglerVolts(12.0), robotShooter))
-    //     .whileFalse(Commands.run(() -> robotShooter.setAnglerVolts(0.0), robotShooter));
-
     /* Move back slightly */
     pilotController
         .povLeft()
@@ -204,17 +184,57 @@ public class RobotContainer {
         .whileTrue(SwerveCommands.swerveDrive(robotDrive, () -> 0.3, () -> 0.0, () -> 0.0))
         .onFalse(SwerveCommands.stopDrive(robotDrive));
 
-    // pilotController
-    //     .y()
-    //     .whileTrue(ShooterCommands.runAngler(robotShooter, robotDrive))
-    //     .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+    /* Copilot bindings */
 
-    // pilotController
-    //     .a()
-    //     .onTrue(
-    //         Commands.runOnce(
-    //             () -> robotDrive.setPose(new Pose2d(15.05, 5.81, new Rotation2d())),
-    // robotDrive));
+    /* Run angler up */
+    copilotController
+        .povUp()
+        .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.UP))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+
+    /* Run angler down */
+    copilotController
+        .povDown()
+        .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.DOWN))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+
+    /* Intake & index in */
+    copilotController
+        .povLeft()
+        .whileTrue(
+            IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN)
+                .alongWith(IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)))
+        .whileFalse(
+            IndexerCommands.stopIndexer(robotIndexer)
+                .alongWith(IntakeCommands.stopIntake(robotIntake)));
+
+    /* Intake & index out */
+    copilotController
+        .povRight()
+        .whileTrue(
+            IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)
+                .alongWith(IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)))
+        .whileFalse(
+            IndexerCommands.stopIndexer(robotIndexer)
+                .alongWith(IntakeCommands.stopIntake(robotIntake)));
+
+    /* Flywheels out */
+    copilotController
+        .leftBumper()
+        .whileTrue(ShooterCommands.runLauncherManual(robotShooter, FlywheelSpeeds.FULL))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+
+    /* Run setpoint pivot */
+    copilotController
+        .y()
+        .whileTrue(ShooterCommands.runAngler(robotShooter))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+
+    /* Run setpoint flywheels */
+    copilotController
+        .a()
+        .whileTrue(ShooterCommands.runLauncher(robotShooter))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
   }
 
   /** Returns the selected autonomous */

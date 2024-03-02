@@ -134,10 +134,6 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("Shooter/Launcher/Stopped", launcherStopped);
 
     updateTunableNumbers();
-
-    // if (anglerSetpoint == null) {
-    //   System.out.println("ANGLER SETPOINT NULL");
-    // }
   }
 
   /** Checks if tunable numbers have changed, if so update controllers */
