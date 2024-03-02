@@ -47,6 +47,7 @@ import frc.robot.subsystems.shooter.angler.AnglerIOSparkMax;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOSim;
 import frc.robot.subsystems.shooter.launcher.LauncherIOTalonFX;
+import frc.robot.utils.debugging.SysIDCharacterization;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -235,6 +236,14 @@ public class RobotContainer {
         .a()
         .whileTrue(ShooterCommands.runLauncher(robotShooter))
         .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+
+    /* Run flywheel SysID test */
+    copilotController
+        .b()
+        .onTrue(
+            SysIDCharacterization.runShooterSysIDTests(
+                robotShooter::setLauncherVolts, robotShooter))
+        .onFalse(ShooterCommands.stopShooter(robotShooter, false, true));
   }
 
   /** Returns the selected autonomous */

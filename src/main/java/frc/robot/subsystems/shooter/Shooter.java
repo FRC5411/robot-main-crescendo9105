@@ -198,6 +198,14 @@ public class Shooter extends SubsystemBase {
     launcherStopped = false;
   }
 
+  /** Set the voltage of the launcher motors */
+  public void setLauncherVolts(double flywheelVolts) {
+    launcherIO.setTopVolts(flywheelVolts);
+    launcherIO.setBottomVolts(flywheelVolts);
+
+    launcherStopped = false;
+  }
+
   /** Set the position setpoint of the angler mechanism */
   public void setAnglerPosition(Rotation2d position) {
     Rotation2d lastAnglerSetpoint = anglerSetpoint;
