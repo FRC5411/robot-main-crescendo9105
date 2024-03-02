@@ -1,0 +1,74 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.9867156422459306,
+      "y": 2.077867649153534
+    },
+    "rotation": 125.02220249547904
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "sequential",
+          "data": {
+            "commands": [
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "BNP1"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "BNP2"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "BNP3"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "BNP4"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "BNP5"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "BNP5.5"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "BNP6"
+                }
+              },
+              {
+                "type": "path",
+                "data": {
+                  "pathName": "BNP7"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}
