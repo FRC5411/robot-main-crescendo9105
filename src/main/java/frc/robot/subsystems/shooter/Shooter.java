@@ -50,6 +50,8 @@ public class Shooter extends SubsystemBase {
   private LoggedTunableNumber anglerFeedforwardV =
       new LoggedTunableNumber("Shooter/Angler/Feedforward/V", anglerFeedforward.kv);
 
+  private ShooterVisualizer anglerVisualizer = new ShooterVisualizer();
+
   private Rotation2d anglerSetpoint = null;
   private Double launcherSetpointMPS = null;
 
@@ -103,7 +105,8 @@ public class Shooter extends SubsystemBase {
       }
     }
 
-    currentAngle = anglerIOInputs.anglerRelativePosition.times(-1.0).plus(angleOffset);
+    currentAngle = anglerIOInputs.anglerRelativePosition.plus(angleOffset);
+    Logger.recordOutput("Shooter/Angler/currentPosition", currentAngle);
 
     if (anglerSetpoint != null) {
       double anglerFeedbackOutput =
@@ -126,6 +129,7 @@ public class Shooter extends SubsystemBase {
       launcherIO.setBottomVelocity(launcherSetpointMPS);
     }
 
+    anglerVisualizer.updateShooterAngle(anglerIOInputs.anglerRelativePosition);
     Logger.recordOutput("Shooter/Angler/Stopped", anglerStopped);
     Logger.recordOutput("Shooter/Launcher/Stopped", launcherStopped);
 
