@@ -18,16 +18,18 @@ public interface VisionIO {
     public boolean hasTarget = false;
 
     // LIMELIGHT ONLY (Since we're using object detection)
-    public Pose2d cameraToObject =
-        new Pose2d(); // Get the transform that maps camera space (X = forward, Y = left) to object
-    // space (X forward, Y left)
+    public Pose2d cameraToObject = new Pose2d();
 
     // PHOTON VISION ONLY (Since we're using apriltags)
-    public Transform3d cameraToApriltag =
-        new Transform3d(); // Get the transform that maps camera space (X = forward, Y = left, Z =
-    // up) to fiducial tag space (X forward, Y left, Z up)
+    public Transform3d cameraToApriltag = new Transform3d();
     public double poseAmbiguity = 0.0;
     public int aprilTagID = 0;
+    public Transform3d robotToApriltag = new Transform3d();
+    public double latestTimestamp = 0.0;
+    public Pose2d estimatedRobotPose = new Pose2d();
+    public double xStandardDeviation = 0.0;
+    public double yStandardDeviation = 0.0;
+    public double thetaStandardDeviation = 0.0;
   }
 
   public default void updateInputs(VisionIOInputs inputs) {}
