@@ -4,11 +4,10 @@
 
 package frc.robot.subsystems.yoshivator;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
-
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
@@ -16,7 +15,7 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 public class YoshivatorIOSparkMax implements YoshivatorIO {
   private final double PIVOT_GEARING = 75.0 / 1.0;
   private final double INTAKE_GEARING = 3.0 / 1.0;
-  
+
   // TODO Update as needed
   private CANSparkMax pivotMotor = new CANSparkMax(0, MotorType.kBrushless);
   private DutyCycleEncoder pivotEncoder = new DutyCycleEncoder(0);

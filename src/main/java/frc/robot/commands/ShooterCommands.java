@@ -38,7 +38,9 @@ public class ShooterCommands {
                 },
                 robotShooter)
             .andThen(
-                Commands.run(() -> robotShooter.setAllMotors(anglerPosition, 0.0), robotShooter));
+                Commands.runOnce(
+                    () -> robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS),
+                    robotShooter));
 
     return currentCommand;
   }

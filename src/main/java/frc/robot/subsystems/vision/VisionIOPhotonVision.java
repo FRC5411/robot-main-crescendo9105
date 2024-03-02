@@ -36,6 +36,7 @@ public class VisionIOPhotonVision implements VisionIO {
     singleTagStdDevs = VecBuilder.fill(0.0, 0.0, 0.0);
     multiTagStdDevs = VecBuilder.fill(0.0, 0.0, 0.0);
     frontLimelight = new PhotonCamera(name);
+    PhotonCamera.setVersionCheckEnabled(false);
     this.cameraTransform = cameraTransform;
     poseEstimator =
         new PhotonPoseEstimator(

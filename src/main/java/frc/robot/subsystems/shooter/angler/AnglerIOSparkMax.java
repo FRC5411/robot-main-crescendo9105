@@ -20,7 +20,7 @@ public class AnglerIOSparkMax implements AnglerIO {
   private DutyCycleEncoder absoluteEncoder = new DutyCycleEncoder(0);
   private Encoder relativeEncoder = new Encoder(5, 6);
 
-  private Rotation2d absoluteEncoderOffset = Rotation2d.fromDegrees(180.9);
+  private Rotation2d absoluteEncoderOffset = Rotation2d.fromDegrees(179.0);
 
   private double appliedVolts = 0.0;
 
