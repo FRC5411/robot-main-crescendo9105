@@ -5,14 +5,10 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.TargetingSystem;
@@ -155,43 +151,15 @@ public class ShooterCommands {
                     () -> {
                       if (stopAngler) {
                         logDirection(AnglerDirection.STOP);
+                        anglerPosition = null;
                       }
                       if (stopLauncher) {
                         logSpeeds(FlywheelSpeeds.STOP);
+                        laucnherVelocityMPS = 0.0;
                       }
                     }));
 
     return currentCommand;
-  }
-
-  // TODO Fix SysID routines, verify with Anshul that these are correct
-
-  public static Command systemIdentificationDynamic(Shooter robotShooter, Direction direction) {
-    SysIdRoutine routine =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(),
-            new SysIdRoutine.Mechanism(
-                (Measure<Voltage> volts) -> {
-                  robotShooter.setLauncherVolts(volts.magnitude(), volts.magnitude());
-                },
-                null,
-                robotShooter));
-
-    return routine.dynamic(direction);
-  }
-
-  public static Command systemIdentificationQuasistatic(Shooter robotShooter, Direction direction) {
-    SysIdRoutine routine =
-        new SysIdRoutine(
-            new SysIdRoutine.Config(),
-            new SysIdRoutine.Mechanism(
-                (Measure<Voltage> volts) -> {
-                  robotShooter.setLauncherVolts(volts.magnitude(), volts.magnitude());
-                },
-                null,
-                robotShooter));
-
-    return routine.quasistatic(direction);
   }
 
   /** Write the direction of the Angler to console */
@@ -207,9 +175,9 @@ public class ShooterCommands {
   /** Direction of the Angler */
   public static enum AnglerDirection {
     /** Run the Angler upwards */
-    UP(12.0),
+    UP(9.0),
     /** Run the Angler downwards */
-    DOWN(-12.0),
+    DOWN(-9.0),
     /** Stop the Intake wheels */
     STOP(0.0);
 

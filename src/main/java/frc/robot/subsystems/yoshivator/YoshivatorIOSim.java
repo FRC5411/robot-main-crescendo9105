@@ -4,13 +4,18 @@
 
 package frc.robot.subsystems.yoshivator;
 
+/** Class to represent the yoshi mechanism in simulation */
 public class YoshivatorIOSim implements YoshivatorIO {
 
+  /** Create a new virtual implementation of the yoshi */
   public YoshivatorIOSim() {}
 
   @Override
   public void updateInputs(YoshivatorIOInputs inputs) {}
 
   @Override
-  public void setVolts(double volts) {}
+  public void setPivotVolts(double volts) {}
+
+  @Override
+  public void setIntakeVolts(double volts) {}
 }
