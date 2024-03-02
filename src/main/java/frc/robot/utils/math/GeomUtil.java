@@ -1,4 +1,4 @@
-package frc.robot.utils;
+package frc.robot.utils.math;
 
 // Copyright (c) 2023 FRC 6328
 // http://github.com/Mechanical-Advantage

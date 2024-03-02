@@ -10,7 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 
-/** A simulated swerve module */
+/** Class to represent the swerve module in simulation */
 public class ModuleIOSim implements ModuleIO {
   private final double LOOP_PERIOD_S = 0.02;
 
@@ -25,6 +25,7 @@ public class ModuleIOSim implements ModuleIO {
   private PIDController driveFeedback = new PIDController(0.0, 0.0, 0.0);
   private PIDController azimuthFeedback = new PIDController(0.0, 0.0, 0.0);
 
+  /** Create a new virtual implementation of a swerve module */
   public ModuleIOSim(int module) {
     azimuthFeedback.enableContinuousInput(-Math.PI, Math.PI);
   }
@@ -76,4 +77,6 @@ public class ModuleIOSim implements ModuleIO {
         driveFeedback.calculate(azimuthMotor.getAngularPositionRad(), position.getRadians());
     setDriveVolts(feedbackOutput * 12.0);
   }
+
+  // TODO Add tunable numbers for sim
 }

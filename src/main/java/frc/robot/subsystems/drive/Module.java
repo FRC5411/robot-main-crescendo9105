@@ -49,7 +49,7 @@ public class Module {
 
   /** Sets the module's state */
   public SwerveModuleState setDesiredState(SwerveModuleState desiredState) {
-    var optimizedState = SwerveModuleState.optimize(desiredState, getAngle());
+    var optimizedState = desiredState; // SwerveModuleState.optimize(desiredState, getAngle());
 
     // Controllers run in IO, which is called in periodic
     velocitySetpoint = optimizedState.speedMetersPerSecond;

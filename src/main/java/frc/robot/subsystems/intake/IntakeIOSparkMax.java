@@ -9,10 +9,13 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.Logger;
 
 /** Class to interact with the physical intake structure */
 public class IntakeIOSparkMax implements IntakeIO {
+  private final double GEARING = 9.0 / 1.0;
+
   // TODO Update IDs and constatns as needed
   private CANSparkMax intakeMotor = new CANSparkMax(51, MotorType.kBrushless);
   private RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
@@ -35,17 +38,20 @@ public class IntakeIOSparkMax implements IntakeIO {
 
   @Override
   public void updateInputs(IntakeIOInputs inputs) {
-    inputs.angleRotations = intakeEncoder.getPosition();
-    inputs.velocityRPM = intakeEncoder.getVelocity();
+    inputs.angleRotations = Rotation2d.fromRotations(intakeEncoder.getPosition() / GEARING);
+    inputs.velocityRPM = intakeEncoder.getVelocity() / GEARING;
     inputs.appliedVolts = appliedVolts;
     inputs.appliedCurrentAmps = new double[] {intakeMotor.getOutputCurrent()};
     inputs.temperatureCelsius = new double[] {intakeMotor.getMotorTemperature()};
+
+    Logger.recordOutput(
+        "Intake/InternalVolts", intakeMotor.getAppliedOutput() * intakeMotor.getBusVoltage());
   }
 
   @Override
   public void setVolts(double volts) {
     appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
-    Logger.recordOutput("Commands running internal level", appliedVolts);
+
     intakeMotor.setVoltage(appliedVolts);
   }
 }

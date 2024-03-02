@@ -20,14 +20,14 @@ public class ClimbVisualizer {
   private Mechanism2d climbMechanism = new Mechanism2d(3, 2);
 
   private MechanismRoot2d climbPivot =
-      climbMechanism.getRoot("climbPivot", 1.5, Units.inchesToMeters(21.0));
+      climbMechanism.getRoot("ClimbPivot", 1.5, Units.inchesToMeters(21.0));
 
   private MechanismLigament2d climbTower =
-      climbPivot.append(new MechanismLigament2d("climbTower", 21.0, -90.0));
+      climbPivot.append(new MechanismLigament2d("ClimbTower", 21.0, -90.0));
   private MechanismLigament2d climbArm =
       climbPivot.append(
           new MechanismLigament2d(
-              "climbArm", Units.inchesToMeters(12.5), 0, 6.0, new Color8Bit(Color.kWhite)));
+              "ClimbArm", Units.inchesToMeters(12.5), 0, 6.0, new Color8Bit(Color.kWhite)));
 
   /** Creates a new visual for the climb */
   public ClimbVisualizer(climbSide arm) {
@@ -36,14 +36,14 @@ public class ClimbVisualizer {
     climbTower.setColor(new Color8Bit(Color.kAqua));
     climbTower.setLineWeight(5.0);
 
-    Logger.recordOutput("Climb/" + NAME, climbMechanism);
+    Logger.recordOutput("Climb/Visualizer/" + NAME, climbMechanism);
   }
 
   /** Update the angle of the climb arm */
   public void updateClimbAngle(Rotation2d angleRadians) {
     climbArm.setAngle(angleRadians);
 
-    Logger.recordOutput("Climb/" + NAME, climbMechanism);
+    Logger.recordOutput("Climb/Visualizer/" + NAME, climbMechanism);
   }
 
   /** Which side this climb is on */
