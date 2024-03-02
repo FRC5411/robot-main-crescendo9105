@@ -9,6 +9,7 @@ import org.littletonrobotics.junction.AutoLog;
 
 /** Hardware interface for swerve modules */
 public interface ModuleIO {
+  /** Drive subsystem module sensor data */
   @AutoLog
   public static class ModuleIOInputs {
     public double drivePositionM = 0.0;
@@ -25,19 +26,19 @@ public interface ModuleIO {
     public double[] azimuthTemperatureCelsius = new double[] {};
   }
 
-  /** Update the hardware inputs for a module */
+  /** Update the inputs from the sensors */
   public default void updateInputs(ModuleIOInputs inputs) {}
 
-  /** Set the voltage for the drive motor */
+  /** Set the voltage of the drive motor */
   public default void setDriveVolts(double volts) {}
 
-  /** Set the voltage for the azmith motor */
+  /** Set the voltage of the azimuth motor */
   public default void setAzimuthVolts(double volts) {}
 
-  /** Set the velocity setpoint for closed-loop control */
+  /** Set the drive motor velocity setpoint for closed-loop control */
   public default void setDriveVelocity(double velocityMPS) {}
 
-  /** Set the position setpoint for closed-loop control */
+  /** Set the azimuth motor position setpoint for closed-loop control */
   public default void setAzimuthPosition(Rotation2d position) {}
 
   /** Brake the drive motor */

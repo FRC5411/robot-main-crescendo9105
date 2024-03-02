@@ -9,15 +9,22 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 /** Class to interact with the physical climb structure */
 public class ClimbIOSparkMax implements ClimbIO {
+  private final double GEARING = 625.0 / 1.0;
+
   // TODO Adjust values as needed
-  private CANSparkMax leftMotor = new CANSparkMax(41, MotorType.kBrushless);
-  private CANSparkMax rightMotor = new CANSparkMax(42, MotorType.kBrushless);
+  private CANSparkMax leftMotor = new CANSparkMax(61, MotorType.kBrushless);
+  private CANSparkMax rightMotor = new CANSparkMax(62, MotorType.kBrushless);
 
   private RelativeEncoder leftEncoder = leftMotor.getEncoder();
   private RelativeEncoder rightEncoder = rightMotor.getEncoder();
+
+  private DutyCycleEncoder leftAbsoluteEncoder = new DutyCycleEncoder(4);
+  private DutyCycleEncoder rightAbsoluteEncoder = new DutyCycleEncoder(3);
 
   private double leftAppliedVolts = 0.0;
   private double rightAppliedVolts = 0.0;
@@ -31,10 +38,10 @@ public class ClimbIOSparkMax implements ClimbIO {
 
     leftMotor.setSmartCurrentLimit(40);
     leftMotor.enableVoltageCompensation(12.0);
-    leftMotor.setIdleMode(IdleMode.kCoast);
+    leftMotor.setIdleMode(IdleMode.kBrake);
     rightMotor.setSmartCurrentLimit(40);
     rightMotor.enableVoltageCompensation(12.0);
-    rightMotor.setIdleMode(IdleMode.kCoast);
+    rightMotor.setIdleMode(IdleMode.kBrake);
 
     leftEncoder.setPosition(0.0);
     rightEncoder.setPosition(0.0);
@@ -46,13 +53,13 @@ public class ClimbIOSparkMax implements ClimbIO {
   @Override
   public void updateInputs(ClimbIOInputs inputs) {
     // TODO Add conversion factors as needed
-    inputs.leftAngleRadians = leftEncoder.getPosition();
+    inputs.leftAngle = Rotation2d.fromRotations(leftAbsoluteEncoder.getAbsolutePosition());
     inputs.leftVelocityRPS = leftEncoder.getVelocity();
     inputs.leftAppliedVolts = leftAppliedVolts;
     inputs.leftCurrentAmps = new double[] {leftMotor.getOutputCurrent()};
     inputs.leftTemperatureCelsius = new double[] {leftMotor.getMotorTemperature()};
 
-    inputs.rightAngleRadians = rightEncoder.getPosition();
+    inputs.rightAngle = Rotation2d.fromRotations(rightAbsoluteEncoder.getAbsolutePosition());
     inputs.rightVelocityRPS = rightEncoder.getVelocity();
     inputs.rightAppliedVolts = rightAppliedVolts;
     inputs.rightCurrentAmps = new double[] {rightMotor.getOutputCurrent()};

@@ -6,8 +6,8 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.subsystems.intake.Intake;
-import org.littletonrobotics.junction.Logger;
 
 /** Class to hold all of the commands for the Intake */
 public class IntakeCommands {
@@ -15,45 +15,53 @@ public class IntakeCommands {
 
   private IntakeCommands() {}
 
-  /** Run the intake at a desired velocity in RPM */
-  public static Command runIntake(Intake robotIntake, double velocityRPM) {
-    currentCommand = Commands.run(() -> robotIntake.setVelocity(velocityRPM), robotIntake);
+  /** Returns a command to run the Intake motor with a given direction */
+  public static Command runIntake(Intake robotIntake, IntakeDirection direction) {
+    currentCommand =
+        Commands.run(() -> robotIntake.setVolts(direction.getVolts()), robotIntake)
+            .alongWith(new InstantCommand(() -> logDirection(direction)));
 
     return currentCommand;
   }
 
-  /**
-   * Returns command that sets the desired velocity to 0, will cancel any other currently running
-   * Intake commands
-   */
-  public static Command stopIntake(Intake roboIntake) {
+  /** Returns a command to stop the Intake motor */
+  public static Command stopIntake(Intake robotIntake) {
+    IntakeDirection direction = IntakeDirection.STOP;
+
     if (currentCommand != null) {
       currentCommand.cancel();
     }
-    currentCommand = Commands.run(() -> roboIntake.setVelocity(0.0), roboIntake);
-
-    return currentCommand;
-  }
-
-  // TODO Yeah yeah ik these are basically the same it's just for testing
-
-  /** Intake a gamepiece */
-  public static Command intakePiece(Intake robotIntake, double volts) {
     currentCommand =
-        Commands.run(
-            () -> {
-              robotIntake.setVolts(volts);
-              Logger.recordOutput("Command Running", "Is running");
-            },
-            robotIntake);
+        Commands.run(() -> robotIntake.stopMotor(), robotIntake)
+            .alongWith(new InstantCommand(() -> logDirection(direction)));
 
     return currentCommand;
   }
 
-  /** Outtake a gamepiece */
-  public static Command outtakePiece(Intake robotIntake, double volts) {
-    currentCommand = Commands.run(() -> robotIntake.setVolts(volts), robotIntake);
+  /** Write the direction of the Intake to console */
+  private static void logDirection(IntakeDirection direction) {
+    System.out.println("INTAKE: " + direction);
+  }
 
-    return currentCommand;
+  /** Direction of the Intake */
+  public static enum IntakeDirection {
+    /** Run the Intake wheels in to the Shooter */
+    IN(12.0),
+    /** Run the Intake wheels out of the Shooter */
+    OUT(-12.0),
+    /** Stop the Intake wheels */
+    STOP(0.0);
+
+    private double volts;
+
+    /** Define the direction for the Intake to spin */
+    IntakeDirection(double volts) {
+      this.volts = volts;
+    }
+
+    /** Returns the voltage based on the direction specified */
+    public double getVolts() {
+      return this.volts;
+    }
   }
 }

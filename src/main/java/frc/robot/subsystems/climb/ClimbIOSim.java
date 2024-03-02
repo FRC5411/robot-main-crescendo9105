@@ -5,13 +5,14 @@
 package frc.robot.subsystems.climb;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 
-/** Class to represent the mechanism in simulation */
+/** Class to represent the climb mechanism in simulation */
 public class ClimbIOSim implements ClimbIO {
   private double LOOP_PERIOD_S = 0.02;
 
@@ -39,13 +40,13 @@ public class ClimbIOSim implements ClimbIO {
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(rightMotor.getCurrentDrawAmps()));
 
-    inputs.leftAngleRadians = leftMotor.getAngleRads();
+    inputs.leftAngle = Rotation2d.fromRadians(leftMotor.getAngleRads());
     inputs.leftVelocityRPS = leftMotor.getVelocityRadPerSec();
     inputs.leftAppliedVolts = leftAppliedVolts;
     inputs.leftCurrentAmps = new double[] {leftMotor.getCurrentDrawAmps()};
     inputs.leftTemperatureCelsius = new double[] {0.0};
 
-    inputs.rightAngleRadians = rightMotor.getAngleRads();
+    inputs.rightAngle = Rotation2d.fromRadians(rightMotor.getAngleRads());
     inputs.rightVelocityRPS = rightMotor.getVelocityRadPerSec();
     inputs.rightAppliedVolts = rightAppliedVolts;
     inputs.rightCurrentAmps = new double[] {rightMotor.getCurrentDrawAmps()};

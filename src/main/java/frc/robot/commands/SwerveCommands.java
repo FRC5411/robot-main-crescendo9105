@@ -12,12 +12,14 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.subsystems.drive.Drive;
 import java.util.function.DoubleSupplier;
 
 /** Class to hold all of the commands for the Drive */
 public class SwerveCommands {
-  private static final double DEADBAND = 0.2;
+  private static final double DEADBAND = 0.1;
+  private static final boolean IS_FIELD = true;
 
   private SwerveCommands() {}
 
@@ -49,14 +51,31 @@ public class SwerveCommands {
                   .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
                   .getTranslation();
 
-          robotDrive.runSwerve(
-              ChassisSpeeds.fromFieldRelativeSpeeds(
-                  // Convert from % to MPS
-                  linearVelocity.getX() * robotDrive.getMaxLinearSpeedMPS(),
-                  linearVelocity.getY() * robotDrive.getMaxLinearSpeedMPS(),
-                  theta * robotDrive.getMaxAngularSpeedMPS(),
-                  robotDrive.getRotation()));
+          if (IS_FIELD) {
+            robotDrive.runSwerve(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                    // Convert from % to MPS
+                    linearVelocity.getX() * robotDrive.getMaxLinearSpeedMPS(),
+                    linearVelocity.getY() * robotDrive.getMaxLinearSpeedMPS(),
+                    theta * robotDrive.getMaxAngularSpeedMPS(),
+                    robotDrive.getRotation()));
+          } else {
+            robotDrive.runSwerve(
+                ChassisSpeeds.fromRobotRelativeSpeeds(
+                    linearVelocity.getX() * robotDrive.getMaxLinearSpeedMPS(),
+                    linearVelocity.getY() * robotDrive.getMaxLinearSpeedMPS(),
+                    theta * robotDrive.getMaxAngularSpeedMPS(),
+                    robotDrive.getRotation()));
+          }
         },
         robotDrive);
+  }
+
+  /** Returns a command to stop the drivetrain */
+  public static Command stopDrive(Drive robotDrive) {
+    return new InstantCommand(
+        () -> {
+          robotDrive.runSwerve(new ChassisSpeeds());
+        });
   }
 }

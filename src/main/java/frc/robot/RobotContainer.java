@@ -8,28 +8,41 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.IndexerCommands;
+import frc.robot.commands.IndexerCommands.IndexerDirection;
 import frc.robot.commands.IntakeCommands;
+import frc.robot.commands.IntakeCommands.IntakeDirection;
+import frc.robot.commands.ShooterCommands;
+import frc.robot.commands.ShooterCommands.AnglerDirection;
 import frc.robot.commands.SwerveCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
+import frc.robot.subsystems.climb.ClimbIOSim;
+import frc.robot.subsystems.climb.ClimbIOSparkMax;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
+import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.IndexerIO;
+import frc.robot.subsystems.indexer.IndexerIOSim;
+import frc.robot.subsystems.indexer.IndexerIOSparkMax;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.TrajectoryAngleSolver;
-import org.littletonrobotics.junction.Logger;
+import frc.robot.subsystems.shooter.angler.AnglerIO;
+import frc.robot.subsystems.shooter.angler.AnglerIOSim;
+import frc.robot.subsystems.shooter.angler.AnglerIOSparkMax;
+import frc.robot.subsystems.shooter.launcher.LauncherIO;
+import frc.robot.subsystems.shooter.launcher.LauncherIOSim;
+import frc.robot.subsystems.shooter.launcher.LauncherIOTalonFX;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -37,6 +50,7 @@ public class RobotContainer {
   private Intake robotIntake;
   private Shooter robotShooter;
   private Climb robotClimb;
+  private Indexer robotIndexer;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
 
@@ -67,7 +81,9 @@ public class RobotContainer {
                 new ModuleIOSparkMax(3),
                 new GyroIOPigeon2(false));
         robotIntake = new Intake(new IntakeIOSparkMax());
-        // robotClimb = new Climb(new ClimbIOSparkMax());
+        robotShooter = new Shooter(new AnglerIOSparkMax(), new LauncherIOTalonFX());
+        robotClimb = new Climb(new ClimbIOSparkMax());
+        robotIndexer = new Indexer(new IndexerIOSparkMax());
         break;
       case SIM:
         robotDrive =
@@ -78,7 +94,9 @@ public class RobotContainer {
                 new ModuleIOSim(3),
                 new GyroIO() {});
         robotIntake = new Intake(new IntakeIOSim());
-        // robotClimb = new Climb(new ClimbIOSim());
+        robotShooter = new Shooter(new AnglerIOSim(), new LauncherIOSim());
+        robotClimb = new Climb(new ClimbIOSim());
+        robotIndexer = new Indexer(new IndexerIOSim());
         break;
       default:
         robotDrive =
@@ -89,23 +107,18 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new GyroIO() {});
         robotIntake = new Intake(new IntakeIO() {});
+        robotShooter = new Shooter(new AnglerIO() {}, new LauncherIO() {});
         robotClimb = new Climb(new ClimbIO() {});
+        robotIndexer = new Indexer(new IndexerIO() {});
         break;
     }
-
-    robotShooter = new Shooter();
   }
 
   /** Register commands with PathPlanner and add default autos to chooser */
   private void configureAutonomous() {
-    Logger.recordOutput("Command Running", "Not Running");
     // Register commands with PathPlanner's AutoBuilder so it can call them
     NamedCommands.registerCommand(
         "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));
-    NamedCommands.registerCommand("Intake", IntakeCommands.intakePiece(robotIntake, 12.0));
-    NamedCommands.registerCommand("Stop Intake", IntakeCommands.stopIntake(robotIntake));
-
-    // autoChooser.addDefaultOption("Print Hello", new PrintCommand("Hello"));
   }
 
   /** Configure controllers */
@@ -119,89 +132,87 @@ public class RobotContainer {
             () -> -pilotController.getLeftX(),
             () -> -pilotController.getRightX()));
 
-    /* Reset drive heading | Debugging */
-    pilotController
-        .y()
-        .onTrue(
-            Commands.runOnce(
-                    () ->
-                        robotDrive.setPose(
-                            new Pose2d(
-                                robotDrive.getPosition().getTranslation(), new Rotation2d())),
-                    robotDrive)
-                .ignoringDisable(true)); // Reset even when disabled
+    /* Reset gyro */
+    pilotController.y().onTrue(Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive));
 
-    /* Reset drive pose | Debugging */
-    pilotController.a().onTrue(Commands.runOnce(robotDrive::resetPose, robotDrive));
-
-    // /* Run intake (NEO) at half speed */
-    // pilotController
-    //     .b()
-    //     //        .whileTrue(IntakeCommands.runIntake(robotIntake, 5676.0 / 2.0))
-    //     .whileTrue(IntakeCommands.runIntake(robotIntake, 1500.0))
-    //     .whileFalse(IntakeCommands.stopIntake(robotIntake));
+    /* Run intake */
     pilotController
         .leftBumper()
-        .whileTrue(IntakeCommands.intakePiece(robotIntake, 12.0))
-        .whileFalse(IntakeCommands.stopIntake(robotIntake));
+        .whileTrue(
+            IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
+                .alongWith(IndexerCommands.stowPiece(robotIndexer)))
+        .whileFalse(
+            IntakeCommands.stopIntake(robotIntake)
+                .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
+
+    /* Run outtake */
     pilotController
         .rightBumper()
-        .whileTrue(IntakeCommands.intakePiece(robotIntake, -12.0))
-        .whileFalse(IntakeCommands.stopIntake(robotIntake));
-    // pilotController
-    //     .b()
-    //     .toggleOnTrue(
-    //         IntakeCommands.intakePiece(robotIntake, 12.0)
-    //             .finallyDo(() -> robotIntake.setVolts(0.0)));
-
-    pilotController
-        .a()
         .whileTrue(
-            robotShooter
-                .setShooterVoltageSetpointCommand(12, 12)
-                .andThen(robotShooter.setIndexerVoltage(12)))
-        .onFalse(
-            robotShooter
-                .setShooterVoltageSetpointCommand(0, 0)
-                .andThen(robotShooter.setIndexerVoltage(0)));
-    pilotController
-        .b()
-        .onTrue(robotShooter.setIndexerVoltage(-12))
-        .onFalse(robotShooter.setIndexerVoltage(0));
+            IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)
+                .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)))
+        .whileFalse(
+            IntakeCommands.stopIntake(robotIntake)
+                .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
+
+    /* Run angler setpoint */
     pilotController
         .x()
-        .onTrue(robotShooter.getSysIDTests())
-        .onFalse(robotShooter.setShooterVoltageSetpointCommand(0, 0));
+        .whileTrue(ShooterCommands.runAngler(robotShooter))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
 
+    /* Run angler manual up */
     pilotController
         .povUp()
-        .whileTrue(robotShooter.setShooterVelocitySetpointCommand(5, 5))
-        .whileTrue(
-            robotShooter.setShooterAngleCommand(
-                new Rotation2d(TrajectoryAngleSolver.newtonRaphsonSolver(3, 5))))
-        .onFalse(robotShooter.setShooterVelocitySetpointCommand(0, 0));
+        .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.UP))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+
+    /* Run angler manual down */
+    pilotController
+        .povDown()
+        .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.DOWN))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+
+    // /* Run launcher setpoint */
+    pilotController
+        .b()
+        .whileTrue(ShooterCommands.runLauncher(robotShooter))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+
+    /* Run launcher manual */
+    pilotController
+        .a()
+        .whileTrue(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN))
+        .whileFalse(IndexerCommands.stopIndexer(robotIndexer));
+
+    // pilotController
+    //     .a()
+    //     .whileTrue(Commands.run(() -> robotShooter.setAnglerVolts(12.0), robotShooter))
+    //     .whileFalse(Commands.run(() -> robotShooter.setAnglerVolts(0.0), robotShooter));
+
+    /* Move back slightly */
+    pilotController
+        .povLeft()
+        .whileTrue(SwerveCommands.swerveDrive(robotDrive, () -> -0.3, () -> 0.0, () -> 0.0))
+        .onFalse(SwerveCommands.stopDrive(robotDrive));
+
+    /* Move forward slightly */
+    pilotController
+        .povRight()
+        .whileTrue(SwerveCommands.swerveDrive(robotDrive, () -> 0.3, () -> 0.0, () -> 0.0))
+        .onFalse(SwerveCommands.stopDrive(robotDrive));
 
     // pilotController
     //     .y()
-    //     .onTrue()
-    //     .onFalse();
+    //     .whileTrue(ShooterCommands.runAngler(robotShooter, robotDrive))
+    //     .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
 
-    // .toggleOnFalse(IntakeCommands.stopIntake(robotIntake));
-
-    // /* Set climb to angle */
     // pilotController
     //     .a()
-    //     .whileTrue(ClimbCommands.setAngle(robotClimb, 1.0, 1.0))
-    //     .whileFalse(ClimbCommands.setAngle(robotClimb, 0.0, 0.0));
-
-    // /* Print commands for debugging purposes */
-    // pilotController
-    //     .b()
-    //     .whileTrue(Commands.print("B Button | whileTrue"))
-    //     .whileFalse(Commands.print("B Button | whileFalse"));
-    // pilotController.a().whileTrue(Commands.print("A Button | whileTrue"));
-    // pilotController.y().whileTrue(Commands.print("Y Button | whileTrue"));
-    // pilotController.x().whileTrue(Commands.print("X Button | whileTrue"));
+    //     .onTrue(
+    //         Commands.runOnce(
+    //             () -> robotDrive.setPose(new Pose2d(15.05, 5.81, new Rotation2d())),
+    // robotDrive));
   }
 
   /** Returns the selected autonomous */

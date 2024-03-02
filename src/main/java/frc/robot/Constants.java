@@ -45,4 +45,39 @@ public final class Constants {
     /** Alphabot constants */
     SIGMA
   }
+
+  public static enum Pilot {
+    /** Default */
+    COMPUTER
+  }
+
+  public static enum Bindings {
+    /** Drive translation x (FWD-BWD away from DS) trigger */
+    SWERVE_TRANSLATION_X,
+    /** Drive translation y (LFT-RHT away from DS) trigger */
+    SWERVE_TRANSLATION_Y,
+    /** Drive angular trigger */
+    SWERVE_ROTATION,
+    /** Reset field orientation (gyro) */
+    SWERVE_RESET_FIELD,
+    /** Reset robot pose */
+    SWERVE_RESET_POSE,
+    /** Run manual intake */
+    INTAKE_INTAKE_MANUAL,
+    /** Run manual outtake */
+    INTAKE_OUTTAKE_MANUAL,
+    /** Run intake on closed loop */
+    INTAKE_INTAKE_CLOSED_LOOP
+  }
+
+  public static enum Preferences {
+    /** Drive trigger deadzone */
+    SWERVE_DEADZONE,
+    /** Drive max translational speed in MPS */
+    SWERVE_MAX_LINEAR_SPEED,
+    /** Drive max rotational speed in MPS */
+    SWERVE_MAX_ANGULAR_SPEED,
+    /** Drive sqaure inputs */
+    SWERVE_SQUARE_INPUTS
+  }
 }
