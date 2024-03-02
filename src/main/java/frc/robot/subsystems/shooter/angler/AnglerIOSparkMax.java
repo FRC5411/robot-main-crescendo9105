@@ -37,7 +37,7 @@ public class AnglerIOSparkMax implements AnglerIO {
 
     anglerMotor.burnFlash();
 
-    absoluteEncoder.setDutyCycleRange(1.0 / 1025.0, 1024.0 / 1025.0);
+    absoluteEncoder.setDutyCycleRange(1.0 / 8192.0, 8191.0 / 8192.0);
   }
 
   @Override
@@ -48,8 +48,7 @@ public class AnglerIOSparkMax implements AnglerIO {
             .minus(
                 Rotation2d.fromRotations(absoluteEncoder.getAbsolutePosition())
                     .plus(absoluteEncoderOffset));
-    inputs.anglerRelativePosition =
-        Rotation2d.fromRotations(relativeEncoder.getDistance() / 4096.0);
+    inputs.anglerRelativePosition = Rotation2d.fromRotations(relativeEncoder.get() / 2048.0);
     inputs.anglerDutyCycleFrequency = absoluteEncoder.getFrequency();
     inputs.anglerVelocityRadiansPerSecond = relativeEncoder.getRate();
     inputs.appliedVolts = appliedVolts;
