@@ -4,9 +4,8 @@
 
 package frc.robot.subsystems.yoshivator.manipulator;
 
-import org.littletonrobotics.junction.AutoLog;
-
 import edu.wpi.first.math.geometry.Rotation2d;
+import org.littletonrobotics.junction.AutoLog;
 
 /** Hardware interface for the manipulator */
 public interface ManipulatorIO {

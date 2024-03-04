@@ -42,7 +42,7 @@ public class LEDSubsystem extends SubsystemBase {
     // Clamp value between 0 and 1.
     if (value < 0) value = 0;
     if (value > 1) value = 1;
-    
+
     // Hue value for red in HSV is 0 degrees and for green is 120 degrees.
     // Since we want a gradient between red and green, we map the input value to this range.
     // Have to divide by 2 because WPILib hsv range is from 0-180.
@@ -69,13 +69,14 @@ public class LEDSubsystem extends SubsystemBase {
   //     for (int i = 0; i < letter.length(); i++) {
   //       char character = letter.charAt(i);
   //       if (character == '.') {
-          
+
   //       } else if (character == '-') {
-          
+
   //       } else if (character == ' ') {
-          
+
   //       } else {
-  //         throw new IllegalArgumentException("wordToMorseCodeLED() parameter can only contain . or - characters.");
+  //         throw new IllegalArgumentException("wordToMorseCodeLED() parameter can only contain .
+  // or - characters.");
   //       }
   //     }
   //   }
@@ -92,7 +93,6 @@ public class LEDSubsystem extends SubsystemBase {
     m_led.setData(m_ledBuffer);
     m_led.start();
   }
-
 
   @Override
   public void periodic() {
