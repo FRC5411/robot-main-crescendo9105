@@ -8,16 +8,20 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 /** Class to interact with the physical manipulator structure */
 public class ManipulatorIOSparkMax implements ManipulatorIO {
   private final double PIVOT_GEARING = 75.0 / 1.0;
-  private final double INTAKE_GEARING = 3.0 / 1.0;
+  private final double FLYWHEEL_GEARING = 3.0 / 1.0;
 
   // TODO Update as needed
   private CANSparkMax pivotMotor = new CANSparkMax(0, MotorType.kBrushless);
-  private DutyCycleEncoder pivotEncoder = new DutyCycleEncoder(0);
+  private RelativeEncoder pivotRelativeEncoder = pivotMotor.getEncoder();
+  private DutyCycleEncoder pivotAbsoluteEncoder = new DutyCycleEncoder(0);
 
   private CANSparkMax flywheelMotor = new CANSparkMax(0, MotorType.kBrushless);
   private RelativeEncoder flywheelEncoder = flywheelMotor.getEncoder();
@@ -38,7 +42,7 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
 
     pivotMotor.burnFlash();
 
-    pivotEncoder.setDutyCycleRange(1.0 / 8192.0, 8191.0 / 8192.0);
+    pivotAbsoluteEncoder.setDutyCycleRange(1.0 / 8192.0, 8191.0 / 8192.0);
 
     flywheelMotor.clearFaults();
     flywheelMotor.restoreFactoryDefaults();
@@ -53,11 +57,33 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
   }
 
   @Override
-  public void updateInputs(ManipulatorIOInputs inputs) {}
+  public void updateInputs(ManipulatorIOInputs inputs) {
+    inputs.pivotPosition = Rotation2d.fromRotations(pivotAbsoluteEncoder.get() / PIVOT_GEARING);
+    inputs.pivotVelocityRadiansPerSecond =
+        Units.rotationsToRadians(pivotRelativeEncoder.getVelocity() / (PIVOT_GEARING * 60.0));
+    inputs.pivotAppliedVolts = pivotAppliedVolts;
+    inputs.pivotInternalVolts = pivotMotor.getBusVoltage() * pivotMotor.getAppliedOutput();
+    inputs.pivotAppliedCurrentAmps = new double[] {pivotMotor.getOutputCurrent()};
+    inputs.pivotTemperatureCelsius = new double[] {pivotMotor.getMotorTemperature()};
+
+    inputs.flywheelVelocityRPM = flywheelEncoder.getVelocity() / (FLYWHEEL_GEARING * 60.0);
+    inputs.flywheelAppliedVolts = flywheelAppliedVolts;
+    inputs.flywheelInternalVolts = flywheelMotor.getBusVoltage() * flywheelMotor.getAppliedOutput();
+    inputs.flywheelAppliedCurrentAmps = new double[] {flywheelMotor.getOutputCurrent()};
+    inputs.flywheelTemperatureCelsius = new double[] {flywheelMotor.getMotorTemperature()};
+  }
 
   @Override
-  public void setPivotVolts(double volts) {}
+  public void setPivotVolts(double volts) {
+    pivotAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+
+    pivotMotor.setVoltage(pivotAppliedVolts);
+  }
 
   @Override
-  public void setFlywheelVolts(double volts) {}
+  public void setFlywheelVolts(double volts) {
+    flywheelAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
+
+    flywheelMotor.setVoltage(flywheelAppliedVolts);
+  }
 }
