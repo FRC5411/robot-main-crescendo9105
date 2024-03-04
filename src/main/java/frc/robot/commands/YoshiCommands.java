@@ -4,6 +4,7 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -12,6 +13,8 @@ import frc.robot.subsystems.yoshivator.Yoshivator;
 /** Class to hold all of the commands for the Yoshi */
 public class YoshiCommands {
   private static Command currentCommand = null;
+
+  private static Rotation2d pivotSetpoint = null;
 
   private YoshiCommands() {}
 
@@ -24,11 +27,47 @@ public class YoshiCommands {
     return currentCommand;
   }
 
+  /** Returns a command to run the pivot to a given setpoint */
+  public static Command runPivot(Yoshivator robotYoshi, Rotation2d desiredSetpoint) {
+    currentCommand =
+        Commands.runOnce(
+                () -> {
+                  pivotSetpoint = desiredSetpoint;
+                },
+                robotYoshi)
+            .andThen(Commands.run(() -> robotYoshi.setPivotSetpoint(pivotSetpoint), robotYoshi));
+
+    return currentCommand;
+  }
+
   /** Returns a command to run the flywheel given a direction */
   public static Command runFlywheelManual(Yoshivator robotYoshi, YoshiFlywheelDirection direction) {
     currentCommand =
         Commands.run(() -> robotYoshi.setFlywheelVolts(direction.getVolts()), robotYoshi)
             .alongWith(new InstantCommand(() -> logDirection(direction)));
+
+    return currentCommand;
+  }
+
+  /** Returns a command to stop the Yoshi motors */
+  public static Command stopYoshi(Yoshivator robotYoshi, boolean stopPivot, boolean stopFlywheel) {
+    if (currentCommand != null) {
+      currentCommand.cancel();
+    }
+
+    currentCommand =
+        Commands.run(() -> robotYoshi.stopMotors(stopPivot, stopFlywheel), robotYoshi)
+            .alongWith(
+                new InstantCommand(
+                    () -> {
+                      if (stopPivot) {
+                        logDirection(YoshiPivotDirection.STOP);
+                        pivotSetpoint = null;
+                      }
+                      if (stopFlywheel) {
+                        logDirection(YoshiFlywheelDirection.STOP);
+                      }
+                    }));
 
     return currentCommand;
   }

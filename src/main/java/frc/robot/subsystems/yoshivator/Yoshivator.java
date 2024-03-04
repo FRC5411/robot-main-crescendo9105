@@ -85,6 +85,17 @@ public class Yoshivator extends SubsystemBase {
     }
   }
 
+  /** Stops the motors of the Yoshi */
+  public void stopMotors(boolean stopPivot, boolean stopFlywheel) {
+    if (stopPivot) {
+      pivotSetpoint = null;
+      setPivotVolts(0.0);
+    }
+    if (stopFlywheel) {
+      setFlywheelVolts(0.0);
+    }
+  }
+
   /** Set the goal of the pviot controller */
   public void setPivotSetpoint(Rotation2d desiredPosition) {
     pivotSetpoint = desiredPosition;
