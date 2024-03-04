@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOInputsAutoLogged;
 import frc.robot.utils.debugging.LoggedTunableNumber;
+
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /** Yoshivator subsystem */
@@ -82,5 +84,44 @@ public class Yoshivator extends SubsystemBase {
       pivotFeedback.setConstraints(
           new TrapezoidProfile.Constraints(pivotFeedbackV.get(), pivotFeedbackA.get()));
     }
+  }
+
+  /** Set the goal of the pviot controller */
+  public void setPivotSetpoint(Rotation2d desiredPosition) {
+    pivotSetpoint = desiredPosition;
+  }
+
+  /** Set the voltage of the pivot motor */
+  public void setPivotVolts(double volts) {
+    manipulatorIO.setPivotVolts(volts);
+  }
+
+  /** Set the voltage of the flywheel motor */
+  public void setFlywheelVolts(double volts) {
+    manipulatorIO.setFlywheelVolts(volts);
+  }
+
+  /** Returns the pivot's position goal */
+  @AutoLogOutput(key = "Yoshivator/Pivot/Feedback/PositionGoal")
+  public double getPivotPositionGoal() {
+    return pivotFeedback.getGoal().position;
+  }
+
+  /** Returns the pivot's velocity goal */
+  @AutoLogOutput(key = "Yoshivator/Pivot/Feedback/VelocityGoal")
+  public double getPivotVelocityGoal() {
+    return pivotFeedback.getGoal().velocity;
+  }
+
+  /** Returns if the pivot is at the goal or not */
+  @AutoLogOutput(key = "Yoshivator/Pivot/Feedback/AtGoal")
+  public boolean isPivotAtGoal() {
+    return pivotFeedback.atGoal();
+  }
+
+  /** Returns the pivot's position setpoint */
+  @AutoLogOutput(key = "Yoshivator/Pivot/Feedback/PositionSetpoint")
+  public double getPivotPositionSetpoint() {
+    return pivotFeedback.getSetpoint().position;
   }
 }
