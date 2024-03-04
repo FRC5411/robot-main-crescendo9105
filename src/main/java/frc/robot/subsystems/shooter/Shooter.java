@@ -27,7 +27,7 @@ public class Shooter extends SubsystemBase {
   private LauncherIOInputsAutoLogged launcherIOInputs = new LauncherIOInputsAutoLogged();
 
   private ProfiledPIDController anglerFeedback =
-      new ProfiledPIDController(0.49, 0.0, 0.0, new TrapezoidProfile.Constraints(400.0, 200.0));
+      new ProfiledPIDController(0.49, 0.9, 0.012, new TrapezoidProfile.Constraints(125.0, 150.0));
   private ArmFeedforward anglerFeedforward = new ArmFeedforward(0.3, 0.0, 0.0);
 
   private LoggedTunableNumber anglerFeedbackP =
