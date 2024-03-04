@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.utils.debugging.LoggedTunableNumber;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 /** Class to hold the command to control the robot's heading */
@@ -39,6 +40,25 @@ public class AutoAlignCommand {
   public static Command angleToSpeakerCommand(Drive robotDrive) {
     driveThetaController.setTolerance(0.2);
     driveThetaController.enableContinuousInput(0, 360);
+    return turnToAngle(
+        robotDrive,
+        // Plus and negative logic have to be tested based of gyro readings
+        () ->
+            new Rotation2d(
+                    Constants.kSpeaker3DPose.getX() - robotDrive.getPosition().getX(),
+                    Constants.kSpeaker3DPose.getY() - robotDrive.getPosition().getY())
+                .plus(Rotation2d.fromDegrees(180)),
+        () -> 0.0,
+        () -> 0.0);
+  }
+
+  public static Command turnToAngle(
+      Drive robotDrive,
+      Supplier<Rotation2d> thetaGoal,
+      Supplier<Double> xGoal,
+      Supplier<Double> yGoal) {
+    driveThetaController.setTolerance(0.2);
+    driveThetaController.enableContinuousInput(0, 360);
 
     return new FunctionalCommand(
         () -> {
@@ -46,12 +66,7 @@ public class AutoAlignCommand {
           driveXLimiter.reset(desiredChassisSpeeds.vxMetersPerSecond);
           driveYLimiter.reset(desiredChassisSpeeds.vyMetersPerSecond);
 
-          // Plus and negative logic have to be tested based of gyro readings
-          Rotation2d goalRotation =
-              new Rotation2d(
-                      Constants.kSpeaker3DPose.getX() - robotDrive.getPosition().getX(),
-                      Constants.kSpeaker3DPose.getY() - robotDrive.getPosition().getY())
-                  .plus(Rotation2d.fromDegrees(180));
+          Rotation2d goalRotation = thetaGoal.get();
 
           Rotation2d currentRotation = robotDrive.getPosition().getRotation();
 
@@ -60,24 +75,21 @@ public class AutoAlignCommand {
           }
         },
         () -> {
-          double desiredXSpeed = driveXLimiter.calculate(0);
-          double desiredYSpeed = driveYLimiter.calculate(0);
+          double desiredXSpeed = driveXLimiter.calculate(xGoal.get());
+          double desiredYSpeed = driveYLimiter.calculate(yGoal.get());
 
           double desiredThetaDegrees =
               driveThetaController.calculate(
                   robotDrive.getPosition().getRotation().getDegrees(),
-                  Math.toDegrees(
-                          Math.atan2(
-                              Constants.kSpeaker3DPose.getY() - robotDrive.getPosition().getY(),
-                              Constants.kSpeaker3DPose.getX() - robotDrive.getPosition().getX()))
-                      + 180);
+                  thetaGoal.get().getDegrees());
 
           Logger.recordOutput("AutoAlign/DesiredX", desiredXSpeed);
           Logger.recordOutput("AutoAlign/DesiredY", desiredYSpeed);
           Logger.recordOutput("AutoAlign/DesiredTheta", desiredThetaDegrees);
           Logger.recordOutput("AutoAlign/Controller/Goal", driveThetaController.getGoal().position);
           Logger.recordOutput(
-              "AutoAlign/Controller/Setpoint", driveThetaController.getSetpoint().position);
+              "AutoAlign/Controller/Setpoint",
+              Double.valueOf(driveThetaController.getSetpoint().position));
           Logger.recordOutput(
               "AutoAlign/Controller/Measure", robotDrive.getPosition().getRotation().getDegrees());
           robotDrive.runSwerve(
@@ -89,6 +101,7 @@ public class AutoAlignCommand {
   }
 
   /** Checks if tunable numbers have changed, if so update controllers */
+  /** Called in robotPeriodic() for the periodic check */
   public static void updateTunables() {
     if (driveThetaP.hasChanged(driveThetaP.hashCode())
         || driveThetaI.hasChanged(driveThetaI.hashCode())
@@ -103,6 +116,7 @@ public class AutoAlignCommand {
     }
   }
   /** Initialize logged values so they aren't null before the command is called */
+  /** Called in robotInit() to avoid funky logic */
   public static void initLogTables() {
     Logger.recordOutput("AutoAlign/DesiredX", 0);
     Logger.recordOutput("AutoAlign/DesiredY", 0);
