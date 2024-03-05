@@ -12,6 +12,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.BatterySim;
 import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj.simulation.RoboRioSim;
+import frc.robot.Constants;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 import org.littletonrobotics.junction.Logger;
 
@@ -22,14 +23,14 @@ public class LauncherIOSim implements LauncherIO {
   private final double RADIUS_M = 6.35 / 100;
   private final double CIRCUMFRENCE_M = 2.0 * Math.PI * RADIUS_M;
 
-  private FlywheelSim topMotor = new FlywheelSim(DCMotor.getFalcon500(1), GEARING, 0.003);
-  private FlywheelSim bottomMotor = new FlywheelSim(DCMotor.getFalcon500(1), GEARING, 0.003);
+  private FlywheelSim topMotor = new FlywheelSim(DCMotor.getFalcon500(1), GEARING, 0.009);
+  private FlywheelSim bottomMotor = new FlywheelSim(DCMotor.getFalcon500(1), GEARING, 0.009);
 
-  private PIDController topFeedback = new PIDController(0.019, 0.0, 0.0);
+  private PIDController topFeedback = new PIDController(5.9, 0.0, 0.0);
   private SimpleMotorFeedforward topFeedforward = new SimpleMotorFeedforward(0.0, 0.237);
   private SlewRateLimiter topLimiter = new SlewRateLimiter(25.0);
 
-  private PIDController bottomFeedback = new PIDController(0.019, 0.0, 0.0);
+  private PIDController bottomFeedback = new PIDController(5.7, 0.0, 0.0);
   private SimpleMotorFeedforward bottomFeedforward = new SimpleMotorFeedforward(0.0, 0.237);
   private SlewRateLimiter bottomLimiter = new SlewRateLimiter(25.0);
 
@@ -77,7 +78,8 @@ public class LauncherIOSim implements LauncherIO {
     inputs.topFlywheelAppliedVolts = topAppliedVolts;
     inputs.topFlywheelAppliedCurrentAmps = new double[] {topMotor.getCurrentDrawAmps()};
     inputs.topFlywheelTemperatureCelsius = new double[] {0.0};
-    inputs.topFlywheelSetpointRPM = topVelocitySetpointMPS;
+    inputs.topFlywheelSetpointMPS = topVelocitySetpointMPS;
+    inputs.topFlywheelErrorMPS = topFeedback.getPositionError();
 
     inputs.bottomFlywheelVelocityMPS =
         (bottomMotor.getAngularVelocityRPM() * CIRCUMFRENCE_M) / 60.0;
@@ -85,8 +87,11 @@ public class LauncherIOSim implements LauncherIO {
     inputs.bottomFlywheelAppliedCurrentAmps = new double[] {bottomMotor.getCurrentDrawAmps()};
     inputs.bottomFlywheelTemperatureCelsius = new double[] {0.0};
     inputs.bottomFlywheelSetpointMPS = bottomVelocitySetpointMPS;
+    inputs.topFlywheelErrorMPS = topFeedback.getPositionError();
 
-    updateTunableNumbers();
+    if (Constants.tuningMode) {
+      updateTunableNumbers();
+    }
   }
 
   @Override
@@ -112,19 +117,12 @@ public class LauncherIOSim implements LauncherIO {
             (topMotor.getAngularVelocityRPM() * CIRCUMFRENCE_M) / 60.0, topVelocitySetpointMPS);
     double topFeedforwardOutput = topFeedforward.calculate(topVelocitySetpointMPS);
 
-    double topCombinedOutput = (topFeedbackOutput + topFeedforwardOutput) / 12.0;
-
-    setTopVolts(topFeedbackOutput);
+    double topCombinedOutput = topFeedbackOutput + topFeedforwardOutput;
+    setTopVolts(topCombinedOutput);
 
     Logger.recordOutput("Shooter/LauncherTop/Feedback/Output", topFeedbackOutput);
     Logger.recordOutput("Shooter/LauncherTop/Feedforward/Output", topFeedforwardOutput);
     Logger.recordOutput("Shooter/LauncherTop/Combined", topCombinedOutput);
-    Logger.recordOutput(
-        "Shooter/LauncherTop/Feedback/VelocityError", topFeedback.getPositionError());
-    Logger.recordOutput(
-        "Shooter/LauncherTop/Feedback/AccelerationError", topFeedback.getVelocityError());
-    Logger.recordOutput("Shooter/LauncherTop/Feedback/Setpoint", topFeedback.getSetpoint());
-    Logger.recordOutput("Shooter/LauncherTop/Feedback/AtSetpoint", topFeedback.atSetpoint());
   }
 
   @Override
@@ -137,7 +135,7 @@ public class LauncherIOSim implements LauncherIO {
             bottomVelocitySetpointMPS);
     double bottomFeedforwardOutput = bottomFeedforward.calculate(bottomVelocitySetpointMPS);
 
-    double bottomCombinedOutput = (bottomFeedbackOutput + bottomFeedforwardOutput) * 12.0;
+    double bottomCombinedOutput = bottomFeedbackOutput + bottomFeedforwardOutput;
     setBottomVolts(bottomCombinedOutput);
 
     Logger.recordOutput("Shooter/LauncherBottom/Feedback/Output", bottomFeedbackOutput);

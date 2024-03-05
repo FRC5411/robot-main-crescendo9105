@@ -133,6 +133,8 @@ public class LauncherIOTalonFX implements LauncherIO {
         new double[] {topMotor.getStatorCurrent().getValueAsDouble()};
     inputs.topFlywheelTemperatureCelsius =
         new double[] {topMotor.getDeviceTemp().getValueAsDouble()};
+    inputs.topFlywheelSetpointMPS = topMotor.getClosedLoopReference().getValueAsDouble();
+    inputs.topFlywheelErrorMPS = topMotor.getClosedLoopError().getValueAsDouble();
 
     inputs.bottomFlywheelVelocityMPS =
         (bottomMotor.getVelocity().getValueAsDouble() * CIRCUMFRENCE_M) / GEARING;
@@ -142,6 +144,8 @@ public class LauncherIOTalonFX implements LauncherIO {
         new double[] {bottomMotor.getStatorCurrent().getValueAsDouble()};
     inputs.bottomFlywheelTemperatureCelsius =
         new double[] {bottomMotor.getDeviceTemp().getValueAsDouble()};
+    inputs.bottomFlywheelSetpointMPS = bottomMotor.getClosedLoopReference().getValueAsDouble();
+    inputs.bottomFlywheelErrorMPS = bottomMotor.getClosedLoopError().getValueAsDouble();
 
     updateTunableNumbers();
   }
