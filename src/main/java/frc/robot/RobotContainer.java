@@ -22,6 +22,9 @@ import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.ShooterCommands.AnglerDirection;
 import frc.robot.commands.ShooterCommands.FlywheelSpeeds;
 import frc.robot.commands.SwerveCommands;
+import frc.robot.commands.YoshiCommands;
+import frc.robot.commands.YoshiCommands.YoshiFlywheelDirection;
+import frc.robot.commands.YoshiCommands.YoshiPivotDirection;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
@@ -47,6 +50,10 @@ import frc.robot.subsystems.shooter.angler.AnglerIOSparkMax;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOSim;
 import frc.robot.subsystems.shooter.launcher.LauncherIOTalonFX;
+import frc.robot.subsystems.yoshivator.Yoshivator;
+import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
+import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSim;
+import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSparkMax;
 import frc.robot.utils.debugging.SysIDCharacterization;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -56,6 +63,7 @@ public class RobotContainer {
   private Shooter robotShooter;
   private Climb robotClimb;
   private Indexer robotIndexer;
+  private Yoshivator robotYoshi;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
   private CommandXboxController copilotController = new CommandXboxController(1);
@@ -90,6 +98,7 @@ public class RobotContainer {
         robotShooter = new Shooter(new AnglerIOSparkMax(), new LauncherIOTalonFX());
         robotClimb = new Climb(new ClimbIOSparkMax());
         robotIndexer = new Indexer(new IndexerIOSparkMax());
+        robotYoshi = new Yoshivator(new ManipulatorIOSparkMax());
         break;
       case SIM:
         robotDrive =
@@ -103,6 +112,7 @@ public class RobotContainer {
         robotShooter = new Shooter(new AnglerIOSim(), new LauncherIOSim());
         robotClimb = new Climb(new ClimbIOSim());
         robotIndexer = new Indexer(new IndexerIOSim());
+        robotYoshi = new Yoshivator(new ManipulatorIOSim());
         break;
       default:
         robotDrive =
@@ -116,6 +126,7 @@ public class RobotContainer {
         robotShooter = new Shooter(new AnglerIO() {}, new LauncherIO() {});
         robotClimb = new Climb(new ClimbIO() {});
         robotIndexer = new Indexer(new IndexerIO() {});
+        robotYoshi = new Yoshivator(new ManipulatorIO() {});
         break;
     }
   }
@@ -151,27 +162,33 @@ public class RobotContainer {
     /* Reset pose to infront of blue alliance speaker */
     pilotController
         .b()
-        .onTrue(SwerveCommands.setPose(robotDrive, new Pose2d(1.33, 5.50, new Rotation2d())));
+        .onTrue(SwerveCommands.setPose(robotDrive, new Pose2d(6.32, 5.50, new Rotation2d())));
 
     /* Run intake */
     pilotController
         .leftBumper()
         .whileTrue(
             IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
-                .alongWith(IndexerCommands.stowPiece(robotIndexer)))
+                .alongWith(IndexerCommands.stowPiece(robotIndexer))
+                .alongWith(
+                    YoshiCommands.runFlywheelManual(robotYoshi, YoshiFlywheelDirection.STOP)))
         .whileFalse(
             IntakeCommands.stopIntake(robotIntake)
-                .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
+                .alongWith(IndexerCommands.stopIndexer(robotIndexer))
+                .alongWith(YoshiCommands.stopYoshi(robotYoshi, false, true)));
 
     /* Run outtake */
     pilotController
         .rightBumper()
         .whileTrue(
             IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)
-                .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)))
+                .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT))
+                .alongWith(
+                    YoshiCommands.runFlywheelManual(robotYoshi, YoshiFlywheelDirection.STOP)))
         .whileFalse(
             IntakeCommands.stopIntake(robotIntake)
-                .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
+                .alongWith(IndexerCommands.stopIndexer(robotIndexer))
+                .alongWith(YoshiCommands.stopYoshi(robotYoshi, false, true)));
 
     /* Move back slightly */
     pilotController
@@ -228,7 +245,7 @@ public class RobotContainer {
     /* Run setpoint pivot */
     copilotController
         .y()
-        .whileTrue(ShooterCommands.runAngler(robotShooter))
+        .whileTrue(ShooterCommands.runAnglerSetpoint(robotShooter))
         .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
 
     /* Run setpoint flywheels */
@@ -244,6 +261,18 @@ public class RobotContainer {
             SysIDCharacterization.runShooterSysIDTests(
                 robotShooter::setLauncherVolts, robotShooter))
         .onFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+
+    /* Run Yoshi in */
+    copilotController
+        .leftTrigger()
+        .whileTrue(YoshiCommands.runPivotManual(robotYoshi, YoshiPivotDirection.IN))
+        .whileFalse(YoshiCommands.stopYoshi(robotYoshi, true, false));
+
+    /* Run Yoshi out */
+    copilotController
+        .rightTrigger()
+        .whileTrue(YoshiCommands.runPivotManual(robotYoshi, YoshiPivotDirection.OUT))
+        .whileFalse(YoshiCommands.stopYoshi(robotYoshi, true, false));
   }
 
   /** Returns the selected autonomous */

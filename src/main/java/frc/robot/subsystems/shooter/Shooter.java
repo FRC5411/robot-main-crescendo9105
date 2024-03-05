@@ -27,7 +27,9 @@ public class Shooter extends SubsystemBase {
   private LauncherIOInputsAutoLogged launcherIOInputs = new LauncherIOInputsAutoLogged();
 
   private ProfiledPIDController anglerFeedback =
-      new ProfiledPIDController(0.49, 0.9, 0.012, new TrapezoidProfile.Constraints(125.0, 150.0));
+      new ProfiledPIDController(0.49, 2.0, 0.018, new TrapezoidProfile.Constraints(1000.0, 1000.0));
+  private double kSUp = 0.2;
+  private double kSDown = 0.0;
   private ArmFeedforward anglerFeedforward = new ArmFeedforward(0.3, 0.0, 0.0);
 
   private LoggedTunableNumber anglerFeedbackP =
@@ -70,7 +72,7 @@ public class Shooter extends SubsystemBase {
     this.launcherIO = launcherIO;
 
     resetAnglerFeedback();
-    anglerFeedback.setTolerance(0.1);
+    anglerFeedback.setTolerance(0.25);
     anglerFeedback.setIZone(20.0);
     anglerFeedback.setIntegratorRange(-0.5, 0.5);
   }
@@ -118,13 +120,19 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("Shooter/Angler/currentPosition", currentAngle);
 
     if (anglerSetpoint != null) {
+      double kS = 0;
       angleSignum = Math.signum(anglerSetpoint.minus(currentAngle).getDegrees());
+      if (angleSignum < 0) {
+        kS = kSDown * angleSignum;
+      } else if (angleSignum > 0) {
+        kS = kSUp * angleSignum;
+      }
+      Logger.recordOutput("Angler/KS", kS);
+      Logger.recordOutput("Angler/Signuum", angleSignum);
 
       double anglerFeedbackOutput =
           anglerFeedback.calculate(currentAngle.getDegrees(), anglerSetpoint.getDegrees());
-      double anglerFeedforwardOutput =
-          anglerFeedforward.calculate(
-              anglerFeedback.getSetpoint().position, angleSignum); // Activite the signum
+      double anglerFeedforwardOutput = kS; // Activite the signum
 
       double anglerCombinedOutput = (anglerFeedbackOutput + anglerFeedforwardOutput);
 
@@ -237,8 +245,6 @@ public class Shooter extends SubsystemBase {
   public void setAllMotors(Rotation2d anglerPosition, double launcherVelocityMPS) {
     setAnglerPosition(anglerPosition);
     setLauncherVelocityMPS(launcherVelocityMPS);
-
-    System.out.println("MY FATHER");
 
     anglerStopped = false;
     launcherStopped = false;

@@ -45,6 +45,24 @@ public class ShooterCommands {
     return currentCommand;
   }
 
+  /** Returns a command to run the angler motor to a given setpoint */
+  public static Command runAnglerSetpoint(Shooter robotShooter) {
+    currentCommand =
+        new FunctionalCommand(
+            () -> {
+              anglerPosition = Rotation2d.fromDegrees(angleSetter.get());
+              robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS);
+            },
+            () -> {},
+            (interrupted) -> {
+              robotShooter.stopMotors(true, false);
+            },
+            () -> robotShooter.isAnglerAtGoal(),
+            robotShooter);
+
+    return currentCommand;
+  }
+
   /** Returns a command to run the angler motor */
   public static Command runAngler(Shooter robotShooter, Rotation2d anglerSetpoint) {
     currentCommand =

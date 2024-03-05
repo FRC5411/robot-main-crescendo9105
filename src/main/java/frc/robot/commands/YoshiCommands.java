@@ -74,20 +74,20 @@ public class YoshiCommands {
 
   /** Write the direction of the Yoshi pivot to console */
   private static void logDirection(YoshiPivotDirection direction) {
-    System.out.println("YOSHI: " + direction);
+    System.out.println("YOSHI PIVOT: " + direction);
   }
 
   /** Write the direction of the Yoshi flywheel to console */
   private static void logDirection(YoshiFlywheelDirection direction) {
-    System.out.println("YOSHI: " + direction);
+    System.out.println("YOSHI FLYWHEEL: " + direction);
   }
 
   /** Direction of the yoshi */
   public static enum YoshiPivotDirection {
     /** Run the Yoshi pivot into the robot */
-    IN(12.0),
+    IN(6.0),
     /** Run the Yoshi pivot out of the robot */
-    OUT(-12.0),
+    OUT(-6.0),
     /** Stop the Yoshi wheels */
     STOP(0.0);
 
@@ -107,9 +107,9 @@ public class YoshiCommands {
   /** Direction of the yoshi */
   public static enum YoshiFlywheelDirection {
     /** Run the Yoshi wheels in to the robot */
-    IN(12.0),
+    IN(-12.0),
     /** Run the Yoshi wheels out of the robot */
-    OUT(-12.0),
+    OUT(12.0),
     /** Stop the Yoshi wheels */
     STOP(0.0);
 

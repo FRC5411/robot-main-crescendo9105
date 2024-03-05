@@ -11,7 +11,6 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 /** Class to interact with the physical manipulator structure */
 public class ManipulatorIOSparkMax implements ManipulatorIO {
@@ -19,11 +18,11 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
   private final double FLYWHEEL_GEARING = 3.0 / 1.0;
 
   // TODO Update as needed
-  private CANSparkMax pivotMotor = new CANSparkMax(0, MotorType.kBrushless);
+  private CANSparkMax pivotMotor = new CANSparkMax(52, MotorType.kBrushless);
   private RelativeEncoder pivotRelativeEncoder = pivotMotor.getEncoder();
-  private DutyCycleEncoder pivotAbsoluteEncoder = new DutyCycleEncoder(0);
+  // private DutyCycleEncoder pivotAbsoluteEncoder = new DutyCycleEncoder(0);
 
-  private CANSparkMax flywheelMotor = new CANSparkMax(0, MotorType.kBrushless);
+  private CANSparkMax flywheelMotor = new CANSparkMax(53, MotorType.kBrushless);
   private RelativeEncoder flywheelEncoder = flywheelMotor.getEncoder();
 
   private double pivotAppliedVolts = 0.0;
@@ -34,31 +33,31 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
     pivotMotor.clearFaults();
     pivotMotor.restoreFactoryDefaults();
 
-    pivotMotor.setSmartCurrentLimit(40);
+    pivotMotor.setSmartCurrentLimit(20);
     pivotMotor.enableVoltageCompensation(12.0);
     pivotMotor.setIdleMode(IdleMode.kBrake);
 
-    pivotMotor.setInverted(true);
+    pivotMotor.setInverted(false);
 
     pivotMotor.burnFlash();
 
-    pivotAbsoluteEncoder.setDutyCycleRange(1.0 / 8192.0, 8191.0 / 8192.0);
+    // pivotAbsoluteEncoder.setDutyCycleRange(1.0 / 8192.0, 8191.0 / 8192.0);
 
     flywheelMotor.clearFaults();
     flywheelMotor.restoreFactoryDefaults();
 
-    flywheelMotor.setSmartCurrentLimit(40);
+    flywheelMotor.setSmartCurrentLimit(60);
     flywheelMotor.enableVoltageCompensation(12.0);
     flywheelMotor.setIdleMode(IdleMode.kBrake);
 
-    flywheelMotor.setInverted(true);
+    flywheelMotor.setInverted(false);
 
     flywheelMotor.burnFlash();
   }
 
   @Override
   public void updateInputs(ManipulatorIOInputs inputs) {
-    inputs.pivotPosition = Rotation2d.fromRotations(pivotAbsoluteEncoder.get() / PIVOT_GEARING);
+    inputs.pivotPosition = Rotation2d.fromRotations(0.0);
     inputs.pivotVelocityRadiansPerSecond =
         Units.rotationsToRadians(pivotRelativeEncoder.getVelocity() / (PIVOT_GEARING * 60.0));
     inputs.pivotAppliedVolts = pivotAppliedVolts;
