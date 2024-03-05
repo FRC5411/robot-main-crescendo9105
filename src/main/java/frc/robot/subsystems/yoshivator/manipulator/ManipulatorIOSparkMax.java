@@ -57,6 +57,7 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
 
   @Override
   public void updateInputs(ManipulatorIOInputs inputs) {
+    // TODO Fix pivot position when DutyCycle is added
     inputs.pivotPosition = Rotation2d.fromRotations(0.0);
     inputs.pivotVelocityRadiansPerSecond =
         Units.rotationsToRadians(pivotRelativeEncoder.getVelocity() / (PIVOT_GEARING * 60.0));

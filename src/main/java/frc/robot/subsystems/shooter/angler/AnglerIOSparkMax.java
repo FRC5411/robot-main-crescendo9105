@@ -70,7 +70,7 @@ public class AnglerIOSparkMax implements AnglerIO {
   public void setVolts(double volts) {
     appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
 
-    // anglerMotor.setVoltage(appliedVolts);
-    anglerMotor.set(appliedVolts / 12.0);
+    anglerMotor.setVoltage(appliedVolts);
+    // anglerMotor.set(appliedVolts / 12.0);
   }
 }
