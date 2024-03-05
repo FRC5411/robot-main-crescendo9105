@@ -8,31 +8,43 @@
         {
           "type": "path",
           "data": {
-            "pathName": "!CP_(2-3N)"
+            "pathName": "B_3-3N"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "(2-3N)_(2-5N)"
+            "pathName": "3-3N_5-5N"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "(2-5N)_SH1"
+            "pathName": "5-5N_S"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "SH1_(3-5N)"
+            "pathName": "S_4-5N"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "(3-5N)_SH2"
+            "pathName": "4-5N_S"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "S_3-5N"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3-5N_S"
           }
         }
       ]

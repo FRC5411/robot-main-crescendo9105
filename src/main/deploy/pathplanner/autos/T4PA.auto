@@ -8,31 +8,43 @@
         {
           "type": "path",
           "data": {
-            "pathName": "!CP_(2-3N)"
+            "pathName": "U4T1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "(2-3N)_(2-5N)"
+            "pathName": "U4T2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "(2-5N)_SH1"
+            "pathName": "U4T3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "SH1_(3-5N)"
+            "pathName": "U4T4"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "(3-5N)_SH2"
+            "pathName": "U4T5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "U4T6"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "U4T7"
           }
         }
       ]
