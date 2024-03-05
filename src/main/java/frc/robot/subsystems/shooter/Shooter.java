@@ -10,6 +10,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.Constants.Robot;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.angler.AnglerIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
@@ -26,27 +28,19 @@ public class Shooter extends SubsystemBase {
   private LauncherIO launcherIO;
   private LauncherIOInputsAutoLogged launcherIOInputs = new LauncherIOInputsAutoLogged();
 
+  // Default to real values
   private ProfiledPIDController anglerFeedback =
       new ProfiledPIDController(0.49, 2.0, 0.018, new TrapezoidProfile.Constraints(1000.0, 1000.0));
   private ScrewArmFeedforward anglerFeedforward = new ScrewArmFeedforward(0.2, 0.0);
 
-  private LoggedTunableNumber anglerFeedbackP =
-      new LoggedTunableNumber("Shooter/Angler/Feedback/P", anglerFeedback.getP());
-  private LoggedTunableNumber anglerFeedbackI =
-      new LoggedTunableNumber("Shooter/Angler/Feedback/I", anglerFeedback.getI());
-  private LoggedTunableNumber anglerFeedbackD =
-      new LoggedTunableNumber("Shooter/Angler/Feedback/D", anglerFeedback.getD());
-  private LoggedTunableNumber anglerFeedbackV =
-      new LoggedTunableNumber(
-          "Shooter/Angler/Feedback/V", anglerFeedback.getConstraints().maxVelocity);
-  private LoggedTunableNumber anglerFeedbackA =
-      new LoggedTunableNumber(
-          "Shooter/Angler/Feedback/A", anglerFeedback.getConstraints().maxAcceleration);
+  private LoggedTunableNumber anglerFeedbackP;
+  private LoggedTunableNumber anglerFeedbackI;
+  private LoggedTunableNumber anglerFeedbackD;
+  private LoggedTunableNumber anglerFeedbackV;
+  private LoggedTunableNumber anglerFeedbackA;
 
-  private LoggedTunableNumber anglerFeedforwardU =
-      new LoggedTunableNumber("Shooter/Angler/Feedforward/U", anglerFeedforward.getU());
-  private LoggedTunableNumber anglerFeedforwardL =
-      new LoggedTunableNumber("Shooter/Angler/Feedforward/L", anglerFeedforward.getL());
+  private LoggedTunableNumber anglerFeedforwardU;
+  private LoggedTunableNumber anglerFeedforwardL;
 
   private ShooterVisualizer anglerVisualizer = new ShooterVisualizer();
 
@@ -64,6 +58,52 @@ public class Shooter extends SubsystemBase {
   public Shooter(AnglerIO anglerIO, LauncherIO launcherIO) {
     this.anglerIO = anglerIO;
     this.launcherIO = launcherIO;
+
+    if (Constants.currentRobot == Robot.SYNTH) {
+      switch (Constants.currentMode) {
+        case REAL:
+          anglerFeedback.setP(0.49);
+          anglerFeedback.setI(2.0);
+          anglerFeedback.setD(0.018);
+          anglerFeedback.setConstraints(new TrapezoidProfile.Constraints(1000.0, 1000.0));
+
+          anglerFeedforward.updateU(0.2);
+          anglerFeedforward.updateL(0.0);
+          break;
+        case SIM:
+          anglerFeedback.setP(0.1);
+          anglerFeedback.setI(0.0);
+          anglerFeedback.setD(0.5);
+          anglerFeedback.setConstraints(new TrapezoidProfile.Constraints(50.0, 50.0));
+
+          anglerFeedforward.updateU(0.0);
+          anglerFeedforward.updateL(0.0);
+          break;
+        default:
+          anglerFeedback.setP(0.0);
+          anglerFeedback.setI(0.0);
+          anglerFeedback.setD(0.0);
+          anglerFeedback.setConstraints(new TrapezoidProfile.Constraints(0.0, 0.0));
+
+          anglerFeedforward.updateU(0.0);
+          anglerFeedforward.updateL(0.0);
+          break;
+      }
+    }
+
+    anglerFeedbackP = new LoggedTunableNumber("Shooter/Angler/Feedback/P", anglerFeedback.getP());
+    anglerFeedbackI = new LoggedTunableNumber("Shooter/Angler/Feedback/I", anglerFeedback.getI());
+    anglerFeedbackD = new LoggedTunableNumber("Shooter/Angler/Feedback/D", anglerFeedback.getD());
+    anglerFeedbackV =
+        new LoggedTunableNumber(
+            "Shooter/Angler/Feedback/V", anglerFeedback.getConstraints().maxVelocity);
+    anglerFeedbackA =
+        new LoggedTunableNumber(
+            "Shooter/Angler/Feedback/A", anglerFeedback.getConstraints().maxAcceleration);
+    anglerFeedforwardU =
+        new LoggedTunableNumber("Shooter/Angler/Feedforward/U", anglerFeedforward.getU());
+    anglerFeedforwardL =
+        new LoggedTunableNumber("Shooter/Angler/Feedforward/L", anglerFeedforward.getL());
 
     resetAnglerFeedback();
     anglerFeedback.setTolerance(0.25);
@@ -136,7 +176,9 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("Shooter/Angler/Stopped", anglerStopped);
     Logger.recordOutput("Shooter/Launcher/Stopped", launcherStopped);
 
-    updateTunableNumbers();
+    if (Constants.tuningMode) {
+      updateTunableNumbers();
+    }
   }
 
   /** Checks if tunable numbers have changed, if so update controllers */
@@ -209,7 +251,9 @@ public class Shooter extends SubsystemBase {
     anglerSetpoint = position;
 
     if (anglerSetpoint != null) {
-      resetAnglerFeedback();
+      if (Math.abs(anglerSetpoint.minus(currentAngle).getDegrees()) <= 2.0) {
+        resetAnglerFeedback();
+      }
     }
 
     anglerStopped = false;
