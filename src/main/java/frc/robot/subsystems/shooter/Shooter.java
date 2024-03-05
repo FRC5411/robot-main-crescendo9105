@@ -5,7 +5,6 @@
 package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -16,6 +15,7 @@ import frc.robot.subsystems.shooter.angler.AnglerIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOInputsAutoLogged;
 import frc.robot.utils.debugging.LoggedTunableNumber;
+import frc.robot.utils.math.ScrewArmFeedforward;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -28,9 +28,7 @@ public class Shooter extends SubsystemBase {
 
   private ProfiledPIDController anglerFeedback =
       new ProfiledPIDController(0.49, 2.0, 0.018, new TrapezoidProfile.Constraints(1000.0, 1000.0));
-  private double kSUp = 0.2;
-  private double kSDown = 0.0;
-  private ArmFeedforward anglerFeedforward = new ArmFeedforward(0.3, 0.0, 0.0);
+  private ScrewArmFeedforward anglerFeedforward = new ScrewArmFeedforward(0.2, 0.0);
 
   private LoggedTunableNumber anglerFeedbackP =
       new LoggedTunableNumber("Shooter/Angler/Feedback/P", anglerFeedback.getP());
@@ -45,12 +43,10 @@ public class Shooter extends SubsystemBase {
       new LoggedTunableNumber(
           "Shooter/Angler/Feedback/A", anglerFeedback.getConstraints().maxAcceleration);
 
-  private LoggedTunableNumber anglerFeedforwardS =
-      new LoggedTunableNumber("Shooter/Angler/Feedforward/S", anglerFeedforward.ks);
-  private LoggedTunableNumber anglerFeedforwardG =
-      new LoggedTunableNumber("Shooter/Angler/Feedforward/G", anglerFeedforward.kg);
-  private LoggedTunableNumber anglerFeedforwardV =
-      new LoggedTunableNumber("Shooter/Angler/Feedforward/V", anglerFeedforward.kv);
+  private LoggedTunableNumber anglerFeedforwardU =
+      new LoggedTunableNumber("Shooter/Angler/Feedforward/U", anglerFeedforward.getU());
+  private LoggedTunableNumber anglerFeedforwardL =
+      new LoggedTunableNumber("Shooter/Angler/Feedforward/L", anglerFeedforward.getL());
 
   private ShooterVisualizer anglerVisualizer = new ShooterVisualizer();
 
@@ -63,8 +59,6 @@ public class Shooter extends SubsystemBase {
   private boolean angleEncoderCalibrated = false;
   private Rotation2d angleOffset = new Rotation2d();
   private Rotation2d currentAngle = new Rotation2d();
-
-  private double angleSignum = 0.0;
 
   /** Creates a new Shooter. */
   public Shooter(AnglerIO anglerIO, LauncherIO launcherIO) {
@@ -120,19 +114,9 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("Shooter/Angler/currentPosition", currentAngle);
 
     if (anglerSetpoint != null) {
-      double kS = 0;
-      angleSignum = Math.signum(anglerSetpoint.minus(currentAngle).getDegrees());
-      if (angleSignum < 0) {
-        kS = kSDown * angleSignum;
-      } else if (angleSignum > 0) {
-        kS = kSUp * angleSignum;
-      }
-      Logger.recordOutput("Angler/KS", kS);
-      Logger.recordOutput("Angler/Signuum", angleSignum);
-
       double anglerFeedbackOutput =
           anglerFeedback.calculate(currentAngle.getDegrees(), anglerSetpoint.getDegrees());
-      double anglerFeedforwardOutput = kS; // Activite the signum
+      double anglerFeedforwardOutput = anglerFeedforward.calculate(currentAngle, anglerSetpoint);
 
       double anglerCombinedOutput = (anglerFeedbackOutput + anglerFeedforwardOutput);
 
@@ -169,12 +153,9 @@ public class Shooter extends SubsystemBase {
       anglerFeedback.setConstraints(
           new TrapezoidProfile.Constraints(anglerFeedbackV.get(), anglerFeedbackA.get()));
     }
-    if (anglerFeedforwardS.hasChanged(hashCode())
-        || anglerFeedforwardG.hasChanged(hashCode())
-        || anglerFeedforwardV.hasChanged(hashCode())) {
-      anglerFeedforward =
-          new ArmFeedforward(
-              anglerFeedforwardS.get(), anglerFeedforwardG.get(), anglerFeedforwardV.get());
+    if (anglerFeedforwardU.hasChanged(hashCode()) || anglerFeedforwardL.hasChanged(hashCode())) {
+      anglerFeedforward.updateU(anglerFeedforwardU.get());
+      anglerFeedforward.updateL(anglerFeedforwardL.get());
     }
   }
 
