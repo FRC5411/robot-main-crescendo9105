@@ -166,10 +166,6 @@ public class Shooter extends SubsystemBase {
       Logger.recordOutput("Shooter/Angler/Feedback/Output", anglerFeedbackOutput);
       Logger.recordOutput("Shooter/Angler/Feedforward/Output", anglerFeedforwardOutput);
       Logger.recordOutput("Shooter/Angler/CombinedOutput", anglerCombinedOutput);
-
-      System.out.println("ANSHUL");
-      Logger.recordOutput("Shooter/TargetSystem/Goal", anglerFeedback.getGoal().position);
-      Logger.recordOutput("Shooter/TargetSystem/Setpoint", anglerSetpoint);
     }
 
     if (launcherSetpointMPS != null) {
@@ -254,11 +250,9 @@ public class Shooter extends SubsystemBase {
   /** Set the position setpoint of the angler mechanism */
   public void setAnglerPosition(Rotation2d position, boolean reset) {
     anglerSetpoint = position;
-    System.out.println(anglerSetpoint);
 
     if (anglerSetpoint != null && reset) {
       resetAnglerFeedback();
-      System.out.println("TA MERE");
     }
 
     anglerStopped = false;

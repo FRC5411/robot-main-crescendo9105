@@ -57,13 +57,6 @@ public class AnglerIOSparkMax implements AnglerIO {
     inputs.temperatureCelsius = new double[] {anglerMotor.getMotorTemperature()};
 
     Logger.recordOutput("Shooter/Angler/AppliedOutput", anglerMotor.getAppliedOutput());
-
-    // Logger.recordOutput(
-    //     "Shooter/Angler/DutyCycleAbsolute",
-    //     Units.rotationsToDegrees(absoluteEncoder.getAbsolutePosition()));
-    // Logger.recordOutput("Shooter/Angler/DutyCycleGet", absoluteEncoder.get());
-    // Logger.recordOutput("Shooter/Angler/DutyCycleFreq", absoluteEncoder.getFrequency());
-    // Logger.recordOutput("Shooter/Angler/DutyCycleFPGA", absoluteEncoder.getFPGAIndex());
   }
 
   @Override
@@ -71,6 +64,5 @@ public class AnglerIOSparkMax implements AnglerIO {
     appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
 
     anglerMotor.setVoltage(appliedVolts);
-    // anglerMotor.set(appliedVolts / 12.0);
   }
 }

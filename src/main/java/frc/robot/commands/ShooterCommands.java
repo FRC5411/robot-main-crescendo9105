@@ -98,8 +98,6 @@ public class ShooterCommands {
               robotShooter.setAllMotors(shotMapAngle, laucnherVelocityMPS, false);
 
               Logger.recordOutput("TargetingSystem/Distance", distance.getAsDouble());
-
-              System.out.println("TARGETING SYSTEM MAP: " + shotMapAngle);
             },
             interrupted -> {
               robotShooter.stopMotors(true, false);
