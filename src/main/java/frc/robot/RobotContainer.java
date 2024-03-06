@@ -308,14 +308,22 @@ public class RobotContainer {
       /* Run intake */
       simController
           .L1()
-          .whileTrue(IntakeCommands.runIntake(robotIntake, IntakeDirection.IN))
-          .whileFalse(IntakeCommands.stopIntake(robotIntake));
+          .whileTrue(
+              IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
+                  .alongWith(IndexerCommands.stowPiece(robotIndexer)))
+          .whileFalse(
+              IntakeCommands.stopIntake(robotIntake)
+                  .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
 
       /* Run outtake */
       simController
           .R1()
-          .whileTrue(IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT))
-          .whileFalse(IntakeCommands.stopIntake(robotIntake));
+          .whileTrue(
+              IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)
+                  .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)))
+          .whileFalse(
+              IntakeCommands.stopIntake(robotIntake)
+                  .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
 
       /* Run sim set pose */
       simController

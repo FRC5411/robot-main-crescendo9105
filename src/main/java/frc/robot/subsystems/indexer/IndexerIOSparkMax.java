@@ -40,6 +40,7 @@ public class IndexerIOSparkMax implements IndexerIO {
   public void updateInputs(IndexerIOInputs inputs) {
     inputs.indexerVelocityRPM = indexerEncoder.getVelocity() / GEARING;
     inputs.appliedVolts = appliedVolts;
+    inputs.internalVolts = indexerMotor.getOutputCurrent() * indexerMotor.getBusVoltage();
     inputs.appliedCurrentAmps = new double[] {indexerMotor.getOutputCurrent()};
     inputs.temperatureCelsius = new double[] {indexerMotor.getMotorTemperature()};
     inputs.isBeamBroken = !beamBreakSensor.get();

@@ -13,6 +13,7 @@ public interface IndexerIO {
   public static class IndexerIOInputs {
     public double indexerVelocityRPM = 0.0;
     public double appliedVolts = 0.0;
+    public double internalVolts = 0.0;
     public double[] appliedCurrentAmps = new double[] {0.0};
     public double[] temperatureCelsius = new double[] {0.0};
 

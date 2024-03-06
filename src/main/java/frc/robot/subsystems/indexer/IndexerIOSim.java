@@ -37,6 +37,7 @@ public class IndexerIOSim implements IndexerIO {
 
     inputs.indexerVelocityRPM = indexerMotor.getAngularVelocityRPM();
     inputs.appliedVolts = appliedVolts;
+    inputs.internalVolts = appliedVolts;
     inputs.appliedCurrentAmps = new double[] {indexerMotor.getCurrentDrawAmps()};
     inputs.temperatureCelsius = new double[] {0.0};
     inputs.isBeamBroken = (beamBreakSensorSim.get() == 1.0) ? true : false;
