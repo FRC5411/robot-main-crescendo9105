@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems.intake;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.AutoLog;
 
 /** Hardware interface for the intake */
@@ -12,9 +11,9 @@ public interface IntakeIO {
   /** Intake subsystem sensor data */
   @AutoLog
   public static class IntakeIOInputs {
-    public Rotation2d angleRotations = new Rotation2d();
     public double velocityRPM = 0.0;
     public double appliedVolts = 0.0;
+    public double internalVolts = 0.0;
     public double[] appliedCurrentAmps = new double[] {0.0};
     public double[] temperatureCelsius = new double[] {0.0};
   }

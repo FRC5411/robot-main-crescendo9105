@@ -12,6 +12,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import frc.robot.Constants;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 
 /** Class to interact with the physical launcher structure */
@@ -147,7 +148,9 @@ public class LauncherIOTalonFX implements LauncherIO {
     inputs.bottomFlywheelSetpointMPS = bottomMotor.getClosedLoopReference().getValueAsDouble();
     inputs.bottomFlywheelErrorMPS = bottomMotor.getClosedLoopError().getValueAsDouble();
 
-    updateTunableNumbers();
+    if (Constants.tuningMode) {
+      updateTunableNumbers();
+    }
   }
 
   @Override

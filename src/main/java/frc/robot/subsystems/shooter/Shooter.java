@@ -152,7 +152,6 @@ public class Shooter extends SubsystemBase {
     }
 
     currentAngle = anglerIOInputs.anglerRelativePosition.plus(angleOffset);
-    Logger.recordOutput("Shooter/Angler/currentPosition", currentAngle);
 
     if (anglerSetpoint != null) {
       double anglerFeedbackOutput =

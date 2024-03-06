@@ -305,10 +305,30 @@ public class RobotContainer {
               () -> simController.getLeftX(),
               () -> simController.getRightX()));
 
+      /* Run intake */
+      simController
+          .L1()
+          .whileTrue(IntakeCommands.runIntake(robotIntake, IntakeDirection.IN))
+          .whileFalse(IntakeCommands.stopIntake(robotIntake));
+
+      /* Run outtake */
+      simController
+          .R1()
+          .whileTrue(IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT))
+          .whileFalse(IntakeCommands.stopIntake(robotIntake));
+
+      /* Run sim set pose */
+      simController
+          .circle()
+          .onTrue(
+              SwerveCommands.setPose(
+                  robotDrive, new Pose2d(15.247 - 0.17, 5.50, new Rotation2d())));
+
       /* Run sim arm setpoint */
       simController
           .triangle()
-          .whileTrue(ShooterCommands.runAngler(robotShooter))
+          .whileTrue(
+              ShooterCommands.runAngler(robotShooter, robotDrive.distanceFromSpeakerMeters()))
           .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
 
       /* Run sim flywheel setpoint */

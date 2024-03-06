@@ -9,8 +9,6 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
-import org.littletonrobotics.junction.Logger;
 
 /** Class to interact with the physical intake structure */
 public class IntakeIOSparkMax implements IntakeIO {
@@ -38,14 +36,11 @@ public class IntakeIOSparkMax implements IntakeIO {
 
   @Override
   public void updateInputs(IntakeIOInputs inputs) {
-    inputs.angleRotations = Rotation2d.fromRotations(intakeEncoder.getPosition() / GEARING);
     inputs.velocityRPM = intakeEncoder.getVelocity() / GEARING;
     inputs.appliedVolts = appliedVolts;
+    inputs.internalVolts = intakeMotor.getAppliedOutput() * intakeMotor.getBusVoltage();
     inputs.appliedCurrentAmps = new double[] {intakeMotor.getOutputCurrent()};
     inputs.temperatureCelsius = new double[] {intakeMotor.getMotorTemperature()};
-
-    Logger.recordOutput(
-        "Intake/InternalVolts", intakeMotor.getAppliedOutput() * intakeMotor.getBusVoltage());
   }
 
   @Override
