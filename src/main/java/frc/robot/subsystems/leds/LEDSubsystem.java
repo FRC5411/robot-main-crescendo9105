@@ -6,19 +6,28 @@ package frc.robot.subsystems.leds;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.subsystems.leds.LEDConstants.Colors;
+import frc.robot.subsystems.leds.LEDConstants.Configs;
 
 public class LEDSubsystem extends SubsystemBase {
   private AddressableLED m_led;
   private AddressableLEDBuffer m_ledBuffer;
-  private int PWM_PORT = 9;
-  private int LED_COUNT = 60;
+  private boolean shouldAnimate;
+  private boolean acoustic;
 
   public LEDSubsystem() {
-    m_led = new AddressableLED(PWM_PORT);
+    m_led = new AddressableLED(Configs.PWM_PORT);
 
-    m_ledBuffer = new AddressableLEDBuffer(LED_COUNT);
+    m_ledBuffer = new AddressableLEDBuffer(Configs.LED_COUNT);
     m_led.setLength(m_ledBuffer.getLength());
+
+    shouldAnimate = false;
+    acoustic = true;
   }
 
   /*
@@ -57,11 +66,28 @@ public class LEDSubsystem extends SubsystemBase {
   }
 
   public void everythingReady() {
-    for(int i = 0; i < m_ledBuffer.getLength(); i++) {
-      if (i % 2 == 0)
-        m_ledBuffer.setHSV(i, 215/2, 100, 100);
-      else
-        m_ledBuffer.setHSV(i, 280/2, 100, 100);
+    int extra = m_ledBuffer.getLength() % 3;
+    boolean isBlue = true;
+    for(int i = 0; i < m_ledBuffer.getLength() - extra; i+=3) {
+      if (i % 2 == 0){
+        isBlue = true;
+        m_ledBuffer.setHSV(i, Colors.BLUE, 100, 100);  
+        m_ledBuffer.setHSV(i+1, Colors.BLUE, 100, 100); 
+        m_ledBuffer.setHSV(i+2, Colors.BLUE, 100, 100); 
+      } else {
+        isBlue = false;
+        m_ledBuffer.setHSV(i, Colors.PURPLE, 100, 100); 
+        m_ledBuffer.setHSV(i+1, Colors.PURPLE, 100, 100); 
+        m_ledBuffer.setHSV(i+2, Colors.PURPLE, 100, 100); 
+      }
+    }
+
+    for(int i = m_ledBuffer.getLength() - 1; i >= m_ledBuffer.getLength() - 1 - extra; i--) {
+      if (isBlue) {
+        m_ledBuffer.setHSV(i, Colors.PURPLE, 100, 100); 
+      } else {
+        m_ledBuffer.setHSV(i, Colors.BLUE, 100, 100); 
+      }
     }
     setBuffer();
   }
@@ -73,6 +99,10 @@ public class LEDSubsystem extends SubsystemBase {
   }
 
   public void alternateRedGreenLED(double val1, double val2) {
+
+  }
+
+  public void blueBlackWhiteGradient() {
 
   }
 
@@ -141,9 +171,56 @@ public class LEDSubsystem extends SubsystemBase {
     m_led.start();
   }
 
+  public int[] hexToHSV(String hexColor) {
+    // Convert hex to RGB
+    hexColor = hexColor.toUpperCase();
+    int r = Integer.valueOf(hexColor.substring(1, 3), 16);
+    int g = Integer.valueOf(hexColor.substring(3, 5), 16);
+    int b = Integer.valueOf(hexColor.substring(5, 7), 16);
+    
+    // Convert RGB to HSV
+    float[] hsv = new float[3];
+    java.awt.Color.RGBtoHSB(r, g, b, hsv);
+    
+    // Adjust hue to be in the range of 0-180
+    hsv[0] *= 180;
+    hsv[1] *= 100;
+    hsv[2] *= 100;
+    
+    // Convert float array to double for the return value
+    int[] adjustedHSV = new int[hsv.length];
+    for (int i = 0; i < hsv.length; i++) {
+        adjustedHSV[i] = (int) hsv[i];
+    }
+    
+    return adjustedHSV;
+  }
+
+  private void wait(int milliseconds) {
+    double initialTime = Timer.getFPGATimestamp();
+
+    while (Timer.getFPGATimestamp() - initialTime < milliseconds / 1000.0) {
+      // Do nothing
+    }
+  }
+
+  private Command setLEDCommand(int index, int hue, int saturation, int value) {
+    return new InstantCommand(() -> {
+      m_ledBuffer.setHSV(index, hue, saturation, value);
+      setBuffer();
+    });
+  }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    if (shouldAnimate) {
+      Color lastLED = m_ledBuffer.getLED(m_ledBuffer.getLength() - 1);
+      for (int i = 1; i < m_ledBuffer.getLength(); i++) {
+        m_ledBuffer.setLED(i, m_ledBuffer.getLED(i - 1));
+        setBuffer();
+      }
+      m_ledBuffer.setLED(0, lastLED);
+      setBuffer();
+    }
   }
 }
