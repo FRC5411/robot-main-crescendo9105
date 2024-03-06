@@ -10,8 +10,10 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.AutoAlignCommand;
 import frc.robot.commands.ClimbCommands;
@@ -68,6 +70,8 @@ public class RobotContainer {
 
   private CommandXboxController pilotController = new CommandXboxController(0);
   private CommandXboxController copilotController = new CommandXboxController(1);
+
+  private CommandPS4Controller simController = new CommandPS4Controller(0);
 
   private LoggedDashboardChooser<Command> autoChooser;
 
@@ -141,152 +145,178 @@ public class RobotContainer {
 
   /** Configure controllers */
   private void configureButtonBindings() {
-    /* Pilot bindings */
+    if (RobotBase.isReal()) {
+      /* Pilot bindings */
 
-    /* Drive with joysticks */
-    robotDrive.setDefaultCommand(
-        SwerveCommands.swerveDrive(
-            robotDrive,
-            () -> -pilotController.getLeftY(),
-            () -> -pilotController.getLeftX(),
-            () -> -pilotController.getRightX()));
+      /* Drive with joysticks */
+      robotDrive.setDefaultCommand(
+          SwerveCommands.swerveDrive(
+              robotDrive,
+              () -> -pilotController.getLeftY(),
+              () -> -pilotController.getLeftX(),
+              () -> -pilotController.getRightX()));
 
-    /* Reset gyro */
-    pilotController.y().onTrue(SwerveCommands.resetGyro(robotDrive));
+      /* Reset gyro */
+      pilotController.y().onTrue(SwerveCommands.resetGyro(robotDrive));
 
-    /* Auto heading to speaker */
-    pilotController
-        .a()
-        .whileTrue(AutoAlignCommand.angleToSpeakerCommand(robotDrive))
-        .onFalse(SwerveCommands.stopDrive(robotDrive));
+      /* Auto heading to speaker */
+      pilotController
+          .a()
+          .whileTrue(AutoAlignCommand.angleToSpeakerCommand(robotDrive))
+          .onFalse(SwerveCommands.stopDrive(robotDrive));
 
-    /* Reset pose to infront of blue alliance speaker */
-    pilotController
-        .b()
-        .onTrue(
-            SwerveCommands.setPose(robotDrive, new Pose2d(1.34 - 0.17, 5.50, new Rotation2d())));
+      /* Reset pose to infront of blue alliance speaker */
+      pilotController
+          .b()
+          .onTrue(
+              SwerveCommands.setPose(robotDrive, new Pose2d(1.34 - 0.17, 5.50, new Rotation2d())));
 
-    /* Run intake */
-    pilotController
-        .leftBumper()
-        .whileTrue(
-            IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
-                .alongWith(IndexerCommands.stowPiece(robotIndexer))
-                .alongWith(
-                    YoshiCommands.runFlywheelManual(robotYoshi, YoshiFlywheelDirection.STOP)))
-        .whileFalse(
-            IntakeCommands.stopIntake(robotIntake)
-                .alongWith(IndexerCommands.stopIndexer(robotIndexer))
-                .alongWith(YoshiCommands.stopYoshi(robotYoshi, false, true)));
+      /* Run intake */
+      pilotController
+          .leftBumper()
+          .whileTrue(
+              IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
+                  .alongWith(IndexerCommands.stowPiece(robotIndexer))
+                  .alongWith(
+                      YoshiCommands.runFlywheelManual(robotYoshi, YoshiFlywheelDirection.STOP)))
+          .whileFalse(
+              IntakeCommands.stopIntake(robotIntake)
+                  .alongWith(IndexerCommands.stopIndexer(robotIndexer))
+                  .alongWith(YoshiCommands.stopYoshi(robotYoshi, false, true)));
 
-    /* Run outtake */
-    pilotController
-        .rightBumper()
-        .whileTrue(
-            IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)
-                .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT))
-                .alongWith(
-                    YoshiCommands.runFlywheelManual(robotYoshi, YoshiFlywheelDirection.STOP)))
-        .whileFalse(
-            IntakeCommands.stopIntake(robotIntake)
-                .alongWith(IndexerCommands.stopIndexer(robotIndexer))
-                .alongWith(YoshiCommands.stopYoshi(robotYoshi, false, true)));
+      /* Run outtake */
+      pilotController
+          .rightBumper()
+          .whileTrue(
+              IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)
+                  .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT))
+                  .alongWith(
+                      YoshiCommands.runFlywheelManual(robotYoshi, YoshiFlywheelDirection.STOP)))
+          .whileFalse(
+              IntakeCommands.stopIntake(robotIntake)
+                  .alongWith(IndexerCommands.stopIndexer(robotIndexer))
+                  .alongWith(YoshiCommands.stopYoshi(robotYoshi, false, true)));
 
-    /* Move back slightly */
-    pilotController
-        .povLeft()
-        .whileTrue(SwerveCommands.swerveDrive(robotDrive, () -> -0.3, () -> 0.0, () -> 0.0))
-        .onFalse(SwerveCommands.stopDrive(robotDrive));
+      /* Move back slightly */
+      pilotController
+          .povLeft()
+          .whileTrue(SwerveCommands.swerveDrive(robotDrive, () -> -0.3, () -> 0.0, () -> 0.0))
+          .onFalse(SwerveCommands.stopDrive(robotDrive));
 
-    /* Move forward slightly */
-    pilotController
-        .povRight()
-        .whileTrue(SwerveCommands.swerveDrive(robotDrive, () -> 0.3, () -> 0.0, () -> 0.0))
-        .onFalse(SwerveCommands.stopDrive(robotDrive));
+      /* Move forward slightly */
+      pilotController
+          .povRight()
+          .whileTrue(SwerveCommands.swerveDrive(robotDrive, () -> 0.3, () -> 0.0, () -> 0.0))
+          .onFalse(SwerveCommands.stopDrive(robotDrive));
 
-    /* Copilot bindings */
+      /* Copilot bindings */
 
-    /* Run angler up */
-    copilotController
-        .povUp()
-        .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.UP))
-        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+      /* Run angler up */
+      copilotController
+          .povUp()
+          .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.UP))
+          .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
 
-    /* Run angler down */
-    copilotController
-        .povDown()
-        .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.DOWN))
-        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+      /* Run angler down */
+      copilotController
+          .povDown()
+          .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.DOWN))
+          .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
 
-    /* Intake & index in */
-    copilotController
-        .povLeft()
-        .whileTrue(
-            IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN)
-                .alongWith(IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)))
-        .whileFalse(
-            IndexerCommands.stopIndexer(robotIndexer)
-                .alongWith(IntakeCommands.stopIntake(robotIntake)));
+      /* Intake & index in */
+      copilotController
+          .povLeft()
+          .whileTrue(
+              IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN)
+                  .alongWith(IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)))
+          .whileFalse(
+              IndexerCommands.stopIndexer(robotIndexer)
+                  .alongWith(IntakeCommands.stopIntake(robotIntake)));
 
-    /* Intake & index out */
-    copilotController
-        .povRight()
-        .whileTrue(
-            IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)
-                .alongWith(IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)))
-        .whileFalse(
-            IndexerCommands.stopIndexer(robotIndexer)
-                .alongWith(IntakeCommands.stopIntake(robotIntake)));
+      /* Intake & index out */
+      copilotController
+          .povRight()
+          .whileTrue(
+              IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)
+                  .alongWith(IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)))
+          .whileFalse(
+              IndexerCommands.stopIndexer(robotIndexer)
+                  .alongWith(IntakeCommands.stopIntake(robotIntake)));
 
-    /* Flywheels out */
-    copilotController
-        .leftBumper()
-        .whileTrue(ShooterCommands.runLauncherManual(robotShooter, FlywheelSpeeds.FULL))
-        .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+      /* Flywheels out */
+      copilotController
+          .leftBumper()
+          .whileTrue(ShooterCommands.runLauncherManual(robotShooter, FlywheelSpeeds.FULL))
+          .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
 
-    /* Run setpoint pivot */
-    copilotController
-        .y()
-        .whileTrue(ShooterCommands.runAnglerSetpoint(robotShooter))
-        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+      /* Run setpoint pivot */
+      copilotController
+          .y()
+          .whileTrue(ShooterCommands.runAnglerSetpoint(robotShooter))
+          .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
 
-    /* Run setpoint flywheels */
-    copilotController
-        .a()
-        .whileTrue(ShooterCommands.runLauncher(robotShooter))
-        .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+      /* Run setpoint flywheels */
+      copilotController
+          .a()
+          .whileTrue(ShooterCommands.runLauncher(robotShooter))
+          .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
 
-    /* Run flywheel SysID test */
-    // copilotController
-    //     .b()
-    //     .onTrue(
-    //         SysIDCharacterization.runShooterSysIDTests(
-    //             robotShooter::setLauncherVolts, robotShooter))
-    //     .onFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+      /* Run flywheel SysID test */
+      // copilotController
+      //     .b()
+      //     .onTrue(
+      //         SysIDCharacterization.runShooterSysIDTests(
+      //             robotShooter::setLauncherVolts, robotShooter))
+      //     .onFalse(ShooterCommands.stopShooter(robotShooter, false, true));
 
-    copilotController
-        .b()
-        .whileTrue(ShooterCommands.runAngler(robotShooter, robotDrive.distanceFromSpeakerMeters()))
-        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
+      copilotController
+          .b()
+          .whileTrue(
+              ShooterCommands.runAngler(robotShooter, robotDrive.distanceFromSpeakerMeters()))
+          .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
 
-    /* Run Yoshi in */
-    copilotController
-        .leftTrigger()
-        .whileTrue(
-            ClimbCommands.runClimbManual(robotClimb, ClimbLeftDirection.IN, ClimbRightDirection.IN))
-        .whileFalse(
-            ClimbCommands.runClimbManual(
-                robotClimb, ClimbLeftDirection.STOP, ClimbRightDirection.STOP));
+      /* Run Yoshi in */
+      copilotController
+          .leftTrigger()
+          .whileTrue(
+              ClimbCommands.runClimbManual(
+                  robotClimb, ClimbLeftDirection.IN, ClimbRightDirection.IN))
+          .whileFalse(
+              ClimbCommands.runClimbManual(
+                  robotClimb, ClimbLeftDirection.STOP, ClimbRightDirection.STOP));
 
-    /* Run Yoshi out */
-    copilotController
-        .rightTrigger()
-        .whileTrue(
-            ClimbCommands.runClimbManual(
-                robotClimb, ClimbLeftDirection.OUT, ClimbRightDirection.OUT))
-        .whileFalse(
-            ClimbCommands.runClimbManual(
-                robotClimb, ClimbLeftDirection.STOP, ClimbRightDirection.STOP));
+      /* Run Yoshi out */
+      copilotController
+          .rightTrigger()
+          .whileTrue(
+              ClimbCommands.runClimbManual(
+                  robotClimb, ClimbLeftDirection.OUT, ClimbRightDirection.OUT))
+          .whileFalse(
+              ClimbCommands.runClimbManual(
+                  robotClimb, ClimbLeftDirection.STOP, ClimbRightDirection.STOP));
+    } else {
+      /* Sim bindings */
+
+      /* Drive joysticks */
+      robotDrive.setDefaultCommand(
+          SwerveCommands.swerveDrive(
+              robotDrive,
+              () -> simController.getLeftY(),
+              () -> simController.getLeftX(),
+              () -> simController.getRightX()));
+
+      /* Run sim arm setpoint */
+      simController
+          .triangle()
+          .whileTrue(ShooterCommands.runAngler(robotShooter))
+          .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+
+      /* Run sim flywheel setpoint */
+      simController
+          .cross()
+          .whileTrue(ShooterCommands.runLauncher(robotShooter))
+          .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+    }
   }
 
   /** Returns the selected autonomous */
