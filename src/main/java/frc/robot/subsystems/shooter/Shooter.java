@@ -18,6 +18,7 @@ import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOInputsAutoLogged;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 import frc.robot.utils.math.ScrewArmFeedforward;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -165,6 +166,10 @@ public class Shooter extends SubsystemBase {
       Logger.recordOutput("Shooter/Angler/Feedback/Output", anglerFeedbackOutput);
       Logger.recordOutput("Shooter/Angler/Feedforward/Output", anglerFeedforwardOutput);
       Logger.recordOutput("Shooter/Angler/CombinedOutput", anglerCombinedOutput);
+
+      System.out.println("ANSHUL");
+      Logger.recordOutput("Shooter/TargetSystem/Goal", anglerFeedback.getGoal().position);
+      Logger.recordOutput("Shooter/TargetSystem/Setpoint", anglerSetpoint);
     }
 
     if (launcherSetpointMPS != null) {
@@ -247,13 +252,13 @@ public class Shooter extends SubsystemBase {
   }
 
   /** Set the position setpoint of the angler mechanism */
-  public void setAnglerPosition(Rotation2d position) {
+  public void setAnglerPosition(Rotation2d position, boolean reset) {
     anglerSetpoint = position;
+    System.out.println(anglerSetpoint);
 
-    if (anglerSetpoint != null) {
-      if (Math.abs(anglerSetpoint.minus(currentAngle).getDegrees()) <= 2.0) {
-        resetAnglerFeedback();
-      }
+    if (anglerSetpoint != null && reset) {
+      resetAnglerFeedback();
+      System.out.println("TA MERE");
     }
 
     anglerStopped = false;
@@ -267,8 +272,19 @@ public class Shooter extends SubsystemBase {
   }
 
   /** Set all of the motors to a desired state */
-  public void setAllMotors(Rotation2d anglerPosition, double launcherVelocityMPS) {
-    setAnglerPosition(anglerPosition);
+  public void setAllMotors(
+      Rotation2d anglerPosition, double launcherVelocityMPS, boolean resetProfile) {
+    setAnglerPosition(anglerPosition, resetProfile);
+    setLauncherVelocityMPS(launcherVelocityMPS);
+
+    anglerStopped = false;
+    launcherStopped = false;
+  }
+
+  /** Set all of the motors to a desired state */
+  public void setAllMotors(
+      Supplier<Rotation2d> anglerPosition, double launcherVelocityMPS, boolean resetProfile) {
+    setAnglerPosition(anglerPosition.get(), resetProfile);
     setLauncherVelocityMPS(launcherVelocityMPS);
 
     anglerStopped = false;
@@ -327,5 +343,15 @@ public class Shooter extends SubsystemBase {
   @AutoLogOutput(key = "Shooter/BottomLauncher/VelocityMPS")
   public double getBottomLauncherVelocityMPS() {
     return launcherIOInputs.bottomFlywheelVelocityMPS;
+  }
+
+  /** Returns the error of the top motor */
+  public double getTopLauncherError() {
+    return launcherIOInputs.topFlywheelErrorMPS;
+  }
+
+  /** Returns the error of the bottom motor */
+  public double getBottomLauncherError() {
+    return launcherIOInputs.bottomFlywheelErrorMPS;
   }
 }

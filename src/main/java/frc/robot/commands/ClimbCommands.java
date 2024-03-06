@@ -46,6 +46,25 @@ public class ClimbCommands {
     return currentCommand;
   }
 
+  public static Command runClimbManual(
+      Climb robotClimb,
+      ClimbLeftDirection leftDesirecdDirection,
+      ClimbRightDirection rightDesiredDirection) {
+    currentCommand =
+        Commands.runOnce(
+                () -> {
+                  leftDirection = leftDesirecdDirection;
+                  rightDirection = rightDesiredDirection;
+                },
+                robotClimb)
+            .andThen(
+                Commands.run(
+                    () -> robotClimb.setVolts(leftDirection.getVolts(), rightDirection.getVolts()),
+                    robotClimb));
+
+    return currentCommand;
+  }
+
   /** Direction of the left climb */
   public static enum ClimbLeftDirection {
     /** Run the Left Climb arm in to the robot */

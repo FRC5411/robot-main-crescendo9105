@@ -18,7 +18,7 @@ public class TargetingSystem {
   private Translation3d speakerOpeningRed = new Translation3d(16.26, 5.49, 2.045);
 
   private boolean usingLaunchMap = true;
-  private final double LAUNCH_MAP_OFFSET_M = 0.62;
+  private final double LAUNCH_MAP_OFFSET_M = 0.93 + 0.46 - 0.23;
 
   /**
    * Tree Map that represents the robot's horizontal (X) distance from the Speaker (meters) and the
@@ -33,33 +33,26 @@ public class TargetingSystem {
 
   /** Initialize the launch map */
   private void initializeLaunchMap() {
-    launchMap.put(0.0, 0.0);
-    launchMap.put(0.25, 0.0);
-    launchMap.put(0.50, 0.0);
-    launchMap.put(0.75, 0.0);
-    launchMap.put(1.0, 0.0);
-    launchMap.put(1.25, 0.0);
-    launchMap.put(1.5, 0.0);
-    launchMap.put(1.75, 0.0);
-    launchMap.put(2.0, 0.0);
-    launchMap.put(2.25, 0.0);
-    launchMap.put(2.5, 0.0);
-    launchMap.put(2.75, 0.0);
-    launchMap.put(3.0, 0.0);
-    launchMap.put(3.25, 0.0);
-    launchMap.put(3.5, 0.0);
-    launchMap.put(3.75, 0.0);
-    launchMap.put(4.0, 0.0);
-    launchMap.put(4.25, 26.5);
-    launchMap.put(4.5, 25.9);
-    launchMap.put(4.6, 26.1);
+    launchMap.put(0.0 + LAUNCH_MAP_OFFSET_M, 55.0);
+    launchMap.put(0.25 + LAUNCH_MAP_OFFSET_M, 52.0);
+    launchMap.put(0.50 + LAUNCH_MAP_OFFSET_M, 48.0);
+    launchMap.put(0.75 + LAUNCH_MAP_OFFSET_M, 45.0);
+    launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 42.5);
+    launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 40.0);
+    launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 38.5);
+    launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 37.0);
+    launchMap.put(2.0 + LAUNCH_MAP_OFFSET_M, 35.6);
+    launchMap.put(2.25 + LAUNCH_MAP_OFFSET_M, 34.5);
+    launchMap.put(2.5 + LAUNCH_MAP_OFFSET_M, 33.5);
+    launchMap.put(2.75 + LAUNCH_MAP_OFFSET_M, 32.0);
+    launchMap.put(3.0 + LAUNCH_MAP_OFFSET_M, 31.1);
+    launchMap.put(3.25 + LAUNCH_MAP_OFFSET_M, 30.3);
+    launchMap.put(3.5 + LAUNCH_MAP_OFFSET_M, 29.9);
   }
 
   /** Returns the optimal angle given the robot's current pose */
-  public Rotation2d getLaunchMapAngle(Pose2d robotPose) {
-    double distanceFromTarget = calculateDistanceM(robotPose);
-
-    Rotation2d angle = Rotation2d.fromDegrees(launchMap.get(distanceFromTarget));
+  public Rotation2d getLaunchMapAngle(double distance) {
+    Rotation2d angle = Rotation2d.fromDegrees(launchMap.get(distance));
 
     Logger.recordOutput("Shooter/TargetingSystem/Angle", angle);
 

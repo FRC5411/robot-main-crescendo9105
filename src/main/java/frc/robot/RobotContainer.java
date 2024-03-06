@@ -14,6 +14,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.commands.AutoAlignCommand;
+import frc.robot.commands.ClimbCommands;
+import frc.robot.commands.ClimbCommands.ClimbLeftDirection;
+import frc.robot.commands.ClimbCommands.ClimbRightDirection;
 import frc.robot.commands.IndexerCommands;
 import frc.robot.commands.IndexerCommands.IndexerDirection;
 import frc.robot.commands.IntakeCommands;
@@ -24,7 +27,6 @@ import frc.robot.commands.ShooterCommands.FlywheelSpeeds;
 import frc.robot.commands.SwerveCommands;
 import frc.robot.commands.YoshiCommands;
 import frc.robot.commands.YoshiCommands.YoshiFlywheelDirection;
-import frc.robot.commands.YoshiCommands.YoshiPivotDirection;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
@@ -54,7 +56,6 @@ import frc.robot.subsystems.yoshivator.Yoshivator;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSim;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSparkMax;
-import frc.robot.utils.debugging.SysIDCharacterization;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -148,7 +149,7 @@ public class RobotContainer {
             robotDrive,
             () -> -pilotController.getLeftY(),
             () -> -pilotController.getLeftX(),
-            () -> pilotController.getRightX()));
+            () -> -pilotController.getRightX()));
 
     /* Reset gyro */
     pilotController.y().onTrue(SwerveCommands.resetGyro(robotDrive));
@@ -162,7 +163,8 @@ public class RobotContainer {
     /* Reset pose to infront of blue alliance speaker */
     pilotController
         .b()
-        .onTrue(SwerveCommands.setPose(robotDrive, new Pose2d(6.32, 5.50, new Rotation2d())));
+        .onTrue(
+            SwerveCommands.setPose(robotDrive, new Pose2d(1.34 - 0.17, 5.50, new Rotation2d())));
 
     /* Run intake */
     pilotController
@@ -255,24 +257,36 @@ public class RobotContainer {
         .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
 
     /* Run flywheel SysID test */
+    // copilotController
+    //     .b()
+    //     .onTrue(
+    //         SysIDCharacterization.runShooterSysIDTests(
+    //             robotShooter::setLauncherVolts, robotShooter))
+    //     .onFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+
     copilotController
         .b()
-        .onTrue(
-            SysIDCharacterization.runShooterSysIDTests(
-                robotShooter::setLauncherVolts, robotShooter))
-        .onFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+        .whileTrue(ShooterCommands.runAngler(robotShooter, robotDrive.distanceFromSpeakerMeters()))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
 
     /* Run Yoshi in */
     copilotController
         .leftTrigger()
-        .whileTrue(YoshiCommands.runPivotManual(robotYoshi, YoshiPivotDirection.IN))
-        .whileFalse(YoshiCommands.stopYoshi(robotYoshi, true, false));
+        .whileTrue(
+            ClimbCommands.runClimbManual(robotClimb, ClimbLeftDirection.IN, ClimbRightDirection.IN))
+        .whileFalse(
+            ClimbCommands.runClimbManual(
+                robotClimb, ClimbLeftDirection.STOP, ClimbRightDirection.STOP));
 
     /* Run Yoshi out */
     copilotController
         .rightTrigger()
-        .whileTrue(YoshiCommands.runPivotManual(robotYoshi, YoshiPivotDirection.OUT))
-        .whileFalse(YoshiCommands.stopYoshi(robotYoshi, true, false));
+        .whileTrue(
+            ClimbCommands.runClimbManual(
+                robotClimb, ClimbLeftDirection.OUT, ClimbRightDirection.OUT))
+        .whileFalse(
+            ClimbCommands.runClimbManual(
+                robotClimb, ClimbLeftDirection.STOP, ClimbRightDirection.STOP));
   }
 
   /** Returns the selected autonomous */
