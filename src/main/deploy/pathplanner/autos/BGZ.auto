@@ -20,7 +20,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "5-5N_S"
+            "pathName": "5.1,S"
           }
         },
         {
@@ -32,7 +32,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "4-5N_S"
+            "pathName": "5.4,S"
           }
         },
         {
@@ -44,7 +44,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "3-5N_S"
+            "pathName": "S,5.3"
           }
         }
       ]
