@@ -5,17 +5,19 @@
 package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.Constants.Robot;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.angler.AnglerIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOInputsAutoLogged;
 import frc.robot.utils.debugging.LoggedTunableNumber;
+import frc.robot.utils.math.ScrewArmFeedforward;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -26,29 +28,19 @@ public class Shooter extends SubsystemBase {
   private LauncherIO launcherIO;
   private LauncherIOInputsAutoLogged launcherIOInputs = new LauncherIOInputsAutoLogged();
 
+  // Default to real values
   private ProfiledPIDController anglerFeedback =
-      new ProfiledPIDController(0.49, 0.0, 0.0, new TrapezoidProfile.Constraints(400.0, 200.0));
-  private ArmFeedforward anglerFeedforward = new ArmFeedforward(0.3, 0.0, 0.0);
+      new ProfiledPIDController(0.49, 2.0, 0.018, new TrapezoidProfile.Constraints(1000.0, 1000.0));
+  private ScrewArmFeedforward anglerFeedforward = new ScrewArmFeedforward(0.2, 0.0);
 
-  private LoggedTunableNumber anglerFeedbackP =
-      new LoggedTunableNumber("Shooter/Angler/Feedback/P", anglerFeedback.getP());
-  private LoggedTunableNumber anglerFeedbackI =
-      new LoggedTunableNumber("Shooter/Angler/Feedback/I", anglerFeedback.getI());
-  private LoggedTunableNumber anglerFeedbackD =
-      new LoggedTunableNumber("Shooter/Angler/Feedback/D", anglerFeedback.getD());
-  private LoggedTunableNumber anglerFeedbackV =
-      new LoggedTunableNumber(
-          "Shooter/Angler/Feedback/V", anglerFeedback.getConstraints().maxVelocity);
-  private LoggedTunableNumber anglerFeedbackA =
-      new LoggedTunableNumber(
-          "Shooter/Angler/Feedback/A", anglerFeedback.getConstraints().maxAcceleration);
+  private LoggedTunableNumber anglerFeedbackP;
+  private LoggedTunableNumber anglerFeedbackI;
+  private LoggedTunableNumber anglerFeedbackD;
+  private LoggedTunableNumber anglerFeedbackV;
+  private LoggedTunableNumber anglerFeedbackA;
 
-  private LoggedTunableNumber anglerFeedforwardS =
-      new LoggedTunableNumber("Shooter/Angler/Feedforward/S", anglerFeedforward.ks);
-  private LoggedTunableNumber anglerFeedforwardG =
-      new LoggedTunableNumber("Shooter/Angler/Feedforward/G", anglerFeedforward.kg);
-  private LoggedTunableNumber anglerFeedforwardV =
-      new LoggedTunableNumber("Shooter/Angler/Feedforward/V", anglerFeedforward.kv);
+  private LoggedTunableNumber anglerFeedforwardU;
+  private LoggedTunableNumber anglerFeedforwardL;
 
   private ShooterVisualizer anglerVisualizer = new ShooterVisualizer();
 
@@ -62,15 +54,59 @@ public class Shooter extends SubsystemBase {
   private Rotation2d angleOffset = new Rotation2d();
   private Rotation2d currentAngle = new Rotation2d();
 
-  private double angleSignum = 0.0;
-
   /** Creates a new Shooter. */
   public Shooter(AnglerIO anglerIO, LauncherIO launcherIO) {
     this.anglerIO = anglerIO;
     this.launcherIO = launcherIO;
 
+    if (Constants.currentRobot == Robot.SYNTH) {
+      switch (Constants.currentMode) {
+        case REAL:
+          anglerFeedback.setP(0.49);
+          anglerFeedback.setI(2.0);
+          anglerFeedback.setD(0.018);
+          anglerFeedback.setConstraints(new TrapezoidProfile.Constraints(1000.0, 1000.0));
+
+          anglerFeedforward.updateU(0.2);
+          anglerFeedforward.updateL(0.0);
+          break;
+        case SIM:
+          anglerFeedback.setP(0.1);
+          anglerFeedback.setI(0.0);
+          anglerFeedback.setD(0.5);
+          anglerFeedback.setConstraints(new TrapezoidProfile.Constraints(50.0, 50.0));
+
+          anglerFeedforward.updateU(0.0);
+          anglerFeedforward.updateL(0.0);
+          break;
+        default:
+          anglerFeedback.setP(0.0);
+          anglerFeedback.setI(0.0);
+          anglerFeedback.setD(0.0);
+          anglerFeedback.setConstraints(new TrapezoidProfile.Constraints(0.0, 0.0));
+
+          anglerFeedforward.updateU(0.0);
+          anglerFeedforward.updateL(0.0);
+          break;
+      }
+    }
+
+    anglerFeedbackP = new LoggedTunableNumber("Shooter/Angler/Feedback/P", anglerFeedback.getP());
+    anglerFeedbackI = new LoggedTunableNumber("Shooter/Angler/Feedback/I", anglerFeedback.getI());
+    anglerFeedbackD = new LoggedTunableNumber("Shooter/Angler/Feedback/D", anglerFeedback.getD());
+    anglerFeedbackV =
+        new LoggedTunableNumber(
+            "Shooter/Angler/Feedback/V", anglerFeedback.getConstraints().maxVelocity);
+    anglerFeedbackA =
+        new LoggedTunableNumber(
+            "Shooter/Angler/Feedback/A", anglerFeedback.getConstraints().maxAcceleration);
+    anglerFeedforwardU =
+        new LoggedTunableNumber("Shooter/Angler/Feedforward/U", anglerFeedforward.getU());
+    anglerFeedforwardL =
+        new LoggedTunableNumber("Shooter/Angler/Feedforward/L", anglerFeedforward.getL());
+
     resetAnglerFeedback();
-    anglerFeedback.setTolerance(0.1);
+    anglerFeedback.setTolerance(0.25);
     anglerFeedback.setIZone(20.0);
     anglerFeedback.setIntegratorRange(-0.5, 0.5);
   }
@@ -118,13 +154,9 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("Shooter/Angler/currentPosition", currentAngle);
 
     if (anglerSetpoint != null) {
-      angleSignum = Math.signum(anglerSetpoint.minus(currentAngle).getDegrees());
-
       double anglerFeedbackOutput =
           anglerFeedback.calculate(currentAngle.getDegrees(), anglerSetpoint.getDegrees());
-      double anglerFeedforwardOutput =
-          anglerFeedforward.calculate(
-              anglerFeedback.getSetpoint().position, angleSignum); // Activite the signum
+      double anglerFeedforwardOutput = anglerFeedforward.calculate(currentAngle, anglerSetpoint);
 
       double anglerCombinedOutput = (anglerFeedbackOutput + anglerFeedforwardOutput);
 
@@ -144,7 +176,9 @@ public class Shooter extends SubsystemBase {
     Logger.recordOutput("Shooter/Angler/Stopped", anglerStopped);
     Logger.recordOutput("Shooter/Launcher/Stopped", launcherStopped);
 
-    updateTunableNumbers();
+    if (Constants.tuningMode) {
+      updateTunableNumbers();
+    }
   }
 
   /** Checks if tunable numbers have changed, if so update controllers */
@@ -161,12 +195,9 @@ public class Shooter extends SubsystemBase {
       anglerFeedback.setConstraints(
           new TrapezoidProfile.Constraints(anglerFeedbackV.get(), anglerFeedbackA.get()));
     }
-    if (anglerFeedforwardS.hasChanged(hashCode())
-        || anglerFeedforwardG.hasChanged(hashCode())
-        || anglerFeedforwardV.hasChanged(hashCode())) {
-      anglerFeedforward =
-          new ArmFeedforward(
-              anglerFeedforwardS.get(), anglerFeedforwardG.get(), anglerFeedforwardV.get());
+    if (anglerFeedforwardU.hasChanged(hashCode()) || anglerFeedforwardL.hasChanged(hashCode())) {
+      anglerFeedforward.updateU(anglerFeedforwardU.get());
+      anglerFeedforward.updateL(anglerFeedforwardL.get());
     }
   }
 
@@ -220,7 +251,9 @@ public class Shooter extends SubsystemBase {
     anglerSetpoint = position;
 
     if (anglerSetpoint != null) {
-      resetAnglerFeedback();
+      if (Math.abs(anglerSetpoint.minus(currentAngle).getDegrees()) <= 2.0) {
+        resetAnglerFeedback();
+      }
     }
 
     anglerStopped = false;
@@ -237,8 +270,6 @@ public class Shooter extends SubsystemBase {
   public void setAllMotors(Rotation2d anglerPosition, double launcherVelocityMPS) {
     setAnglerPosition(anglerPosition);
     setLauncherVelocityMPS(launcherVelocityMPS);
-
-    System.out.println("MY FATHER");
 
     anglerStopped = false;
     launcherStopped = false;

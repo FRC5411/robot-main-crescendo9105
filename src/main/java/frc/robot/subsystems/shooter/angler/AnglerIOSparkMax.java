@@ -29,7 +29,7 @@ public class AnglerIOSparkMax implements AnglerIO {
     anglerMotor.clearFaults();
     anglerMotor.restoreFactoryDefaults();
 
-    anglerMotor.setSmartCurrentLimit(40);
+    anglerMotor.setSmartCurrentLimit(60);
     anglerMotor.enableVoltageCompensation(12.0);
     anglerMotor.setIdleMode(IdleMode.kBrake);
 
@@ -70,7 +70,7 @@ public class AnglerIOSparkMax implements AnglerIO {
   public void setVolts(double volts) {
     appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
 
-    // anglerMotor.setVoltage(appliedVolts);
-    anglerMotor.set(appliedVolts / 12.0);
+    anglerMotor.setVoltage(appliedVolts);
+    // anglerMotor.set(appliedVolts / 12.0);
   }
 }

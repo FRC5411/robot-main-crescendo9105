@@ -33,27 +33,26 @@ public class TargetingSystem {
 
   /** Initialize the launch map */
   private void initializeLaunchMap() {
-    launchMap.put(0.0, 55.0);
-    launchMap.put(0.1, 52.0);
-    launchMap.put(0.2, 50.0);
-    launchMap.put(0.3, 49.0);
-    launchMap.put(0.4, 49.0);
-    launchMap.put(0.5, 48.0);
-    launchMap.put(0.6, 47.0);
-    launchMap.put(0.7, 46.0);
-    launchMap.put(0.8, 45.0);
-    launchMap.put(0.9, 44.0);
-    launchMap.put(1.0, 43.7);
-    launchMap.put(1.1, 42.9);
-    launchMap.put(1.2, 42.0);
-    launchMap.put(1.3, 41.0);
-    launchMap.put(1.4, 40.0);
-    launchMap.put(1.5, 39.5);
-    launchMap.put(1.6, 39.0);
-    launchMap.put(1.7, 37.5);
-    launchMap.put(1.8, 36.5);
-    launchMap.put(1.9, 35.0);
-    launchMap.put(2.0, 34.4);
+    launchMap.put(0.0, 0.0);
+    launchMap.put(0.25, 0.0);
+    launchMap.put(0.50, 0.0);
+    launchMap.put(0.75, 0.0);
+    launchMap.put(1.0, 0.0);
+    launchMap.put(1.25, 0.0);
+    launchMap.put(1.5, 0.0);
+    launchMap.put(1.75, 0.0);
+    launchMap.put(2.0, 0.0);
+    launchMap.put(2.25, 0.0);
+    launchMap.put(2.5, 0.0);
+    launchMap.put(2.75, 0.0);
+    launchMap.put(3.0, 0.0);
+    launchMap.put(3.25, 0.0);
+    launchMap.put(3.5, 0.0);
+    launchMap.put(3.75, 0.0);
+    launchMap.put(4.0, 0.0);
+    launchMap.put(4.25, 26.5);
+    launchMap.put(4.5, 25.9);
+    launchMap.put(4.6, 26.1);
   }
 
   /** Returns the optimal angle given the robot's current pose */
