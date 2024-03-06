@@ -18,7 +18,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "UNM1.5"
+                  "pathName": "3.2,S"
                 }
               },
               {
@@ -42,7 +42,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "UNM5"
+                  "pathName": "S,5.2"
                 }
               }
             ]
