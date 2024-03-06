@@ -9,7 +9,9 @@
     "Competition"
   ],
   "autoFolders": [
-    "2024 Crescendo"
+    "2024 Crescendo (TOP)",
+    "2024 Crescendo (BOTTOM)",
+    "2024 Crescendo (CENTER)"
   ],
   "defaultMaxVel": 3.0,
   "defaultMaxAccel": 3.0,
