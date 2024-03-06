@@ -3,12 +3,13 @@
   "robotLength": 0.9144,
   "holonomicMode": true,
   "pathFolders": [
+    "3 to 5 Column",
     "3FebPaths",
     "8FebPaths",
     "Bottom-3 Column",
     "CalibrationPaths",
     "Competition",
-    "3.3 to 5 Column"
+    "5 to 3 Column"
   ],
   "autoFolders": [
     "2024 Crescendo (TOP)",
