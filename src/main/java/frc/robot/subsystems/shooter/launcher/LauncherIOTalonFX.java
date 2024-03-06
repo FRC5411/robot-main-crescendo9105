@@ -19,7 +19,7 @@ public class LauncherIOTalonFX implements LauncherIO {
   private final double GEARING = 1.0 / 1.0;
   private final double RADIUS_M = 6.35 / 100;
   private final double CIRCUMFRENCE_M = 2.0 * Math.PI * RADIUS_M;
-  private final double RATE_LIMIT = 25.0;
+  private final double RATE_LIMIT = 40.0;
 
   private TalonFX topMotor = new TalonFX(43);
   private TalonFX bottomMotor = new TalonFX(44);
@@ -34,36 +34,36 @@ public class LauncherIOTalonFX implements LauncherIO {
   private SlewRateLimiter bottomLimiter = new SlewRateLimiter(RATE_LIMIT);
 
   private LoggedTunableNumber topFeedbackP =
-      new LoggedTunableNumber("Shooter/LauncherTop/Feedback/P", 0.040193);
+      new LoggedTunableNumber("Shooter/LauncherTop/Feedback/P", 0.026579);
   private LoggedTunableNumber topFeedbackI =
       new LoggedTunableNumber("Shooter/LauncherTop/Feedback/I", 0.0);
   private LoggedTunableNumber topFeedbackD =
       new LoggedTunableNumber("Shooter/LauncherTop/Feedback/D", 0.0);
 
   private LoggedTunableNumber bottomFeedbackP =
-      new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/P", 0.040193);
+      new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/P", 0.0032508);
   private LoggedTunableNumber bottomFeedbackI =
       new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/I", 0.0);
   private LoggedTunableNumber bottomFeedbackD =
       new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/D", 0.0);
 
-  private LoggedTunableNumber topFeedbackS =
-      new LoggedTunableNumber("Shooter/LauncherTop/Feedback/S", 0.003384);
-  private LoggedTunableNumber topFeedbackG =
-      new LoggedTunableNumber("Shooter/LauncherTop/Feedback/G", 0.0);
-  private LoggedTunableNumber topFeedbackV =
-      new LoggedTunableNumber("Shooter/LauncherTop/Feedback/V", 0.11036);
-  private LoggedTunableNumber topFeedbackA =
-      new LoggedTunableNumber("Shooter/LauncherTop/Feedback/A", 0.0);
+  private LoggedTunableNumber topFeedforwardS =
+      new LoggedTunableNumber("Shooter/LauncherTop/Feedforward/S", 0.002384);
+  private LoggedTunableNumber topFeedforwardG =
+      new LoggedTunableNumber("Shooter/LauncherTop/Feedforward/G", 0.0);
+  private LoggedTunableNumber topFeedforwardV =
+      new LoggedTunableNumber("Shooter/LauncherTop/Feedforward/V", 0.11127);
+  private LoggedTunableNumber topFeedforwardA =
+      new LoggedTunableNumber("Shooter/LauncherTop/Feedforward/A", 0.0);
 
-  private LoggedTunableNumber bottomFeedbackS =
-      new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/S", 0.003384);
-  private LoggedTunableNumber bottomFeedbackG =
-      new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/G", 0.0);
-  private LoggedTunableNumber bottomFeedbackV =
-      new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/V", 0.11036);
-  private LoggedTunableNumber bottomFeedbackA =
-      new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/A", 0.0);
+  private LoggedTunableNumber bottomFeedforwardS =
+      new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/S", 0.01853);
+  private LoggedTunableNumber bottomFeedforwardG =
+      new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/G", 0.0);
+  private LoggedTunableNumber bottomFeedforwardV =
+      new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/V", 0.11973);
+  private LoggedTunableNumber bottomFeedforwardA =
+      new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/A", 0.0);
 
   private LoggedTunableNumber topLimiterValue =
       new LoggedTunableNumber("Shooter/LauncherTop/Limiter/Value", RATE_LIMIT);
@@ -109,15 +109,15 @@ public class LauncherIOTalonFX implements LauncherIO {
     bottomConfiguration.Slot0.kI = bottomFeedbackI.get();
     bottomConfiguration.Slot0.kD = bottomFeedbackD.get();
 
-    topConfiguration.Slot0.kS = topFeedbackS.get();
-    topConfiguration.Slot0.kG = topFeedbackG.get();
-    topConfiguration.Slot0.kV = topFeedbackV.get();
-    topConfiguration.Slot0.kA = topFeedbackA.get();
+    topConfiguration.Slot0.kS = topFeedforwardS.get();
+    topConfiguration.Slot0.kG = topFeedforwardG.get();
+    topConfiguration.Slot0.kV = topFeedforwardV.get();
+    topConfiguration.Slot0.kA = topFeedforwardA.get();
 
-    bottomConfiguration.Slot0.kS = bottomFeedbackS.get();
-    bottomConfiguration.Slot0.kG = bottomFeedbackG.get();
-    bottomConfiguration.Slot0.kV = bottomFeedbackV.get();
-    bottomConfiguration.Slot0.kA = bottomFeedbackA.get();
+    bottomConfiguration.Slot0.kS = bottomFeedforwardS.get();
+    bottomConfiguration.Slot0.kG = bottomFeedforwardG.get();
+    bottomConfiguration.Slot0.kV = bottomFeedforwardV.get();
+    bottomConfiguration.Slot0.kA = bottomFeedforwardA.get();
 
     topMotor.getConfigurator().apply(topConfiguration);
     bottomMotor.getConfigurator().apply(bottomConfiguration);
@@ -128,18 +128,24 @@ public class LauncherIOTalonFX implements LauncherIO {
     inputs.topFlywheelVelocityMPS =
         (topMotor.getVelocity().getValueAsDouble() * CIRCUMFRENCE_M) / GEARING;
     inputs.topFlywheelAppliedVolts = topAppliedVolts;
+    inputs.topFlywheelInternalVolts = topMotor.getMotorVoltage().getValueAsDouble();
     inputs.topFlywheelAppliedCurrentAmps =
         new double[] {topMotor.getStatorCurrent().getValueAsDouble()};
     inputs.topFlywheelTemperatureCelsius =
         new double[] {topMotor.getDeviceTemp().getValueAsDouble()};
+    inputs.topFlywheelSetpointMPS = topMotor.getClosedLoopReference().getValueAsDouble();
+    inputs.topFlywheelErrorMPS = topMotor.getClosedLoopError().getValueAsDouble();
 
     inputs.bottomFlywheelVelocityMPS =
         (bottomMotor.getVelocity().getValueAsDouble() * CIRCUMFRENCE_M) / GEARING;
     inputs.bottomFlywheelAppliedVolts = bottomAppliedVolts;
+    inputs.bottomFlywheelInternalVolts = bottomMotor.getMotorVoltage().getValueAsDouble();
     inputs.bottomFlywheelAppliedCurrentAmps =
         new double[] {bottomMotor.getStatorCurrent().getValueAsDouble()};
     inputs.bottomFlywheelTemperatureCelsius =
         new double[] {bottomMotor.getDeviceTemp().getValueAsDouble()};
+    inputs.bottomFlywheelSetpointMPS = bottomMotor.getClosedLoopReference().getValueAsDouble();
+    inputs.bottomFlywheelErrorMPS = bottomMotor.getClosedLoopError().getValueAsDouble();
 
     updateTunableNumbers();
   }
@@ -200,14 +206,14 @@ public class LauncherIOTalonFX implements LauncherIO {
 
       topMotor.getConfigurator().apply(topConfiguration);
     }
-    if (topFeedbackS.hasChanged(hashCode())
-        || topFeedbackG.hasChanged(hashCode())
-        || topFeedbackV.hasChanged(hashCode())
-        || topFeedbackA.hasChanged(hashCode())) {
-      topConfiguration.Slot0.kS = topFeedbackS.get();
-      topConfiguration.Slot0.kG = topFeedbackG.get();
-      topConfiguration.Slot0.kV = topFeedbackV.get();
-      topConfiguration.Slot0.kA = topFeedbackA.get();
+    if (topFeedforwardS.hasChanged(hashCode())
+        || topFeedforwardG.hasChanged(hashCode())
+        || topFeedforwardV.hasChanged(hashCode())
+        || topFeedforwardA.hasChanged(hashCode())) {
+      topConfiguration.Slot0.kS = topFeedforwardS.get();
+      topConfiguration.Slot0.kG = topFeedforwardG.get();
+      topConfiguration.Slot0.kV = topFeedforwardV.get();
+      topConfiguration.Slot0.kA = topFeedforwardA.get();
 
       topMotor.getConfigurator().apply(topConfiguration);
     }
@@ -221,14 +227,14 @@ public class LauncherIOTalonFX implements LauncherIO {
 
       bottomMotor.getConfigurator().apply(bottomConfiguration);
     }
-    if (bottomFeedbackS.hasChanged(hashCode())
-        || bottomFeedbackG.hasChanged(hashCode())
-        || bottomFeedbackV.hasChanged(hashCode())
-        || bottomFeedbackA.hasChanged(hashCode())) {
-      bottomConfiguration.Slot0.kS = bottomFeedbackS.get();
-      bottomConfiguration.Slot0.kG = bottomFeedbackG.get();
-      bottomConfiguration.Slot0.kV = bottomFeedbackV.get();
-      bottomConfiguration.Slot0.kA = bottomFeedbackA.get();
+    if (bottomFeedforwardS.hasChanged(hashCode())
+        || bottomFeedforwardG.hasChanged(hashCode())
+        || bottomFeedforwardV.hasChanged(hashCode())
+        || bottomFeedforwardA.hasChanged(hashCode())) {
+      bottomConfiguration.Slot0.kS = bottomFeedforwardS.get();
+      bottomConfiguration.Slot0.kG = bottomFeedforwardG.get();
+      bottomConfiguration.Slot0.kV = bottomFeedforwardV.get();
+      bottomConfiguration.Slot0.kA = bottomFeedforwardA.get();
 
       bottomMotor.getConfigurator().apply(bottomConfiguration);
     }

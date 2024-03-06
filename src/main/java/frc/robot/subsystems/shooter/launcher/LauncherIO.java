@@ -13,15 +13,19 @@ public interface LauncherIO {
   public static class LauncherIOInputs {
     public double topFlywheelVelocityMPS = 0.0;
     public double topFlywheelAppliedVolts = 0.0;
+    public double topFlywheelInternalVolts = 0.0;
     public double[] topFlywheelAppliedCurrentAmps = new double[] {0.0};
     public double[] topFlywheelTemperatureCelsius = new double[] {0.0};
-    public double topFlywheelSetpointRPM = 0.0;
+    public double topFlywheelSetpointMPS = 0.0;
+    public double topFlywheelErrorMPS = 0.0;
 
     public double bottomFlywheelVelocityMPS = 0.0;
     public double bottomFlywheelAppliedVolts = 0.0;
+    public double bottomFlywheelInternalVolts = 0.0;
     public double[] bottomFlywheelAppliedCurrentAmps = new double[] {0.0};
     public double[] bottomFlywheelTemperatureCelsius = new double[] {0.0};
     public double bottomFlywheelSetpointMPS = 0.0;
+    public double bottomFlywheelErrorMPS = 0.0;
   }
 
   /** Update the inputs from the sensors */

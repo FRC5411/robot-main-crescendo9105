@@ -8,16 +8,25 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.AutoAlignCommand;
+import frc.robot.commands.ClimbCommands;
+import frc.robot.commands.ClimbCommands.ClimbLeftDirection;
+import frc.robot.commands.ClimbCommands.ClimbRightDirection;
 import frc.robot.commands.IndexerCommands;
 import frc.robot.commands.IndexerCommands.IndexerDirection;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.IntakeCommands.IntakeDirection;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.ShooterCommands.AnglerDirection;
+import frc.robot.commands.ShooterCommands.FlywheelSpeeds;
 import frc.robot.commands.SwerveCommands;
+import frc.robot.commands.YoshiCommands;
+import frc.robot.commands.YoshiCommands.YoshiFlywheelDirection;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
@@ -43,6 +52,10 @@ import frc.robot.subsystems.shooter.angler.AnglerIOSparkMax;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOSim;
 import frc.robot.subsystems.shooter.launcher.LauncherIOTalonFX;
+import frc.robot.subsystems.yoshivator.Yoshivator;
+import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
+import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSim;
+import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSparkMax;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -51,8 +64,10 @@ public class RobotContainer {
   private Shooter robotShooter;
   private Climb robotClimb;
   private Indexer robotIndexer;
+  private Yoshivator robotYoshi;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
+  private CommandXboxController copilotController = new CommandXboxController(1);
 
   private LoggedDashboardChooser<Command> autoChooser;
 
@@ -84,6 +99,7 @@ public class RobotContainer {
         robotShooter = new Shooter(new AnglerIOSparkMax(), new LauncherIOTalonFX());
         robotClimb = new Climb(new ClimbIOSparkMax());
         robotIndexer = new Indexer(new IndexerIOSparkMax());
+        robotYoshi = new Yoshivator(new ManipulatorIOSparkMax());
         break;
       case SIM:
         robotDrive =
@@ -97,6 +113,7 @@ public class RobotContainer {
         robotShooter = new Shooter(new AnglerIOSim(), new LauncherIOSim());
         robotClimb = new Climb(new ClimbIOSim());
         robotIndexer = new Indexer(new IndexerIOSim());
+        robotYoshi = new Yoshivator(new ManipulatorIOSim());
         break;
       default:
         robotDrive =
@@ -110,6 +127,7 @@ public class RobotContainer {
         robotShooter = new Shooter(new AnglerIO() {}, new LauncherIO() {});
         robotClimb = new Climb(new ClimbIO() {});
         robotIndexer = new Indexer(new IndexerIO() {});
+        robotYoshi = new Yoshivator(new ManipulatorIO() {});
         break;
     }
   }
@@ -123,67 +141,56 @@ public class RobotContainer {
 
   /** Configure controllers */
   private void configureButtonBindings() {
+    /* Pilot bindings */
+
     /* Drive with joysticks */
     robotDrive.setDefaultCommand(
         SwerveCommands.swerveDrive(
-            // FIXME Figure out why joysticks are being goofy
             robotDrive,
             () -> -pilotController.getLeftY(),
             () -> -pilotController.getLeftX(),
             () -> -pilotController.getRightX()));
 
     /* Reset gyro */
-    pilotController.y().onTrue(Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive));
+    pilotController.y().onTrue(SwerveCommands.resetGyro(robotDrive));
+
+    /* Auto heading to speaker */
+    pilotController
+        .a()
+        .whileTrue(AutoAlignCommand.angleToSpeakerCommand(robotDrive))
+        .onFalse(SwerveCommands.stopDrive(robotDrive));
+
+    /* Reset pose to infront of blue alliance speaker */
+    pilotController
+        .b()
+        .onTrue(
+            SwerveCommands.setPose(robotDrive, new Pose2d(1.34 - 0.17, 5.50, new Rotation2d())));
 
     /* Run intake */
     pilotController
         .leftBumper()
         .whileTrue(
             IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
-                .alongWith(IndexerCommands.stowPiece(robotIndexer)))
+                .alongWith(IndexerCommands.stowPiece(robotIndexer))
+                .alongWith(
+                    YoshiCommands.runFlywheelManual(robotYoshi, YoshiFlywheelDirection.STOP)))
         .whileFalse(
             IntakeCommands.stopIntake(robotIntake)
-                .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
+                .alongWith(IndexerCommands.stopIndexer(robotIndexer))
+                .alongWith(YoshiCommands.stopYoshi(robotYoshi, false, true)));
 
     /* Run outtake */
     pilotController
         .rightBumper()
         .whileTrue(
             IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)
-                .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)))
+                .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT))
+                .alongWith(
+                    YoshiCommands.runFlywheelManual(robotYoshi, YoshiFlywheelDirection.STOP)))
         .whileFalse(
             IntakeCommands.stopIntake(robotIntake)
-                .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
-
-    /* Run angler setpoint */
-    pilotController
-        .x()
-        .whileTrue(ShooterCommands.runAngler(robotShooter))
-        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
-
-    /* Run angler manual up */
-    pilotController
-        .povUp()
-        .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.UP))
-        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
-
-    /* Run angler manual down */
-    pilotController
-        .povDown()
-        .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.DOWN))
-        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
-
-    // /* Run launcher setpoint */
-    pilotController
-        .b()
-        .whileTrue(ShooterCommands.runLauncher(robotShooter))
-        .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
-
-    /* Run launcher manual */
-    pilotController
-        .a()
-        .whileTrue(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN))
-        .whileFalse(IndexerCommands.stopIndexer(robotIndexer));
+                .alongWith(IndexerCommands.stopIndexer(robotIndexer))
+                .alongWith(YoshiCommands.stopYoshi(robotYoshi, false, true)));
 
     /* Move back slightly */
     pilotController
@@ -196,6 +203,90 @@ public class RobotContainer {
         .povRight()
         .whileTrue(SwerveCommands.swerveDrive(robotDrive, () -> 0.3, () -> 0.0, () -> 0.0))
         .onFalse(SwerveCommands.stopDrive(robotDrive));
+
+    /* Copilot bindings */
+
+    /* Run angler up */
+    copilotController
+        .povUp()
+        .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.UP))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+
+    /* Run angler down */
+    copilotController
+        .povDown()
+        .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.DOWN))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+
+    /* Intake & index in */
+    copilotController
+        .povLeft()
+        .whileTrue(
+            IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN)
+                .alongWith(IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)))
+        .whileFalse(
+            IndexerCommands.stopIndexer(robotIndexer)
+                .alongWith(IntakeCommands.stopIntake(robotIntake)));
+
+    /* Intake & index out */
+    copilotController
+        .povRight()
+        .whileTrue(
+            IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)
+                .alongWith(IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)))
+        .whileFalse(
+            IndexerCommands.stopIndexer(robotIndexer)
+                .alongWith(IntakeCommands.stopIntake(robotIntake)));
+
+    /* Flywheels out */
+    copilotController
+        .leftBumper()
+        .whileTrue(ShooterCommands.runLauncherManual(robotShooter, FlywheelSpeeds.FULL))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+
+    /* Run setpoint pivot */
+    copilotController
+        .y()
+        .whileTrue(ShooterCommands.runAnglerSetpoint(robotShooter))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+
+    /* Run setpoint flywheels */
+    copilotController
+        .a()
+        .whileTrue(ShooterCommands.runLauncher(robotShooter))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+
+    /* Run flywheel SysID test */
+    // copilotController
+    //     .b()
+    //     .onTrue(
+    //         SysIDCharacterization.runShooterSysIDTests(
+    //             robotShooter::setLauncherVolts, robotShooter))
+    //     .onFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+
+    copilotController
+        .b()
+        .whileTrue(ShooterCommands.runAngler(robotShooter, robotDrive.distanceFromSpeakerMeters()))
+        .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
+
+    /* Run Yoshi in */
+    copilotController
+        .leftTrigger()
+        .whileTrue(
+            ClimbCommands.runClimbManual(robotClimb, ClimbLeftDirection.IN, ClimbRightDirection.IN))
+        .whileFalse(
+            ClimbCommands.runClimbManual(
+                robotClimb, ClimbLeftDirection.STOP, ClimbRightDirection.STOP));
+
+    /* Run Yoshi out */
+    copilotController
+        .rightTrigger()
+        .whileTrue(
+            ClimbCommands.runClimbManual(
+                robotClimb, ClimbLeftDirection.OUT, ClimbRightDirection.OUT))
+        .whileFalse(
+            ClimbCommands.runClimbManual(
+                robotClimb, ClimbLeftDirection.STOP, ClimbRightDirection.STOP));
   }
 
   /** Returns the selected autonomous */

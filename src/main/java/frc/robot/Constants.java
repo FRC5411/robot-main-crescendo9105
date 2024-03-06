@@ -13,6 +13,10 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -25,7 +29,7 @@ import edu.wpi.first.wpilibj.RobotBase;
  */
 public final class Constants {
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : Mode.SIM;
-  public static final Robot currentRobot = Robot.SIGMA;
+  public static final Robot currentRobot = Robot.SYNTH;
   public static boolean tuningMode = true;
 
   public static enum Mode {
@@ -43,41 +47,18 @@ public final class Constants {
     /** NEO Swerve robot */
     NEOSWERVE,
     /** Alphabot constants */
-    SIGMA
+    SYNTH
   }
 
-  public static enum Pilot {
-    /** Default */
-    COMPUTER
-  }
-
-  public static enum Bindings {
-    /** Drive translation x (FWD-BWD away from DS) trigger */
-    SWERVE_TRANSLATION_X,
-    /** Drive translation y (LFT-RHT away from DS) trigger */
-    SWERVE_TRANSLATION_Y,
-    /** Drive angular trigger */
-    SWERVE_ROTATION,
-    /** Reset field orientation (gyro) */
-    SWERVE_RESET_FIELD,
-    /** Reset robot pose */
-    SWERVE_RESET_POSE,
-    /** Run manual intake */
-    INTAKE_INTAKE_MANUAL,
-    /** Run manual outtake */
-    INTAKE_OUTTAKE_MANUAL,
-    /** Run intake on closed loop */
-    INTAKE_INTAKE_CLOSED_LOOP
-  }
-
-  public static enum Preferences {
-    /** Drive trigger deadzone */
-    SWERVE_DEADZONE,
-    /** Drive max translational speed in MPS */
-    SWERVE_MAX_LINEAR_SPEED,
-    /** Drive max rotational speed in MPS */
-    SWERVE_MAX_ANGULAR_SPEED,
-    /** Drive sqaure inputs */
-    SWERVE_SQUARE_INPUTS
-  }
+  public static final Pose3d kSpeaker3DPose =
+      (DriverStation.getAlliance().isPresent())
+          ? new Pose3d(
+              new Translation3d(
+                  (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue)
+                      ? 0.23
+                      : 16.54 - 0.23,
+                  8.27 / 2.0 + 1.4478,
+                  2.045),
+              new Rotation3d())
+          : new Pose3d(new Translation3d(0.23, 8.27 / 2 + 1.4478, 2.045), new Rotation3d());
 }

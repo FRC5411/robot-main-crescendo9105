@@ -7,83 +7,105 @@ package frc.robot.commands;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.subsystems.climb.Climb;
-import org.littletonrobotics.junction.Logger;
 
 /** Class to hold of the commands for the climb */
 public class ClimbCommands {
   private static Command currentCommand = null;
 
+  private static ClimbLeftDirection leftDirection = ClimbLeftDirection.STOP;
+  private static ClimbRightDirection rightDirection = ClimbRightDirection.STOP;
+
   private ClimbCommands() {}
 
-  /** Set the angle of both climb arms in radians */
-  public static Command setAngle(
-      Climb robotClimb, double leftAngleRadians, double rightAngleRadians) {
+  public static Command runLeftClimbManual(
+      Climb robotClimb, ClimbLeftDirection leftDesiredDirection) {
     currentCommand =
-        Commands.run(() -> robotClimb.setAngle(leftAngleRadians, rightAngleRadians), robotClimb);
+        Commands.runOnce(
+                () -> {
+                  leftDirection = leftDesiredDirection;
+                },
+                robotClimb)
+            .andThen(
+                Commands.run(() -> robotClimb.setVoltsLeft(leftDirection.getVolts()), robotClimb));
 
     return currentCommand;
   }
 
-  /** Set the manual voltage of each arm */
-  public static Command runManual(
-      Climb robotClimb, double leftSideVolts, double rightSideVolts, boolean invertArms) {
-    if (invertArms) {
-      currentCommand =
-          Commands.run(() -> robotClimb.setVolts(-leftSideVolts, -rightSideVolts), robotClimb);
-    } else {
-      currentCommand =
-          Commands.run(() -> robotClimb.setVolts(leftSideVolts, rightSideVolts), robotClimb);
+  public static Command runRightClimbManual(
+      Climb robotClimb, ClimbRightDirection rightDesiredDirection) {
+    currentCommand =
+        Commands.runOnce(
+                () -> {
+                  rightDirection = rightDesiredDirection;
+                },
+                robotClimb)
+            .andThen(
+                Commands.run(
+                    () -> robotClimb.setVoltsRight(rightDirection.getVolts()), robotClimb));
+
+    return currentCommand;
+  }
+
+  public static Command runClimbManual(
+      Climb robotClimb,
+      ClimbLeftDirection leftDesirecdDirection,
+      ClimbRightDirection rightDesiredDirection) {
+    currentCommand =
+        Commands.runOnce(
+                () -> {
+                  leftDirection = leftDesirecdDirection;
+                  rightDirection = rightDesiredDirection;
+                },
+                robotClimb)
+            .andThen(
+                Commands.run(
+                    () -> robotClimb.setVolts(leftDirection.getVolts(), rightDirection.getVolts()),
+                    robotClimb));
+
+    return currentCommand;
+  }
+
+  /** Direction of the left climb */
+  public static enum ClimbLeftDirection {
+    /** Run the Left Climb arm in to the robot */
+    IN(12.0),
+    /** Run the Left Climb arm in to the robot */
+    OUT(-12.0),
+    /** Stop the Left Climb wheels */
+    STOP(0.0);
+
+    private double volts;
+
+    /** Define the direction for the Left Climb to spin */
+    ClimbLeftDirection(double volts) {
+      this.volts = volts;
     }
-    Logger.recordOutput("Climb/Direction", invertArms);
 
-    return currentCommand;
-  }
-
-  /** Set the manual voltage of each arm */
-  public static Command runManualLeft(Climb robotClimb, double volts, boolean invertArms) {
-    if (invertArms) {
-      currentCommand = Commands.run(() -> robotClimb.setVoltsLeft(-volts), robotClimb);
-    } else {
-      currentCommand = Commands.run(() -> robotClimb.setVoltsLeft(volts), robotClimb);
+    /** Returns the voltage based on the direction specified */
+    public double getVolts() {
+      return this.volts;
     }
-    Logger.recordOutput("Climb/Direction", invertArms);
-
-    return currentCommand;
   }
 
-  /** Set the manual voltage of each arm */
-  public static Command runManualRight(Climb robotClimb, double volts, boolean invertArms) {
-    if (invertArms) {
-      currentCommand = Commands.run(() -> robotClimb.setVoltsRight(-volts), robotClimb);
-    } else {
-      currentCommand = Commands.run(() -> robotClimb.setVoltsRight(volts), robotClimb);
+  /** Direction of the right climb */
+  public static enum ClimbRightDirection {
+    /** Run the Right Climb arm in to the robot */
+    IN(12.0),
+    /** Run the Right Climb arm in to the robot */
+    OUT(-12.0),
+    /** Stop the Right Climb wheels */
+    STOP(0.0);
+
+    private double volts;
+
+    /** Define the direction for the Right Climb to spin */
+    ClimbRightDirection(double volts) {
+      this.volts = volts;
     }
-    Logger.recordOutput("Climb/Direction", invertArms);
 
-    return currentCommand;
-  }
-
-  /** Stop the climb */
-  public static Command stopClimb(Climb robotClimb) {
-    if (currentCommand != null) {
-      currentCommand.cancel();
-    }
-    currentCommand = Commands.run(() -> robotClimb.setVolts(0.0, 0.0), robotClimb);
-
-    return currentCommand;
-  }
-
-  // /** Flips the direction of the climb motors */
-  // public static void flipClimbDirection(boolean flipDirection) {
-  //   invertArms = flipDirection;
-
-  //   Logger.recordOutput("Climb/Direction", invertArms);
-  // }
-
-  /** Stop the current Climb command */
-  public static void cancelCurrentCommand() {
-    if (currentCommand != null) {
-      currentCommand.cancel();
+    /** Returns the voltage based on the direction specified */
+    public double getVolts() {
+      return this.volts;
     }
   }
 }

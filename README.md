@@ -1,5 +1,5 @@
 ![Banner](docs/assets/logo-4.png)
-# Quasar
+# Synth
 [![Build Status](https://github.com/FRC5411/robot-main-crescendo9105/actions/workflows/build.yml/badge.svg?branch=temporary-drive)](https://github.com/FRC5411/robot-main-crescendo9105/actions/workflows/build.yml)
 [![GitHub Contributors](https://img.shields.io/github/contributors/FRC5411/robot-main-crescendo9105.svg?branch=temporary-drive)](https://github.com/FRC5411/robot-main-crescendo9105/graphs/contributors)
 
@@ -18,9 +18,9 @@ Below is a list of instructions to properly build the project, see [requirements
     - Ubuntu: run `sudo apt install openjdk-8-jdk`
     - Windows: install the JDK 11 .msi from the link above
     - macOS: install the JDK 11 .pkg from the link above
-- [Gradle 7 (Optional)](https://gradle.org/releases/)
+- [Gradle 7](https://gradle.org/releases/)
     - Follow Gradle's installation [guide](https://gradle.org/install/#prerequisites)
-- [WPI VSCode (Optional)](https://github.com/wpilibsuite/allwpilib/releases/tag/v2023.4.3)
+- [WPI VSCode](https://github.com/wpilibsuite/allwpilib/releases/tag/v2023.4.3)
     - Follow WPILib's [guide](https://docs.wpilib.org/en/stable/docs/zero-to-robot/step-2/wpilib-setup.html)
 - [PathPlanner](https://github.com/mjansen4857/pathplanner)
     - Download from the [releases page](https://github.com/mjansen4857/pathplanner/releases)

@@ -23,6 +23,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -41,6 +43,7 @@ public class Drive extends SubsystemBase {
 
   private final Translation2d[] MODULE_TRANSLATIONS = getModuleTranslations();
   private final SwerveDriveKinematics KINEMATICS = getKinematics();
+  private ChassisSpeeds desiredChassisSpeeds = new ChassisSpeeds();
 
   private SwerveSetpoint currentSetpoint =
       new SwerveSetpoint(
@@ -141,7 +144,16 @@ public class Drive extends SubsystemBase {
       }
     }
 
-    poseEstimator.update(getRotation(), getModulePositions());
+    if (gyroIOInputs.connected) {
+      poseEstimator.update(getRotation(), getModulePositions());
+    } else {
+      poseEstimator.update(
+          Rotation2d.fromDegrees(
+              (poseEstimator.getEstimatedPosition().getRotation().getDegrees()
+                      + (180 / Math.PI) * getChassisSpeeds().omegaRadiansPerSecond * 0.02)
+                  % 360.0),
+          getModulePositions());
+    }
 
     currentPose = poseEstimator.getEstimatedPosition();
   }
@@ -149,6 +161,7 @@ public class Drive extends SubsystemBase {
   /** Runs the swerve drive based on speeds */
   public void runSwerve(ChassisSpeeds speeds) {
     ChassisSpeeds discreteSpeeds = discretize(speeds); // Translational skew compensation
+    desiredChassisSpeeds = discreteSpeeds;
     SwerveModuleState[] setpointStates = KINEMATICS.toSwerveModuleStates(discreteSpeeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(
         setpointStates, MAX_LINEAR_SPEED_MPS); // Normalize speeds
@@ -278,6 +291,16 @@ public class Drive extends SubsystemBase {
     return MAX_ANGULAR_SPEED_MPS;
   }
 
+  /** Returns the current chassis speeds of th erobot */
+  public ChassisSpeeds getChassisSpeeds() {
+    return KINEMATICS.toChassisSpeeds(getModuleStates());
+  }
+
+  /** Returns the current desired chassis speeds of the robot */
+  public ChassisSpeeds getDesiredChassisSpeeds() {
+    return desiredChassisSpeeds;
+  }
+
   /** Returns the positions of the modules on the drive */
   public Translation2d[] getModuleTranslations() {
     return new Translation2d[] {
@@ -291,5 +314,14 @@ public class Drive extends SubsystemBase {
   /** Returns the kinematics of the drivetrain */
   public SwerveDriveKinematics getKinematics() {
     return new SwerveDriveKinematics(getModuleTranslations());
+  }
+
+  /** Returns the distance from the speaker */
+  public DoubleSupplier distanceFromSpeakerMeters() {
+    return () -> {
+      return Math.hypot(
+          Constants.kSpeaker3DPose.getX() - this.getPosition().getX(),
+          Constants.kSpeaker3DPose.getY() - this.getPosition().getY());
+    };
   }
 }
