@@ -4,6 +4,7 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -13,8 +14,7 @@ import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.TargetingSystem;
 import frc.robot.utils.debugging.LoggedTunableNumber;
-import java.util.function.DoubleSupplier;
-import org.littletonrobotics.junction.Logger;
+import java.util.function.Supplier;
 
 /** Class to hold all of the commands for the Shooter */
 public class ShooterCommands {
@@ -29,7 +29,6 @@ public class ShooterCommands {
       new LoggedTunableNumber("Shooter/Launcher/Debugging/SetpointMPS", 10.0);
 
   private static Rotation2d anglerPosition = null;
-  private static Rotation2d shotMapAngle = null;
   private static double laucnherVelocityMPS = 0.0;
 
   private ShooterCommands() {}
@@ -85,20 +84,21 @@ public class ShooterCommands {
   }
 
   /** Returns a command to run the angler motor */
-  public static Command runAngler(Shooter robotShooter, DoubleSupplier distance) {
+  public static Command runAngler(Shooter robotShooter, Supplier<Pose2d> robotPoseSupplier) {
     currentCommand =
         new FunctionalCommand(
             () -> {},
             () -> {
-              shotMapAngle = targetingSystem.getLaunchMapAngle(distance.getAsDouble());
+              anglerPosition = targetingSystem.getLaunchMapAngle(robotPoseSupplier.get());
               laucnherVelocityMPS = 38.0;
 
-              robotShooter.setAllMotors(shotMapAngle, laucnherVelocityMPS, false);
-
-              Logger.recordOutput("TargetingSystem/Distance", distance.getAsDouble());
+              robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS, false);
             },
             interrupted -> {
-              robotShooter.stopMotors(true, false);
+              anglerPosition = null;
+              laucnherVelocityMPS = 0.0;
+
+              robotShooter.stopMotors(true, true);
             },
             () -> false,
             robotShooter);

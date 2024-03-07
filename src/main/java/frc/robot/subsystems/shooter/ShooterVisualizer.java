@@ -31,7 +31,11 @@ public class ShooterVisualizer {
 
   /** Update the shooter visualizer */
   public void updateShooterAngle(Rotation2d angle) {
-    shooterVisual.setAngle(angle);
+    if (angle == null) {
+      shooterVisual.setAngle(Rotation2d.fromDegrees(25.0));
+    } else {
+      shooterVisual.setAngle(angle);
+    }
 
     Logger.recordOutput(ANGLER_LOG_KEY, anglerMechanismVisual);
   }

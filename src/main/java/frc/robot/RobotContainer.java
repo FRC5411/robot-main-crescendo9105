@@ -271,8 +271,7 @@ public class RobotContainer {
 
       copilotController
           .b()
-          .whileTrue(
-              ShooterCommands.runAngler(robotShooter, robotDrive.distanceFromSpeakerMeters()))
+          .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPosition()))
           .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
 
       /* Run Yoshi in */
@@ -335,8 +334,7 @@ public class RobotContainer {
       /* Run sim arm setpoint */
       simController
           .triangle()
-          .whileTrue(
-              ShooterCommands.runAngler(robotShooter, robotDrive.distanceFromSpeakerMeters()))
+          .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPosition()))
           .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
 
       /* Run sim flywheel setpoint */
@@ -350,6 +348,18 @@ public class RobotContainer {
           .square()
           .whileTrue(ClimbCommands.runClimb(robotClimb))
           .whileFalse(ClimbCommands.stopClimb(robotClimb));
+
+      /* Test heading */
+      pilotController
+          .a()
+          .whileTrue(AutoAlignCommand.angleToSpeakerCommand(robotDrive))
+          .onFalse(SwerveCommands.stopDrive(robotDrive));
+
+      /* Test arm */
+      pilotController
+          .y()
+          .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPosition()))
+          .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
     }
   }
 

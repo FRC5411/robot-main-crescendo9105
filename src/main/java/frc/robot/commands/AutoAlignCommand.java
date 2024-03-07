@@ -7,8 +7,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.shooter.TargetingSystem;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -33,6 +33,8 @@ public class AutoAlignCommand {
       new LoggedTunableNumber(
           "AutoAlign/DriveTheta/A", driveThetaController.getConstraints().maxAcceleration);
 
+  private static TargetingSystem targetingSystem = new TargetingSystem();
+
   /**
    * Returns a command that will adjust the heading to the target, will override any current drive
    * commands from the pilot
@@ -43,11 +45,7 @@ public class AutoAlignCommand {
     return turnToAngle(
         robotDrive,
         // Plus and negative logic have to be tested based of gyro readings
-        () ->
-            new Rotation2d(
-                    Constants.kSpeaker3DPose.getX() - robotDrive.getPosition().getX(),
-                    Constants.kSpeaker3DPose.getY() - robotDrive.getPosition().getY())
-                .plus(Rotation2d.fromDegrees(180)),
+        () -> targetingSystem.getOptimalLaunchHeading(robotDrive.getPosition()),
         () -> 0.0,
         () -> 0.0);
   }

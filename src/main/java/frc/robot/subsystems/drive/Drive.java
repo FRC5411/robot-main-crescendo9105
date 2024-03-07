@@ -23,8 +23,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
-import java.util.function.DoubleSupplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -314,14 +312,5 @@ public class Drive extends SubsystemBase {
   /** Returns the kinematics of the drivetrain */
   public SwerveDriveKinematics getKinematics() {
     return new SwerveDriveKinematics(getModuleTranslations());
-  }
-
-  /** Returns the distance from the speaker */
-  public DoubleSupplier distanceFromSpeakerMeters() {
-    return () -> {
-      return Math.hypot(
-          Constants.kSpeaker3DPose.getX() - this.getPosition().getX(),
-          Constants.kSpeaker3DPose.getY() - this.getPosition().getY());
-    };
   }
 }

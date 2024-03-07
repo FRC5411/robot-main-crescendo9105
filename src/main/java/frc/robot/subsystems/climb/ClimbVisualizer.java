@@ -46,7 +46,11 @@ public class ClimbVisualizer {
 
   /** Update the angle of the climb arm */
   public void updateClimbAngle(Rotation2d armPosition) {
-    climbArm.setAngle(armPosition);
+    if (armPosition == null) {
+      climbArm.setAngle(new Rotation2d());
+    } else {
+      climbArm.setAngle(armPosition);
+    }
 
     Logger.recordOutput("Climb/Visualizer/" + NAME, climbMechanism);
   }
