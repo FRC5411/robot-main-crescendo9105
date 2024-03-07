@@ -15,8 +15,8 @@ import org.littletonrobotics.junction.Logger;
 
 /** Class to hold the command to control the robot's heading */
 public class AutoAlignCommand {
-  private static SlewRateLimiter driveXLimiter = new SlewRateLimiter(5);
-  private static SlewRateLimiter driveYLimiter = new SlewRateLimiter(5);
+  private static SlewRateLimiter driveXLimiter = new SlewRateLimiter(10);
+  private static SlewRateLimiter driveYLimiter = new SlewRateLimiter(10);
   private static ProfiledPIDController driveThetaController =
       new ProfiledPIDController(5, 0, 0, new Constraints(300, 200));
 

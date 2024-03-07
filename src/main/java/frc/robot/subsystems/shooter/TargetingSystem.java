@@ -68,15 +68,23 @@ public class TargetingSystem {
   /** Returns the optimal heading for shooting */
   public Rotation2d getOptimalLaunchHeading(Pose2d robotPose) {
     // Must add 180 since the front of the robot is the intake, not the shooter
-    Rotation2d heading =
-        (DriverStation.getAlliance().get() == Alliance.Blue)
-            ? new Rotation2d(
-                speakerOpeningBlue.getX() - robotPose.getX(),
-                speakerOpeningBlue.getY() - robotPose.getY())
-            : new Rotation2d(
-                    speakerOpeningRed.getX() - robotPose.getX(),
-                    speakerOpeningRed.getY() - robotPose.getY())
-                .plus(Rotation2d.fromDegrees(180.0));
+    Rotation2d heading;
+    if (DriverStation.getAlliance().isPresent()) {
+      heading =
+          (DriverStation.getAlliance().get() == Alliance.Blue)
+              ? new Rotation2d(
+                  speakerOpeningBlue.getX() - robotPose.getX(),
+                  speakerOpeningBlue.getY() - robotPose.getY())
+              : new Rotation2d(
+                      speakerOpeningRed.getX() - robotPose.getX(),
+                      speakerOpeningRed.getY() - robotPose.getY())
+                  .plus(Rotation2d.fromDegrees(180.0));
+    } else {
+      heading =
+          new Rotation2d(
+              speakerOpeningBlue.getX() - robotPose.getX(),
+              speakerOpeningBlue.getY() - robotPose.getY());
+    }
 
     Logger.recordOutput("Shooter/TargetingSystem/Heading", heading);
 

@@ -32,6 +32,14 @@ public interface VisionIO {
     public double xStandardDeviation = 0.0;
     public double yStandardDeviation = 0.0;
     public double thetaStandardDeviation = 0.0;
+
+    public Pose2d speakerTagPose = new Pose2d();
+
+    public boolean hasSpeakerTarget = false;
+
+    public double speakerXStdDev = 0.0;
+    public double speakerYStdDev = 0.0;
+    public double speakerThetaDev = 0.0;
   }
 
   public default void updateInputs(VisionIOInputs inputs) {}

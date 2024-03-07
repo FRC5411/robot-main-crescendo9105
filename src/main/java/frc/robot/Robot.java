@@ -86,7 +86,7 @@ public class Robot extends LoggedRobot {
     Logger.start();
 
     robotContainer = new RobotContainer();
-    AutoAlignCommand.initLogTables();
+    // AutoAlignCommand.initLogTables();
   }
 
   /** This function is called periodically during all modes. */
