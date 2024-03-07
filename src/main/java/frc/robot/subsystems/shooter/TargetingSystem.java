@@ -18,7 +18,7 @@ public class TargetingSystem {
   private Translation3d speakerOpeningBlue = new Translation3d(0.23, 5.58, 2.045);
   private Translation3d speakerOpeningRed = new Translation3d(16.26, 5.58, 2.045);
 
-  private final double LAUNCH_MAP_OFFSET_M = 0.93 + 0.46 - 0.23;
+  private final double LAUNCH_MAP_OFFSET_M = 0.93 + 0.46 - 0.23 - 0.17;
 
   /**
    * Tree Map that represents the robot's horizontal (X) distance from the Speaker (meters) and the
@@ -71,8 +71,9 @@ public class TargetingSystem {
     Rotation2d heading =
         (DriverStation.getAlliance().get() == Alliance.Blue)
             ? new Rotation2d(
-                speakerOpeningBlue.getX() - robotPose.getX(),
-                speakerOpeningBlue.getY() - robotPose.getY())
+                    speakerOpeningBlue.getX() - robotPose.getX(),
+                    speakerOpeningBlue.getY() - robotPose.getY())
+                .plus(Rotation2d.fromDegrees(180.0))
             : new Rotation2d(
                     speakerOpeningRed.getX() - robotPose.getX(),
                     speakerOpeningRed.getY() - robotPose.getY())

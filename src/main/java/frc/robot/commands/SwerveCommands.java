@@ -144,7 +144,7 @@ public class SwerveCommands {
               // If the error is small, set the goal to be the current heading
               if (Math.abs(headingGoal.getDegrees() - currentHeading.getDegrees()) > 5.0) {
                 // Add 180 since front is the intake, not the shooter
-                thetaFeedback.setGoal(currentHeading.getDegrees() + 180.0);
+                thetaFeedback.setGoal(currentHeading.getDegrees());
               }
 
               thetaFeedback.setP(thetaFeedbackP.get());

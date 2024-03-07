@@ -175,8 +175,7 @@ public class RobotContainer {
       /* Reset pose to infront of blue alliance speaker */
       pilotController
           .b()
-          .onTrue(
-              SwerveCommands.setPose(robotDrive, new Pose2d(1.34 - 0.17, 5.50, new Rotation2d())));
+          .onTrue(SwerveCommands.setPose(robotDrive, new Pose2d(1.34, 5.50, new Rotation2d())));
 
       /* Run intake */
       pilotController
@@ -268,20 +267,19 @@ public class RobotContainer {
           .whileTrue(ShooterCommands.runLauncher(robotShooter))
           .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
 
-      /* Run flywheel SysID test */
-      // copilotController
-      //     .b()
-      //     .onTrue(
-      //         SysIDCharacterization.runShooterSysIDTests(
-      //             robotShooter::setLauncherVolts, robotShooter))
-      //     .onFalse(ShooterCommands.stopShooter(robotShooter, false, true));
-
+      /* Run auto angle */
       copilotController
           .b()
           .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPosition()))
           .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
 
-      /* Run Yoshi in */
+      /* Run Climb setpoint */
+      copilotController
+          .x()
+          .whileTrue(ClimbCommands.runClimb(robotClimb))
+          .whileFalse(ClimbCommands.stopClimb(robotClimb));
+
+      /* Run Climb in */
       copilotController
           .leftTrigger()
           .whileTrue(
@@ -291,7 +289,7 @@ public class RobotContainer {
               ClimbCommands.runClimbManual(
                   robotClimb, ClimbLeftDirection.STOP, ClimbRightDirection.STOP));
 
-      /* Run Yoshi out */
+      /* Run Climb out */
       copilotController
           .rightTrigger()
           .whileTrue(
