@@ -15,7 +15,7 @@ import org.littletonrobotics.junction.Logger;
 
 /** Class to visualize the climbs as a mechanism */
 public class ClimbVisualizer {
-  private final climbSide NAME;
+  private final ClimbSide NAME;
 
   private Mechanism2d climbMechanism = new Mechanism2d(3, 2);
 
@@ -25,29 +25,34 @@ public class ClimbVisualizer {
   private MechanismLigament2d climbTower =
       climbPivot.append(new MechanismLigament2d("ClimbTower", 21.0, -90.0));
   private MechanismLigament2d climbArm =
-      climbPivot.append(
-          new MechanismLigament2d(
-              "ClimbArm", Units.inchesToMeters(12.5), 0, 6.0, new Color8Bit(Color.kWhite)));
+      climbPivot.append(new MechanismLigament2d("ClimbArm", Units.inchesToMeters(12.5), 0.0));
 
   /** Creates a new visual for the climb */
-  public ClimbVisualizer(climbSide arm) {
+  public ClimbVisualizer(ClimbSide arm) {
     NAME = arm;
 
     climbTower.setColor(new Color8Bit(Color.kAqua));
     climbTower.setLineWeight(5.0);
 
+    if (NAME == ClimbSide.LEFT) {
+      climbArm.setColor(new Color8Bit(Color.kWhite));
+    } else if (NAME == ClimbSide.RIGHT) {
+      climbArm.setColor(new Color8Bit(Color.kBlue));
+    }
+    climbArm.setLineWeight(5.0);
+
     Logger.recordOutput("Climb/Visualizer/" + NAME, climbMechanism);
   }
 
   /** Update the angle of the climb arm */
-  public void updateClimbAngle(Rotation2d angleRadians) {
-    climbArm.setAngle(angleRadians);
+  public void updateClimbAngle(Rotation2d armPosition) {
+    climbArm.setAngle(armPosition);
 
     Logger.recordOutput("Climb/Visualizer/" + NAME, climbMechanism);
   }
 
   /** Which side this climb is on */
-  public enum climbSide {
+  public enum ClimbSide {
     LEFT,
     RIGHT
   }

@@ -40,15 +40,17 @@ public class ClimbIOSim implements ClimbIO {
     RoboRioSim.setVInVoltage(
         BatterySim.calculateDefaultBatteryLoadedVoltage(rightMotor.getCurrentDrawAmps()));
 
-    inputs.leftAngle = Rotation2d.fromRadians(leftMotor.getAngleRads());
+    inputs.leftPosition = Rotation2d.fromRadians(leftMotor.getAngleRads());
     inputs.leftVelocityRPS = leftMotor.getVelocityRadPerSec();
     inputs.leftAppliedVolts = leftAppliedVolts;
+    inputs.leftInternalVolts = leftAppliedVolts;
     inputs.leftCurrentAmps = new double[] {leftMotor.getCurrentDrawAmps()};
     inputs.leftTemperatureCelsius = new double[] {0.0};
 
-    inputs.rightAngle = Rotation2d.fromRadians(rightMotor.getAngleRads());
+    inputs.rightPosition = Rotation2d.fromRadians(rightMotor.getAngleRads());
     inputs.rightVelocityRPS = rightMotor.getVelocityRadPerSec();
     inputs.rightAppliedVolts = rightAppliedVolts;
+    inputs.rightInternalVolts = rightAppliedVolts;
     inputs.rightCurrentAmps = new double[] {rightMotor.getCurrentDrawAmps()};
     inputs.rightTemperatureCelsius = new double[] {0.0};
   }
@@ -58,7 +60,6 @@ public class ClimbIOSim implements ClimbIO {
     leftAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
 
     leftMotor.setInputVoltage(leftAppliedVolts);
-    leftMotor.setInput(leftAppliedVolts / 12.0);
   }
 
   @Override
@@ -66,6 +67,5 @@ public class ClimbIOSim implements ClimbIO {
     rightAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
 
     rightMotor.setInputVoltage(rightAppliedVolts);
-    rightMotor.setInput(rightAppliedVolts / 12.0);
   }
 }

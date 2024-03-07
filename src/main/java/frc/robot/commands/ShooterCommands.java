@@ -9,8 +9,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import frc.robot.Constants;
-import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.TargetingSystem;
@@ -220,15 +218,16 @@ public class ShooterCommands {
     return currentCommand;
   }
 
-  /** Returns the distance */
-  private static double getDistance(Drive robotDrive) {
-    double distance =
-        Math.sqrt(
-            Math.pow(Constants.kSpeaker3DPose.getX() - robotDrive.getPosition().getX(), 2.0)
-                + Math.pow(Constants.kSpeaker3DPose.getY() - robotDrive.getPosition().getY(), 2.0));
+  // /** Returns the distance */
+  // private static double getDistance(Drive robotDrive) {
+  //   double distance =
+  //       Math.sqrt(
+  //           Math.pow(Constants.kSpeaker3DPose.getX() - robotDrive.getPosition().getX(), 2.0)
+  //               + Math.pow(Constants.kSpeaker3DPose.getY() - robotDrive.getPosition().getY(),
+  // 2.0));
 
-    return distance;
-  }
+  //   return distance;
+  // }
 
   /** Write the direction of the Angler to console */
   private static void logDirection(AnglerDirection direction) {

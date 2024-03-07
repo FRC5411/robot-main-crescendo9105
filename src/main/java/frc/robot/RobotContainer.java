@@ -344,6 +344,12 @@ public class RobotContainer {
           .cross()
           .whileTrue(ShooterCommands.runLauncher(robotShooter))
           .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+
+      /* Run sim climb setpoint */
+      simController
+          .square()
+          .whileTrue(ClimbCommands.runClimb(robotClimb))
+          .whileFalse(ClimbCommands.stopClimb(robotClimb));
     }
   }
 
