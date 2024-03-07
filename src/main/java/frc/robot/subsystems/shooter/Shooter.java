@@ -43,7 +43,7 @@ public class Shooter extends SubsystemBase {
   private LoggedTunableNumber anglerFeedforwardU;
   private LoggedTunableNumber anglerFeedforwardL;
 
-  private ShooterVisualizer anglerVisualizer = new ShooterVisualizer();
+  private ShooterVisualizer anglerVisualizer = new ShooterVisualizer(new Rotation2d());
 
   private Rotation2d anglerSetpoint = null;
   private Double launcherSetpointMPS = null;
@@ -145,6 +145,8 @@ public class Shooter extends SubsystemBase {
 
           break;
         }
+        anglerVisualizer =
+            new ShooterVisualizer(anglerIOInputs.anglerRelativePosition.plus(angleOffset));
       }
       currentAngle = anglerIOInputs.anglerRelativePosition.plus(angleOffset);
 
