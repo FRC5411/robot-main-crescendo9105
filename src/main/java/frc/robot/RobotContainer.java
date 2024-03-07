@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.AutoAlignCommand;
 import frc.robot.commands.ClimbCommands;
 import frc.robot.commands.ClimbCommands.ClimbLeftDirection;
 import frc.robot.commands.ClimbCommands.ClimbRightDirection;
@@ -48,6 +47,7 @@ import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.TargetingSystem;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.angler.AnglerIOSim;
 import frc.robot.subsystems.shooter.angler.AnglerIOSparkMax;
@@ -145,6 +145,8 @@ public class RobotContainer {
 
   /** Configure controllers */
   private void configureButtonBindings() {
+    TargetingSystem targetingSystem = new TargetingSystem();
+
     if (RobotBase.isReal()) {
       /* Pilot bindings */
 
@@ -162,7 +164,12 @@ public class RobotContainer {
       /* Auto heading to speaker */
       pilotController
           .a()
-          .whileTrue(AutoAlignCommand.angleToSpeakerCommand(robotDrive))
+          .whileTrue(
+              SwerveCommands.setHeading(
+                  robotDrive,
+                  () -> 0.0,
+                  () -> 0.0,
+                  () -> targetingSystem.getOptimalLaunchHeading(robotDrive.getPosition())))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
       /* Reset pose to infront of blue alliance speaker */
@@ -352,7 +359,12 @@ public class RobotContainer {
       /* Test heading */
       pilotController
           .a()
-          .whileTrue(AutoAlignCommand.angleToSpeakerCommand(robotDrive))
+          .whileTrue(
+              SwerveCommands.setHeading(
+                  robotDrive,
+                  () -> 0.0,
+                  () -> 0.0,
+                  () -> targetingSystem.getOptimalLaunchHeading(robotDrive.getPosition())))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
       /* Test arm */
