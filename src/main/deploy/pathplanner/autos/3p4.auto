@@ -1,0 +1,37 @@
+{
+  "version": 1.0,
+  "startingPose": null,
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "t,3.1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3.1,s()"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "si,5.1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "5.1,s()"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "2024 Crescendo (TOP)",
+  "choreoAuto": false
+}

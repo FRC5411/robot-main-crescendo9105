@@ -8,37 +8,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": "T_PreS"
+            "pathName": "t,3.1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "PreS_1-5N"
+            "pathName": "3.1,5.1(1)"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "1-5N_S"
+            "pathName": "5.1,(S)"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "S_2-5N"
+            "pathName": "(S),5.2"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "2-5N_S"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "S_3-5N(1)"
+            "pathName": "5.2,(S)"
           }
         }
       ]

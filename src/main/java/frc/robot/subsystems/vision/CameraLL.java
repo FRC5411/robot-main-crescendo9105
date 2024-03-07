@@ -8,7 +8,7 @@ import frc.robot.Constants.CamLLConsts;
 
 public class CameraLL extends SubsystemBase {
     private VisionIOLimelight io;  
-    private VisionIOInputsAutoLogged inputs = new VisionIOInputsAutoLogged();    
+    private VisionIoInputsAutoLogged inputs = new VisionIoInputsAutoLogged();    
 
     public CameraLL(){ 
         this.io = new VisionIOLimelight(CamLLConsts.key,CamLLConsts.offset, CamLLConsts.debounceTime);
