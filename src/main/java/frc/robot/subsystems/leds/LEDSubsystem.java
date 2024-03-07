@@ -6,10 +6,7 @@ package frc.robot.subsystems.leds;
 
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.leds.LEDConstants.Colors;
 import frc.robot.subsystems.leds.LEDConstants.Configs;
@@ -18,7 +15,6 @@ public class LEDSubsystem extends SubsystemBase {
   private AddressableLED m_led;
   private AddressableLEDBuffer m_ledBuffer;
   private boolean shouldAnimate;
-  private boolean acoustic;
 
   public LEDSubsystem() {
     m_led = new AddressableLED(Configs.PWM_PORT);
@@ -27,7 +23,6 @@ public class LEDSubsystem extends SubsystemBase {
     m_led.setLength(m_ledBuffer.getLength());
 
     shouldAnimate = false;
-    acoustic = true;
   }
 
   /*
@@ -195,21 +190,21 @@ public class LEDSubsystem extends SubsystemBase {
     return adjustedHSV;
   }
 
-  private void wait(int milliseconds) {
-    double initialTime = Timer.getFPGATimestamp();
+  // private void wait(int milliseconds) {
+  //   double initialTime = Timer.getFPGATimestamp();
 
-    while (Timer.getFPGATimestamp() - initialTime < milliseconds / 1000.0) {
-      // Do nothing
-    }
-  }
+  //   while (Timer.getFPGATimestamp() - initialTime < milliseconds / 1000.0) {
+  //     // Do nothing
+  //   }
+  // }
 
-  private Command setLEDCommand(int index, int hue, int saturation, int value) {
-    return new InstantCommand(
-        () -> {
-          m_ledBuffer.setHSV(index, hue, saturation, value);
-          setBuffer();
-        });
-  }
+  // private Command setLEDCommand(int index, int hue, int saturation, int value) {
+  //   return new InstantCommand(
+  //       () -> {
+  //         m_ledBuffer.setHSV(index, hue, saturation, value);
+  //         setBuffer();
+  //       });
+  // }
 
   @Override
   public void periodic() {

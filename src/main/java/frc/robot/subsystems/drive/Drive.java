@@ -28,14 +28,13 @@ import org.littletonrobotics.junction.Logger;
 
 /** Swerve drive */
 public class Drive extends SubsystemBase {
-  // TODO Adjust values as needed
   private final double TRACK_WIDTH_X_M = Units.inchesToMeters(29.5);
   private final double TRACK_WIDTH_Y_M = Units.inchesToMeters(29.5);
   private final double DRIVEBASE_RADIUS_M =
       Math.hypot(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0);
   private final double MAX_LINEAR_SPEED_MPS = Units.feetToMeters(14.0);
   private final double MAX_ANGULAR_SPEED_MPS = MAX_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS_M;
-  // Second argument is the max accel, which we want to be half of the max vel for now
+  // Second argument is the max accel
   private final ModuleLimits MODULE_LIMITS =
       new ModuleLimits(MAX_LINEAR_SPEED_MPS, MAX_LINEAR_SPEED_MPS * 5, MAX_ANGULAR_SPEED_MPS);
 
