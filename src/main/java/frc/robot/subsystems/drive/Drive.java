@@ -23,6 +23,8 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.Constants.Mode;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -65,8 +67,10 @@ public class Drive extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(KINEMATICS, getRotation(), getModulePositions(), currentPose);
 
-  private PIDConstants translationPathplannerConstants = new PIDConstants(2.02, 0.0, 0.0);
-  private PIDConstants rotationPathplannerConstants = new PIDConstants(0.66, 0.0, 0.0);
+  // private PIDConstants translationPathplannerConstants = new PIDConstants(2.02, 0.0, 0.0);
+  // private PIDConstants rotationPathplannerConstants = new PIDConstants(0.66, 0.0, 0.0);
+  private PIDConstants translationPathplannerConstants = new PIDConstants(1.0, 0.0, 0.0);
+  private PIDConstants rotationPathplannerConstants = new PIDConstants(1.0, 0.0, 0.0);
 
   /** Creates a new swerve Drive. */
   public Drive(
@@ -219,7 +223,7 @@ public class Drive extends SubsystemBase {
 
   /** Reset the robot's pose */
   public void resetPose() {
-    poseEstimator.resetPosition(gyroIOInputs.yawPosition, getModulePositions(), new Pose2d());
+    poseEstimator.resetPosition(getRotation(), getModulePositions(), new Pose2d());
   }
 
   /** Reset the gyro heading */
@@ -229,8 +233,13 @@ public class Drive extends SubsystemBase {
 
   /** Set the pose of the robot */
   public void setPose(Pose2d pose) {
-    poseEstimator.resetPosition(getRotation(), getModulePositions(), pose);
-    currentPose = pose;
+    if (Constants.currentMode == Mode.SIM) {
+      poseEstimator.resetPosition(pose.getRotation(), getModulePositions(), pose);
+    } else {
+      poseEstimator.resetPosition(getRotation(), getModulePositions(), pose);
+    }
+
+    currentPose = poseEstimator.getEstimatedPosition();
   }
 
   /** Add a vision measurement for the poseEstimator */
@@ -275,6 +284,7 @@ public class Drive extends SubsystemBase {
   /** Returns the rotation of the robot */
   @AutoLogOutput(key = "Drive/Odometry/Rotation")
   public Rotation2d getRotation() {
+    // return currentHeading;
     return gyroIOInputs.yawPosition;
   }
 

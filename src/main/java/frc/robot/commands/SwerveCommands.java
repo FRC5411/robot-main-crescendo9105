@@ -80,26 +80,6 @@ public class SwerveCommands {
         robotDrive);
   }
 
-  /*
-  *         () -> {
-
-         Rotation2d goalRotation = thetaGoal.get();
-
-         Rotation2d currentRotation = robotDrive.getPosition().getRotation();
-
-         if (Math.abs(goalRotation.getDegrees() - currentRotation.getDegrees()) > 5) {
-           driveThetaController.setGoal(currentRotation.getDegrees() + 180);
-         }
-       },
-       () -> {
-         double desiredXSpeed = driveXLimiter.calculate(xGoal.get());
-         double desiredYSpeed = driveYLimiter.calculate(yGoal.get());
-
-         double desiredThetaDegrees =
-             driveThetaController.calculate(
-                 robotDrive.getPosition().getRotation().getDegrees(),
-                 thetaGoal.get().getDegrees());
-  */
   public static Command setHeading(
       Drive robotDrive,
       DoubleSupplier xGoalSupplier,
