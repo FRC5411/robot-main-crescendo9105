@@ -10,6 +10,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -54,6 +55,9 @@ import frc.robot.subsystems.shooter.angler.AnglerIOSparkMax;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOSim;
 import frc.robot.subsystems.shooter.launcher.LauncherIOTalonFX;
+import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIO;
+import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.yoshivator.Yoshivator;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSim;
@@ -67,6 +71,7 @@ public class RobotContainer {
   private Climb robotClimb;
   private Indexer robotIndexer;
   private Yoshivator robotYoshi;
+  private Vision robotVision;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
   private CommandXboxController copilotController = new CommandXboxController(1);
@@ -104,6 +109,7 @@ public class RobotContainer {
         robotClimb = new Climb(new ClimbIOSparkMax());
         robotIndexer = new Indexer(new IndexerIOSparkMax());
         robotYoshi = new Yoshivator(new ManipulatorIOSparkMax());
+        robotVision = new Vision(new VisionIOPhotonVision("LLLeft", new Transform3d(), 0.1),  new VisionIOPhotonVision("LLRight", new Transform3d(), 0.1));
         break;
       case SIM:
         robotDrive =
@@ -118,6 +124,7 @@ public class RobotContainer {
         robotClimb = new Climb(new ClimbIOSim());
         robotIndexer = new Indexer(new IndexerIOSim());
         robotYoshi = new Yoshivator(new ManipulatorIOSim());
+        robotVision = new Vision(new VisionIO() {}, new VisionIO() {});
         break;
       default:
         robotDrive =
@@ -132,6 +139,7 @@ public class RobotContainer {
         robotClimb = new Climb(new ClimbIO() {});
         robotIndexer = new Indexer(new IndexerIO() {});
         robotYoshi = new Yoshivator(new ManipulatorIO() {});
+        robotVision = new Vision(new VisionIO() {}, new VisionIO() {});
         break;
     }
   }
