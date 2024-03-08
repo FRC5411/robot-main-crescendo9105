@@ -9,6 +9,8 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
+import frc.robot.Constants.Robot;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOInputsAutoLogged;
 import frc.robot.utils.debugging.LoggedTunableNumber;
@@ -24,24 +26,52 @@ public class Yoshivator extends SubsystemBase {
       new ProfiledPIDController(0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(0.0, 0.0));
   private ArmFeedforward pivotFeedforward = new ArmFeedforward(0.0, 0.0, 0.0);
 
-  private LoggedTunableNumber pivotFeedbackP =
-      new LoggedTunableNumber("Yoshivator/Pivot/Feedback/P", pivotFeedback.getP());
-  private LoggedTunableNumber pivotFeedbackI =
-      new LoggedTunableNumber("Yoshivator/Pivot/Feedback/I", pivotFeedback.getI());
-  private LoggedTunableNumber pivotFeedbackD =
-      new LoggedTunableNumber("Yoshivator/Pivot/Feedback/D", pivotFeedback.getD());
-  private LoggedTunableNumber pivotFeedbackV =
-      new LoggedTunableNumber(
-          "Yoshivator/Pivot/Feedback/V", pivotFeedback.getConstraints().maxVelocity);
-  private LoggedTunableNumber pivotFeedbackA =
-      new LoggedTunableNumber(
-          "Yoshivator/Pivot/Feedback/A", pivotFeedback.getConstraints().maxAcceleration);
+  private LoggedTunableNumber pivotFeedbackP;
+  private LoggedTunableNumber pivotFeedbackI;
+  private LoggedTunableNumber pivotFeedbackD;
+  private LoggedTunableNumber pivotFeedbackV;
+  private LoggedTunableNumber pivotFeedbackA;
+
+  private YoshiVisualizer yoshiVisualizer = new YoshiVisualizer(new Rotation2d());
 
   private Rotation2d pivotSetpoint = null;
 
   /** Creates a new Yoshivator. */
   public Yoshivator(ManipulatorIO manipulatorIO) {
     this.manipulatorIO = manipulatorIO;
+
+    if (Constants.currentRobot == Robot.SYNTH) {
+      switch (Constants.currentMode) {
+        case REAL:
+          pivotFeedback.setP(0.0);
+          pivotFeedback.setI(0.0);
+          pivotFeedback.setD(0.0);
+          pivotFeedback.setConstraints(new TrapezoidProfile.Constraints(0.0, 0.0));
+          break;
+        case SIM:
+          pivotFeedback.setP(1.0);
+          pivotFeedback.setI(0.0);
+          pivotFeedback.setD(0.0);
+          pivotFeedback.setConstraints(new TrapezoidProfile.Constraints(100.0, 100.0));
+          break;
+        default:
+          pivotFeedback.setP(0.0);
+          pivotFeedback.setI(0.0);
+          pivotFeedback.setD(0.0);
+          pivotFeedback.setConstraints(new TrapezoidProfile.Constraints(0.0, 0.0));
+          break;
+      }
+    }
+
+    pivotFeedbackP = new LoggedTunableNumber("Yoshi/Pivot/Feedback/P", pivotFeedback.getP());
+    pivotFeedbackI = new LoggedTunableNumber("Yoshi/Pivot/Feedback/I", pivotFeedback.getI());
+    pivotFeedbackD = new LoggedTunableNumber("Yoshi/Pivot/Feedback/D", pivotFeedback.getD());
+    pivotFeedbackV =
+        new LoggedTunableNumber(
+            "Yoshi/Pivot/Feedback/V", pivotFeedback.getConstraints().maxVelocity);
+    pivotFeedbackA =
+        new LoggedTunableNumber(
+            "Yoshi/Pivot/Feedback/A", pivotFeedback.getConstraints().maxAcceleration);
   }
 
   @Override
@@ -66,7 +96,11 @@ public class Yoshivator extends SubsystemBase {
       Logger.recordOutput("Yoshivator/Pivot/Feedback/Output", pivotCombinedOutput);
     }
 
-    updateTunableNumbers();
+    yoshiVisualizer.updateYoshiAngle(manipulatorIOInputs.pivotPosition);
+
+    if (Constants.tuningMode) {
+      updateTunableNumbers();
+    }
   }
 
   /** Checks if tunable numbers have changed, if so update controllers */

@@ -63,6 +63,7 @@ import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.yoshivator.Yoshivator;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSim;
+import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSparkMax;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -109,7 +110,7 @@ public class RobotContainer {
         robotShooter = new Shooter(new AnglerIOSparkMax(), new LauncherIOTalonFX());
         robotClimb = new Climb(new ClimbIOSparkMax());
         robotIndexer = new Indexer(new IndexerIOSparkMax());
-        robotYoshi = new Yoshivator(new ManipulatorIO() {});
+        robotYoshi = new Yoshivator(new ManipulatorIOSparkMax());
         robotVision =
             new Vision(
                 new VisionIOPhotonVision(
@@ -306,8 +307,8 @@ public class RobotContainer {
       /* Run Climb setpoint */
       copilotController
           .x()
-          .whileTrue(ClimbCommands.runClimb(robotClimb))
-          .whileFalse(ClimbCommands.stopClimb(robotClimb));
+          .whileTrue(YoshiCommands.runPivot(robotYoshi))
+          .whileFalse(YoshiCommands.stopYoshi(robotYoshi, true, false));
 
       /* Run Climb in */
       copilotController
@@ -339,67 +340,72 @@ public class RobotContainer {
               () -> simController.getLeftX(),
               () -> simController.getRightX()));
 
-      /* Run intake */
-      simController
-          .L1()
-          .whileTrue(
-              IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
-                  .alongWith(IndexerCommands.stowPiece(robotIndexer)))
-          .whileFalse(
-              IntakeCommands.stopIntake(robotIntake)
-                  .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
+      // /* Run intake */
+      // simController
+      //     .L1()
+      //     .whileTrue(
+      //         IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
+      //             .alongWith(IndexerCommands.stowPiece(robotIndexer)))
+      //     .whileFalse(
+      //         IntakeCommands.stopIntake(robotIntake)
+      //             .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
 
-      /* Run outtake */
-      simController
-          .R1()
-          .whileTrue(
-              IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)
-                  .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)))
-          .whileFalse(
-              IntakeCommands.stopIntake(robotIntake)
-                  .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
+      // /* Run outtake */
+      // simController
+      //     .R1()
+      //     .whileTrue(
+      //         IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)
+      //             .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)))
+      //     .whileFalse(
+      //         IntakeCommands.stopIntake(robotIntake)
+      //             .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
 
-      /* Run sim set pose */
-      simController
-          .circle()
-          .onTrue(
-              SwerveCommands.setPose(
-                  robotDrive, new Pose2d(15.247 - 0.17, 5.50, new Rotation2d())));
+      // /* Run sim set pose */
+      // simController
+      //     .circle()
+      //     .onTrue(
+      //         SwerveCommands.setPose(
+      //             robotDrive, new Pose2d(15.247 - 0.17, 5.50, new Rotation2d())));
 
-      /* Run sim arm setpoint */
-      simController
-          .triangle()
-          .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPosition()))
-          .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+      // /* Run sim arm setpoint */
+      // simController
+      //     .triangle()
+      //     .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPosition()))
+      //     .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
 
-      /* Run sim flywheel setpoint */
-      simController
-          .cross()
-          .whileTrue(ShooterCommands.runLauncher(robotShooter))
-          .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+      // /* Run sim flywheel setpoint */
+      // simController
+      //     .cross()
+      //     .whileTrue(ShooterCommands.runLauncher(robotShooter))
+      //     .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
 
-      /* Run sim climb setpoint */
-      simController
-          .square()
-          .whileTrue(ClimbCommands.runClimb(robotClimb))
-          .whileFalse(ClimbCommands.stopClimb(robotClimb));
+      // /* Run sim climb setpoint */
+      // simController
+      //     .square()
+      //     .whileTrue(ClimbCommands.runClimb(robotClimb))
+      //     .whileFalse(ClimbCommands.stopClimb(robotClimb));
 
-      /* Test heading */
-      pilotController
-          .a()
-          .whileTrue(
-              SwerveCommands.setHeading(
-                  robotDrive,
-                  () -> 0.0,
-                  () -> 0.0,
-                  () -> targetingSystem.getOptimalLaunchHeading(robotDrive.getPosition())))
-          .onFalse(SwerveCommands.stopDrive(robotDrive));
+      // /* Test heading */
+      // pilotController
+      //     .a()
+      //     .whileTrue(
+      //         SwerveCommands.setHeading(
+      //             robotDrive,
+      //             () -> 0.0,
+      //             () -> 0.0,
+      //             () -> targetingSystem.getOptimalLaunchHeading(robotDrive.getPosition())))
+      //     .onFalse(SwerveCommands.stopDrive(robotDrive));
 
       /* Test arm */
       pilotController
           .y()
           .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPosition()))
           .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
+
+      /* Test yoshi */
+      pilotController
+          .a()
+          .whileTrue(YoshiCommands.runPivotSetpoint(robotYoshi, Rotation2d.fromDegrees(90.0)));
     }
   }
 

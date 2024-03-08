@@ -11,28 +11,35 @@ import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 /** Class to interact with the physical manipulator structure */
 public class ManipulatorIOSparkMax implements ManipulatorIO {
-  private final double PIVOT_GEARING = 75.0 / 1.0;
-  private final double FLYWHEEL_GEARING = 3.0 / 1.0;
+  private final double PIVOT_GEARING = 64.0 / 1.0;
+  private final double FLYWHEEL_GEARING = 5.0 / 1.0;
 
   // TODO Update as needed
   private CANSparkMax pivotMotor = new CANSparkMax(52, MotorType.kBrushless);
   private RelativeEncoder pivotRelativeEncoder = pivotMotor.getEncoder();
-  // private DutyCycleEncoder pivotAbsoluteEncoder = new DutyCycleEncoder(0);
+  private DutyCycleEncoder pivotAbsoluteEncoder = new DutyCycleEncoder(8);
 
   private CANSparkMax flywheelMotor = new CANSparkMax(53, MotorType.kBrushless);
   private RelativeEncoder flywheelEncoder = flywheelMotor.getEncoder();
 
+  private Rotation2d pivotAbsoluteOffset = Rotation2d.fromDegrees(114.0);
+
   private double pivotAppliedVolts = 0.0;
   private double flywheelAppliedVolts = 0.0;
+
+  // Ground setpoint : -30.4
+  // Idle setpoint : 100.0
 
   /** Create a new hardware implementation of the manipulator */
   public ManipulatorIOSparkMax() {
     pivotMotor.clearFaults();
     pivotMotor.restoreFactoryDefaults();
 
+    pivotMotor.setCANTimeout(20);
     pivotMotor.setSmartCurrentLimit(20);
     pivotMotor.enableVoltageCompensation(12.0);
     pivotMotor.setIdleMode(IdleMode.kBrake);
@@ -41,11 +48,12 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
 
     pivotMotor.burnFlash();
 
-    // pivotAbsoluteEncoder.setDutyCycleRange(1.0 / 8192.0, 8191.0 / 8192.0);
+    pivotAbsoluteEncoder.setDutyCycleRange(1.0 / 8192.0, 8191.0 / 8192.0);
 
     flywheelMotor.clearFaults();
     flywheelMotor.restoreFactoryDefaults();
 
+    flywheelMotor.setCANTimeout(20);
     flywheelMotor.setSmartCurrentLimit(60);
     flywheelMotor.enableVoltageCompensation(12.0);
     flywheelMotor.setIdleMode(IdleMode.kBrake);
@@ -58,7 +66,8 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
   @Override
   public void updateInputs(ManipulatorIOInputs inputs) {
     // TODO Fix pivot position when DutyCycle is added
-    inputs.pivotPosition = Rotation2d.fromRotations(0.0);
+    inputs.pivotPosition =
+        Rotation2d.fromRotations(pivotAbsoluteEncoder.get()).minus(pivotAbsoluteOffset);
     inputs.pivotVelocityRadiansPerSecond =
         Units.rotationsToRadians(pivotRelativeEncoder.getVelocity() / (PIVOT_GEARING * 60.0));
     inputs.pivotAppliedVolts = pivotAppliedVolts;

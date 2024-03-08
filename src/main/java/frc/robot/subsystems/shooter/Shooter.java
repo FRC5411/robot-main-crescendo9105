@@ -174,7 +174,7 @@ public class Shooter extends SubsystemBase {
       launcherIO.setBottomVelocity(launcherSetpointMPS);
     }
 
-    anglerVisualizer.updateShooterAngle(anglerIOInputs.anglerRelativePosition);
+    anglerVisualizer.updateShooterAngle(currentAngle);
     Logger.recordOutput("Shooter/Angler/Stopped", anglerStopped);
     Logger.recordOutput("Shooter/Launcher/Stopped", launcherStopped);
 

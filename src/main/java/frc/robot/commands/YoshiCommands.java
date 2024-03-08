@@ -9,10 +9,14 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.subsystems.yoshivator.Yoshivator;
+import frc.robot.utils.debugging.LoggedTunableNumber;
 
 /** Class to hold all of the commands for the Yoshi */
 public class YoshiCommands {
   private static Command currentCommand = null;
+
+  private static LoggedTunableNumber pivotSetter =
+      new LoggedTunableNumber("Yoshivator/Pivot/Debugging/SetpointDegrees", 0.0);
 
   private static Rotation2d pivotSetpoint = null;
 
@@ -28,7 +32,20 @@ public class YoshiCommands {
   }
 
   /** Returns a command to run the pivot to a given setpoint */
-  public static Command runPivot(Yoshivator robotYoshi, Rotation2d desiredSetpoint) {
+  public static Command runPivot(Yoshivator robotYoshi) {
+    currentCommand =
+        Commands.runOnce(
+                () -> {
+                  pivotSetpoint = Rotation2d.fromDegrees(pivotSetter.get());
+                },
+                robotYoshi)
+            .andThen(Commands.run(() -> robotYoshi.setPivotSetpoint(pivotSetpoint), robotYoshi));
+
+    return currentCommand;
+  }
+
+  /** Returns a command to run the pivot to a given setpoint */
+  public static Command runPivotSetpoint(Yoshivator robotYoshi, Rotation2d desiredSetpoint) {
     currentCommand =
         Commands.runOnce(
                 () -> {
