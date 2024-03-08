@@ -8,8 +8,10 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -61,7 +63,6 @@ import frc.robot.subsystems.vision.VisionIOPhotonVision;
 import frc.robot.subsystems.yoshivator.Yoshivator;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSim;
-import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSparkMax;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -108,8 +109,29 @@ public class RobotContainer {
         robotShooter = new Shooter(new AnglerIOSparkMax(), new LauncherIOTalonFX());
         robotClimb = new Climb(new ClimbIOSparkMax());
         robotIndexer = new Indexer(new IndexerIOSparkMax());
-        robotYoshi = new Yoshivator(new ManipulatorIOSparkMax());
-        robotVision = new Vision(new VisionIOPhotonVision("LLLeft", new Transform3d(), 0.1),  new VisionIOPhotonVision("LLRight", new Transform3d(), 0.1));
+        robotYoshi = new Yoshivator(new ManipulatorIO() {});
+        robotVision =
+            new Vision(
+                new VisionIOPhotonVision(
+                    "LLLeft",
+                    new Transform3d(
+                        0.36,
+                        -0.29,
+                        0.33,
+                        new Rotation3d(
+                            VecBuilder.fill(
+                                Math.toRadians(13.2), Math.toRadians(0), Math.toRadians(25.2)))),
+                    0.1),
+                new VisionIOPhotonVision(
+                    "LLRight",
+                    new Transform3d(
+                        0.36 - 0.037 - 0.18 + 0.1,
+                        0.29 - 0.28,
+                        0.33,
+                        new Rotation3d(
+                            VecBuilder.fill(
+                                Math.toRadians(13.2), Math.toRadians(0), Math.toRadians(25.5)))),
+                    0.1));
         break;
       case SIM:
         robotDrive =

@@ -14,7 +14,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
-
 import java.util.List;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
@@ -32,7 +31,11 @@ public class VisionIOPhotonVision implements VisionIO {
   private Matrix<N3, N1> multiTagStdDevs;
   private Debouncer debouncer;
 
-  private int speakerTagID = (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red) ? 3 : 7;
+  private int speakerTagID =
+      (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue)
+              == DriverStation.Alliance.Red)
+          ? 3
+          : 7;
 
   public VisionIOPhotonVision(String name, Transform3d cameraTransform, double debouncerTime) {
     AprilTagFields tagFields = AprilTagFields.k2024Crescendo;
@@ -63,7 +66,7 @@ public class VisionIOPhotonVision implements VisionIO {
       PhotonTrackedTarget target = result.getBestTarget();
       inputs.hasTargetDebounced = debouncer.calculate(inputs.hasTarget);
       inputs.cameraToApriltag = target.getBestCameraToTarget();
-      inputs.robotToApriltag = inputs.cameraToApriltag.plus(cameraTransform);
+      inputs.robotToApriltag = target.getBestCameraToTarget().plus(cameraTransform);
       inputs.aprilTagID = target.getFiducialId();
       inputs.poseAmbiguity = target.getPoseAmbiguity();
       inputs.yaw = target.getYaw();
@@ -75,11 +78,19 @@ public class VisionIOPhotonVision implements VisionIO {
 
       inputs.hasSpeakerTarget = poseEstimator.getFieldTags().getTagPose(speakerTagID).isPresent();
 
-      inputs.speakerTagPose = poseEstimator.getFieldTags().getTagPose(speakerTagID).orElse(new Pose3d()).plus(inputs.cameraToApriltag).toPose2d();
+      inputs.speakerTagPose =
+          poseEstimator
+              .getFieldTags()
+              .getTagPose(speakerTagID)
+              .orElse(new Pose3d())
+              .plus(inputs.robotToApriltag)
+              .toPose2d();
       Matrix<N3, N1> speakerStdDevs = singleTagStdDevs;
-      if(inputs.cameraToApriltag.getTranslation().getNorm() > 5 && inputs.hasSpeakerTarget) {
-        inputs.speakerXStdDev = speakerStdDevs.times( inputs.cameraToApriltag.getTranslation().getNorm() ).get(0, 0);
-        inputs.speakerYStdDev = speakerStdDevs.times( inputs.cameraToApriltag.getTranslation().getNorm() ).get(1, 0);
+      if (inputs.cameraToApriltag.getTranslation().getNorm() > 5 && inputs.hasSpeakerTarget) {
+        inputs.speakerXStdDev =
+            speakerStdDevs.times(inputs.cameraToApriltag.getTranslation().getNorm()).get(0, 0);
+        inputs.speakerYStdDev =
+            speakerStdDevs.times(inputs.cameraToApriltag.getTranslation().getNorm()).get(1, 0);
         inputs.speakerThetaDev = Double.MAX_VALUE;
       } else {
         inputs.speakerXStdDev = Double.MAX_VALUE;
