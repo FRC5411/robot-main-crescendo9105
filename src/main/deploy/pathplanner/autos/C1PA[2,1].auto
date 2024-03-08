@@ -8,24 +8,18 @@
         {
           "type": "path",
           "data": {
-            "pathName": null
+            "pathName": "C,3.2(s)"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "3.1,5.1"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "[5.1,s]"
+            "pathName": "S,3.1"
           }
         }
       ]
     }
   },
-  "folder": "2024 Crescendo (TOP)",
+  "folder": "2024 Crescendo (CENTER)",
   "choreoAuto": false
 }
