@@ -31,6 +31,7 @@ import frc.robot.commands.ShooterCommands.FlywheelSpeeds;
 import frc.robot.commands.SwerveCommands;
 import frc.robot.commands.YoshiCommands;
 import frc.robot.commands.YoshiCommands.YoshiFlywheelDirection;
+import frc.robot.commands.YoshiCommands.YoshiPivotSetpoint;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
@@ -304,11 +305,11 @@ public class RobotContainer {
           .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPosition()))
           .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
 
-      /* Run Climb setpoint */
-      copilotController
+      /* Run Yoshi setpoint */
+      pilotController
           .x()
-          .whileTrue(YoshiCommands.runPivot(robotYoshi))
-          .whileFalse(YoshiCommands.stopYoshi(robotYoshi, true, false));
+          .whileTrue(YoshiCommands.runPivotSetpoint(robotYoshi, YoshiPivotSetpoint.GROUND))
+          .whileFalse(YoshiCommands.runPivotSetpoint(robotYoshi, YoshiPivotSetpoint.IDLE));
 
       /* Run Climb in */
       copilotController
@@ -405,7 +406,8 @@ public class RobotContainer {
       /* Test yoshi */
       pilotController
           .a()
-          .whileTrue(YoshiCommands.runPivotSetpoint(robotYoshi, Rotation2d.fromDegrees(90.0)));
+          .whileTrue(YoshiCommands.runPivotSetpoint(robotYoshi, YoshiPivotSetpoint.GROUND))
+          .whileFalse(YoshiCommands.runPivotSetpoint(robotYoshi, YoshiPivotSetpoint.IDLE));
     }
   }
 

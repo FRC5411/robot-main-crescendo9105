@@ -45,11 +45,11 @@ public class YoshiCommands {
   }
 
   /** Returns a command to run the pivot to a given setpoint */
-  public static Command runPivotSetpoint(Yoshivator robotYoshi, Rotation2d desiredSetpoint) {
+  public static Command runPivotSetpoint(Yoshivator robotYoshi, YoshiPivotSetpoint setpoint) {
     currentCommand =
         Commands.runOnce(
                 () -> {
-                  pivotSetpoint = desiredSetpoint;
+                  pivotSetpoint = Rotation2d.fromDegrees(setpoint.getPositionDegrees());
                 },
                 robotYoshi)
             .andThen(Commands.run(() -> robotYoshi.setPivotSetpoint(pivotSetpoint), robotYoshi));
@@ -97,6 +97,26 @@ public class YoshiCommands {
   /** Write the direction of the Yoshi flywheel to console */
   private static void logDirection(YoshiFlywheelDirection direction) {
     System.out.println("YOSHI FLYWHEEL: " + direction);
+  }
+
+  /** Setpoints of the Yoshi in degrees */
+  public static enum YoshiPivotSetpoint {
+    /** Setpoint to intake from the ground */
+    IDLE(100.0),
+    /** Setpoint for when the Yoshi is not in use */
+    GROUND(-30.4);
+
+    private double desiredPositionDegrees;
+
+    /** Define the setpoint for the Yoshi pivot */
+    YoshiPivotSetpoint(double positionDegrees) {
+      this.desiredPositionDegrees = positionDegrees;
+    }
+
+    /** Returns the desired position setpoint in degrees */
+    public double getPositionDegrees() {
+      return this.desiredPositionDegrees;
+    }
   }
 
   /** Direction of the yoshi */
