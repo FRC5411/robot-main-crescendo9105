@@ -12,37 +12,19 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "UNT1"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake"
+                  "pathName": "T,3.1(2)"
                 }
               },
               {
                 "type": "path",
                 "data": {
-                  "pathName": "UN2"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake"
+                  "pathName": "3.1,s"
                 }
               },
               {
                 "type": "path",
                 "data": {
-                  "pathName": "UN3"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Intake"
+                  "pathName": "3.2,3.3"
                 }
               }
             ]
