@@ -39,8 +39,8 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
     pivotMotor.clearFaults();
     pivotMotor.restoreFactoryDefaults();
 
-    pivotMotor.setCANTimeout(20);
-    pivotMotor.setSmartCurrentLimit(20);
+    // pivotMotor.setCANTimeout(20);
+    pivotMotor.setSmartCurrentLimit(40);
     pivotMotor.enableVoltageCompensation(12.0);
     pivotMotor.setIdleMode(IdleMode.kBrake);
 
@@ -53,7 +53,7 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
     flywheelMotor.clearFaults();
     flywheelMotor.restoreFactoryDefaults();
 
-    flywheelMotor.setCANTimeout(20);
+    // flywheelMotor.setCANTimeout(20);
     flywheelMotor.setSmartCurrentLimit(60);
     flywheelMotor.enableVoltageCompensation(12.0);
     flywheelMotor.setIdleMode(IdleMode.kBrake);
@@ -68,6 +68,8 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
     // TODO Fix pivot position when DutyCycle is added
     inputs.pivotPosition =
         Rotation2d.fromRotations(pivotAbsoluteEncoder.get()).minus(pivotAbsoluteOffset);
+    inputs.pivotRelativePosition =
+        Rotation2d.fromRotations(pivotRelativeEncoder.getPosition() / PIVOT_GEARING);
     inputs.pivotVelocityRadiansPerSecond =
         Units.rotationsToRadians(pivotRelativeEncoder.getVelocity() / (PIVOT_GEARING * 60.0));
     inputs.pivotAppliedVolts = pivotAppliedVolts;

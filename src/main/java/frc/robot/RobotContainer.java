@@ -216,7 +216,7 @@ public class RobotContainer {
               IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
                   .alongWith(IndexerCommands.stowPiece(robotIndexer))
                   .alongWith(
-                      YoshiCommands.runFlywheelManual(robotYoshi, YoshiFlywheelDirection.STOP)))
+                      YoshiCommands.runFlywheelManual(robotYoshi, YoshiFlywheelDirection.IN)))
           .whileFalse(
               IntakeCommands.stopIntake(robotIntake)
                   .alongWith(IndexerCommands.stopIndexer(robotIndexer))
@@ -229,7 +229,7 @@ public class RobotContainer {
               IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)
                   .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT))
                   .alongWith(
-                      YoshiCommands.runFlywheelManual(robotYoshi, YoshiFlywheelDirection.STOP)))
+                      YoshiCommands.runFlywheelManual(robotYoshi, YoshiFlywheelDirection.OUT)))
           .whileFalse(
               IntakeCommands.stopIntake(robotIntake)
                   .alongWith(IndexerCommands.stopIndexer(robotIndexer))
@@ -293,23 +293,23 @@ public class RobotContainer {
           .whileTrue(ShooterCommands.runAnglerSetpoint(robotShooter))
           .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
 
-      /* Run setpoint flywheels */
-      copilotController
-          .a()
-          .whileTrue(ShooterCommands.runLauncher(robotShooter))
-          .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
-
       /* Run auto angle */
       copilotController
           .b()
           .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPosition()))
           .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
 
-      /* Run Yoshi setpoint */
-      pilotController
+      /* Run Yoshi setpoint ground */
+      copilotController
           .x()
           .whileTrue(YoshiCommands.runPivotSetpoint(robotYoshi, YoshiPivotSetpoint.GROUND))
-          .whileFalse(YoshiCommands.runPivotSetpoint(robotYoshi, YoshiPivotSetpoint.IDLE));
+          .whileFalse(YoshiCommands.stopYoshi(robotYoshi, true, true));
+
+      /* Run Yoshi setpoint idle */
+      copilotController
+          .a()
+          .whileTrue(YoshiCommands.runPivotSetpoint(robotYoshi, YoshiPivotSetpoint.IDLE))
+          .whileFalse(YoshiCommands.stopYoshi(robotYoshi, true, true));
 
       /* Run Climb in */
       copilotController

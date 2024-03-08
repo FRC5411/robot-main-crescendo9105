@@ -193,6 +193,24 @@ public class ShooterCommands {
     return currentCommand;
   }
 
+  /** Returns a command to run all of the Shooter motors */
+  public static Command runAll(
+      Shooter robotShooter, Rotation2d desiredPosition, double desiredSpeedMPS) {
+    currentCommand =
+        Commands.runOnce(
+                () -> {
+                  anglerPosition = desiredPosition;
+                  laucnherVelocityMPS = desiredSpeedMPS;
+                },
+                robotShooter)
+            .andThen(
+                Commands.runOnce(
+                    () -> robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS, true),
+                    robotShooter));
+
+    return currentCommand;
+  }
+
   /** Returns a command to stop all Shooter motors */
   public static Command stopShooter(
       Shooter robotShooter, boolean stopAngler, boolean stopLauncher) {

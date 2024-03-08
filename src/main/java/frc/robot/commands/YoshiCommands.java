@@ -52,7 +52,8 @@ public class YoshiCommands {
                   pivotSetpoint = Rotation2d.fromDegrees(setpoint.getPositionDegrees());
                 },
                 robotYoshi)
-            .andThen(Commands.run(() -> robotYoshi.setPivotSetpoint(pivotSetpoint), robotYoshi));
+            .andThen(
+                Commands.runOnce(() -> robotYoshi.setPivotSetpoint(pivotSetpoint), robotYoshi));
 
     return currentCommand;
   }
@@ -104,7 +105,7 @@ public class YoshiCommands {
     /** Setpoint to intake from the ground */
     IDLE(100.0),
     /** Setpoint for when the Yoshi is not in use */
-    GROUND(-30.4);
+    GROUND(-30.9);
 
     private double desiredPositionDegrees;
 
@@ -122,9 +123,9 @@ public class YoshiCommands {
   /** Direction of the yoshi */
   public static enum YoshiPivotDirection {
     /** Run the Yoshi pivot into the robot */
-    IN(6.0),
+    IN(2.0),
     /** Run the Yoshi pivot out of the robot */
-    OUT(-6.0),
+    OUT(-2.0),
     /** Stop the Yoshi wheels */
     STOP(0.0);
 
@@ -144,9 +145,9 @@ public class YoshiCommands {
   /** Direction of the yoshi */
   public static enum YoshiFlywheelDirection {
     /** Run the Yoshi wheels in to the robot */
-    IN(-12.0),
+    IN(-6.0),
     /** Run the Yoshi wheels out of the robot */
-    OUT(12.0),
+    OUT(6.0),
     /** Stop the Yoshi wheels */
     STOP(0.0);
 

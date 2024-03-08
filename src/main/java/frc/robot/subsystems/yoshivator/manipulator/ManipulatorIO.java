@@ -13,6 +13,7 @@ public interface ManipulatorIO {
   @AutoLog
   public static class ManipulatorIOInputs {
     public Rotation2d pivotPosition = new Rotation2d();
+    public Rotation2d pivotRelativePosition = new Rotation2d();
     public double pivotVelocityRadiansPerSecond = 0.0;
     public double pivotAppliedVolts = 0.0;
     public double pivotInternalVolts = 0.0;

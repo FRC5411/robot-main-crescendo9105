@@ -8,6 +8,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Robot;
@@ -63,15 +64,15 @@ public class Yoshivator extends SubsystemBase {
       }
     }
 
-    pivotFeedbackP = new LoggedTunableNumber("Yoshi/Pivot/Feedback/P", pivotFeedback.getP());
-    pivotFeedbackI = new LoggedTunableNumber("Yoshi/Pivot/Feedback/I", pivotFeedback.getI());
-    pivotFeedbackD = new LoggedTunableNumber("Yoshi/Pivot/Feedback/D", pivotFeedback.getD());
+    pivotFeedbackP = new LoggedTunableNumber("Yoshivator/Pivot/Feedback/P", pivotFeedback.getP());
+    pivotFeedbackI = new LoggedTunableNumber("Yoshivator/Pivot/Feedback/I", pivotFeedback.getI());
+    pivotFeedbackD = new LoggedTunableNumber("Yoshivator/Pivot/Feedback/D", pivotFeedback.getD());
     pivotFeedbackV =
         new LoggedTunableNumber(
-            "Yoshi/Pivot/Feedback/V", pivotFeedback.getConstraints().maxVelocity);
+            "Yoshivator/Pivot/Feedback/V", pivotFeedback.getConstraints().maxVelocity);
     pivotFeedbackA =
         new LoggedTunableNumber(
-            "Yoshi/Pivot/Feedback/A", pivotFeedback.getConstraints().maxAcceleration);
+            "Yoshivator/Pivot/Feedback/A", pivotFeedback.getConstraints().maxAcceleration);
   }
 
   @Override
@@ -85,7 +86,8 @@ public class Yoshivator extends SubsystemBase {
               manipulatorIOInputs.pivotPosition.getDegrees(), pivotSetpoint.getDegrees());
       double pivotFeedforwardOutput =
           pivotFeedforward.calculate(
-              pivotFeedback.getSetpoint().position, pivotFeedback.getSetpoint().velocity);
+              Math.toRadians(pivotFeedback.getSetpoint().position),
+              pivotFeedback.getSetpoint().velocity);
 
       double pivotCombinedOutput = pivotFeedbackOutput + pivotFeedforwardOutput;
 
@@ -93,7 +95,7 @@ public class Yoshivator extends SubsystemBase {
 
       Logger.recordOutput("Yoshivator/Pivot/Feedback/Output", pivotFeedbackOutput);
       Logger.recordOutput("Yoshivator/Pivot/Feedforward/Output", pivotFeedforwardOutput);
-      Logger.recordOutput("Yoshivator/Pivot/Feedback/Output", pivotCombinedOutput);
+      Logger.recordOutput("Yoshivator/Pivot/Feedback/CombinedOutput", pivotCombinedOutput);
     }
 
     yoshiVisualizer.updateYoshiAngle(manipulatorIOInputs.pivotPosition);
@@ -133,6 +135,12 @@ public class Yoshivator extends SubsystemBase {
   /** Set the goal of the pviot controller */
   public void setPivotSetpoint(Rotation2d desiredPosition) {
     pivotSetpoint = desiredPosition;
+
+    if (pivotSetpoint != null) {
+      pivotFeedback.reset(
+          manipulatorIOInputs.pivotPosition.getDegrees(),
+          Units.radiansToDegrees(manipulatorIOInputs.pivotVelocityRadiansPerSecond));
+    }
   }
 
   /** Set the voltage of the pivot motor */

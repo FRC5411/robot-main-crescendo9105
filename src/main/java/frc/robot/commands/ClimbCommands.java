@@ -94,6 +94,23 @@ public class ClimbCommands {
     return currentCommand;
   }
 
+  /** Returns a command to run the climb arms to a given setpoint */
+  public static Command runClimb(
+      Climb robotClimb, Rotation2d leftDesiredPosition, Rotation2d rightDesiredPosition) {
+    currentCommand =
+        Commands.runOnce(
+                () -> {
+                  leftSetpoint = leftDesiredPosition;
+                  rightSetpoint = rightDesiredPosition;
+                },
+                robotClimb)
+            .andThen(
+                Commands.runOnce(
+                    () -> robotClimb.setAngle(leftSetpoint, rightSetpoint), robotClimb));
+
+    return currentCommand;
+  }
+
   /** Returns a command to stop the climb */
   public static Command stopClimb(Climb robotClimb) {
     currentCommand =
