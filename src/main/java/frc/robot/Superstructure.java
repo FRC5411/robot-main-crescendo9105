@@ -67,7 +67,7 @@ public class Superstructure extends SubsystemBase {
                           ClimbPositions.LEFT_IDLE.getPosition(),
                           ClimbPositions.RIGHT_IDLE.getPosition()));
               case PREPARING_SHOT -> ShooterCommands.automaticTarget(
-                      robotShooter, robotTargetingSystem, () -> robotDrive.getPosition())
+                      robotShooter, robotTargetingSystem, () -> robotDrive.getPoseEstimate())
                   .alongWith(
                       ClimbCommands.runClimb(
                           robotClimb,

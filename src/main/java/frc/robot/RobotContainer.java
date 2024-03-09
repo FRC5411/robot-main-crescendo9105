@@ -231,7 +231,7 @@ public class RobotContainer {
                   robotDrive,
                   () -> 0.0,
                   () -> 0.0,
-                  () -> targetingSystem.getOptimalLaunchHeading(robotDrive.getPoseEstimate())))
+                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getPoseEstimate())))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
       /* Reset pose to infront of blue alliance speaker */
@@ -326,7 +326,9 @@ public class RobotContainer {
       /* Run auto angle */
       copilotController
           .b()
-          .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPoseEstimate()))
+          .whileTrue(
+              ShooterCommands.automaticTarget(
+                  robotShooter, robotTargetingSystem, () -> robotDrive.getPoseEstimate()))
           .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
 
       /* Run Yoshi setpoint ground */
@@ -370,7 +372,7 @@ public class RobotContainer {
               () -> -simController.getLeftY(),
               () -> -simController.getLeftX(),
               () -> -simController.getRightX()));
-      
+
       /* Superstructure intaking */
       simController
           .L1()
@@ -441,7 +443,7 @@ public class RobotContainer {
                   robotDrive,
                   () -> 0.0,
                   () -> 0.0,
-                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getPosition())))
+                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getPoseEstimate())))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
     }
   }
