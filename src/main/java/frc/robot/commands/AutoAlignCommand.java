@@ -45,7 +45,7 @@ public class AutoAlignCommand {
     return turnToAngle(
         robotDrive,
         // Plus and negative logic have to be tested based of gyro readings
-        () -> targetingSystem.getOptimalLaunchHeading(robotDrive.getPosition()),
+        () -> targetingSystem.getOptimalLaunchHeading(robotDrive.getPoseEstimate()),
         () -> 0.0,
         () -> 0.0);
   }
@@ -66,7 +66,7 @@ public class AutoAlignCommand {
 
           Rotation2d goalRotation = thetaGoal.get();
 
-          Rotation2d currentRotation = robotDrive.getPosition().getRotation();
+          Rotation2d currentRotation = robotDrive.getPoseEstimate().getRotation();
 
           if (Math.abs(goalRotation.getDegrees() - currentRotation.getDegrees()) > 5) {
             driveThetaController.setGoal(currentRotation.getDegrees() + 180);
@@ -78,7 +78,7 @@ public class AutoAlignCommand {
 
           double desiredThetaDegrees =
               driveThetaController.calculate(
-                  robotDrive.getPosition().getRotation().getDegrees(),
+                  robotDrive.getPoseEstimate().getRotation().getDegrees(),
                   thetaGoal.get().getDegrees());
 
           Logger.recordOutput("AutoAlign/DesiredX", desiredXSpeed);
@@ -89,7 +89,8 @@ public class AutoAlignCommand {
               "AutoAlign/Controller/Setpoint",
               Double.valueOf(driveThetaController.getSetpoint().position));
           Logger.recordOutput(
-              "AutoAlign/Controller/Measure", robotDrive.getPosition().getRotation().getDegrees());
+              "AutoAlign/Controller/Measure",
+              robotDrive.getPoseEstimate().getRotation().getDegrees());
           robotDrive.runSwerve(
               new ChassisSpeeds(desiredXSpeed, desiredYSpeed, Math.toRadians(desiredThetaDegrees)));
         },

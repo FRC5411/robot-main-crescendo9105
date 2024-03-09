@@ -67,14 +67,14 @@ public class SwerveCommands {
                     linearVelocity.getX() * robotDrive.getMaxLinearSpeedMPS(),
                     linearVelocity.getY() * robotDrive.getMaxLinearSpeedMPS(),
                     theta * robotDrive.getMaxAngularSpeedMPS(),
-                    robotDrive.getPosition().getRotation()));
+                    robotDrive.getPoseEstimate().getRotation()));
           } else {
             robotDrive.runSwerve(
                 ChassisSpeeds.fromRobotRelativeSpeeds(
                     linearVelocity.getX() * robotDrive.getMaxLinearSpeedMPS(),
                     linearVelocity.getY() * robotDrive.getMaxLinearSpeedMPS(),
                     theta * robotDrive.getMaxAngularSpeedMPS(),
-                    robotDrive.getPosition().getRotation()));
+                    robotDrive.getPoseEstimate().getRotation()));
           }
         },
         robotDrive);
@@ -145,7 +145,7 @@ public class SwerveCommands {
 
               double thetaDesiredDegrees =
                   thetaFeedback.calculate(
-                      robotDrive.getPosition().getRotation().getDegrees(),
+                      robotDrive.getPoseEstimate().getRotation().getDegrees(),
                       headingGoalSupplier.get().getDegrees());
 
               robotDrive.runSwerve(

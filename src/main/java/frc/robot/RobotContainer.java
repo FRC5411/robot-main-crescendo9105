@@ -61,7 +61,8 @@ import frc.robot.subsystems.shooter.launcher.LauncherIOSim;
 import frc.robot.subsystems.shooter.launcher.LauncherIOTalonFX;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionIOPhotonVision;
+import frc.robot.subsystems.vision.VisionIOPhoton;
+import frc.robot.subsystems.vision.VisionIOPhotonSim;
 import frc.robot.subsystems.yoshivator.Yoshivator;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSim;
@@ -77,6 +78,7 @@ public class RobotContainer {
   private Yoshivator robotYoshi;
   private Vision robotVision;
 
+  private VisionFuser visionFuser;
   private Superstructure superstructure;
 
   private TargetingSystem robotTargetingSystem = new TargetingSystem();
@@ -121,7 +123,7 @@ public class RobotContainer {
         robotYoshi = new Yoshivator(new ManipulatorIOSparkMax());
         robotVision =
             new Vision(
-                new VisionIOPhotonVision(
+                new VisionIOPhoton(
                     "LLLeft",
                     new Transform3d(
                         0.36,
@@ -131,7 +133,7 @@ public class RobotContainer {
                             VecBuilder.fill(
                                 Math.toRadians(13.2), Math.toRadians(0), Math.toRadians(25.2)))),
                     0.1),
-                new VisionIOPhotonVision(
+                new VisionIOPhoton(
                     "LLRight",
                     new Transform3d(
                         0.36 - 0.037 - 0.18 + 0.1,
@@ -155,7 +157,28 @@ public class RobotContainer {
         robotClimb = new Climb(new ClimbIOSim());
         robotIndexer = new Indexer(new IndexerIOSim());
         robotYoshi = new Yoshivator(new ManipulatorIOSim());
-        robotVision = new Vision(new VisionIO() {}, new VisionIO() {});
+        robotVision =
+            new Vision(
+                new VisionIOPhotonSim(
+                    "LLLeft",
+                    new Transform3d(
+                        0.36,
+                        -0.29,
+                        0.33,
+                        new Rotation3d(
+                            Math.toRadians(13.2), Math.toRadians(0), Math.toRadians(25.2))),
+                    0.1,
+                    () -> robotDrive.getOdometryPose()),
+                new VisionIOPhotonSim(
+                    "LLRight",
+                    new Transform3d(
+                        0.36 - 0.037 - 0.18 + 0.1,
+                        0.29 - 0.28,
+                        0.33,
+                        new Rotation3d(
+                            Math.toRadians(13.2), Math.toRadians(0), Math.toRadians(25.5))),
+                    0.1,
+                    () -> robotDrive.getOdometryPose()));
         break;
       default:
         robotDrive =
@@ -173,13 +196,15 @@ public class RobotContainer {
         robotVision = new Vision(new VisionIO() {}, new VisionIO() {});
         break;
     }
+
+    visionFuser = new VisionFuser(robotDrive, robotVision);
   }
 
   /** Register commands with PathPlanner and add default autos to chooser */
   private void configureAutonomous() {
     // Register commands with PathPlanner's AutoBuilder so it can call them
     NamedCommands.registerCommand(
-        "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));
+        "Print Pose", Commands.print("Pose: " + robotDrive.getPoseEstimate()));
   }
 
   /** Configure controllers */
@@ -206,7 +231,7 @@ public class RobotContainer {
                   robotDrive,
                   () -> 0.0,
                   () -> 0.0,
-                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getPosition())))
+                  () -> targetingSystem.getOptimalLaunchHeading(robotDrive.getPoseEstimate())))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
       /* Reset pose to infront of blue alliance speaker */
@@ -301,9 +326,7 @@ public class RobotContainer {
       /* Run auto angle */
       copilotController
           .b()
-          .whileTrue(
-              ShooterCommands.automaticTarget(
-                  robotShooter, robotTargetingSystem, () -> robotDrive.getPosition()))
+          .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPoseEstimate()))
           .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
 
       /* Run Yoshi setpoint ground */
@@ -347,7 +370,7 @@ public class RobotContainer {
               () -> -simController.getLeftY(),
               () -> -simController.getLeftX(),
               () -> -simController.getRightX()));
-
+      
       /* Superstructure intaking */
       simController
           .L1()
@@ -426,5 +449,9 @@ public class RobotContainer {
   /** Returns the selected autonomous */
   public Command getAutonomousCommand() {
     return autoChooser.get();
+  }
+
+  public VisionFuser getVisionFuser() {
+    return visionFuser;
   }
 }
