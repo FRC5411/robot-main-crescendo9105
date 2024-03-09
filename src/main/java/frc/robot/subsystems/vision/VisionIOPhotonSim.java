@@ -102,6 +102,8 @@ public class VisionIOPhotonSim implements VisionIO {
     PhotonPipelineResult result = limelightCam.getLatestResult();
     Optional<EstimatedRobotPose> estimatedRobotPose = poseEstimator.update(result);
 
+    inputs.isConnected = limelightCam.isConnected();
+
     inputs.hasTarget = result.hasTargets();
     if (result.hasTargets()) {
       PhotonTrackedTarget target = result.getBestTarget();

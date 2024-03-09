@@ -67,6 +67,23 @@ public class YoshiCommands {
     return currentCommand;
   }
 
+  /** Returns a command to run the pivot to a given setpoint and intake from ground */
+  public static Command runIntake(
+      Yoshivator robotYoshi, YoshiPivotSetpoint setpoint, YoshiFlywheelDirection direction) {
+    currentCommand =
+        Commands.runOnce(
+                () -> {
+                  pivotSetpoint = Rotation2d.fromDegrees(setpoint.getPositionDegrees());
+                },
+                robotYoshi)
+            .andThen(Commands.runOnce(() -> robotYoshi.setPivotSetpoint(pivotSetpoint), robotYoshi))
+            .andThen(
+                Commands.runOnce(
+                    () -> robotYoshi.setFlywheelVolts(direction.getVolts()), robotYoshi));
+
+    return currentCommand;
+  }
+
   /** Returns a command to stop the Yoshi motors */
   public static Command stopYoshi(Yoshivator robotYoshi, boolean stopPivot, boolean stopFlywheel) {
     if (currentCommand != null) {

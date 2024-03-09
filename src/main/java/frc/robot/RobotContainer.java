@@ -18,21 +18,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Caster.CasterState;
 import frc.robot.Superstructure.SuperstructureState;
-import frc.robot.commands.ClimbCommands;
-import frc.robot.commands.ClimbCommands.ClimbLeftDirection;
-import frc.robot.commands.ClimbCommands.ClimbRightDirection;
-import frc.robot.commands.IndexerCommands;
-import frc.robot.commands.IndexerCommands.IndexerDirection;
-import frc.robot.commands.IntakeCommands;
-import frc.robot.commands.IntakeCommands.IntakeDirection;
-import frc.robot.commands.ShooterCommands;
-import frc.robot.commands.ShooterCommands.AnglerDirection;
-import frc.robot.commands.ShooterCommands.FlywheelSpeeds;
 import frc.robot.commands.SwerveCommands;
-import frc.robot.commands.YoshiCommands;
-import frc.robot.commands.YoshiCommands.YoshiFlywheelDirection;
-import frc.robot.commands.YoshiCommands.YoshiPivotSetpoint;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
@@ -80,6 +68,7 @@ public class RobotContainer {
 
   private VisionFuser visionFuser;
   private Superstructure superstructure;
+  private Caster caster;
 
   private TargetingSystem robotTargetingSystem = new TargetingSystem();
 
@@ -94,6 +83,7 @@ public class RobotContainer {
     initializeSubsystems();
 
     superstructure = new Superstructure(robotDrive, robotShooter, robotClimb, robotTargetingSystem);
+    caster = new Caster(robotIntake, robotIndexer, robotYoshi);
 
     configureAutonomous();
 
@@ -220,6 +210,30 @@ public class RobotContainer {
               () -> -pilotController.getLeftX(),
               () -> -pilotController.getRightX()));
 
+      /* Intake a note from the ground */
+      pilotController
+          .leftBumper()
+          .whileTrue(
+              caster
+                  .getCommand(CasterState.INTAKE_GROUND)
+                  .alongWith(superstructure.getCommand(SuperstructureState.INTAKING)))
+          .whileFalse(
+              caster
+                  .getCommand(CasterState.IDLE)
+                  .alongWith(superstructure.getCommand(SuperstructureState.IDLE)));
+
+      /* Outtake a gamepiece */
+      pilotController
+          .rightBumper()
+          .whileTrue(caster.getCommand(CasterState.OUTTAKE))
+          .whileFalse(caster.getCommand(CasterState.IDLE));
+
+      /* Intake a note from the ground into the yoshi */
+      pilotController
+          .leftTrigger()
+          .whileTrue(caster.getCommand(CasterState.INTAKE_AMP))
+          .whileFalse(caster.getCommand(CasterState.IDLE));
+
       /* Reset gyro */
       pilotController.y().onTrue(SwerveCommands.resetGyro(robotDrive));
 
@@ -231,7 +245,7 @@ public class RobotContainer {
                   robotDrive,
                   () -> 0.0,
                   () -> 0.0,
-                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getPoseEstimate())))
+                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getOdometryPose())))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
       /* Reset pose to infront of blue alliance speaker */
@@ -239,129 +253,38 @@ public class RobotContainer {
           .b()
           .onTrue(SwerveCommands.setPose(robotDrive, new Pose2d(1.34, 5.50, new Rotation2d())));
 
-      /* Run intake */
-      pilotController
-          .leftBumper()
-          .whileTrue(
-              IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
-                  .alongWith(IndexerCommands.stowPiece(robotIndexer))
-                  .alongWith(
-                      YoshiCommands.runFlywheelManual(robotYoshi, YoshiFlywheelDirection.IN)))
-          .whileFalse(
-              IntakeCommands.stopIntake(robotIntake)
-                  .alongWith(IndexerCommands.stopIndexer(robotIndexer))
-                  .alongWith(YoshiCommands.stopYoshi(robotYoshi, false, true)));
-
-      /* Run outtake */
-      pilotController
-          .rightBumper()
-          .whileTrue(
-              IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)
-                  .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT))
-                  .alongWith(
-                      YoshiCommands.runFlywheelManual(robotYoshi, YoshiFlywheelDirection.OUT)))
-          .whileFalse(
-              IntakeCommands.stopIntake(robotIntake)
-                  .alongWith(IndexerCommands.stopIndexer(robotIndexer))
-                  .alongWith(YoshiCommands.stopYoshi(robotYoshi, false, true)));
-
-      /* Move back slightly */
-      pilotController
-          .povLeft()
-          .whileTrue(SwerveCommands.swerveDrive(robotDrive, () -> -0.3, () -> 0.0, () -> 0.0))
-          .onFalse(SwerveCommands.stopDrive(robotDrive));
-
-      /* Move forward slightly */
-      pilotController
-          .povRight()
-          .whileTrue(SwerveCommands.swerveDrive(robotDrive, () -> 0.3, () -> 0.0, () -> 0.0))
-          .onFalse(SwerveCommands.stopDrive(robotDrive));
-
       /* Copilot bindings */
 
-      /* Run angler up */
-      copilotController
-          .povUp()
-          .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.UP))
-          .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
-
-      /* Run angler down */
-      copilotController
-          .povDown()
-          .whileTrue(ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.DOWN))
-          .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
-
-      /* Intake & index in */
-      copilotController
-          .povLeft()
-          .whileTrue(
-              IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN)
-                  .alongWith(IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)))
-          .whileFalse(
-              IndexerCommands.stopIndexer(robotIndexer)
-                  .alongWith(IntakeCommands.stopIntake(robotIntake)));
-
-      /* Intake & index out */
-      copilotController
-          .povRight()
-          .whileTrue(
-              IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)
-                  .alongWith(IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)))
-          .whileFalse(
-              IndexerCommands.stopIndexer(robotIndexer)
-                  .alongWith(IntakeCommands.stopIntake(robotIntake)));
-
-      /* Flywheels out */
+      /* Align yoshi to score in amp */
       copilotController
           .leftBumper()
-          .whileTrue(ShooterCommands.runLauncherManual(robotShooter, FlywheelSpeeds.FULL))
-          .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+          .whileTrue(caster.getCommand(CasterState.OUTTAKE))
+          .whileFalse(caster.getCommand(CasterState.IDLE));
 
-      /* Run setpoint pivot */
-      copilotController
-          .y()
-          .whileTrue(ShooterCommands.runAnglerSetpoint(robotShooter))
-          .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
-
-      /* Run auto angle */
-      copilotController
-          .b()
-          .whileTrue(
-              ShooterCommands.automaticTarget(
-                  robotShooter, robotTargetingSystem, () -> robotDrive.getPoseEstimate()))
-          .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
-
-      /* Run Yoshi setpoint ground */
-      copilotController
-          .x()
-          .whileTrue(YoshiCommands.runPivotSetpoint(robotYoshi, YoshiPivotSetpoint.GROUND))
-          .whileFalse(YoshiCommands.stopYoshi(robotYoshi, true, true));
-
-      /* Run Yoshi setpoint idle */
-      copilotController
-          .a()
-          .whileTrue(YoshiCommands.runPivotSetpoint(robotYoshi, YoshiPivotSetpoint.IDLE))
-          .whileFalse(YoshiCommands.stopYoshi(robotYoshi, true, true));
-
-      /* Run Climb in */
-      copilotController
-          .leftTrigger()
-          .whileTrue(
-              ClimbCommands.runClimbManual(
-                  robotClimb, ClimbLeftDirection.IN, ClimbRightDirection.IN))
-          .whileFalse(
-              ClimbCommands.runClimbManual(
-                  robotClimb, ClimbLeftDirection.STOP, ClimbRightDirection.STOP));
-
-      /* Run Climb out */
+      /* Prepare to climb */
       copilotController
           .rightTrigger()
-          .whileTrue(
-              ClimbCommands.runClimbManual(
-                  robotClimb, ClimbLeftDirection.OUT, ClimbRightDirection.OUT))
-          .whileFalse(
-              ClimbCommands.runClimbManual(
-                  robotClimb, ClimbLeftDirection.STOP, ClimbRightDirection.STOP));
+          .whileTrue(superstructure.getCommand(SuperstructureState.PREPARING_CLIMB))
+          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
+
+      /* Climb to setpoint */
+      copilotController
+          .rightTrigger()
+          .whileTrue(superstructure.getCommand(SuperstructureState.CLIMBING))
+          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
+
+      /* Prepare to fire a note at the speaker */
+      copilotController
+          .y()
+          .whileTrue(superstructure.getCommand(SuperstructureState.PREPARING_SHOT))
+          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
+
+      /* Align yoshi to score in amp */
+      copilotController
+          .a()
+          .whileTrue(caster.getCommand(CasterState.SCORE_AMP))
+          .whileFalse(caster.getCommand(CasterState.IDLE));
+
     } else {
       /* Sim bindings */
 
@@ -391,50 +314,6 @@ public class RobotContainer {
           .whileTrue(superstructure.getCommand(SuperstructureState.CLIMBING))
           .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
 
-      /* Superstructure preparing to climb */
-      simController
-          .R2()
-          .whileTrue(superstructure.getCommand(SuperstructureState.PREPARING_CLIMB))
-          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
-
-      // /* Run intake */
-      // simController
-      //     .L1()
-      //     .whileTrue(
-      //         IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
-      //             .alongWith(IndexerCommands.stowPiece(robotIndexer))
-      //             .alongWith(YoshiCommands.runPivotSetpoint(robotYoshi,
-      // YoshiPivotSetpoint.GROUND)))
-      //     .whileFalse(
-      //         IntakeCommands.stopIntake(robotIntake)
-      //             .alongWith(IndexerCommands.stopIndexer(robotIndexer))
-      //             .alongWith(YoshiCommands.runPivotSetpoint(robotYoshi,
-      // YoshiPivotSetpoint.IDLE)));
-
-      // /* Run outtake */
-      // simController
-      //     .R1()
-      //     .whileTrue(
-      //         IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)
-      //             .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)))
-      //     .whileFalse(
-      //         IntakeCommands.stopIntake(robotIntake)
-      //             .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
-
-      // /* Run sim shooter */
-      // simController
-      //     .triangle()
-      //     .whileTrue(
-      //         ShooterCommands.automaticTarget(
-      //             robotShooter, robotTargetingSystem, () -> robotDrive.getPosition()))
-      //     .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
-
-      // /* Run sim climb setpoint */
-      // simController
-      //     .square()
-      //     .whileTrue(ClimbCommands.runClimb(robotClimb))
-      //     .whileFalse(ClimbCommands.stopClimb(robotClimb));
-
       /* Run sim heading */
       simController
           .cross()
@@ -443,7 +322,7 @@ public class RobotContainer {
                   robotDrive,
                   () -> 0.0,
                   () -> 0.0,
-                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getPoseEstimate())))
+                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getOdometryPose())))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
     }
   }

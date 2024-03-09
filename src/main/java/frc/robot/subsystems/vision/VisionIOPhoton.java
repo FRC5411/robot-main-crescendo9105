@@ -68,6 +68,7 @@ public class VisionIOPhoton implements VisionIO {
   public void updateInputs(VisionIOInputs inputs) {
     PhotonPipelineResult result = limelightCam.getLatestResult();
     Optional<EstimatedRobotPose> estimatedRobotPose = poseEstimator.update(result);
+    inputs.isConnected = limelightCam.isConnected();
 
     inputs.hasTarget = result.hasTargets();
     if (result.hasTargets()) {
