@@ -7,7 +7,11 @@ package frc.robot.subsystems.leds;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.util.Color;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.subsystems.leds.LEDConstants.Colors;
 import frc.robot.subsystems.leds.LEDConstants.Configs;
 
@@ -15,12 +19,14 @@ public class LEDSubsystem extends SubsystemBase {
   private AddressableLED m_led;
   private AddressableLEDBuffer m_ledBuffer;
   private boolean shouldAnimate;
+  private int curLED;
 
   public LEDSubsystem() {
     m_led = new AddressableLED(Configs.PWM_PORT);
 
     m_ledBuffer = new AddressableLEDBuffer(Configs.LED_COUNT);
     m_led.setLength(m_ledBuffer.getLength());
+    curLED = 0;
 
     shouldAnimate = false;
   }
@@ -198,13 +204,32 @@ public class LEDSubsystem extends SubsystemBase {
   //   }
   // }
 
-  // private Command setLEDCommand(int index, int hue, int saturation, int value) {
-  //   return new InstantCommand(
-  //       () -> {
-  //         m_ledBuffer.setHSV(index, hue, saturation, value);
-  //         setBuffer();
-  //       });
-  // }
+  private Command setLEDCommand(int hue, int saturation, int value) {
+    return new InstantCommand(
+        () -> {
+          m_ledBuffer.setHSV(curLED, hue, saturation, value);
+          setBuffer();
+        });
+  }
+
+  public Command incrementLED() {
+    return new InstantCommand(
+        () -> {
+          if (curLED < m_ledBuffer.getLength()) curLED++;
+        });
+  }
+
+  // Average object oriented programming moment
+  public Command rainbowLEDCommand() {
+    return new SequentialCommandGroup(
+            setLEDCommand(60, 255, 255),
+            incrementLED(),
+            new WaitCommand(2),
+            setLEDCommand(120, 255, 255),
+            incrementLED())
+        .repeatedly()
+        .until(() -> curLED == m_ledBuffer.getLength() - 1);
+  }
 
   @Override
   public void periodic() {
