@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.shooter;
 
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -19,6 +20,10 @@ public class TargetingSystem {
   private Translation3d speakerOpeningRed = new Translation3d(16.26, 5.58, 2.045);
 
   private final double LAUNCH_MAP_OFFSET_M = 0.93 + 0.46 - 0.23 - 0.17;
+  private final double LUANCH_MAP_OFFSET_DEGREES = -2.0;
+
+  private LinearFilter xFilter = LinearFilter.movingAverage(5);
+  private LinearFilter yFilter = LinearFilter.movingAverage(5);
 
   /**
    * Tree Map that represents the robot's horizontal (X) distance from the Speaker (meters) and the
@@ -38,21 +43,21 @@ public class TargetingSystem {
 
   /** Initialize the launch map */
   private void initializeLaunchMap() {
-    launchMap.put(0.0 + LAUNCH_MAP_OFFSET_M, 55.0);
-    launchMap.put(0.25 + LAUNCH_MAP_OFFSET_M, 52.0);
-    launchMap.put(0.50 + LAUNCH_MAP_OFFSET_M, 48.0);
-    launchMap.put(0.75 + LAUNCH_MAP_OFFSET_M, 45.0);
-    launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 42.5);
-    launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 40.0);
-    launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 38.5);
-    launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 37.0);
-    launchMap.put(2.0 + LAUNCH_MAP_OFFSET_M, 35.6);
-    launchMap.put(2.25 + LAUNCH_MAP_OFFSET_M, 34.5);
-    launchMap.put(2.5 + LAUNCH_MAP_OFFSET_M, 33.5);
-    launchMap.put(2.75 + LAUNCH_MAP_OFFSET_M, 32.0);
-    launchMap.put(3.0 + LAUNCH_MAP_OFFSET_M, 31.1);
-    launchMap.put(3.25 + LAUNCH_MAP_OFFSET_M, 30.3);
-    launchMap.put(3.5 + LAUNCH_MAP_OFFSET_M, 29.9);
+    launchMap.put(0.0 + LAUNCH_MAP_OFFSET_M, 55.0 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(0.25 + LAUNCH_MAP_OFFSET_M, 52.0 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(0.50 + LAUNCH_MAP_OFFSET_M, 48.0 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(0.75 + LAUNCH_MAP_OFFSET_M, 45.0 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 42.5 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 40.0 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 38.5 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 37.0 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(2.0 + LAUNCH_MAP_OFFSET_M, 35.6 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(2.25 + LAUNCH_MAP_OFFSET_M, 34.5 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(2.5 + LAUNCH_MAP_OFFSET_M, 33.5 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(2.75 + LAUNCH_MAP_OFFSET_M, 32.0 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(3.0 + LAUNCH_MAP_OFFSET_M, 31.1 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(3.25 + LAUNCH_MAP_OFFSET_M, 30.3 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(3.5 + LAUNCH_MAP_OFFSET_M, 29.9 + LUANCH_MAP_OFFSET_DEGREES);
   }
 
   /** Returns the optimal angle given the robot's current pose */
@@ -67,17 +72,31 @@ public class TargetingSystem {
 
   /** Returns the optimal heading for shooting */
   public Rotation2d getOptimalLaunchHeading(Pose2d robotPose) {
-    // Must add 180 since the front of the robot is the intake, not the shooter
-    Rotation2d heading =
+
+    double xDelta =
         (DriverStation.getAlliance().get() == Alliance.Blue)
-            ? new Rotation2d(
-                    speakerOpeningBlue.getX() - robotPose.getX(),
-                    speakerOpeningBlue.getY() - robotPose.getY())
-                .plus(Rotation2d.fromDegrees(180.0))
-            : new Rotation2d(
-                    speakerOpeningRed.getX() - robotPose.getX(),
-                    speakerOpeningRed.getY() - robotPose.getY())
-                .plus(Rotation2d.fromDegrees(180.0));
+            ? speakerOpeningBlue.getX() - robotPose.getX()
+            : speakerOpeningRed.getX() - robotPose.getX();
+
+    double yDelta =
+        (DriverStation.getAlliance().get() == Alliance.Blue)
+            ? speakerOpeningBlue.getY() - robotPose.getY()
+            : speakerOpeningRed.getY() - robotPose.getY();
+    // Must add 180 since the front of the robot is the intake, not the shooter
+    // Rotation2d heading =
+    //     (DriverStation.getAlliance().get() == Alliance.Blue)
+    //         ? new Rotation2d(
+    //                 speakerOpeningBlue.getX() - robotPose.getX(),
+    //                 speakerOpeningBlue.getY() - robotPose.getY())
+    //             .plus(Rotation2d.fromDegrees(180.0))
+    //         : new Rotation2d(
+    //                 speakerOpeningRed.getX() - robotPose.getX(),
+    //                 speakerOpeningRed.getY() - robotPose.getY())
+    //             .plus(Rotation2d.fromDegrees(180.0));
+    Rotation2d heading = new Rotation2d(xFilter.calculate(xDelta), yFilter.calculate(yDelta));
+    if (DriverStation.getAlliance().get() == Alliance.Blue) {
+      heading = heading.plus(Rotation2d.fromDegrees(180.0));
+    }
 
     Logger.recordOutput("Shooter/TargetingSystem/Heading", heading);
 

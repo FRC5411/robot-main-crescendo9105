@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.ClimbCommands;
 import frc.robot.commands.ClimbCommands.ClimbLeftDirection;
@@ -58,21 +59,21 @@ public class Superstructure extends SubsystemBase {
               case IDLE -> ShooterCommands.stopShooter(robotShooter, true, true)
                   .alongWith(ClimbCommands.stopClimb(robotClimb));
               case INTAKING -> ShooterCommands.runAll(
-                      robotShooter,
-                      AnglerPositions.INTAKING.getPosition(),
-                      LauncherSpeeds.IDLE.getSpeedsMPS())
-                  .alongWith(
-                      ClimbCommands.runClimb(
-                          robotClimb,
-                          ClimbPositions.LEFT_IDLE.getPosition(),
-                          ClimbPositions.RIGHT_IDLE.getPosition()));
+                  robotShooter,
+                  AnglerPositions.INTAKING.getPosition(),
+                  LauncherSpeeds.IDLE.getSpeedsMPS());
+                // .alongWith(
+                //     ClimbCommands.runClimb(
+                //         robotClimb,
+                //         ClimbPositions.LEFT_IDLE.getPosition(),
+                //         ClimbPositions.RIGHT_IDLE.getPosition()));
               case PREPARING_SHOT -> ShooterCommands.automaticTarget(
-                      robotShooter, robotTargetingSystem, () -> robotDrive.getPoseEstimate())
-                  .alongWith(
-                      ClimbCommands.runClimb(
-                          robotClimb,
-                          ClimbPositions.LEFT_IDLE.getPosition(),
-                          ClimbPositions.RIGHT_IDLE.getPosition()));
+                  robotShooter, robotTargetingSystem, () -> robotDrive.getPoseEstimate());
+                // .alongWith(
+                //     ClimbCommands.runClimb(
+                //         robotClimb,
+                //         ClimbPositions.LEFT_IDLE.getPosition(),
+                //         ClimbPositions.RIGHT_IDLE.getPosition()));
               case MANUAL_ANGLER_UP -> ShooterCommands.runAnglerManual(
                       robotShooter, AnglerDirection.UP)
                   .alongWith(
@@ -119,6 +120,15 @@ public class Superstructure extends SubsystemBase {
                           : ClimbCommands.runRightClimbManual(robotClimb, ClimbRightDirection.OUT));
               case DIAGNOSTIC -> null;
             });
+  }
+
+  /** Returns a command to switch the current direction of the climb arms */
+  public Command swapClimbDirection() {
+    return new InstantCommand(
+        () -> {
+          currentClimbDirectionIn = () -> !currentClimbDirectionIn.getAsBoolean();
+          System.out.println("SUPERSTRUCTURE: " + currentClimbDirectionIn.getAsBoolean());
+        });
   }
 
   /** Predefined states of the superstructure */

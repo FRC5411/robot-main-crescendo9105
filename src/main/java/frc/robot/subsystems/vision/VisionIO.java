@@ -15,6 +15,7 @@ import org.littletonrobotics.junction.AutoLog;
 public interface VisionIO {
   @AutoLog
   public static class VisionIOInputs {
+    public boolean isConnected = false;
     public double yaw = 0.0;
     public double pitch = 0.0;
     public double area = 0.0;

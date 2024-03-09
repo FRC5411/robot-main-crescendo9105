@@ -91,7 +91,7 @@ public class SwerveCommands {
     // Degress per second
     ProfiledPIDController thetaFeedback =
         switch (Constants.currentMode) {
-          case REAL -> new ProfiledPIDController(5.0, 0.0, 0.0, new Constraints(300.0, 200.0));
+          case REAL -> new ProfiledPIDController(3.0, 0.0, 0.0, new Constraints(300.0, 200.0));
           case SIM -> new ProfiledPIDController(5.0, 0.0, 0.0, new Constraints(300.0, 200.0));
           default -> new ProfiledPIDController(0.0, 0.0, 0.0, new Constraints(0.0, 0.0));
         };

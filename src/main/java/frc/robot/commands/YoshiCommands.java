@@ -4,12 +4,15 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.subsystems.yoshivator.Yoshivator;
 import frc.robot.utils.debugging.LoggedTunableNumber;
+import java.util.function.BooleanSupplier;
 
 /** Class to hold all of the commands for the Yoshi */
 public class YoshiCommands {
@@ -39,7 +42,8 @@ public class YoshiCommands {
                   pivotSetpoint = Rotation2d.fromDegrees(pivotSetter.get());
                 },
                 robotYoshi)
-            .andThen(Commands.run(() -> robotYoshi.setPivotSetpoint(pivotSetpoint), robotYoshi));
+            .andThen(
+                Commands.runOnce(() -> robotYoshi.setPivotSetpoint(pivotSetpoint), robotYoshi));
 
     return currentCommand;
   }
@@ -63,6 +67,72 @@ public class YoshiCommands {
     currentCommand =
         Commands.run(() -> robotYoshi.setFlywheelVolts(direction.getVolts()), robotYoshi)
             .alongWith(new InstantCommand(() -> logDirection(direction)));
+
+    return currentCommand;
+  }
+
+  /** Returns a command to run the pivot to a given setpoint and intake from ground */
+  public static Command runIntake(
+      Yoshivator robotYoshi, YoshiPivotSetpoint setpoint, YoshiFlywheelDirection direction) {
+    currentCommand =
+        Commands.runOnce(
+                () -> {
+                  pivotSetpoint = Rotation2d.fromDegrees(setpoint.getPositionDegrees());
+                },
+                robotYoshi)
+            .andThen(Commands.runOnce(() -> robotYoshi.setPivotSetpoint(pivotSetpoint), robotYoshi))
+            .andThen(
+                Commands.runOnce(
+                    () -> robotYoshi.setFlywheelVolts(direction.getVolts()), robotYoshi));
+    return currentCommand;
+  }
+
+  /** Returns a command to run the pivot to a given setpoint and intake from ground */
+  public static Command runIntake(
+      Yoshivator robotYoshi,
+      YoshiPivotSetpoint setpoint,
+      YoshiFlywheelDirection direction,
+      BooleanSupplier isPieceStowed) {
+    currentCommand =
+        new FunctionalCommand(
+            () -> {
+              pivotSetpoint = Rotation2d.fromDegrees(setpoint.getPositionDegrees());
+              robotYoshi.setPivotSetpoint(pivotSetpoint);
+              robotYoshi.setFlywheelVolts(direction.getVolts());
+            },
+            () -> {},
+            (interrupted) -> {
+              pivotSetpoint = Rotation2d.fromDegrees(YoshiPivotSetpoint.IDLE.getPositionDegrees());
+              robotYoshi.stopMotors(true, true);
+
+              robotYoshi.setPivotSetpoint(pivotSetpoint);
+            },
+            isPieceStowed,
+            robotYoshi);
+
+    return currentCommand;
+  }
+
+  /** Returns a command to score in the amp */
+  public static Command scoreAmp(Yoshivator robotYoshi) {
+    Debouncer debouncer = new Debouncer(0.1);
+
+    currentCommand =
+        new FunctionalCommand(
+            () -> {
+              pivotSetpoint = Rotation2d.fromDegrees(YoshiPivotSetpoint.AMP.getPositionDegrees());
+              robotYoshi.setPivotSetpoint(pivotSetpoint);
+            },
+            () -> {
+              if (debouncer.calculate(true)) {
+                robotYoshi.setFlywheelVolts(YoshiFlywheelDirection.IN.getVolts());
+              }
+            },
+            (interrupted) -> {
+              robotYoshi.stopMotors(true, true);
+            },
+            () -> robotYoshi.isPivotAtGoal(),
+            robotYoshi);
 
     return currentCommand;
   }
@@ -103,9 +173,11 @@ public class YoshiCommands {
   /** Setpoints of the Yoshi in degrees */
   public static enum YoshiPivotSetpoint {
     /** Setpoint to intake from the ground */
-    IDLE(100.0),
+    IDLE(110.0),
+    /** Setpoint to score amp */
+    AMP(85.0),
     /** Setpoint for when the Yoshi is not in use */
-    GROUND(-30.9);
+    GROUND(-33.5);
 
     private double desiredPositionDegrees;
 
@@ -145,9 +217,9 @@ public class YoshiCommands {
   /** Direction of the yoshi */
   public static enum YoshiFlywheelDirection {
     /** Run the Yoshi wheels in to the robot */
-    IN(-6.0),
+    IN(-7.0),
     /** Run the Yoshi wheels out of the robot */
-    OUT(6.0),
+    OUT(7.0),
     /** Stop the Yoshi wheels */
     STOP(0.0);
 

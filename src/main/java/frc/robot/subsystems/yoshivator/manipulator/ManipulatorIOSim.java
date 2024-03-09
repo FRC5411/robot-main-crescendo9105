@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 /** Class to represent the manipulator mechanism in simulation */
 public class ManipulatorIOSim implements ManipulatorIO {
   private final double LOOP_PERIOD_S = 0.02;
-  private final double PIVOT_GEARING = 64.0 / 1.0;
+  private final double PIVOT_GEARING = (64.0 / 1.0) * (3.0 / 1.0);
   private final double FLYWHEEL_GEARING = 5.0 / 1.0;
 
   private SingleJointedArmSim pivotMotor =
