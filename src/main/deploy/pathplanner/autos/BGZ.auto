@@ -20,7 +20,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "5.1,S"
+            "pathName": null
           }
         },
         {
@@ -44,7 +44,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "S,5.3"
+            "pathName": null
           }
         }
       ]

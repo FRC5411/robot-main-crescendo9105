@@ -8,31 +8,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": "!CP_(2-3N)"
+            "pathName": "C,3.2(s)"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "(2-3N)_(2-5N)"
+            "pathName": "3.2(s), 5.4"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "(2-5N)_SH1"
+            "pathName": "5.4, S"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "SH1_(3-5N)"
+            "pathName": "S, 5.3"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "(3-5N)_SH2"
+            "pathName": "5.3, S"
           }
         }
       ]
