@@ -1,6 +1,9 @@
 // Copyright (c) FIRST and other WPILib contributors.
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
+// https://github.com/wpilibsuite/allwpilib/blob/main/apriltag/src/main/native/resources/edu/wpi/first/apriltag/2024-crescendo.json
+// Apriltag map being used currently, can be cropped to only include the tags being used if necessary
+
 
 package frc.robot.subsystems.vision;
 
