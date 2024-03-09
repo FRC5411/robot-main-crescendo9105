@@ -50,10 +50,10 @@ public class Yoshivator extends SubsystemBase {
           pivotFeedback.setConstraints(new TrapezoidProfile.Constraints(0.0, 0.0));
           break;
         case SIM:
-          pivotFeedback.setP(1.0);
+          pivotFeedback.setP(2.0);
           pivotFeedback.setI(0.0);
           pivotFeedback.setD(0.0);
-          pivotFeedback.setConstraints(new TrapezoidProfile.Constraints(100.0, 100.0));
+          pivotFeedback.setConstraints(new TrapezoidProfile.Constraints(1000.0, 500.0));
           break;
         default:
           pivotFeedback.setP(0.0);
@@ -63,6 +63,8 @@ public class Yoshivator extends SubsystemBase {
           break;
       }
     }
+
+    pivotFeedback.setTolerance(1.0);
 
     pivotFeedbackP = new LoggedTunableNumber("Yoshivator/Pivot/Feedback/P", pivotFeedback.getP());
     pivotFeedbackI = new LoggedTunableNumber("Yoshivator/Pivot/Feedback/I", pivotFeedback.getI());

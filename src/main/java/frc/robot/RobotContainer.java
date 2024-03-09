@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.Superstructure.SuperstructureState;
 import frc.robot.commands.ClimbCommands;
 import frc.robot.commands.ClimbCommands.ClimbLeftDirection;
 import frc.robot.commands.ClimbCommands.ClimbRightDirection;
@@ -78,6 +79,9 @@ public class RobotContainer {
   private Vision robotVision;
 
   private VisionFuser visionFuser;
+  private Superstructure superstructure;
+
+  private TargetingSystem robotTargetingSystem = new TargetingSystem();
 
   private CommandXboxController pilotController = new CommandXboxController(0);
   private CommandXboxController copilotController = new CommandXboxController(1);
@@ -88,6 +92,8 @@ public class RobotContainer {
 
   public RobotContainer() {
     initializeSubsystems();
+
+    superstructure = new Superstructure(robotDrive, robotShooter, robotClimb, robotTargetingSystem);
 
     configureAutonomous();
 
@@ -203,8 +209,6 @@ public class RobotContainer {
 
   /** Configure controllers */
   private void configureButtonBindings() {
-    TargetingSystem targetingSystem = new TargetingSystem();
-
     if (RobotBase.isReal()) {
       /* Pilot bindings */
 
@@ -366,74 +370,79 @@ public class RobotContainer {
               () -> -simController.getLeftY(),
               () -> -simController.getLeftX(),
               () -> -simController.getRightX()));
-
-      /* Run intake */
+      
+      /* Superstructure intaking */
       simController
           .L1()
-          .whileTrue(
-              IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
-                  .alongWith(IndexerCommands.stowPiece(robotIndexer)))
-          .whileFalse(
-              IntakeCommands.stopIntake(robotIntake)
-                  .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
+          .whileTrue(superstructure.getCommand(SuperstructureState.INTAKING))
+          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
 
-      /* Run outtake */
-      simController
-          .R1()
-          .whileTrue(
-              IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)
-                  .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)))
-          .whileFalse(
-              IntakeCommands.stopIntake(robotIntake)
-                  .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
-
-      /* Run sim set pose */
-      simController
-          .circle()
-          .onTrue(
-              SwerveCommands.setPose(
-                  robotDrive, new Pose2d(15.247 - 0.17, 5.50, new Rotation2d())));
-
-      /* Run sim arm setpoint */
+      /* Superstructure preparing to shoot */
       simController
           .triangle()
-          .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPoseEstimate()))
-          .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+          .whileTrue(superstructure.getCommand(SuperstructureState.PREPARING_SHOT))
+          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
 
-      /* Run sim flywheel setpoint */
+      /* Superstructure climbing */
+      simController
+          .L2()
+          .whileTrue(superstructure.getCommand(SuperstructureState.CLIMBING))
+          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
+
+      /* Superstructure preparing to climb */
+      simController
+          .R2()
+          .whileTrue(superstructure.getCommand(SuperstructureState.PREPARING_CLIMB))
+          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
+
+      // /* Run intake */
+      // simController
+      //     .L1()
+      //     .whileTrue(
+      //         IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
+      //             .alongWith(IndexerCommands.stowPiece(robotIndexer))
+      //             .alongWith(YoshiCommands.runPivotSetpoint(robotYoshi,
+      // YoshiPivotSetpoint.GROUND)))
+      //     .whileFalse(
+      //         IntakeCommands.stopIntake(robotIntake)
+      //             .alongWith(IndexerCommands.stopIndexer(robotIndexer))
+      //             .alongWith(YoshiCommands.runPivotSetpoint(robotYoshi,
+      // YoshiPivotSetpoint.IDLE)));
+
+      // /* Run outtake */
+      // simController
+      //     .R1()
+      //     .whileTrue(
+      //         IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)
+      //             .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)))
+      //     .whileFalse(
+      //         IntakeCommands.stopIntake(robotIntake)
+      //             .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
+
+      // /* Run sim shooter */
+      // simController
+      //     .triangle()
+      //     .whileTrue(
+      //         ShooterCommands.automaticTarget(
+      //             robotShooter, robotTargetingSystem, () -> robotDrive.getPosition()))
+      //     .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
+
+      // /* Run sim climb setpoint */
+      // simController
+      //     .square()
+      //     .whileTrue(ClimbCommands.runClimb(robotClimb))
+      //     .whileFalse(ClimbCommands.stopClimb(robotClimb));
+
+      /* Run sim heading */
       simController
           .cross()
-          .whileTrue(ShooterCommands.runLauncher(robotShooter))
-          .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
-
-      /* Run sim climb setpoint */
-      simController
-          .square()
-          .whileTrue(ClimbCommands.runClimb(robotClimb))
-          .whileFalse(ClimbCommands.stopClimb(robotClimb));
-
-      /* Test heading */
-      pilotController
-          .a()
           .whileTrue(
               SwerveCommands.setHeading(
                   robotDrive,
                   () -> 0.0,
                   () -> 0.0,
-                  () -> targetingSystem.getOptimalLaunchHeading(robotDrive.getPoseEstimate())))
+                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getPosition())))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
-
-      /* Test arm */
-      pilotController
-          .y()
-          .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPoseEstimate()))
-          .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
-
-      /* Test yoshi */
-      pilotController
-          .a()
-          .whileTrue(YoshiCommands.runPivotSetpoint(robotYoshi, YoshiPivotSetpoint.GROUND))
-          .whileFalse(YoshiCommands.runPivotSetpoint(robotYoshi, YoshiPivotSetpoint.IDLE));
     }
   }
 
