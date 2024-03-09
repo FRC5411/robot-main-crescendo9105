@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.vision;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -24,7 +25,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class VisionIOPhoton implements VisionIO {
-  private PhotonCamera frontLimelight;
+  private PhotonCamera limelightCam;
   private PhotonPoseEstimator poseEstimator;
   private Transform3d cameraTransform;
   private Matrix<N3, N1> singleTagStdDevs;
@@ -38,19 +39,26 @@ public class VisionIOPhoton implements VisionIO {
           : 7;
 
   public VisionIOPhoton(String name, Transform3d cameraTransform, double debouncerTime) {
-    AprilTagFields tagFields = AprilTagFields.k2024Crescendo;
-
     singleTagStdDevs = VecBuilder.fill(0.0, 0.0, Double.MAX_VALUE);
     multiTagStdDevs = VecBuilder.fill(0.0, 0.0, Double.MAX_VALUE);
-    frontLimelight = new PhotonCamera(name);
+    limelightCam = new PhotonCamera(name);
     PhotonCamera.setVersionCheckEnabled(false);
     this.cameraTransform = cameraTransform;
-    poseEstimator =
-        new PhotonPoseEstimator(
-            tagFields.loadAprilTagLayoutField(),
-            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-            frontLimelight,
-            cameraTransform);
+    try {
+      poseEstimator =
+          new PhotonPoseEstimator(
+              AprilTagFieldLayout.loadFromResource("/edu/wpi/first/apriltag/2024-crescendo.json"),
+              PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+              limelightCam,
+              cameraTransform);
+    } catch (Exception e) {
+      poseEstimator =
+          new PhotonPoseEstimator(
+              AprilTagFields.k2024Crescendo.loadAprilTagLayoutField(),
+              PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+              limelightCam,
+              cameraTransform);
+    }
     poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
     debouncer = new Debouncer(debouncerTime);
@@ -58,7 +66,7 @@ public class VisionIOPhoton implements VisionIO {
 
   @Override
   public void updateInputs(VisionIOInputs inputs) {
-    PhotonPipelineResult result = frontLimelight.getLatestResult();
+    PhotonPipelineResult result = limelightCam.getLatestResult();
     Optional<EstimatedRobotPose> estimatedRobotPose = poseEstimator.update(result);
 
     inputs.hasTarget = result.hasTargets();
@@ -144,6 +152,7 @@ public class VisionIOPhoton implements VisionIO {
       Optional<Pose3d> tagPose = poseEstimator.getFieldTags().getTagPose(target.getFiducialId());
 
       if (tagPose.isEmpty()) continue;
+      // else if (target.getPoseAmbiguity() > 0.45) continue;
 
       // Increase number of tags
       numTags++;
@@ -161,9 +170,9 @@ public class VisionIOPhoton implements VisionIO {
     if (numTags > 1) estStdDevs = multiTagStdDevs;
 
     // Increase std devs based on (average) distance
-    if (numTags == 1 && avgDist > 4)
+    if (numTags == 1 && avgDist > 3)
       estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
-    else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
+    else estStdDevs = estStdDevs.times((1 + (avgDist * avgDist / 30)) / (double) numTags);
 
     return estStdDevs;
   }
@@ -176,6 +185,7 @@ public class VisionIOPhoton implements VisionIO {
       Optional<Pose3d> tagPose = poseEstimator.getFieldTags().getTagPose(target.getFiducialId());
 
       if (tagPose.isEmpty()) continue;
+      else if (target.getPoseAmbiguity() > 0.45) continue;
 
       // Increase number of tags
       numTags++;
