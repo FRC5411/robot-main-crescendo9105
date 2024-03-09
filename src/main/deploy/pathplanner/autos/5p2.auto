@@ -8,19 +8,31 @@
         {
           "type": "path",
           "data": {
-            "pathName": "T,3.1(2)"
+            "pathName": "(T,3.1)J"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "3.1,5.1"
+            "pathName": "(3.1,3.2)J"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "[5.1,s]"
+            "pathName": "(3.2,3.3)J"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "(3.3,5.5)J"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "(5.5,bs)J"
           }
         }
       ]

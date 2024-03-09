@@ -34,6 +34,18 @@
           "data": {
             "pathName": "(5.2,ts)J"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "(ts,5.3)J"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "(5.3,ts)J"
+          }
         }
       ]
     }

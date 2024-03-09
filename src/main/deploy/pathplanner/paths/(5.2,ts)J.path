@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.63,
+        "y": 5.76
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 6.7346787933215815,
+        "y": 6.559099913128779
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.12,
+        "y": 6.27
+      },
+      "prevControl": {
+        "x": 5.281568162597943,
+        "y": 6.956208074476129
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 12.85429279368829,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "PresetJ",
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}
