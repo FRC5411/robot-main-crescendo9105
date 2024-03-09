@@ -27,4 +27,12 @@ public class Vision extends SubsystemBase {
     Logger.processInputs("Vision/Right", inputsRight);
     Logger.processInputs("Vision/Left", inputsLeft);
   }
+
+  public VisionIOInputsAutoLogged getInputsRight() {
+    return inputsRight;
+  }
+
+  public VisionIOInputsAutoLogged getInputsLeft() {
+    return inputsLeft;
+  }
 }

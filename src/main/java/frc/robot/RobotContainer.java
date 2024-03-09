@@ -60,7 +60,8 @@ import frc.robot.subsystems.shooter.launcher.LauncherIOSim;
 import frc.robot.subsystems.shooter.launcher.LauncherIOTalonFX;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
-import frc.robot.subsystems.vision.VisionIOPhotonVision;
+import frc.robot.subsystems.vision.VisionIOPhoton;
+import frc.robot.subsystems.vision.VisionIOPhotonSim;
 import frc.robot.subsystems.yoshivator.Yoshivator;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSim;
@@ -75,6 +76,8 @@ public class RobotContainer {
   private Indexer robotIndexer;
   private Yoshivator robotYoshi;
   private Vision robotVision;
+
+  private VisionFuser visionFuser;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
   private CommandXboxController copilotController = new CommandXboxController(1);
@@ -114,7 +117,7 @@ public class RobotContainer {
         robotYoshi = new Yoshivator(new ManipulatorIOSparkMax());
         robotVision =
             new Vision(
-                new VisionIOPhotonVision(
+                new VisionIOPhoton(
                     "LLLeft",
                     new Transform3d(
                         0.36,
@@ -124,7 +127,7 @@ public class RobotContainer {
                             VecBuilder.fill(
                                 Math.toRadians(13.2), Math.toRadians(0), Math.toRadians(25.2)))),
                     0.1),
-                new VisionIOPhotonVision(
+                new VisionIOPhoton(
                     "LLRight",
                     new Transform3d(
                         0.36 - 0.037 - 0.18 + 0.1,
@@ -148,7 +151,28 @@ public class RobotContainer {
         robotClimb = new Climb(new ClimbIOSim());
         robotIndexer = new Indexer(new IndexerIOSim());
         robotYoshi = new Yoshivator(new ManipulatorIOSim());
-        robotVision = new Vision(new VisionIO() {}, new VisionIO() {});
+        robotVision =
+            new Vision(
+                new VisionIOPhotonSim(
+                    "LLLeft",
+                    new Transform3d(
+                        0.36,
+                        -0.29,
+                        0.33,
+                        new Rotation3d(
+                            Math.toRadians(13.2), Math.toRadians(0), Math.toRadians(25.2))),
+                    0.1,
+                    () -> robotDrive.getOdometryPose()),
+                new VisionIOPhotonSim(
+                    "LLRight",
+                    new Transform3d(
+                        0.36 - 0.037 - 0.18 + 0.1,
+                        0.29 - 0.28,
+                        0.33,
+                        new Rotation3d(
+                            Math.toRadians(13.2), Math.toRadians(0), Math.toRadians(25.5))),
+                    0.1,
+                    () -> robotDrive.getOdometryPose()));
         break;
       default:
         robotDrive =
@@ -166,13 +190,15 @@ public class RobotContainer {
         robotVision = new Vision(new VisionIO() {}, new VisionIO() {});
         break;
     }
+
+    visionFuser = new VisionFuser(robotDrive, robotVision);
   }
 
   /** Register commands with PathPlanner and add default autos to chooser */
   private void configureAutonomous() {
     // Register commands with PathPlanner's AutoBuilder so it can call them
     NamedCommands.registerCommand(
-        "Print Pose", Commands.print("Pose: " + robotDrive.getPosition()));
+        "Print Pose", Commands.print("Pose: " + robotDrive.getPoseEstimate()));
   }
 
   /** Configure controllers */
@@ -201,7 +227,7 @@ public class RobotContainer {
                   robotDrive,
                   () -> 0.0,
                   () -> 0.0,
-                  () -> targetingSystem.getOptimalLaunchHeading(robotDrive.getPosition())))
+                  () -> targetingSystem.getOptimalLaunchHeading(robotDrive.getPoseEstimate())))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
       /* Reset pose to infront of blue alliance speaker */
@@ -296,7 +322,7 @@ public class RobotContainer {
       /* Run auto angle */
       copilotController
           .b()
-          .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPosition()))
+          .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPoseEstimate()))
           .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
 
       /* Run Yoshi setpoint ground */
@@ -337,70 +363,70 @@ public class RobotContainer {
       robotDrive.setDefaultCommand(
           SwerveCommands.swerveDrive(
               robotDrive,
-              () -> simController.getLeftY(),
-              () -> simController.getLeftX(),
-              () -> simController.getRightX()));
+              () -> -simController.getLeftY(),
+              () -> -simController.getLeftX(),
+              () -> -simController.getRightX()));
 
-      // /* Run intake */
-      // simController
-      //     .L1()
-      //     .whileTrue(
-      //         IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
-      //             .alongWith(IndexerCommands.stowPiece(robotIndexer)))
-      //     .whileFalse(
-      //         IntakeCommands.stopIntake(robotIntake)
-      //             .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
+      /* Run intake */
+      simController
+          .L1()
+          .whileTrue(
+              IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
+                  .alongWith(IndexerCommands.stowPiece(robotIndexer)))
+          .whileFalse(
+              IntakeCommands.stopIntake(robotIntake)
+                  .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
 
-      // /* Run outtake */
-      // simController
-      //     .R1()
-      //     .whileTrue(
-      //         IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)
-      //             .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)))
-      //     .whileFalse(
-      //         IntakeCommands.stopIntake(robotIntake)
-      //             .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
+      /* Run outtake */
+      simController
+          .R1()
+          .whileTrue(
+              IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)
+                  .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)))
+          .whileFalse(
+              IntakeCommands.stopIntake(robotIntake)
+                  .alongWith(IndexerCommands.stopIndexer(robotIndexer)));
 
-      // /* Run sim set pose */
-      // simController
-      //     .circle()
-      //     .onTrue(
-      //         SwerveCommands.setPose(
-      //             robotDrive, new Pose2d(15.247 - 0.17, 5.50, new Rotation2d())));
+      /* Run sim set pose */
+      simController
+          .circle()
+          .onTrue(
+              SwerveCommands.setPose(
+                  robotDrive, new Pose2d(15.247 - 0.17, 5.50, new Rotation2d())));
 
-      // /* Run sim arm setpoint */
-      // simController
-      //     .triangle()
-      //     .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPosition()))
-      //     .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+      /* Run sim arm setpoint */
+      simController
+          .triangle()
+          .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPoseEstimate()))
+          .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
 
-      // /* Run sim flywheel setpoint */
-      // simController
-      //     .cross()
-      //     .whileTrue(ShooterCommands.runLauncher(robotShooter))
-      //     .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
+      /* Run sim flywheel setpoint */
+      simController
+          .cross()
+          .whileTrue(ShooterCommands.runLauncher(robotShooter))
+          .whileFalse(ShooterCommands.stopShooter(robotShooter, false, true));
 
-      // /* Run sim climb setpoint */
-      // simController
-      //     .square()
-      //     .whileTrue(ClimbCommands.runClimb(robotClimb))
-      //     .whileFalse(ClimbCommands.stopClimb(robotClimb));
+      /* Run sim climb setpoint */
+      simController
+          .square()
+          .whileTrue(ClimbCommands.runClimb(robotClimb))
+          .whileFalse(ClimbCommands.stopClimb(robotClimb));
 
-      // /* Test heading */
-      // pilotController
-      //     .a()
-      //     .whileTrue(
-      //         SwerveCommands.setHeading(
-      //             robotDrive,
-      //             () -> 0.0,
-      //             () -> 0.0,
-      //             () -> targetingSystem.getOptimalLaunchHeading(robotDrive.getPosition())))
-      //     .onFalse(SwerveCommands.stopDrive(robotDrive));
+      /* Test heading */
+      pilotController
+          .a()
+          .whileTrue(
+              SwerveCommands.setHeading(
+                  robotDrive,
+                  () -> 0.0,
+                  () -> 0.0,
+                  () -> targetingSystem.getOptimalLaunchHeading(robotDrive.getPoseEstimate())))
+          .onFalse(SwerveCommands.stopDrive(robotDrive));
 
       /* Test arm */
       pilotController
           .y()
-          .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPosition()))
+          .whileTrue(ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPoseEstimate()))
           .whileFalse(ShooterCommands.stopShooter(robotShooter, true, true));
 
       /* Test yoshi */
@@ -414,5 +440,9 @@ public class RobotContainer {
   /** Returns the selected autonomous */
   public Command getAutonomousCommand() {
     return autoChooser.get();
+  }
+
+  public VisionFuser getVisionFuser() {
+    return visionFuser;
   }
 }
