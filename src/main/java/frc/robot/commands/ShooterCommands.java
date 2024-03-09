@@ -20,8 +20,6 @@ import java.util.function.Supplier;
 public class ShooterCommands {
   private static Command currentCommand = null;
 
-  private static TargetingSystem targetingSystem = new TargetingSystem();
-
   private static LoggedTunableNumber angleSetter =
       new LoggedTunableNumber("Shooter/Angler/Debugging/SetpointDegrees", 35.0);
 
@@ -84,12 +82,15 @@ public class ShooterCommands {
   }
 
   /** Returns a command to run the angler motor */
-  public static Command runAngler(Shooter robotShooter, Supplier<Pose2d> robotPoseSupplier) {
+  public static Command automaticTarget(
+      Shooter robotShooter,
+      TargetingSystem robotTargetingSystem,
+      Supplier<Pose2d> robotPoseSupplier) {
     currentCommand =
         new FunctionalCommand(
             () -> {},
             () -> {
-              anglerPosition = targetingSystem.getLaunchMapAngle(robotPoseSupplier.get());
+              anglerPosition = robotTargetingSystem.getLaunchMapAngle(robotPoseSupplier.get());
               laucnherVelocityMPS = 38.0;
 
               robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS, false);

@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.ClimbCommands;
 import frc.robot.commands.ClimbCommands.ClimbLeftDirection;
@@ -15,7 +16,9 @@ import frc.robot.commands.ShooterCommands.AnglerDirection;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.TargetingSystem;
 import java.util.function.BooleanSupplier;
+import org.littletonrobotics.junction.Logger;
 
 /** State-machine for the Launcher, Angler, & Climb */
 public class Superstructure extends SubsystemBase {
@@ -23,78 +26,99 @@ public class Superstructure extends SubsystemBase {
   private Shooter robotShooter;
   private Climb robotClimb;
 
+  private TargetingSystem robotTargetingSystem;
+
+  private SuperstructureState currentState = SuperstructureState.IDLE;
   private BooleanSupplier currentClimbDirectionIn = () -> false;
 
   /** Creates a new Superstructure. */
-  public Superstructure(Drive drive, Shooter shooter, Climb climb) {
+  public Superstructure(
+      Drive drive, Shooter shooter, Climb climb, TargetingSystem targetingSystem) {
     robotDrive = drive;
     robotShooter = shooter;
     robotClimb = climb;
+
+    robotTargetingSystem = targetingSystem;
   }
 
   @Override
-  public void periodic() {}
+  public void periodic() {
+    Logger.recordOutput("Superstructure/CurrentState", currentState);
+  }
 
   /** Returns a command based on the current robot state */
   public Command getCommand(SuperstructureState state) {
-    return switch (state) {
-      case IDLE -> ShooterCommands.stopShooter(robotShooter, true, true)
-          .alongWith(ClimbCommands.stopClimb(robotClimb));
-      case INTAKING -> ShooterCommands.runAll(
-              robotShooter,
-              AnglerPositions.INTAKING.getPosition(),
-              LauncherSpeeds.IDLE.getSpeedsMPS())
-          .alongWith(
-              ClimbCommands.runClimb(
-                  robotClimb,
-                  ClimbPositions.LEFT_IDLE.getPosition(),
-                  ClimbPositions.RIGHT_IDLE.getPosition()));
-      case PREPARING_SHOT -> ShooterCommands.runAngler(robotShooter, () -> robotDrive.getPosition())
-          .alongWith(
-              ClimbCommands.runClimb(
-                  robotClimb,
-                  ClimbPositions.LEFT_IDLE.getPosition(),
-                  ClimbPositions.RIGHT_IDLE.getPosition()));
-      case MANUAL_ANGLER_UP -> ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.UP)
-          .alongWith(
-              ClimbCommands.runClimb(
-                  robotClimb,
-                  ClimbPositions.LEFT_IDLE.getPosition(),
-                  ClimbPositions.RIGHT_IDLE.getPosition()));
-      case MANUAL_ANGLER_DOWN -> ShooterCommands.runAnglerManual(robotShooter, AnglerDirection.DOWN)
-          .alongWith(
-              ClimbCommands.runClimb(
-                  robotClimb,
-                  ClimbPositions.LEFT_IDLE.getPosition(),
-                  ClimbPositions.RIGHT_IDLE.getPosition()));
-      case MANUAL_LAUNCHER -> ShooterCommands.runLauncher(
-          robotShooter, LauncherSpeeds.SETPOINT_SPEED.getSpeedsMPS());
-      case PREPARING_CLIMB -> ShooterCommands.runAll(
-              robotShooter, AnglerPositions.CLIMB.getPosition(), LauncherSpeeds.IDLE.getSpeedsMPS())
-          .alongWith(
-              ClimbCommands.runClimb(
-                  robotClimb,
-                  ClimbPositions.LEFT_PREPARED.getPosition(),
-                  ClimbPositions.RIGHT_PREPARED.getPosition()));
-      case CLIMBING -> ShooterCommands.runAll(
-              robotShooter, AnglerPositions.CLIMB.getPosition(), LauncherSpeeds.IDLE.getSpeedsMPS())
-          .alongWith(
-              ClimbCommands.runClimb(
-                  robotClimb,
-                  ClimbPositions.LEFT_HANGING.getPosition(),
-                  ClimbPositions.RIGHT_HANGING.getPosition()));
-      case MANUAL_CLIMB_LEFT -> ShooterCommands.stopShooter(robotShooter, true, true)
-          .alongWith(
-              (currentClimbDirectionIn.getAsBoolean())
-                  ? ClimbCommands.runLeftClimbManual(robotClimb, ClimbLeftDirection.IN)
-                  : ClimbCommands.runLeftClimbManual(robotClimb, ClimbLeftDirection.OUT));
-      case MANUAL_CLIMB_RIGHT -> ShooterCommands.stopShooter(robotShooter, true, true)
-          .alongWith(
-              (currentClimbDirectionIn.getAsBoolean())
-                  ? ClimbCommands.runRightClimbManual(robotClimb, ClimbRightDirection.IN)
-                  : ClimbCommands.runRightClimbManual(robotClimb, ClimbRightDirection.OUT));
-      case DIAGNOSTIC -> null;
-    };
+    return Commands.runOnce(
+            () -> {
+              currentState = state;
+            },
+            this)
+        .andThen(
+            switch (state) {
+              case IDLE -> ShooterCommands.stopShooter(robotShooter, true, true)
+                  .alongWith(ClimbCommands.stopClimb(robotClimb));
+              case INTAKING -> ShooterCommands.runAll(
+                      robotShooter,
+                      AnglerPositions.INTAKING.getPosition(),
+                      LauncherSpeeds.IDLE.getSpeedsMPS())
+                  .alongWith(
+                      ClimbCommands.runClimb(
+                          robotClimb,
+                          ClimbPositions.LEFT_IDLE.getPosition(),
+                          ClimbPositions.RIGHT_IDLE.getPosition()));
+              case PREPARING_SHOT -> ShooterCommands.automaticTarget(
+                      robotShooter, robotTargetingSystem, () -> robotDrive.getPosition())
+                  .alongWith(
+                      ClimbCommands.runClimb(
+                          robotClimb,
+                          ClimbPositions.LEFT_IDLE.getPosition(),
+                          ClimbPositions.RIGHT_IDLE.getPosition()));
+              case MANUAL_ANGLER_UP -> ShooterCommands.runAnglerManual(
+                      robotShooter, AnglerDirection.UP)
+                  .alongWith(
+                      ClimbCommands.runClimb(
+                          robotClimb,
+                          ClimbPositions.LEFT_IDLE.getPosition(),
+                          ClimbPositions.RIGHT_IDLE.getPosition()));
+              case MANUAL_ANGLER_DOWN -> ShooterCommands.runAnglerManual(
+                      robotShooter, AnglerDirection.DOWN)
+                  .alongWith(
+                      ClimbCommands.runClimb(
+                          robotClimb,
+                          ClimbPositions.LEFT_IDLE.getPosition(),
+                          ClimbPositions.RIGHT_IDLE.getPosition()));
+              case MANUAL_LAUNCHER -> ShooterCommands.runLauncher(
+                  robotShooter, LauncherSpeeds.SETPOINT_SPEED.getSpeedsMPS());
+              case PREPARING_CLIMB -> ShooterCommands.runAll(
+                      robotShooter,
+                      AnglerPositions.CLIMB.getPosition(),
+                      LauncherSpeeds.IDLE.getSpeedsMPS())
+                  .alongWith(
+                      ClimbCommands.runClimb(
+                          robotClimb,
+                          ClimbPositions.LEFT_PREPARED.getPosition(),
+                          ClimbPositions.RIGHT_PREPARED.getPosition()));
+              case CLIMBING -> ShooterCommands.runAll(
+                      robotShooter,
+                      AnglerPositions.CLIMB.getPosition(),
+                      LauncherSpeeds.IDLE.getSpeedsMPS())
+                  .alongWith(
+                      ClimbCommands.runClimb(
+                          robotClimb,
+                          ClimbPositions.LEFT_HANGING.getPosition(),
+                          ClimbPositions.RIGHT_HANGING.getPosition()));
+              case MANUAL_CLIMB_LEFT -> ShooterCommands.stopShooter(robotShooter, true, true)
+                  .alongWith(
+                      (currentClimbDirectionIn.getAsBoolean())
+                          ? ClimbCommands.runLeftClimbManual(robotClimb, ClimbLeftDirection.IN)
+                          : ClimbCommands.runLeftClimbManual(robotClimb, ClimbLeftDirection.OUT));
+              case MANUAL_CLIMB_RIGHT -> ShooterCommands.stopShooter(robotShooter, true, true)
+                  .alongWith(
+                      (currentClimbDirectionIn.getAsBoolean())
+                          ? ClimbCommands.runRightClimbManual(robotClimb, ClimbRightDirection.IN)
+                          : ClimbCommands.runRightClimbManual(robotClimb, ClimbRightDirection.OUT));
+              case DIAGNOSTIC -> null;
+            });
   }
 
   /** Predefined states of the superstructure */
@@ -172,12 +196,12 @@ public class Superstructure extends SubsystemBase {
 
   /** Fixed setpoints for the Climb */
   public static enum ClimbPositions {
-    LEFT_IDLE(Rotation2d.fromDegrees(0.0)),
-    RIGHT_IDLE(Rotation2d.fromDegrees(0.0)),
-    LEFT_PREPARED(Rotation2d.fromDegrees(90.0)),
-    RIGHT_PREPARED(Rotation2d.fromDegrees(90.0)),
-    LEFT_HANGING(Rotation2d.fromDegrees(100.0)),
-    RIGHT_HANGING(Rotation2d.fromDegrees(100.0));
+    LEFT_IDLE(Rotation2d.fromDegrees(180.0)),
+    RIGHT_IDLE(Rotation2d.fromDegrees(180.0)),
+    LEFT_PREPARED(Rotation2d.fromDegrees(0.0)),
+    RIGHT_PREPARED(Rotation2d.fromDegrees(0.0)),
+    LEFT_HANGING(Rotation2d.fromDegrees(-170.0)),
+    RIGHT_HANGING(Rotation2d.fromDegrees(-160.0));
 
     private Rotation2d desiredPosition = new Rotation2d();
 
