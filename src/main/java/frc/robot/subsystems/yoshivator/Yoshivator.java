@@ -8,7 +8,6 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Robot;
@@ -24,8 +23,8 @@ public class Yoshivator extends SubsystemBase {
   private ManipulatorIOInputsAutoLogged manipulatorIOInputs = new ManipulatorIOInputsAutoLogged();
 
   private ProfiledPIDController pivotFeedback =
-      new ProfiledPIDController(0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(0.0, 0.0));
-  private ArmFeedforward pivotFeedforward = new ArmFeedforward(0.0, 0.0, 0.0);
+      new ProfiledPIDController(0.2, 0.0, 0.0, new TrapezoidProfile.Constraints(1600.0, 800.0));
+  private ArmFeedforward pivotFeedforward = new ArmFeedforward(0.0, 0.4, 0.0);
 
   private LoggedTunableNumber pivotFeedbackP;
   private LoggedTunableNumber pivotFeedbackI;
@@ -44,10 +43,10 @@ public class Yoshivator extends SubsystemBase {
     if (Constants.currentRobot == Robot.SYNTH) {
       switch (Constants.currentMode) {
         case REAL:
-          pivotFeedback.setP(0.0);
+          pivotFeedback.setP(0.2);
           pivotFeedback.setI(0.0);
           pivotFeedback.setD(0.0);
-          pivotFeedback.setConstraints(new TrapezoidProfile.Constraints(0.0, 0.0));
+          pivotFeedback.setConstraints(new TrapezoidProfile.Constraints(1600.0, 800.0));
           break;
         case SIM:
           pivotFeedback.setP(2.0);
@@ -139,9 +138,7 @@ public class Yoshivator extends SubsystemBase {
     pivotSetpoint = desiredPosition;
 
     if (pivotSetpoint != null) {
-      pivotFeedback.reset(
-          manipulatorIOInputs.pivotPosition.getDegrees(),
-          Units.radiansToDegrees(manipulatorIOInputs.pivotVelocityRadiansPerSecond));
+      pivotFeedback.reset(manipulatorIOInputs.pivotPosition.getDegrees());
     }
   }
 
@@ -158,13 +155,13 @@ public class Yoshivator extends SubsystemBase {
   /** Returns the pivot's position goal */
   @AutoLogOutput(key = "Yoshivator/Pivot/Feedback/PositionGoal")
   public double getPivotPositionGoal() {
-    return pivotFeedback.getGoal().position;
+    return Math.toRadians(pivotFeedback.getGoal().position);
   }
 
   /** Returns the pivot's velocity goal */
   @AutoLogOutput(key = "Yoshivator/Pivot/Feedback/VelocityGoal")
   public double getPivotVelocityGoal() {
-    return pivotFeedback.getGoal().velocity;
+    return Math.toRadians(pivotFeedback.getGoal().velocity);
   }
 
   /** Returns if the pivot is at the goal or not */
@@ -176,6 +173,6 @@ public class Yoshivator extends SubsystemBase {
   /** Returns the pivot's position setpoint */
   @AutoLogOutput(key = "Yoshivator/Pivot/Feedback/PositionSetpoint")
   public double getPivotPositionSetpoint() {
-    return pivotFeedback.getSetpoint().position;
+    return Math.toRadians(pivotFeedback.getSetpoint().position);
   }
 }

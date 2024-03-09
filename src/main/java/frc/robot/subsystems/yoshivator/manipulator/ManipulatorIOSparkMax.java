@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 /** Class to interact with the physical manipulator structure */
 public class ManipulatorIOSparkMax implements ManipulatorIO {
-  private final double PIVOT_GEARING = 64.0 / 1.0;
+  private final double PIVOT_GEARING = (64.0 / 1.0) * (3.0 / 1.0);
   private final double FLYWHEEL_GEARING = 5.0 / 1.0;
 
   // TODO Update as needed

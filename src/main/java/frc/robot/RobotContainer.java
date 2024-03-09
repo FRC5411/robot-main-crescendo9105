@@ -10,7 +10,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -21,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Caster.CasterState;
 import frc.robot.Superstructure.SuperstructureState;
 import frc.robot.commands.SwerveCommands;
+import frc.robot.commands.YoshiCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
@@ -116,22 +116,21 @@ public class RobotContainer {
                 new VisionIOPhoton(
                     "LLLeft",
                     new Transform3d(
-                        0.36,
-                        -0.29,
-                        0.33,
+                        0.12,
+                        0.26,
+                        0.0,
                         new Rotation3d(
-                            VecBuilder.fill(
-                                Math.toRadians(13.2), Math.toRadians(0), Math.toRadians(25.2)))),
+                            VecBuilder.fill(-0.36, Math.toRadians(0.0), Math.toRadians(0.0)))),
                     0.1),
                 new VisionIOPhoton(
                     "LLRight",
                     new Transform3d(
-                        0.36 - 0.037 - 0.18 + 0.1,
-                        0.29 - 0.28,
-                        0.33,
+                        -0.36,
+                        -0.39,
+                        0.0,
                         new Rotation3d(
                             VecBuilder.fill(
-                                Math.toRadians(13.2), Math.toRadians(0), Math.toRadians(25.5)))),
+                                Math.toRadians(0.0), Math.toRadians(0.0), Math.toRadians(0.0)))),
                     0.1));
         break;
       case SIM:
@@ -152,8 +151,8 @@ public class RobotContainer {
                 new VisionIOPhotonSim(
                     "LLLeft",
                     new Transform3d(
-                        0.36,
-                        -0.29,
+                        0.0,
+                        0.0,
                         0.33,
                         new Rotation3d(
                             Math.toRadians(13.2), Math.toRadians(0), Math.toRadians(25.2))),
@@ -245,13 +244,19 @@ public class RobotContainer {
                   robotDrive,
                   () -> 0.0,
                   () -> 0.0,
-                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getOdometryPose())))
+                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getPoseEstimate())))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
       /* Reset pose to infront of blue alliance speaker */
       pilotController
           .b()
-          .onTrue(SwerveCommands.setPose(robotDrive, new Pose2d(1.34, 5.50, new Rotation2d())));
+          .onTrue(
+              SwerveCommands.setPose(
+                  robotDrive,
+                  new Pose2d(
+                      robotDrive.getPoseEstimate().getX(),
+                      robotDrive.getPoseEstimate().getY(),
+                      robotDrive.getRotation())));
 
       /* Copilot bindings */
 
@@ -273,6 +278,18 @@ public class RobotContainer {
           .whileTrue(superstructure.getCommand(SuperstructureState.CLIMBING))
           .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
 
+      /* Index note */
+      copilotController
+          .povLeft()
+          .whileTrue(caster.getCommand(CasterState.INDEX))
+          .whileFalse(caster.getCommand(CasterState.IDLE));
+
+      /* Outdex note */
+      copilotController
+          .povRight()
+          .whileTrue(caster.getCommand(CasterState.OUTDEX))
+          .whileFalse(caster.getCommand(CasterState.IDLE));
+
       /* Prepare to fire a note at the speaker */
       copilotController
           .y()
@@ -285,6 +302,26 @@ public class RobotContainer {
           .whileTrue(caster.getCommand(CasterState.SCORE_AMP))
           .whileFalse(caster.getCommand(CasterState.IDLE));
 
+      /* Test yoshi setpoint */
+      copilotController
+          .x()
+          .whileTrue(YoshiCommands.runPivot(robotYoshi))
+          .whileFalse(YoshiCommands.stopYoshi(robotYoshi, true, false));
+
+      /* Test manual climb flip direction */
+      copilotController.b().onTrue(superstructure.swapClimbDirection());
+
+      /* Test manual climb left */
+      copilotController
+          .povUp()
+          .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_CLIMB_LEFT))
+          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
+
+      /* Test manual climb right */
+      copilotController
+          .povDown()
+          .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_CLIMB_RIGHT))
+          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
     } else {
       /* Sim bindings */
 

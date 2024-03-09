@@ -11,7 +11,10 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -39,8 +42,8 @@ public class VisionIOPhoton implements VisionIO {
           : 7;
 
   public VisionIOPhoton(String name, Transform3d cameraTransform, double debouncerTime) {
-    singleTagStdDevs = VecBuilder.fill(0.0, 0.0, Double.MAX_VALUE);
-    multiTagStdDevs = VecBuilder.fill(0.0, 0.0, Double.MAX_VALUE);
+    singleTagStdDevs = VecBuilder.fill(0.07, 0.07, Double.MAX_VALUE);
+    multiTagStdDevs = VecBuilder.fill(0.04, 0.04, Double.MAX_VALUE);
     limelightCam = new PhotonCamera(name);
     PhotonCamera.setVersionCheckEnabled(false);
     this.cameraTransform = cameraTransform;
@@ -112,7 +115,12 @@ public class VisionIOPhoton implements VisionIO {
 
     estimatedRobotPose.ifPresent(
         est -> {
-          inputs.estimatedRobotPose = estimatedRobotPose.get().estimatedPose.toPose2d();
+          inputs.estimatedRobotPose =
+              estimatedRobotPose
+                  .get()
+                  .estimatedPose
+                  .toPose2d()
+                  .transformBy(new Transform2d(new Translation2d(), Rotation2d.fromDegrees(-180)));
 
           Matrix<N3, N1> standardDevs = getEstimationStdDevs(inputs.estimatedRobotPose, result);
 

@@ -55,12 +55,15 @@ public class Caster extends SubsystemBase {
                   .alongWith(IndexerCommands.stowPiece(robotIndexer))
                   .alongWith(
                       YoshiCommands.runIntake(
-                          robotYoshi, YoshiPivotSetpoint.GROUND, YoshiFlywheelDirection.OUT));
+                          robotYoshi,
+                          YoshiPivotSetpoint.GROUND,
+                          YoshiFlywheelDirection.IN,
+                          () -> robotIndexer.isBeamBroken()));
               case OUTTAKE -> IntakeCommands.runIntake(robotIntake, IntakeDirection.OUT)
                   .alongWith(IndexerCommands.stowPiece(robotIndexer))
                   .alongWith(
                       YoshiCommands.runIntake(
-                          robotYoshi, YoshiPivotSetpoint.IDLE, YoshiFlywheelDirection.IN));
+                          robotYoshi, YoshiPivotSetpoint.IDLE, YoshiFlywheelDirection.OUT));
               case INDEX -> IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN)
                   .alongWith(YoshiCommands.runPivotSetpoint(robotYoshi, YoshiPivotSetpoint.IDLE));
               case OUTDEX -> IndexerCommands.runIndexer(robotIndexer, IndexerDirection.OUT)
@@ -70,8 +73,7 @@ public class Caster extends SubsystemBase {
                   .alongWith(YoshiCommands.runPivotSetpoint(robotYoshi, YoshiPivotSetpoint.IDLE));
               case INTAKE_AMP -> YoshiCommands.runIntake(
                   robotYoshi, YoshiPivotSetpoint.GROUND, YoshiFlywheelDirection.OUT);
-              case SCORE_AMP -> YoshiCommands.runIntake(
-                  robotYoshi, YoshiPivotSetpoint.IDLE, YoshiFlywheelDirection.STOP);
+              case SCORE_AMP -> YoshiCommands.scoreAmp(robotYoshi);
             });
   }
 
