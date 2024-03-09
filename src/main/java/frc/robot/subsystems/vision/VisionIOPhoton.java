@@ -113,7 +113,27 @@ public class VisionIOPhoton implements VisionIO {
         });
   }
 
-  public Matrix<N3, N1> getEstimationStdDevs(Pose2d estimatedPose, PhotonPipelineResult result) {
+  @Override
+  public void setSingleStdDevs(double x, double y, double theta) {
+    singleTagStdDevs = VecBuilder.fill(x, y, theta);
+  }
+
+  @Override
+  public void setMultiStdDevs(double x, double y, double theta) {
+    multiTagStdDevs = VecBuilder.fill(x, y, theta);
+  }
+
+  @Override
+  public Matrix<N3, N1> getSingleStdDevsCoeff() {
+    return singleTagStdDevs;
+  }
+
+  @Override
+  public Matrix<N3, N1> getMultiStdDevsCoeff() {
+    return multiTagStdDevs;
+  }
+
+  private Matrix<N3, N1> getEstimationStdDevs(Pose2d estimatedPose, PhotonPipelineResult result) {
     List<PhotonTrackedTarget> targets = result.getTargets();
     Matrix<N3, N1> estStdDevs = singleTagStdDevs;
 
@@ -148,7 +168,7 @@ public class VisionIOPhoton implements VisionIO {
     return estStdDevs;
   }
 
-  public int getApriltagCount(PhotonPipelineResult result) {
+  private int getApriltagCount(PhotonPipelineResult result) {
     List<PhotonTrackedTarget> targets = result.getTargets();
     int numTags = 0;
 
