@@ -229,17 +229,6 @@ public class RobotContainer {
               () -> -pilotController.getLeftX(),
               () -> -pilotController.getRightX()));
 
-      //   pilotController
-      //       .leftBumper()
-      //       .whileTrue(
-      //           caster
-      //               .getCommand(CasterState.INTAKE_GROUND)
-      //               .alongWith(superstructure.getCommand(SuperstructureState.INTAKING)))
-      //       .whileFalse(
-      //           caster
-      //               .getCommand(CasterState.IDLE)
-      //               .alongWith(superstructure.getCommand(SuperstructureState.IDLE)));
-
       pilotController
           .a()
           .whileTrue(
@@ -247,7 +236,7 @@ public class RobotContainer {
                   robotDrive,
                   () -> 0.0,
                   () -> 0.0,
-                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getFilteredPose())))
+                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getOdometryPose())))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
       pilotController
