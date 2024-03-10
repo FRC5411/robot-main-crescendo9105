@@ -94,6 +94,7 @@ public class TargetingSystem {
     //                 speakerOpeningRed.getY() - robotPose.getY())
     //             .plus(Rotation2d.fromDegrees(180.0));
     Rotation2d heading = new Rotation2d(xFilter.calculate(xDelta), yFilter.calculate(yDelta));
+
     if (DriverStation.getAlliance().get() == Alliance.Blue) {
       heading = heading.plus(Rotation2d.fromDegrees(180.0));
     }

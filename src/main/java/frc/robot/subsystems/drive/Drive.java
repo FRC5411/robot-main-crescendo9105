@@ -165,7 +165,7 @@ public class Drive extends SubsystemBase {
           getModulePositions());
       odometry.update(
           Rotation2d.fromDegrees(
-              (poseEstimator.getEstimatedPosition().getRotation().getDegrees()
+              (odometry.getPoseMeters().getRotation().getDegrees()
                       + (180 / Math.PI) * getChassisSpeeds().omegaRadiansPerSecond * 0.02)
                   % 360.0),
           getModulePositions());

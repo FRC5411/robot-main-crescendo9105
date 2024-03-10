@@ -4,7 +4,9 @@
 
 package frc.robot.subsystems.shooter;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -40,5 +42,8 @@ public class ShooterVisualizer {
     }
 
     Logger.recordOutput(ANGLER_LOG_KEY, anglerMechanismVisual);
+    Logger.recordOutput(
+        ANGLER_LOG_KEY + "3D",
+        new Pose3d(0.105, 0.0, 0.232, new Rotation3d(0.0, angle.getRadians(), 0.0)));
   }
 }

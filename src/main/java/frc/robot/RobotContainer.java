@@ -12,13 +12,12 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandPS4Controller;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Caster.CasterState;
 import frc.robot.Superstructure.SuperstructureState;
+import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.SwerveCommands;
 import frc.robot.commands.YoshiCommands;
 import frc.robot.subsystems.climb.Climb;
@@ -74,8 +73,6 @@ public class RobotContainer {
 
   private CommandXboxController pilotController = new CommandXboxController(0);
   private CommandXboxController copilotController = new CommandXboxController(1);
-
-  private CommandPS4Controller simController = new CommandPS4Controller(0);
 
   private LoggedDashboardChooser<Command> autoChooser;
 
@@ -198,7 +195,40 @@ public class RobotContainer {
 
   /** Configure controllers */
   private void configureButtonBindings() {
-    if (RobotBase.isReal()) {
+    if (Constants.useDebuggingBindings) {
+      robotDrive.setDefaultCommand(
+          SwerveCommands.swerveDrive(
+              robotDrive,
+              () -> -pilotController.getLeftY(),
+              () -> -pilotController.getLeftX(),
+              () -> -pilotController.getRightX()));
+
+      //   pilotController
+      //       .leftBumper()
+      //       .whileTrue(
+      //           caster
+      //               .getCommand(CasterState.INTAKE_GROUND)
+      //               .alongWith(superstructure.getCommand(SuperstructureState.INTAKING)))
+      //       .whileFalse(
+      //           caster
+      //               .getCommand(CasterState.IDLE)
+      //               .alongWith(superstructure.getCommand(SuperstructureState.IDLE)));
+
+      pilotController
+          .a()
+          .whileTrue(
+              SwerveCommands.setHeading(
+                  robotDrive,
+                  () -> 0.0,
+                  () -> 0.0,
+                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getPoseEstimate())))
+          .onFalse(SwerveCommands.stopDrive(robotDrive));
+
+      pilotController
+          .y()
+          .whileTrue(ShooterCommands.runAngler(robotShooter))
+          .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+    } else {
       /* Pilot bindings */
 
       /* Drive with joysticks */
@@ -322,45 +352,6 @@ public class RobotContainer {
           .povDown()
           .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_CLIMB_RIGHT))
           .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
-    } else {
-      /* Sim bindings */
-
-      /* Drive joysticks */
-      robotDrive.setDefaultCommand(
-          SwerveCommands.swerveDrive(
-              robotDrive,
-              () -> -simController.getLeftY(),
-              () -> -simController.getLeftX(),
-              () -> -simController.getRightX()));
-
-      /* Superstructure intaking */
-      simController
-          .L1()
-          .whileTrue(superstructure.getCommand(SuperstructureState.INTAKING))
-          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
-
-      /* Superstructure preparing to shoot */
-      simController
-          .triangle()
-          .whileTrue(superstructure.getCommand(SuperstructureState.PREPARING_SHOT))
-          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
-
-      /* Superstructure climbing */
-      simController
-          .L2()
-          .whileTrue(superstructure.getCommand(SuperstructureState.CLIMBING))
-          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
-
-      /* Run sim heading */
-      simController
-          .cross()
-          .whileTrue(
-              SwerveCommands.setHeading(
-                  robotDrive,
-                  () -> 0.0,
-                  () -> 0.0,
-                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getOdometryPose())))
-          .onFalse(SwerveCommands.stopDrive(robotDrive));
     }
   }
 
