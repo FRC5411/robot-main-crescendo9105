@@ -39,6 +39,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
+import frc.robot.subsystems.leds.LEDSubsystem;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.TargetingSystem;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
@@ -66,6 +67,7 @@ public class RobotContainer {
   private Indexer robotIndexer;
   private Yoshivator robotYoshi;
   private Vision robotVision;
+  private LEDSubsystem robotLEDs;
 
   private VisionFuser visionFuser;
   private Superstructure superstructure;
@@ -110,6 +112,7 @@ public class RobotContainer {
         robotClimb = new Climb(new ClimbIOSparkMax());
         robotIndexer = new Indexer(new IndexerIOSparkMax());
         robotYoshi = new Yoshivator(new ManipulatorIOSparkMax());
+        robotLEDs = new LEDSubsystem();
         robotVision =
             new Vision(
                 new VisionIOPhoton(
@@ -144,6 +147,7 @@ public class RobotContainer {
         robotClimb = new Climb(new ClimbIOSim());
         robotIndexer = new Indexer(new IndexerIOSim());
         robotYoshi = new Yoshivator(new ManipulatorIOSim());
+        robotLEDs = new LEDSubsystem();
         robotVision =
             new Vision(
                 new VisionIOPhotonSim(
@@ -180,6 +184,7 @@ public class RobotContainer {
         robotClimb = new Climb(new ClimbIO() {});
         robotIndexer = new Indexer(new IndexerIO() {});
         robotYoshi = new Yoshivator(new ManipulatorIO() {});
+        robotLEDs = new LEDSubsystem();
         robotVision = new Vision(new VisionIO() {}, new VisionIO() {});
         break;
     }
@@ -356,6 +361,10 @@ public class RobotContainer {
           .povDown()
           .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_CLIMB_RIGHT))
           .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
+
+      copilotController
+            .rightBumper()
+            .onTrue(robotLEDs.lightDarkBlueGradientCommand(true));
     }
   }
 
