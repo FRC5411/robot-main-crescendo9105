@@ -15,9 +15,12 @@ Below is a list of instructions to properly build the project, see [requirements
 ## Requirements
 
 - [JDK 8](https://adoptium.net/temurin/releases/?version=8)
-    - Ubuntu: run `sudo apt install openjdk-8-jdk`
     - Windows: install the JDK 11 .msi from the link above
     - macOS: install the JDK 11 .pkg from the link above
+    - Linux:
+        - Arch-Based: run `sudo pacman -Syu jdk-openjdk`
+        - Debian-Based: run `sudo apt install default-jre`
+        - RHEL-Based: run `sudo dnf install java-latest-openjdk-devel.x86_64`
 - [Gradle 7](https://gradle.org/releases/)
     - Follow Gradle's installation [guide](https://gradle.org/install/#prerequisites)
 - [WPI VSCode](https://github.com/wpilibsuite/allwpilib/releases/tag/v2023.4.3)
