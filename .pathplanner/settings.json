@@ -3,18 +3,15 @@
   "robotLength": 0.901,
   "holonomicMode": true,
   "pathFolders": [
-    "3FebPaths",
-    "7MarPaths",
-    "8FebPaths",
     "BottomPaths",
-    "CalibrationPaths",
-    "Competition",
-    "MidPaths",
+    "Debugging",
+    "CenterPaths",
     "TopPaths"
   ],
   "autoFolders": [
     "BottomAutos",
-    "MidAutos",
+    "CenterAutos",
+    "Debugging",
     "TopAutos"
   ],
   "defaultMaxVel": 3.0,

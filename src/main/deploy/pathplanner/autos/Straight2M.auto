@@ -5,7 +5,7 @@
       "x": 0.0,
       "y": 0.0
     },
-    "rotation": 0
+    "rotation": 0.0
   },
   "command": {
     "type": "sequential",
@@ -14,12 +14,12 @@
         {
           "type": "path",
           "data": {
-            "pathName": "Straight2M-0"
+            "pathName": "Straight2M"
           }
         }
       ]
     }
   },
-  "folder": null,
+  "folder": "Debugging",
   "choreoAuto": false
 }
