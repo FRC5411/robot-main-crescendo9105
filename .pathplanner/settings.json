@@ -1,6 +1,6 @@
 {
-  "robotWidth": 0.889,
-  "robotLength": 0.89,
+  "robotWidth": 0.901,
+  "robotLength": 0.901,
   "holonomicMode": true,
   "pathFolders": [
     "3FebPaths",
@@ -8,9 +8,11 @@
     "8FebPaths",
     "CalibrationPaths",
     "Competition",
+    "BottomPaths",
     "TopPaths"
   ],
   "autoFolders": [
+    "BottomAutos",
     "TopAutos"
   ],
   "defaultMaxVel": 3.0,
