@@ -194,6 +194,9 @@ public class RobotContainer {
     // Register commands with PathPlanner's AutoBuilder so it can call them
     NamedCommands.registerCommand(
         "Print Pose", Commands.print("Pose: " + robotDrive.getPoseEstimate()));
+
+    NamedCommands.registerCommand(
+        "", getAutonomousCommand());
   }
 
   /** Configure controllers */

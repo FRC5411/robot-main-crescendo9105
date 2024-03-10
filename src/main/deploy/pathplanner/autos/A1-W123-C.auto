@@ -26,7 +26,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "W2-C3"
+            "pathName": "W23"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "W3-C4"
           }
         }
       ]
