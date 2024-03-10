@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.math.VecBuilder;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.utils.debugging.LoggedTunableNumber;
@@ -61,31 +62,31 @@ public class VisionFuser {
     final var inputsLeft = robotVision.getInputsLeft();
     final var inputsRight = robotVision.getInputsRight();
 
-    // if (inputsLeft.hasTarget) {
-    //   robotDrive.addVisionMeasurement(
-    //       inputsLeft.estimatedRobotPose,
-    //       inputsLeft.latestTimestamp,
-    //       VecBuilder.fill(
-    //           inputsLeft.xStandardDeviation,
-    //           inputsLeft.yStandardDeviation,
-    //           inputsLeft.thetaStandardDeviation));
-    // }
+    if (inputsLeft.hasTarget) {
+      robotDrive.addVisionMeasurement(
+          inputsLeft.estimatedRobotPose,
+          inputsLeft.latestTimestamp,
+          VecBuilder.fill(
+              inputsLeft.xStandardDeviation,
+              inputsLeft.yStandardDeviation,
+              inputsLeft.thetaStandardDeviation));
+    }
 
-    // if (inputsRight.hasTarget) {
-    //   robotDrive.addVisionMeasurement(
-    //       inputsRight.estimatedRobotPose,
-    //       inputsRight.latestTimestamp,
-    //       VecBuilder.fill(
-    //           inputsRight.xStandardDeviation,
-    //           inputsRight.yStandardDeviation,
-    //           inputsRight.thetaStandardDeviation));
-    // }
+    if (inputsRight.hasTarget) {
+      robotDrive.addVisionMeasurement(
+          inputsRight.estimatedRobotPose,
+          inputsRight.latestTimestamp,
+          VecBuilder.fill(
+              inputsRight.xStandardDeviation,
+              inputsRight.yStandardDeviation,
+              inputsRight.thetaStandardDeviation));
+    }
 
     Logger.recordOutput(
         "VisionFuse/LeftTransform",
-        robotVision.getInputsLeft().estimatedRobotPose.minus(robotDrive.getOdometryPose()));
+        robotVision.getInputsLeft().estimatedRobotPose.minus(robotDrive.getPoseEstimate()));
     Logger.recordOutput(
         "VisionFuse/RightTransform",
-        robotVision.getInputsRight().estimatedRobotPose.minus(robotDrive.getOdometryPose()));
+        robotVision.getInputsRight().estimatedRobotPose.minus(robotDrive.getPoseEstimate()));
   }
 }

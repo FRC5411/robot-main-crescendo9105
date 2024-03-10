@@ -62,7 +62,7 @@ public class LauncherIOTalonFX implements LauncherIO {
   private LoggedTunableNumber bottomFeedforwardG =
       new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/G", 0.0);
   private LoggedTunableNumber bottomFeedforwardV =
-      new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/V", 0.11973);
+      new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/V", 0.11973 * (38.0 / 41.0));
   private LoggedTunableNumber bottomFeedforwardA =
       new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/A", 0.0);
 

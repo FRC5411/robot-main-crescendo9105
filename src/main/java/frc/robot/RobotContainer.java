@@ -10,7 +10,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -19,9 +18,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Caster.CasterState;
 import frc.robot.Superstructure.SuperstructureState;
+import frc.robot.commands.ClimbCommands;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.SwerveCommands;
-import frc.robot.commands.YoshiCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
@@ -125,12 +124,11 @@ public class RobotContainer {
                 new VisionIOPhoton(
                     "LLRight",
                     new Transform3d(
-                        -0.36,
-                        -0.39,
+                        0.0,
+                        -0.2,
                         0.0,
                         new Rotation3d(
-                            VecBuilder.fill(
-                                Math.toRadians(0.0), Math.toRadians(0.0), Math.toRadians(0.0)))),
+                            VecBuilder.fill(0.36, Math.toRadians(0.0), Math.toRadians(0.0)))),
                     0.1));
         break;
       case SIM:
@@ -249,7 +247,7 @@ public class RobotContainer {
                   robotDrive,
                   () -> 0.0,
                   () -> 0.0,
-                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getPoseEstimate())))
+                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getFilteredPose())))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
       pilotController
@@ -302,19 +300,8 @@ public class RobotContainer {
                   robotDrive,
                   () -> 0.0,
                   () -> 0.0,
-                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getPoseEstimate())))
+                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getFilteredPose())))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
-
-      /* Reset pose to infront of blue alliance speaker */
-      pilotController
-          .b()
-          .onTrue(
-              SwerveCommands.setPose(
-                  robotDrive,
-                  new Pose2d(
-                      robotDrive.getPoseEstimate().getX(),
-                      robotDrive.getPoseEstimate().getY(),
-                      robotDrive.getRotation())));
 
       /* Copilot bindings */
 
@@ -332,7 +319,7 @@ public class RobotContainer {
 
       /* Climb to setpoint */
       copilotController
-          .rightTrigger()
+          .leftTrigger()
           .whileTrue(superstructure.getCommand(SuperstructureState.CLIMBING))
           .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
 
@@ -363,8 +350,8 @@ public class RobotContainer {
       /* Test yoshi setpoint */
       copilotController
           .x()
-          .whileTrue(YoshiCommands.runPivot(robotYoshi))
-          .whileFalse(YoshiCommands.stopYoshi(robotYoshi, true, false));
+          .onTrue(ClimbCommands.runClimb(robotClimb))
+          .onFalse(ClimbCommands.stopClimb(robotClimb));
 
       /* Test manual climb flip direction */
       copilotController.b().onTrue(superstructure.swapClimbDirection());
@@ -395,7 +382,7 @@ public class RobotContainer {
   public Optional<Rotation2d> getRotationTargetOverride() {
     if (robotDrive.getPPRotationTargetOverride()) {
       return Optional.of(
-          robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getPoseEstimate()));
+          robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getFilteredPose()));
     } else {
       return Optional.empty();
     }

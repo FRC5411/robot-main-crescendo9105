@@ -153,9 +153,9 @@ public class ClimbCommands {
   /** Direction of the right climb */
   public static enum ClimbRightDirection {
     /** Run the Right Climb arm in to the robot */
-    IN(12.0),
+    IN(-12.0),
     /** Run the Right Climb arm in to the robot */
-    OUT(-12.0),
+    OUT(12.0),
     /** Stop the Right Climb wheels */
     STOP(0.0);
 

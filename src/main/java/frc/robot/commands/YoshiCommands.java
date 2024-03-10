@@ -115,7 +115,7 @@ public class YoshiCommands {
 
   /** Returns a command to score in the amp */
   public static Command scoreAmp(Yoshivator robotYoshi) {
-    Debouncer debouncer = new Debouncer(0.1);
+    Debouncer debouncer = new Debouncer(0.5);
 
     currentCommand =
         new FunctionalCommand(
@@ -177,7 +177,7 @@ public class YoshiCommands {
     /** Setpoint to score amp */
     AMP(85.0),
     /** Setpoint for when the Yoshi is not in use */
-    GROUND(-33.5);
+    GROUND(-35.0);
 
     private double desiredPositionDegrees;
 

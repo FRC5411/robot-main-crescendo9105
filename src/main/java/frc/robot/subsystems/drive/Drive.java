@@ -13,6 +13,7 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -81,6 +82,11 @@ public class Drive extends SubsystemBase {
   // private PIDConstants rotationPathplannerConstants = new PIDConstants(0.66, 0.0, 0.0);
   private PIDConstants translationPathplannerConstants = new PIDConstants(1.0, 0.0, 0.0);
   private PIDConstants rotationPathplannerConstants = new PIDConstants(1.0, 0.0, 0.0);
+
+  private Pose2d filteredPose = new Pose2d();
+
+  private LinearFilter xFilter = LinearFilter.movingAverage(5);
+  private LinearFilter yFilter = LinearFilter.movingAverage(5);
 
   /** Creates a new swerve Drive. */
   public Drive(
@@ -215,6 +221,8 @@ public class Drive extends SubsystemBase {
                 setpointStates[i]); // setDesiredState returns the optimized state
       }
     }
+
+    updateFilteredPose();
 
     Logger.recordOutput("Drive/Swerve/Setpoints", setpointStates);
     Logger.recordOutput("Drive/Swerve/SetpointsOptimized", optimizedSetpointStates);
@@ -356,5 +364,21 @@ public class Drive extends SubsystemBase {
 
   public void setPProtationTargetOverride(boolean override) {
     PProtationTargetOverride = override;
+  }
+
+  /** Returns the filtered pose */
+  @AutoLogOutput(key = "Drive/Odometry/FilteredPose")
+  public Pose2d updateFilteredPose() {
+    filteredPose =
+        new Pose2d(
+            xFilter.calculate(getPoseEstimate().getX()),
+            yFilter.calculate(getPoseEstimate().getY()),
+            getPoseEstimate().getRotation());
+
+    return filteredPose;
+  }
+
+  public Pose2d getFilteredPose() {
+    return filteredPose;
   }
 }

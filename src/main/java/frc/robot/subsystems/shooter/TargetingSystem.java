@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems.shooter;
 
-import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -16,15 +15,12 @@ import org.littletonrobotics.junction.Logger;
 
 /** Class that calculates projectile motion given certain parameters */
 public class TargetingSystem {
-  private Translation3d speakerOpeningBlue = new Translation3d(0.23, 5.58, 2.045);
-  private Translation3d speakerOpeningRed = new Translation3d(16.26, 5.58, 2.045);
+  private Translation3d speakerOpeningBlue = new Translation3d(0.0, 5.53, 2.045);
+  private Translation3d speakerOpeningRed = new Translation3d(16.26, 5.53, 2.045);
 
   private final double LAUNCH_MAP_OFFSET_M = 0.93 + 0.46 - 0.23 - 0.17;
-  private final double LUANCH_MAP_OFFSET_DEGREES = -2.0;
-
-  private LinearFilter xFilter = LinearFilter.movingAverage(5);
-  private LinearFilter yFilter = LinearFilter.movingAverage(5);
-
+  private final double LUANCH_MAP_OFFSET_DEGREES = -0.0;
+  private final double LUANCH_MAP_OFFSET_DEGREES_2 = 0.0;
   /**
    * Tree Map that represents the robot's horizontal (X) distance from the Speaker (meters) and the
    * optimal launch angle (degrees)
@@ -52,12 +48,18 @@ public class TargetingSystem {
     launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 38.5 + LUANCH_MAP_OFFSET_DEGREES);
     launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 37.0 + LUANCH_MAP_OFFSET_DEGREES);
     launchMap.put(2.0 + LAUNCH_MAP_OFFSET_M, 35.6 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(2.25 + LAUNCH_MAP_OFFSET_M, 34.5 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(2.5 + LAUNCH_MAP_OFFSET_M, 33.5 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(2.75 + LAUNCH_MAP_OFFSET_M, 32.0 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(3.0 + LAUNCH_MAP_OFFSET_M, 31.1 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(3.25 + LAUNCH_MAP_OFFSET_M, 30.3 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(3.5 + LAUNCH_MAP_OFFSET_M, 29.9 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(
+        2.25 + LAUNCH_MAP_OFFSET_M, 34.5 + LUANCH_MAP_OFFSET_DEGREES + LUANCH_MAP_OFFSET_DEGREES_2);
+    launchMap.put(
+        2.5 + LAUNCH_MAP_OFFSET_M, 33.5 + LUANCH_MAP_OFFSET_DEGREES + LUANCH_MAP_OFFSET_DEGREES_2);
+    launchMap.put(
+        2.75 + LAUNCH_MAP_OFFSET_M, 32.0 + LUANCH_MAP_OFFSET_DEGREES + LUANCH_MAP_OFFSET_DEGREES_2);
+    launchMap.put(
+        3.0 + LAUNCH_MAP_OFFSET_M, 31.1 + LUANCH_MAP_OFFSET_DEGREES + LUANCH_MAP_OFFSET_DEGREES_2);
+    launchMap.put(
+        3.25 + LAUNCH_MAP_OFFSET_M, 30.3 + LUANCH_MAP_OFFSET_DEGREES + LUANCH_MAP_OFFSET_DEGREES_2);
+    launchMap.put(
+        3.5 + LAUNCH_MAP_OFFSET_M, 29.9 + LUANCH_MAP_OFFSET_DEGREES + LUANCH_MAP_OFFSET_DEGREES_2);
   }
 
   /** Returns the optimal angle given the robot's current pose */
@@ -93,7 +95,7 @@ public class TargetingSystem {
     //                 speakerOpeningRed.getX() - robotPose.getX(),
     //                 speakerOpeningRed.getY() - robotPose.getY())
     //             .plus(Rotation2d.fromDegrees(180.0));
-    Rotation2d heading = new Rotation2d(xFilter.calculate(xDelta), yFilter.calculate(yDelta));
+    Rotation2d heading = new Rotation2d(xDelta, yDelta);
 
     if (DriverStation.getAlliance().get() == Alliance.Blue) {
       heading = heading.plus(Rotation2d.fromDegrees(180.0));

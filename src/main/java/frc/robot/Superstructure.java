@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.ClimbCommands;
@@ -18,7 +19,6 @@ import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.TargetingSystem;
-import java.util.function.BooleanSupplier;
 import org.littletonrobotics.junction.Logger;
 
 /** State-machine for the Launcher, Angler, & Climb */
@@ -30,7 +30,7 @@ public class Superstructure extends SubsystemBase {
   private TargetingSystem robotTargetingSystem;
 
   private SuperstructureState currentState = SuperstructureState.IDLE;
-  private BooleanSupplier currentClimbDirectionIn = () -> false;
+  private boolean currentClimbDirectionIn = false;
 
   /** Creates a new Superstructure. */
   public Superstructure(
@@ -68,7 +68,7 @@ public class Superstructure extends SubsystemBase {
                 //         ClimbPositions.LEFT_IDLE.getPosition(),
                 //         ClimbPositions.RIGHT_IDLE.getPosition()));
               case PREPARING_SHOT -> ShooterCommands.automaticTarget(
-                  robotShooter, robotTargetingSystem, () -> robotDrive.getPoseEstimate());
+                  robotShooter, robotTargetingSystem, () -> robotDrive.getFilteredPose());
                 // .alongWith(
                 //     ClimbCommands.runClimb(
                 //         robotClimb,
@@ -110,14 +110,16 @@ public class Superstructure extends SubsystemBase {
                           ClimbPositions.RIGHT_HANGING.getPosition()));
               case MANUAL_CLIMB_LEFT -> ShooterCommands.stopShooter(robotShooter, true, true)
                   .alongWith(
-                      (currentClimbDirectionIn.getAsBoolean())
-                          ? ClimbCommands.runLeftClimbManual(robotClimb, ClimbLeftDirection.IN)
-                          : ClimbCommands.runLeftClimbManual(robotClimb, ClimbLeftDirection.OUT));
+                      new ConditionalCommand(
+                          ClimbCommands.runLeftClimbManual(robotClimb, ClimbLeftDirection.IN),
+                          ClimbCommands.runLeftClimbManual(robotClimb, ClimbLeftDirection.OUT),
+                          () -> currentClimbDirectionIn));
               case MANUAL_CLIMB_RIGHT -> ShooterCommands.stopShooter(robotShooter, true, true)
                   .alongWith(
-                      (currentClimbDirectionIn.getAsBoolean())
-                          ? ClimbCommands.runRightClimbManual(robotClimb, ClimbRightDirection.IN)
-                          : ClimbCommands.runRightClimbManual(robotClimb, ClimbRightDirection.OUT));
+                      new ConditionalCommand(
+                          ClimbCommands.runRightClimbManual(robotClimb, ClimbRightDirection.IN),
+                          ClimbCommands.runRightClimbManual(robotClimb, ClimbRightDirection.OUT),
+                          () -> currentClimbDirectionIn));
               case DIAGNOSTIC -> null;
             });
   }
@@ -126,8 +128,9 @@ public class Superstructure extends SubsystemBase {
   public Command swapClimbDirection() {
     return new InstantCommand(
         () -> {
-          currentClimbDirectionIn = () -> !currentClimbDirectionIn.getAsBoolean();
-          System.out.println("SUPERSTRUCTURE: " + currentClimbDirectionIn.getAsBoolean());
+          currentClimbDirectionIn = !currentClimbDirectionIn;
+          // Logger.recordOutput(
+          //     "Superstructure/Climb/DirectionIn", currentClimbDirectionIn.getAsBoolean());
         });
   }
 

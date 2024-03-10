@@ -80,6 +80,7 @@ public class SwerveCommands {
         robotDrive);
   }
 
+  /** Returns a command to set the heading of the robot */
   public static Command setHeading(
       Drive robotDrive,
       DoubleSupplier xGoalSupplier,
@@ -119,13 +120,13 @@ public class SwerveCommands {
               ySpeedsLimiter.reset(robotDrive.getDesiredChassisSpeeds().vyMetersPerSecond);
 
               // Added minor offset to account for note curving
-              Rotation2d headingGoal = headingGoalSupplier.get().minus(Rotation2d.fromDegrees(5.0));
+              Rotation2d headingGoal = headingGoalSupplier.get();
               Rotation2d currentHeading = robotDrive.getRotation();
 
               // If the error is small, set the goal to be the current heading
-              if (Math.abs(headingGoal.getDegrees() - currentHeading.getDegrees()) > 5.0) {
+              if (Math.abs(headingGoal.getDegrees() - currentHeading.getDegrees()) > 2.0) {
                 // Add 180 since front is the intake, not the shooter
-                thetaFeedback.setGoal(currentHeading.getDegrees());
+                thetaFeedback.reset(currentHeading.getDegrees());
               }
 
               thetaFeedback.setP(thetaFeedbackP.get());
@@ -147,7 +148,7 @@ public class SwerveCommands {
               double thetaDesiredDegrees =
                   thetaFeedback.calculate(
                       robotDrive.getPoseEstimate().getRotation().getDegrees(),
-                      headingGoalSupplier.get().getDegrees());
+                      headingGoalSupplier.get().getDegrees() - 2.5);
 
               robotDrive.runSwerve(
                   new ChassisSpeeds(
@@ -169,6 +170,34 @@ public class SwerveCommands {
 
     return currentCommand;
   }
+
+  // private static double driveVoltage = 0.0;
+
+  // /** Returns a command to increment the voltage of the drivetrain */
+  // public static Command incrementDriveVoltage(Drive robotDrive, double voltage) {
+  //   return Commands.runOnce(
+  //       () -> {
+  //         driveVoltage += voltage;
+  //         Logger.recordOutput("Drive/IncredmentedOutput", driveVoltage);
+  //       },
+  //       robotDrive);
+  // }
+
+  // /** Returns a command to run the drivetrain based on the incremented voltage */
+  // public static Command runIncrementedDriveVoltage(Drive robotDrive) {
+  //   return Commands.run(
+  //       () -> {
+  //         // robotDrive.runSwerve(new ChassisSpeeds(null, null, null));
+  //         robotDrive.setDriveVolts(driveVoltage);
+  //       },
+  //       robotDrive);
+  // }
+
+  // /** Returns a command to set the setpoints to 0 */
+  // public static Command incrementOnFalseCondition(Drive robotDrive) {
+  //   return Commands.runOnce(
+  //       () -> robotDrive.runSwerve(new ChassisSpeeds(0.0, 0.0, 0.0)), robotDrive);
+  // }
 
   /** Returns a command to reset the gyro heading */
   public static Command resetGyro(Drive robotDrive) {

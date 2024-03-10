@@ -118,6 +118,8 @@ public class Climb extends SubsystemBase {
 
     leftClimbFeedback.setTolerance(0.8);
     rightClimbFeedback.setTolerance(0.8);
+    leftClimbFeedback.enableContinuousInput(-180.0, 180.0);
+    rightClimbFeedback.enableContinuousInput(-180.0, 180.0);
   }
 
   @Override
@@ -131,11 +133,11 @@ public class Climb extends SubsystemBase {
 
     if (leftAngleSetpoint != null) {
       var leftFeedbackOutput =
-          leftClimbFeedback.calculate(
+          -leftClimbFeedback.calculate(
               climbIOInputs.leftPosition.getDegrees(), leftAngleSetpoint.getDegrees());
       // TODO Need to add angle offset
       var leftFeedforwardOutput =
-          leftClimbFeedforward.calculate(
+          -leftClimbFeedforward.calculate(
               climbIOInputs.leftPosition.getRadians(), leftClimbFeedback.getSetpoint().velocity);
 
       Logger.recordOutput("Climb/LeftArm/Feedback/Output", leftFeedbackOutput);
@@ -251,7 +253,16 @@ public class Climb extends SubsystemBase {
     if (leftClimbFeedback.getSetpoint() == null) {
       return 0.0;
     }
-    return leftClimbFeedback.getSetpoint().position;
+    return Math.toRadians(leftClimbFeedback.getSetpoint().position);
+  }
+
+  /** Returns the setpoint of the left feedback */
+  @AutoLogOutput(key = "Climb/LeftArm/Feedback/Goal")
+  public double getLeftGoal() {
+    if (leftClimbFeedback.getGoal() == null) {
+      return 0.0;
+    }
+    return Math.toRadians(leftClimbFeedback.getGoal().position);
   }
 
   /** Returns the setpoint of the right feedback */
@@ -260,7 +271,16 @@ public class Climb extends SubsystemBase {
     if (rightClimbFeedback.getSetpoint() == null) {
       return 0.0;
     }
-    return rightClimbFeedback.getSetpoint().position;
+    return Math.toRadians(rightClimbFeedback.getSetpoint().position);
+  }
+
+  /** Returns the setpoint of the left feedback */
+  @AutoLogOutput(key = "Climb/LeftArm/Feedback/Goal")
+  public double getRightGoal() {
+    if (leftClimbFeedback.getGoal() == null) {
+      return 0.0;
+    }
+    return Math.toRadians(leftClimbFeedback.getGoal().position);
   }
 
   /** Returns if the left feedback is at the setpoint */

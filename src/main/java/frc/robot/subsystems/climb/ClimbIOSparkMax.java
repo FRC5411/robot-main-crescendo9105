@@ -27,6 +27,11 @@ public class ClimbIOSparkMax implements ClimbIO {
   private DutyCycleEncoder leftAbsoluteEncoder = new DutyCycleEncoder(4);
   private DutyCycleEncoder rightAbsoluteEncoder = new DutyCycleEncoder(3);
 
+  private Rotation2d leftEncoderOffset = Rotation2d.fromDegrees(-302.0);
+  private Rotation2d rightEncoderOffset = Rotation2d.fromDegrees(-58.0);
+
+  // 302
+
   private double leftAppliedVolts = 0.0;
   private double rightAppliedVolts = 0.0;
 
@@ -39,10 +44,13 @@ public class ClimbIOSparkMax implements ClimbIO {
 
     leftMotor.setSmartCurrentLimit(40);
     leftMotor.enableVoltageCompensation(12.0);
-    leftMotor.setIdleMode(IdleMode.kCoast);
+    leftMotor.setIdleMode(IdleMode.kBrake);
     rightMotor.setSmartCurrentLimit(40);
     rightMotor.enableVoltageCompensation(12.0);
-    rightMotor.setIdleMode(IdleMode.kCoast);
+    rightMotor.setIdleMode(IdleMode.kBrake);
+
+    leftMotor.setInverted(false);
+    rightMotor.setInverted(true);
 
     leftEncoder.setPosition(0.0);
     rightEncoder.setPosition(0.0);
@@ -54,14 +62,18 @@ public class ClimbIOSparkMax implements ClimbIO {
   @Override
   public void updateInputs(ClimbIOInputs inputs) {
     // TODO Add conversion factors as needed
-    inputs.leftPosition = Rotation2d.fromRotations(leftAbsoluteEncoder.getAbsolutePosition());
+    inputs.leftPosition =
+        Rotation2d.fromRotations(leftAbsoluteEncoder.getAbsolutePosition()).plus(leftEncoderOffset);
     inputs.leftVelocityRPS =
         Units.rotationsPerMinuteToRadiansPerSecond(leftEncoder.getVelocity() / GEARING);
     inputs.leftAppliedVolts = leftAppliedVolts;
     inputs.leftCurrentAmps = new double[] {leftMotor.getOutputCurrent()};
     inputs.leftTemperatureCelsius = new double[] {leftMotor.getMotorTemperature()};
 
-    inputs.rightPosition = Rotation2d.fromRotations(rightAbsoluteEncoder.getAbsolutePosition());
+    inputs.rightPosition =
+        Rotation2d.fromDegrees(360.0)
+            .minus(Rotation2d.fromRotations(rightAbsoluteEncoder.getAbsolutePosition()))
+            .plus(rightEncoderOffset);
     inputs.rightVelocityRPS =
         Units.rotationsPerMinuteToRadiansPerSecond(rightEncoder.getVelocity() / GEARING);
     inputs.rightAppliedVolts = rightAppliedVolts;

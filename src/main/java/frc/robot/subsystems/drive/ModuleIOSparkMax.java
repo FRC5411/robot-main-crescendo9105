@@ -36,7 +36,7 @@ public class ModuleIOSparkMax implements ModuleIO {
   private SparkPIDController driveFeedback;
   private SparkPIDController azimuthFeedback;
 
-  private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.21 / 12.0);
+  private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.27 / 12.0);
 
   private LoggedTunableNumber driveFeedbackP =
       new LoggedTunableNumber("Drive/ModuleIO/Drive/Feedback/P", 0.00005);
@@ -46,7 +46,7 @@ public class ModuleIOSparkMax implements ModuleIO {
       new LoggedTunableNumber("Drive/ModuleIO/Drive/Feedback/D", 0.0);
 
   private LoggedTunableNumber azimuthFeedbackP =
-      new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/P", 0.155);
+      new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/P", 0.175);
   private LoggedTunableNumber azimuthFeedbackI =
       new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/I", 0.0);
   private LoggedTunableNumber azimuthFeedbackD =
