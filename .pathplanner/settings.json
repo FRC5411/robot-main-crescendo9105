@@ -6,13 +6,15 @@
     "3FebPaths",
     "7MarPaths",
     "8FebPaths",
+    "BottomPaths",
     "CalibrationPaths",
     "Competition",
-    "BottomPaths",
+    "MidPaths",
     "TopPaths"
   ],
   "autoFolders": [
     "BottomAutos",
+    "MidAutos",
     "TopAutos"
   ],
   "defaultMaxVel": 3.0,

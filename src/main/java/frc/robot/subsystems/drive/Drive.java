@@ -75,6 +75,8 @@ public class Drive extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(KINEMATICS, getRotation(), getModulePositions(), currentPose);
 
+  private boolean PProtationTargetOverride = false;
+
   // private PIDConstants translationPathplannerConstants = new PIDConstants(2.02, 0.0, 0.0);
   // private PIDConstants rotationPathplannerConstants = new PIDConstants(0.66, 0.0, 0.0);
   private PIDConstants translationPathplannerConstants = new PIDConstants(1.0, 0.0, 0.0);
@@ -345,5 +347,14 @@ public class Drive extends SubsystemBase {
   /** Returns the kinematics of the drivetrain */
   public SwerveDriveKinematics getKinematics() {
     return new SwerveDriveKinematics(getModuleTranslations());
+  }
+
+  @AutoLogOutput(key = "Drive/PP/RotationTargetOverride")
+  public boolean getPPRotationTargetOverride() {
+    return PProtationTargetOverride;
+  }
+
+  public void setPProtationTargetOverride(boolean override) {
+    PProtationTargetOverride = override;
   }
 }
