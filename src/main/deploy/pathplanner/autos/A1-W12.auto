@@ -14,19 +14,13 @@
         {
           "type": "path",
           "data": {
-            "pathName": "A1-U"
+            "pathName": "A1-W1"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "U-C3"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "C3-S"
+            "pathName": "W12"
           }
         }
       ]
