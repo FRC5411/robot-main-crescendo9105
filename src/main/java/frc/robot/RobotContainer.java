@@ -88,12 +88,12 @@ public class RobotContainer {
     superstructure = new Superstructure(robotDrive, robotShooter, robotClimb, robotTargetingSystem);
     caster = new Caster(robotIntake, robotIndexer, robotYoshi);
 
+    configureAutonomous();
+
     // AutoBuilder is configured when Drive is initialized, thus chooser must be instantiated after
     // initializeSubsystems()
     autoChooser =
         new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
-
-    configureAutonomous();
 
     configureButtonBindings();
   }
