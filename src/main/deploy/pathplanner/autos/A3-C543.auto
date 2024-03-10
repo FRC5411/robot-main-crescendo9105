@@ -2,15 +2,52 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 2,
-      "y": 2
+      "x": 0.72,
+      "y": 4.4
     },
-    "rotation": 0
+    "rotation": -60.54764358520367
   },
   "command": {
     "type": "sequential",
     "data": {
-      "commands": []
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "A3-C5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C5-BS"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "BS-C4"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C4-BS"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "BS-C3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C3-BS"
+          }
+        }
+      ]
     }
   },
   "folder": "BottomAutos",
