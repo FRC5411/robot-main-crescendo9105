@@ -118,7 +118,8 @@ public class SwerveCommands {
               xSpeedsLimiter.reset(robotDrive.getDesiredChassisSpeeds().vxMetersPerSecond);
               ySpeedsLimiter.reset(robotDrive.getDesiredChassisSpeeds().vyMetersPerSecond);
 
-              Rotation2d headingGoal = headingGoalSupplier.get();
+              // Added minor offset to account for note curving
+              Rotation2d headingGoal = headingGoalSupplier.get().minus(Rotation2d.fromDegrees(5.0));
               Rotation2d currentHeading = robotDrive.getRotation();
 
               // If the error is small, set the goal to be the current heading

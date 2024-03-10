@@ -50,7 +50,11 @@ public class Caster extends SubsystemBase {
             switch (state) {
               case IDLE -> IntakeCommands.stopIntake(robotIntake)
                   .alongWith(IndexerCommands.stopIndexer(robotIndexer))
-                  .alongWith(YoshiCommands.stopYoshi(robotYoshi, true, true));
+                  .alongWith(
+                      YoshiCommands.runPivotSetpoint(robotYoshi, YoshiPivotSetpoint.IDLE)
+                          .andThen(
+                              YoshiCommands.runFlywheelManual(
+                                  robotYoshi, YoshiFlywheelDirection.STOP)));
               case INTAKE_GROUND -> IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
                   .alongWith(IndexerCommands.stowPiece(robotIndexer))
                   .alongWith(
