@@ -8,8 +8,10 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -54,6 +56,7 @@ import frc.robot.subsystems.yoshivator.Yoshivator;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSim;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSparkMax;
+import java.util.Optional;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class RobotContainer {
@@ -184,6 +187,8 @@ public class RobotContainer {
     }
 
     visionFuser = new VisionFuser(robotDrive, robotVision);
+
+    PPHolonomicDriveController.setRotationTargetOverride(this::getRotationTargetOverride);
   }
 
   /** Register commands with PathPlanner and add default autos to chooser */
@@ -191,6 +196,29 @@ public class RobotContainer {
     // Register commands with PathPlanner's AutoBuilder so it can call them
     NamedCommands.registerCommand(
         "Print Pose", Commands.print("Pose: " + robotDrive.getPoseEstimate()));
+
+    NamedCommands.registerCommand(
+        "Shoot",
+        superstructure
+            .getCommand(SuperstructureState.PREPARING_SHOT)
+            .until(
+                () -> {
+                  return robotShooter.isAnglerAtGoal()
+                      && robotShooter.isTopLauncherAtGoal()
+                      && robotShooter.isBottomLauncherAtGoal();
+                })
+            .withTimeout(2.0));
+
+    NamedCommands.registerCommand(
+        "YoshiIntake", caster.getCommand(CasterState.INTAKE_GROUND).withTimeout(1.0));
+
+    NamedCommands.registerCommand("Intake", caster.getCommand(CasterState.FIRE).withTimeout(1.0));
+
+    NamedCommands.registerCommand(
+        "AutoAlign",
+        Commands.run(() -> robotDrive.setPProtationTargetOverride(true))
+            .withTimeout(0.5)
+            .andThen(Commands.run(() -> robotDrive.setPProtationTargetOverride(false))));
   }
 
   /** Configure controllers */
@@ -362,5 +390,14 @@ public class RobotContainer {
 
   public VisionFuser getVisionFuser() {
     return visionFuser;
+  }
+
+  public Optional<Rotation2d> getRotationTargetOverride() {
+    if (robotDrive.getPPRotationTargetOverride()) {
+      return Optional.of(
+          robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getPoseEstimate()));
+    } else {
+      return Optional.empty();
+    }
   }
 }

@@ -328,6 +328,15 @@ public class Shooter extends SubsystemBase {
     return anglerFeedback.atGoal();
   }
 
+  public boolean isTopLauncherAtGoal() {
+    return launcherIOInputs.topFlywheelVelocityMPS - launcherIOInputs.topFlywheelSetpointMPS < 0.5;
+  }
+
+  public boolean isBottomLauncherAtGoal() {
+    return launcherIOInputs.bottomFlywheelVelocityMPS - launcherIOInputs.bottomFlywheelSetpointMPS
+        < 0.5;
+  }
+
   /** Returns the velocity of the top launcher flywheel */
   @AutoLogOutput(key = "Shooter/TopLauncher/VelocityMPS")
   public double getTopLauncherVelocityMPS() {
