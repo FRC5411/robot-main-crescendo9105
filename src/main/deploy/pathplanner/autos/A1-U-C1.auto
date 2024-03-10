@@ -1,0 +1,37 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.73,
+      "y": 6.67
+    },
+    "rotation": 60.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "A1-U"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "U-C1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C1-S"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "TopAutos",
+  "choreoAuto": false
+}
