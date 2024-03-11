@@ -6,7 +6,6 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.subsystems.intake.Intake;
 
 /** Class to hold all of the commands for the Intake */
@@ -18,22 +17,25 @@ public class IntakeCommands {
   /** Returns a command to run the Intake motor with a given direction */
   public static Command runIntake(Intake robotIntake, IntakeDirection direction) {
     currentCommand =
-        Commands.run(() -> robotIntake.setVolts(direction.getVolts()), robotIntake)
-            .alongWith(new InstantCommand(() -> logDirection(direction)));
+        Commands.runOnce(() -> {
+          robotIntake.setVolts(direction.getVolts());
+          logDirection(direction);
+        } , robotIntake);
 
     return currentCommand;
   }
 
   /** Returns a command to stop the Intake motor */
   public static Command stopIntake(Intake robotIntake) {
-    IntakeDirection direction = IntakeDirection.STOP;
-
     if (currentCommand != null) {
       currentCommand.cancel();
     }
     currentCommand =
-        Commands.run(() -> robotIntake.stopMotor(), robotIntake)
-            .alongWith(new InstantCommand(() -> logDirection(direction)));
+        Commands.runOnce(
+          () ->  {
+            robotIntake.setVolts(IntakeDirection.STOP.getVolts());
+            logDirection(IntakeDirection.STOP);
+          }, robotIntake);
 
     return currentCommand;
   }

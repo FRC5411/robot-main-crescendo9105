@@ -78,12 +78,9 @@ public class YoshiCommands {
         Commands.runOnce(
                 () -> {
                   pivotSetpoint = Rotation2d.fromDegrees(setpoint.getPositionDegrees());
-                },
-                robotYoshi)
-            .andThen(Commands.runOnce(() -> robotYoshi.setPivotSetpoint(pivotSetpoint), robotYoshi))
-            .andThen(
-                Commands.runOnce(
-                    () -> robotYoshi.setFlywheelVolts(direction.getVolts()), robotYoshi));
+                  robotYoshi.setPivotSetpoint(pivotSetpoint);
+                  robotYoshi.setFlywheelVolts(direction.getVolts());
+                }, robotYoshi);
     return currentCommand;
   }
 
