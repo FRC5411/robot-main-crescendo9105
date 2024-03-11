@@ -77,11 +77,11 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
     inputs.pivotAppliedCurrentAmps = new double[] {pivotMotor.getOutputCurrent()};
     inputs.pivotTemperatureCelsius = new double[] {pivotMotor.getMotorTemperature()};
 
-    inputs.flywheelVelocityRPM = flywheelEncoder.getVelocity() / (FLYWHEEL_GEARING * 60.0);
-    inputs.flywheelAppliedVolts = flywheelAppliedVolts;
-    inputs.flywheelInternalVolts = flywheelMotor.getBusVoltage() * flywheelMotor.getAppliedOutput();
-    inputs.flywheelAppliedCurrentAmps = new double[] {flywheelMotor.getOutputCurrent()};
-    inputs.flywheelTemperatureCelsius = new double[] {flywheelMotor.getMotorTemperature()};
+    inputs.rollerVelocityRPM = flywheelEncoder.getVelocity() / (FLYWHEEL_GEARING * 60.0);
+    inputs.rollerAppliedVolts = flywheelAppliedVolts;
+    inputs.rollerInternalVolts = flywheelMotor.getBusVoltage() * flywheelMotor.getAppliedOutput();
+    inputs.rollerAppliedCurrentAmps = new double[] {flywheelMotor.getOutputCurrent()};
+    inputs.rollerTemperatureCelsius = new double[] {flywheelMotor.getMotorTemperature()};
   }
 
   @Override
@@ -92,7 +92,7 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
   }
 
   @Override
-  public void setFlywheelVolts(double volts) {
+  public void setRollerVolts(double volts) {
     flywheelAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
 
     flywheelMotor.setVoltage(flywheelAppliedVolts);

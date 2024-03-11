@@ -178,7 +178,7 @@ public class ShooterCommands {
             () -> {
               if (robotShooter.isAnglerAtGoal()
                   && ((laucnherVelocityMPS - robotShooter.getTopLauncherVelocityMPS() < 0.75))) {
-                robotIndexer.setIndexerVolts(12.0);
+                robotIndexer.setVolts(12.0);
               }
             },
             (interrupted) -> {
@@ -186,7 +186,7 @@ public class ShooterCommands {
               laucnherVelocityMPS = 0.0;
 
               robotShooter.stopMotors(true, true);
-              robotIndexer.stopMotors();
+              robotIndexer.stopMotor();
             },
             () -> false,
             robotShooter);

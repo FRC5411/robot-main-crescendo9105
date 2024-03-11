@@ -45,11 +45,11 @@ public class ManipulatorIOSim implements ManipulatorIO {
     inputs.pivotAppliedCurrentAmps = new double[] {pivotMotor.getCurrentDrawAmps()};
     inputs.pivotTemperatureCelsius = new double[] {0.0};
 
-    inputs.flywheelVelocityRPM = flywheelMotor.getAngularVelocityRPM();
-    inputs.flywheelAppliedVolts = flywheelAppliedVolts;
-    inputs.flywheelInternalVolts = 0.0;
-    inputs.flywheelAppliedCurrentAmps = new double[] {flywheelMotor.getCurrentDrawAmps()};
-    inputs.flywheelTemperatureCelsius = new double[] {0.0};
+    inputs.rollerVelocityRPM = flywheelMotor.getAngularVelocityRPM();
+    inputs.rollerAppliedVolts = flywheelAppliedVolts;
+    inputs.rollerInternalVolts = 0.0;
+    inputs.rollerAppliedCurrentAmps = new double[] {flywheelMotor.getCurrentDrawAmps()};
+    inputs.rollerTemperatureCelsius = new double[] {0.0};
   }
 
   @Override
@@ -60,7 +60,7 @@ public class ManipulatorIOSim implements ManipulatorIO {
   }
 
   @Override
-  public void setFlywheelVolts(double volts) {
+  public void setRollerVolts(double volts) {
     flywheelAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
 
     flywheelMotor.setInputVoltage(flywheelAppliedVolts);
