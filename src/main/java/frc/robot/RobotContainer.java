@@ -75,7 +75,7 @@ public class RobotContainer {
 
   private VisionFuser visionFuser;
   private Superstructure superstructure;
-  private Caster caster;
+//   private Caster caster;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
   private CommandXboxController copilotController = new CommandXboxController(1);
@@ -86,7 +86,7 @@ public class RobotContainer {
     initializeSubsystems();
 
     superstructure = new Superstructure(robotDrive, robotShooter, robotClimb);
-    caster = new Caster(robotIntake, robotIndexer, robotYoshi);
+    // caster = new Caster(robotIntake, robotIndexer, robotYoshi);
 
     configureAutonomous();
 
