@@ -118,6 +118,7 @@ public class Climb extends SubsystemBase {
 
     leftClimbFeedback.setTolerance(0.8);
     rightClimbFeedback.setTolerance(0.8);
+    
     leftClimbFeedback.enableContinuousInput(-180.0, 180.0);
     rightClimbFeedback.enableContinuousInput(-180.0, 180.0);
   }
@@ -127,16 +128,14 @@ public class Climb extends SubsystemBase {
     climbIO.updateInputs(climbIOInputs);
     Logger.processInputs("Climb/Inputs", climbIOInputs);
 
-    if (DriverStation.isDisabled()) {
-      stopMotors();
-    }
+    if (DriverStation.isDisabled()) stopMotors();
 
     if (leftAngleSetpoint != null) {
-      var leftFeedbackOutput =
+      double leftFeedbackOutput =
           -leftClimbFeedback.calculate(
               climbIOInputs.leftPosition.getDegrees(), leftAngleSetpoint.getDegrees());
-      // TODO Need to add angle offset
-      var leftFeedforwardOutput =
+
+      double leftFeedforwardOutput =
           -leftClimbFeedforward.calculate(
               climbIOInputs.leftPosition.getRadians(), leftClimbFeedback.getSetpoint().velocity);
 
@@ -147,11 +146,11 @@ public class Climb extends SubsystemBase {
     }
 
     if (rightAngleSetpoint != null) {
-      var rightFeedbackOutput =
+      double rightFeedbackOutput =
           rightClimbFeedback.calculate(
               climbIOInputs.rightPosition.getDegrees(), rightAngleSetpoint.getDegrees());
-      // TODO Need to add angle offset
-      var rightFeedforwardOutput =
+
+      double rightFeedforwardOutput =
           rightClimbFeedforward.calculate(
               climbIOInputs.rightPosition.getRadians(), rightClimbFeedback.getSetpoint().velocity);
 
@@ -164,14 +163,11 @@ public class Climb extends SubsystemBase {
     leftVisualizer.updateClimbAngle(climbIOInputs.leftPosition);
     rightVisualizer.updateClimbAngle(climbIOInputs.rightPosition);
 
-    if (Constants.tuningMode) {
-      updateTunableNumbers();
-    }
+    if (Constants.tuningMode) updateTunableNumbers();
   }
 
-  /** Checks if tunable numbers have changed, if so update controllers */
+  /**  If tunable numbers have changed, it updates controllers */
   private void updateTunableNumbers() {
-    // hashCode() updates when class is changed (I think)
     if (leftFeedbackP.hasChanged(hashCode())
         || leftFeedbackI.hasChanged(hashCode())
         || leftFeedbackD.hasChanged(hashCode())) {
@@ -180,7 +176,7 @@ public class Climb extends SubsystemBase {
       leftClimbFeedback.setD(leftFeedbackD.get());
     }
     if (leftFeedbackA.hasChanged(hashCode()) || leftFeedbackV.hasChanged(hashCode())) {
-      var newConstraints =
+      TrapezoidProfile.Constraints newConstraints =
           new TrapezoidProfile.Constraints(leftFeedbackA.get(), leftFeedbackV.get());
 
       leftClimbFeedback.setConstraints(newConstraints);
@@ -194,30 +190,26 @@ public class Climb extends SubsystemBase {
       rightClimbFeedback.setD(rightFeedbackD.get());
     }
     if (rightFeedbackA.hasChanged(hashCode()) || rightFeedbackV.hasChanged(hashCode())) {
-      var newConstraints =
+      TrapezoidProfile.Constraints newConstraints =
           new TrapezoidProfile.Constraints(rightFeedbackA.get(), rightFeedbackV.get());
 
       rightClimbFeedback.setConstraints(newConstraints);
     }
   }
 
-  /** Set the volts of each arm */
   public void setVolts(double leftVolts, double rightVolts) {
     climbIO.setLeftVolts(leftVolts);
     climbIO.setRightVolts(rightVolts);
   }
 
-  /** Sets the volts of the left climb */
   public void setVoltsLeft(double volts) {
     climbIO.setLeftVolts(volts);
   }
 
-  /** Sets the volts of the right climb */
   public void setVoltsRight(double volts) {
     climbIO.setRightVolts(volts);
   }
 
-  /** Sets the desired position */
   public void setAngle(Rotation2d leftDesiredAngle, Rotation2d rightDesiredAngle) {
     leftAngleSetpoint = leftDesiredAngle;
     rightAngleSetpoint = rightDesiredAngle;
@@ -226,7 +218,6 @@ public class Climb extends SubsystemBase {
     rightClimbFeedback.reset(climbIOInputs.rightPosition.getDegrees());
   }
 
-  /** Stops both motors */
   public void stopMotors() {
     leftAngleSetpoint = null;
     rightAngleSetpoint = null;
@@ -235,19 +226,16 @@ public class Climb extends SubsystemBase {
     climbIO.setRightVolts(0.0);
   }
 
-  /** Returns the error of the left feedback */
   @AutoLogOutput(key = "Climb/LeftArm/Feedback/Error")
   public double getLeftError() {
     return leftClimbFeedback.getPositionError();
   }
 
-  /** Returns the error of the right feedback */
   @AutoLogOutput(key = "Climb/RightArm/Feedback/Error")
   public double getRightError() {
     return rightClimbFeedback.getPositionError();
   }
 
-  /** Returns the setpoint of the left feedback */
   @AutoLogOutput(key = "Climb/LeftArm/Feedback/Setpoint")
   public double getLeftSetpoint() {
     if (leftClimbFeedback.getSetpoint() == null) {
@@ -256,40 +244,32 @@ public class Climb extends SubsystemBase {
     return Math.toRadians(leftClimbFeedback.getSetpoint().position);
   }
 
-  /** Returns the setpoint of the left feedback */
   @AutoLogOutput(key = "Climb/LeftArm/Feedback/Goal")
   public double getLeftGoal() {
-    if (leftClimbFeedback.getGoal() == null) {
-      return 0.0;
-    }
-    return Math.toRadians(leftClimbFeedback.getGoal().position);
+    return (leftClimbFeedback.getGoal() == null) 
+              ? 0.0 
+              : Math.toRadians(leftClimbFeedback.getGoal().position);
   }
 
-  /** Returns the setpoint of the right feedback */
   @AutoLogOutput(key = "Climb/RightArm/Feedback/Setpoint")
   public double getRightSetpoint() {
-    if (rightClimbFeedback.getSetpoint() == null) {
-      return 0.0;
-    }
-    return Math.toRadians(rightClimbFeedback.getSetpoint().position);
+    return (rightClimbFeedback.getSetpoint() == null) 
+              ? 0.0 
+              : Math.toRadians(rightClimbFeedback.getSetpoint().position);
   }
 
-  /** Returns the setpoint of the left feedback */
   @AutoLogOutput(key = "Climb/LeftArm/Feedback/Goal")
   public double getRightGoal() {
-    if (leftClimbFeedback.getGoal() == null) {
-      return 0.0;
-    }
-    return Math.toRadians(leftClimbFeedback.getGoal().position);
+    return (leftClimbFeedback.getGoal() == null) 
+              ? 0.0 
+              : Math.toRadians(leftClimbFeedback.getGoal().position);
   }
 
-  /** Returns if the left feedback is at the setpoint */
   @AutoLogOutput(key = "Climb/LeftArm/Feedback/isAtSetpoint")
   public boolean isLeftAtSetpoint() {
     return leftClimbFeedback.atSetpoint();
   }
 
-  /** Returns if the right feedback is at the setpoint */
   @AutoLogOutput(key = "Climb/RightArm/Feedback/isAtSetpoint")
   public boolean isRightAtSetpoint() {
     return rightClimbFeedback.atSetpoint();

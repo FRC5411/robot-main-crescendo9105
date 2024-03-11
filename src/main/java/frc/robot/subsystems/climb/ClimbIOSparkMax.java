@@ -13,11 +13,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
-/** Class to interact with the physical climb structure */
 public class ClimbIOSparkMax implements ClimbIO {
   private final double GEARING = 125.0 / 1.0;
 
-  // TODO Adjust values as needed
   private CANSparkMax leftMotor = new CANSparkMax(61, MotorType.kBrushless);
   private CANSparkMax rightMotor = new CANSparkMax(62, MotorType.kBrushless);
 
@@ -30,18 +28,15 @@ public class ClimbIOSparkMax implements ClimbIO {
   private Rotation2d leftEncoderOffset = Rotation2d.fromDegrees(-302.0);
   private Rotation2d rightEncoderOffset = Rotation2d.fromDegrees(-58.0);
 
-  // 302
-
   private double leftAppliedVolts = 0.0;
   private double rightAppliedVolts = 0.0;
 
-  /** Create a new hardware implementation of the climb */
   public ClimbIOSparkMax() {
-    leftMotor.clearFaults();
-    rightMotor.clearFaults();
     leftMotor.restoreFactoryDefaults();
     rightMotor.restoreFactoryDefaults();
-
+    leftMotor.clearFaults();
+    rightMotor.clearFaults();
+    
     leftMotor.setSmartCurrentLimit(40);
     leftMotor.enableVoltageCompensation(12.0);
     leftMotor.setIdleMode(IdleMode.kBrake);
@@ -84,14 +79,12 @@ public class ClimbIOSparkMax implements ClimbIO {
   @Override
   public void setLeftVolts(double volts) {
     leftAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
-
     leftMotor.set(leftAppliedVolts);
   }
 
   @Override
   public void setRightVolts(double volts) {
     rightAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
-
     rightMotor.set(rightAppliedVolts);
   }
 }

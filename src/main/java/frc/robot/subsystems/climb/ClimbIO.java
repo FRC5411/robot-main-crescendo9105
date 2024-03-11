@@ -7,9 +7,7 @@ package frc.robot.subsystems.climb;
 import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.AutoLog;
 
-/** Hardware interface for the climb */
 public interface ClimbIO {
-  /** Climb subsystem sensor data */
   @AutoLog
   public static class ClimbIOInputs {
     public Rotation2d leftPosition = new Rotation2d();
