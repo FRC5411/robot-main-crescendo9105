@@ -21,6 +21,7 @@ import frc.robot.commands.IndexerCommands.IndexerDirection;
 import frc.robot.commands.IntakeCommands;
 import frc.robot.commands.IntakeCommands.IntakeDirection;
 import frc.robot.commands.ShooterCommands;
+import frc.robot.commands.SwerveCommands;
 import frc.robot.commands.YoshiCommands;
 import frc.robot.commands.YoshiCommands.YoshiFlywheelDirection;
 import frc.robot.commands.YoshiCommands.YoshiPivotSetpoint;
@@ -33,17 +34,17 @@ import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
 import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.indexer.Indexer.IndexerSetpoint;
 import frc.robot.subsystems.indexer.IndexerIO;
 import frc.robot.subsystems.indexer.IndexerIOSim;
 import frc.robot.subsystems.indexer.IndexerIOSparkMax;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.Intake.IntakeSetpoint;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.leds.LEDSubsystem;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.Shooter.AnglerSetpoints;
+import frc.robot.subsystems.shooter.Shooter.LauncherSetpoints;
 import frc.robot.subsystems.shooter.TargetingSystem;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.angler.AnglerIOSim;
@@ -74,9 +75,7 @@ public class RobotContainer {
 
   private VisionFuser visionFuser;
   private Superstructure superstructure;
-  //   private Caster caster;
-
-  private TargetingSystem robotTargetingSystem = new TargetingSystem();
+  private Caster caster;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
   private CommandXboxController copilotController = new CommandXboxController(1);
@@ -86,8 +85,8 @@ public class RobotContainer {
   public RobotContainer() {
     initializeSubsystems();
 
-    superstructure = new Superstructure(robotDrive, robotShooter, robotClimb, robotTargetingSystem);
-    // caster = new Caster(robotIntake, robotIndexer, robotYoshi);
+    superstructure = new Superstructure(robotDrive, robotShooter, robotClimb);
+    caster = new Caster(robotIntake, robotIndexer, robotYoshi);
 
     configureAutonomous();
 
@@ -207,10 +206,7 @@ public class RobotContainer {
         "AutoShoot",
         IndexerCommands.stopIndexer(robotIndexer)
             .alongWith(IntakeCommands.stopIntake(robotIntake))
-            .alongWith(
-                ShooterCommands.automaticTarget(
-                        robotShooter, robotTargetingSystem, () -> robotDrive.getFilteredPose())
-                    .withTimeout(3.0)));
+            .alongWith(ShooterCommands.automaticTarget(robotShooter).withTimeout(3.0)));
 
     NamedCommands.registerCommand(
         "FirePiece",
@@ -243,51 +239,43 @@ public class RobotContainer {
   /** Configure controllers */
   private void configureButtonBindings() {
     if (Constants.useDebuggingBindings) {
-      //   robotDrive.setDefaultCommand(
-      //       SwerveCommands.swerveDrive(
-      //           robotDrive,
-      //           () -> -pilotController.getLeftY(),
-      //           () -> -pilotController.getLeftX(),
-      //           () -> -pilotController.getRightX()));
-
-      //   pilotController
-      //       .a()
-      //       .whileTrue(
-      //           SwerveCommands.setHeading(
-      //               robotDrive,
-      //               () -> 0.0,
-      //               () -> 0.0,
-      //               () ->
-      // robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getOdometryPose())))
-      //       .onFalse(SwerveCommands.stopDrive(robotDrive));
-
-      //   pilotController
-      //       .y()
-      //       .whileTrue(ShooterCommands.runAngler(roboztShooter))
-      //       .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
-      pilotController.a().onTrue(robotIndexer.stowPiece()).onFalse(robotIndexer.stopIndexer());
+      robotDrive.setDefaultCommand(
+          SwerveCommands.swerveDrive(
+              robotDrive,
+              () -> -pilotController.getLeftY(),
+              () -> -pilotController.getLeftX(),
+              () -> -pilotController.getRightX()));
 
       pilotController
-          .b()
-          .onTrue(
-              robotIndexer
-                  .runIndexer(IndexerSetpoint.IN)
-                  .alongWith(robotIntake.runIntake(IntakeSetpoint.OUT)))
-          .onFalse(
-              robotIndexer
-                  .runIndexer(IndexerSetpoint.IDLE)
-                  .alongWith(robotIntake.runIntake(IntakeSetpoint.IDLE)));
+          .a()
+          .whileTrue(
+              SwerveCommands.setHeading(
+                  robotDrive,
+                  () -> 0.0,
+                  () -> 0.0,
+                  () -> TargetingSystem.getOptimalLaunchHeading()))
+          .onFalse(SwerveCommands.stopDrive(robotDrive));
 
+      pilotController
+          .y()
+          .whileTrue(ShooterCommands.runAngler(robotShooter))
+          .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
     } else {
-      //   /* Pilot bindings */
+      /* Pilot bindings */
 
-      //   /* Drive with joysticks */
-      //   robotDrive.setDefaultCommand(
-      //       SwerveCommands.swerveDrive(
-      //           robotDrive,
-      //           () -> -pilotController.getLeftY(),
-      //           () -> -pilotController.getLeftX(),
-      //           () -> -pilotController.getRightX()));
+      /* Drive with joysticks */
+      robotDrive.setDefaultCommand(
+          SwerveCommands.swerveDrive(
+              robotDrive,
+              () -> -pilotController.getLeftY(),
+              () -> -pilotController.getLeftX(),
+              () -> -pilotController.getRightX()));
+
+      pilotController
+          .a()
+          .whileTrue(
+              robotShooter.setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT))
+          .whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
 
       //   /* Intake a note from the ground */
       //   pilotController
@@ -324,8 +312,7 @@ public class RobotContainer {
       //               robotDrive,
       //               () -> 0.0,
       //               () -> 0.0,
-      //               () ->
-      // robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getFilteredPose())))
+      //               () -> TargetingSystem.getOptimalLaunchHeading()))
       //       .onFalse(SwerveCommands.stopDrive(robotDrive));
 
       //   /* Copilot bindings */
@@ -410,8 +397,7 @@ public class RobotContainer {
 
   public Optional<Rotation2d> getRotationTargetOverride() {
     if (robotDrive.getPPRotationTargetOverride()) {
-      return Optional.of(
-          robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getFilteredPose()));
+      return Optional.of(TargetingSystem.getOptimalLaunchHeading());
     } else {
       return Optional.empty();
     }

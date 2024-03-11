@@ -30,6 +30,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.subsystems.shooter.TargetingSystem;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -180,6 +181,8 @@ public class Drive extends SubsystemBase {
     }
 
     currentPose = poseEstimator.getEstimatedPosition();
+
+    TargetingSystem.updateRobotPose(() -> odometry.getPoseMeters());
   }
 
   /** Runs the swerve drive based on speeds */

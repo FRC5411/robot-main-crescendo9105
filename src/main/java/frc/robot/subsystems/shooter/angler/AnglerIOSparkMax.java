@@ -6,6 +6,7 @@ package frc.robot.subsystems.shooter.angler;
 
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -28,6 +29,12 @@ public class AnglerIOSparkMax implements AnglerIO {
   public AnglerIOSparkMax() {
     anglerMotor.clearFaults();
     anglerMotor.restoreFactoryDefaults();
+
+    anglerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 100);
+    anglerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 100);
+    anglerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 100);
+    anglerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 100);
+    anglerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 100);
 
     anglerMotor.setSmartCurrentLimit(60);
     anglerMotor.enableVoltageCompensation(12.0);

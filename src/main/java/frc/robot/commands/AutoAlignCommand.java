@@ -33,8 +33,6 @@ public class AutoAlignCommand {
       new LoggedTunableNumber(
           "AutoAlign/DriveTheta/A", driveThetaController.getConstraints().maxAcceleration);
 
-  private static TargetingSystem targetingSystem = new TargetingSystem();
-
   /**
    * Returns a command that will adjust the heading to the target, will override any current drive
    * commands from the pilot
@@ -45,7 +43,7 @@ public class AutoAlignCommand {
     return turnToAngle(
         robotDrive,
         // Plus and negative logic have to be tested based of gyro readings
-        () -> targetingSystem.getOptimalLaunchHeading(robotDrive.getPoseEstimate()),
+        () -> TargetingSystem.getOptimalLaunchHeading(),
         () -> 0.0,
         () -> 0.0);
   }
