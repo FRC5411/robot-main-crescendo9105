@@ -189,10 +189,15 @@ public class Yoshivator extends SubsystemBase {
   }
 
   public void setYoshiSetpoint(YoshiSetpoints setpoint) {
+    setYoshiSetpoint(setpoint, true);
+  }
+
+  public void setYoshiSetpoint(YoshiSetpoints setpoint, boolean shouldReset) {
     currentSetpoint = setpoint;
     if (setpoint != null) {
       pivotFeedback.setGoal(setpoint.getPivotRotation().getDegrees());
-      pivotFeedback.reset(manipulatorIOInputs.pivotPosition.getDegrees());
+      if(shouldReset)
+        pivotFeedback.reset(manipulatorIOInputs.pivotPosition.getDegrees());
       setRollerVolts(setpoint.getRollerVolts());
     }
   }
