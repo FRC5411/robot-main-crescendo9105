@@ -102,10 +102,11 @@ public class YoshiCommands {
             },
             () -> {},
             (interrupted) -> {
-              pivotSetpoint = Rotation2d.fromDegrees(YoshiPivotSetpoint.IDLE.getPositionDegrees());
-              robotYoshi.stopMotors(true, true);
+              // pivotSetpoint =
+              // Rotation2d.fromDegrees(YoshiPivotSetpoint.IDLE.getPositionDegrees());
+              // robotYoshi.stopMotors(true, true);
 
-              robotYoshi.setPivotSetpoint(pivotSetpoint);
+              // robotYoshi.setPivotSetpoint(pivotSetpoint);
             },
             isPieceStowed,
             robotYoshi);
@@ -217,7 +218,7 @@ public class YoshiCommands {
   /** Direction of the yoshi */
   public static enum YoshiFlywheelDirection {
     /** Run the Yoshi wheels in to the robot */
-    IN(-7.0),
+    IN(-4.0),
     /** Run the Yoshi wheels out of the robot */
     OUT(7.0),
     /** Stop the Yoshi wheels */

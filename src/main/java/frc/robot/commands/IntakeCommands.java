@@ -18,7 +18,7 @@ public class IntakeCommands {
   /** Returns a command to run the Intake motor with a given direction */
   public static Command runIntake(Intake robotIntake, IntakeDirection direction) {
     currentCommand =
-        Commands.run(() -> robotIntake.setVolts(direction.getVolts()), robotIntake)
+        Commands.runOnce(() -> robotIntake.setVolts(direction.getVolts()), robotIntake)
             .alongWith(new InstantCommand(() -> logDirection(direction)));
 
     return currentCommand;
@@ -32,7 +32,7 @@ public class IntakeCommands {
       currentCommand.cancel();
     }
     currentCommand =
-        Commands.run(() -> robotIntake.stopMotor(), robotIntake)
+        Commands.runOnce(() -> robotIntake.stopMotor(), robotIntake)
             .alongWith(new InstantCommand(() -> logDirection(direction)));
 
     return currentCommand;
@@ -46,7 +46,7 @@ public class IntakeCommands {
   /** Direction of the Intake */
   public static enum IntakeDirection {
     /** Run the Intake wheels in to the Shooter */
-    IN(12.0),
+    IN(5.0),
     /** Run the Intake wheels out of the Shooter */
     OUT(-12.0),
     /** Stop the Intake wheels */

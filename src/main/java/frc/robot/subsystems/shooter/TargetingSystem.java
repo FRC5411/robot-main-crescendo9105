@@ -19,7 +19,7 @@ public class TargetingSystem {
   private Translation3d speakerOpeningRed = new Translation3d(16.26, 5.53, 2.045);
 
   private final double LAUNCH_MAP_OFFSET_M = 0.93 + 0.46 - 0.23 - 0.17;
-  private final double LUANCH_MAP_OFFSET_DEGREES = -0.0;
+  private final double LUANCH_MAP_OFFSET_DEGREES = 0.0 + 3.0;
   private final double LUANCH_MAP_OFFSET_DEGREES_2 = 0.0;
   /**
    * Tree Map that represents the robot's horizontal (X) distance from the Speaker (meters) and the

@@ -12,21 +12,57 @@
     "data": {
       "commands": [
         {
+          "type": "named",
+          "data": {
+            "name": "AutoShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "FirePiece"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "DeployYoshi"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "A1-W1"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "W1-C1"
+            "name": "AnglerDown"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeInnerRollers"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "FirePiece"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "C1-US"
+            "pathName": "W1-C1"
           }
         }
       ]

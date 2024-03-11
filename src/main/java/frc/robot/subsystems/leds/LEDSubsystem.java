@@ -43,7 +43,7 @@ public class LEDSubsystem extends SubsystemBase {
   }
 
   private Command setLEDCommand(boolean useCurrentHue, int saturation, int value) {
-    if (useCurrentHue) return setLEDCommand((int)currentHue, saturation, value);
+    if (useCurrentHue) return setLEDCommand((int) currentHue, saturation, value);
     else return setLEDCommand(180, saturation, value);
   }
 
@@ -88,39 +88,42 @@ public class LEDSubsystem extends SubsystemBase {
     curLED = 0;
     currentHue = 0.0;
 
-    int startHue = 220/2; // Light Blue: 210, 90%, 80%
-    int endHue = 260/2; // Dark Blue: 250, 90%, 80%
+    int startHue = 220 / 2; // Light Blue: 210, 90%, 80%
+    int endHue = 260 / 2; // Dark Blue: 250, 90%, 80%
 
     // Calculate the hue increment for each LED to create a gradient
     currentHue = (endHue - startHue) / (ledBuffer.getLength() - 1);
 
-    if(shouldAnimate) {
+    if (shouldAnimate) {
       return new SequentialCommandGroup(
-        new InstantCommand(() -> currentHue = startHue + (currentHue * curLED)),
-        setLEDCommand(true, 90, 80),
-        new WaitCommand(0.1)
-      ).repeatedly().until(() -> curLED == ledBuffer.getLength() - 1).andThen(
-        new InstantCommand(() -> animateFrame()),
-        new WaitCommand(0.1)
-      ).repeatedly();
+              new InstantCommand(() -> currentHue = startHue + (currentHue * curLED)),
+              setLEDCommand(true, 90, 80),
+              new WaitCommand(0.1),
+              incrementLED())
+          .repeatedly()
+          .until(() -> curLED == ledBuffer.getLength() - 1)
+          .andThen(new InstantCommand(() -> animateFrame()), new WaitCommand(0.1))
+          .repeatedly();
     } else {
       return new SequentialCommandGroup(
-      new InstantCommand(() -> currentHue = startHue + (currentHue * curLED)),
-      setLEDCommand(true, 90, 80),
-      new WaitCommand(0.1)
-    ).repeatedly().until(() -> curLED == ledBuffer.getLength() - 1);
+              new InstantCommand(() -> currentHue = startHue + (currentHue * curLED)),
+              setLEDCommand(true, 90, 80),
+              new WaitCommand(0.1))
+          .repeatedly()
+          .until(() -> curLED == ledBuffer.getLength() - 1);
     }
   }
 
   public Command animateFrame() {
-    return new InstantCommand(() ->{
-      Color lastLED = ledBuffer.getLED(ledBuffer.getLength() - 1);
-      for (int i = 1; i < ledBuffer.getLength(); i++) {
-        ledBuffer.setLED(i, ledBuffer.getLED(i - 1));
-      }
-      ledBuffer.setLED(0, lastLED);
-      setBuffer();
-    });
+    return new InstantCommand(
+        () -> {
+          Color lastLED = ledBuffer.getLED(ledBuffer.getLength() - 1);
+          for (int i = 1; i < ledBuffer.getLength(); i++) {
+            ledBuffer.setLED(i, ledBuffer.getLED(i - 1));
+          }
+          ledBuffer.setLED(0, lastLED);
+          setBuffer();
+        });
   }
 
   public Command pingPongCommand() {

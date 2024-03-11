@@ -20,7 +20,7 @@ public class IndexerCommands {
   public static Command runIndexer(Indexer robotIndexer, IndexerDirection direction) {
 
     currentCommand =
-        Commands.run(() -> robotIndexer.setIndexerVolts(direction.getVolts()), robotIndexer)
+        Commands.runOnce(() -> robotIndexer.setIndexerVolts(direction.getVolts()), robotIndexer)
             .alongWith(new InstantCommand(() -> logDirection(direction)));
 
     return currentCommand;
@@ -34,7 +34,7 @@ public class IndexerCommands {
       currentCommand.cancel();
     }
     currentCommand =
-        Commands.run(() -> robotIndexer.stopMotors(), robotIndexer)
+        Commands.runOnce(() -> robotIndexer.stopMotors(), robotIndexer)
             .alongWith(new InstantCommand(() -> logDirection(direction)));
 
     return currentCommand;
@@ -47,7 +47,7 @@ public class IndexerCommands {
             () -> {},
             () -> {
               if (!robotIndexer.isBeamBroken()) {
-                robotIndexer.setIndexerVolts(IndexerDirection.IN.getVolts() / 2.0);
+                robotIndexer.setIndexerVolts(IndexerDirection.IN.getVolts() / 3.0);
               } else {
                 robotIndexer.stopMotors();
               }

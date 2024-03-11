@@ -61,7 +61,7 @@ public class Superstructure extends SubsystemBase {
               case INTAKING -> ShooterCommands.runAll(
                   robotShooter,
                   AnglerPositions.INTAKING.getPosition(),
-                  LauncherSpeeds.IDLE.getSpeedsMPS());
+                  LauncherSpeeds.STOP.getSpeedsMPS());
                 // .alongWith(
                 //     ClimbCommands.runClimb(
                 //         robotClimb,
@@ -190,6 +190,7 @@ public class Superstructure extends SubsystemBase {
 
   /** Fixed speeds in MPS for the Launcher */
   public static enum LauncherSpeeds {
+    STOP(0.0),
     IDLE(10.0),
     SETPOINT_SPEED(38.0),
     COURT_SHOT(42.0);

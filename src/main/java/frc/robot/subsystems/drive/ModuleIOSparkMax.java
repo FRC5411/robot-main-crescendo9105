@@ -39,7 +39,7 @@ public class ModuleIOSparkMax implements ModuleIO {
   private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.27 / 12.0);
 
   private LoggedTunableNumber driveFeedbackP =
-      new LoggedTunableNumber("Drive/ModuleIO/Drive/Feedback/P", 0.00005);
+      new LoggedTunableNumber("Drive/ModuleIO/Drive/Feedback/P", 0.0001);
   private LoggedTunableNumber driveFeedbackI =
       new LoggedTunableNumber("Drive/ModuleIO/Drive/Feedback/I", 0.0);
   private LoggedTunableNumber driveFeedbackD =

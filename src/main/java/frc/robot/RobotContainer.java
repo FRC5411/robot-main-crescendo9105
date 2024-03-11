@@ -19,12 +19,19 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Caster.CasterState;
 import frc.robot.Superstructure.SuperstructureState;
 import frc.robot.commands.ClimbCommands;
+import frc.robot.commands.ClimbCommands.ClimbLeftDirection;
+import frc.robot.commands.ClimbCommands.ClimbRightDirection;
+import frc.robot.commands.IndexerCommands;
+import frc.robot.commands.IndexerCommands.IndexerDirection;
+import frc.robot.commands.IntakeCommands;
+import frc.robot.commands.IntakeCommands.IntakeDirection;
 import frc.robot.commands.ShooterCommands;
 import frc.robot.commands.SwerveCommands;
+import frc.robot.commands.YoshiCommands;
+import frc.robot.commands.YoshiCommands.YoshiFlywheelDirection;
+import frc.robot.commands.YoshiCommands.YoshiPivotSetpoint;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
-import frc.robot.subsystems.climb.ClimbIOSim;
-import frc.robot.subsystems.climb.ClimbIOSparkMax;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.GyroIO;
 import frc.robot.subsystems.drive.GyroIOPigeon2;
@@ -109,7 +116,7 @@ public class RobotContainer {
                 new GyroIOPigeon2(false));
         robotIntake = new Intake(new IntakeIOSparkMax());
         robotShooter = new Shooter(new AnglerIOSparkMax(), new LauncherIOTalonFX());
-        robotClimb = new Climb(new ClimbIOSparkMax());
+        robotClimb = new Climb(new ClimbIO() {});
         robotIndexer = new Indexer(new IndexerIOSparkMax());
         robotYoshi = new Yoshivator(new ManipulatorIOSparkMax());
         robotLEDs = new LEDSubsystem();
@@ -144,7 +151,7 @@ public class RobotContainer {
                 new GyroIO() {});
         robotIntake = new Intake(new IntakeIOSim());
         robotShooter = new Shooter(new AnglerIOSim(), new LauncherIOSim());
-        robotClimb = new Climb(new ClimbIOSim());
+        robotClimb = new Climb(new ClimbIO() {});
         robotIndexer = new Indexer(new IndexerIOSim());
         robotYoshi = new Yoshivator(new ManipulatorIOSim());
         robotLEDs = new LEDSubsystem();
@@ -201,27 +208,40 @@ public class RobotContainer {
         "Print Pose", Commands.print("Pose: " + robotDrive.getPoseEstimate()));
 
     NamedCommands.registerCommand(
-        "Shoot",
-        superstructure
-            .getCommand(SuperstructureState.PREPARING_SHOT)
-            .until(
-                () -> {
-                  return robotShooter.isAnglerAtGoal()
-                      && robotShooter.isTopLauncherAtGoal()
-                      && robotShooter.isBottomLauncherAtGoal();
-                })
-            .withTimeout(2.0));
+        "AutoShoot",
+        IndexerCommands.stopIndexer(robotIndexer)
+            .alongWith(IntakeCommands.stopIntake(robotIntake))
+            .alongWith(
+                ShooterCommands.automaticTarget(
+                        robotShooter, robotTargetingSystem, () -> robotDrive.getFilteredPose())
+                    .withTimeout(3.0)));
 
     NamedCommands.registerCommand(
-        "YoshiIntake", caster.getCommand(CasterState.INTAKE_GROUND).withTimeout(1.0));
-
-    NamedCommands.registerCommand("Intake", caster.getCommand(CasterState.FIRE).withTimeout(1.0));
+        "FirePiece",
+        IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
+            .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN))
+            .withTimeout(3.0));
 
     NamedCommands.registerCommand(
-        "AutoAlign",
-        Commands.run(() -> robotDrive.setPProtationTargetOverride(true))
-            .withTimeout(0.5)
-            .andThen(Commands.run(() -> robotDrive.setPProtationTargetOverride(false))));
+        "IntakeInnerRollers",
+        ShooterCommands.runAll(robotShooter, Rotation2d.fromDegrees(40.0), 0.0)
+            .alongWith(IntakeCommands.runIntake(robotIntake, IntakeDirection.IN))
+            .alongWith(IndexerCommands.stowPiece(robotIndexer))
+            .withTimeout(0.1)
+            .andThen(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.STOP)));
+
+    NamedCommands.registerCommand(
+        "DeployYoshi",
+        YoshiCommands.runIntake(robotYoshi, YoshiPivotSetpoint.GROUND, YoshiFlywheelDirection.IN)
+            .withTimeout(3.0));
+
+    NamedCommands.registerCommand(
+        "RetractYoshi",
+        YoshiCommands.runIntake(robotYoshi, YoshiPivotSetpoint.IDLE, YoshiFlywheelDirection.STOP)
+            .withTimeout(3.0));
+
+    NamedCommands.registerCommand(
+        "AnglerDown", ShooterCommands.runAll(robotShooter, Rotation2d.fromDegrees(35.0), 0.0));
   }
 
   /** Configure controllers */
@@ -308,13 +328,13 @@ public class RobotContainer {
       /* Prepare to climb */
       copilotController
           .rightTrigger()
-          .whileTrue(superstructure.getCommand(SuperstructureState.PREPARING_CLIMB))
+          .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_ANGLER_DOWN))
           .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
 
       /* Climb to setpoint */
       copilotController
           .leftTrigger()
-          .whileTrue(superstructure.getCommand(SuperstructureState.CLIMBING))
+          .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_ANGLER_UP))
           .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
 
       /* Index note */
@@ -341,11 +361,13 @@ public class RobotContainer {
           .whileTrue(caster.getCommand(CasterState.SCORE_AMP))
           .whileFalse(caster.getCommand(CasterState.IDLE));
 
-      /* Test yoshi setpoint */
+      /* Test climb manual */
       copilotController
           .x()
-          .onTrue(ClimbCommands.runClimb(robotClimb))
-          .onFalse(ClimbCommands.stopClimb(robotClimb));
+          .whileTrue(
+              ClimbCommands.runClimbManual(
+                  robotClimb, ClimbLeftDirection.IN, ClimbRightDirection.OUT))
+          .whileFalse(ClimbCommands.stopClimb(robotClimb));
 
       /* Test manual climb flip direction */
       copilotController.b().onTrue(superstructure.swapClimbDirection());
@@ -362,9 +384,7 @@ public class RobotContainer {
           .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_CLIMB_RIGHT))
           .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
 
-      copilotController
-            .rightBumper()
-            .onTrue(robotLEDs.lightDarkBlueGradientCommand(true));
+      copilotController.rightBumper().onTrue(robotLEDs.lightDarkBlueGradientCommand(true));
     }
   }
 
