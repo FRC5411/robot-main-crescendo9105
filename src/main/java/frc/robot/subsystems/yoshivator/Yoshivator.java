@@ -8,6 +8,9 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Robot;
@@ -17,8 +20,30 @@ import frc.robot.utils.debugging.LoggedTunableNumber;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-/** Yoshivator subsystem */
 public class Yoshivator extends SubsystemBase {
+  public static enum YoshiSetpoints {
+    IDLE(Rotation2d.fromDegrees(100), 0),
+    GROUND(Rotation2d.fromDegrees(-35), 12),
+    AMP_IDLE(Rotation2d.fromDegrees(85), 0),
+    AMP_SCORE(Rotation2d.fromDegrees(85), -12);
+
+    private Rotation2d pivotSetpointRotation;
+    private double rollerSetpointVolts;
+
+    YoshiSetpoints(Rotation2d pivotSetpointRotation, double rollerSetpointVolts) {
+      this.pivotSetpointRotation = pivotSetpointRotation;
+      this.rollerSetpointVolts = rollerSetpointVolts;
+    }
+
+    public Rotation2d getPivotRotation() {
+      return this.pivotSetpointRotation;
+    }
+
+    public double getRollerVolts() {
+      return this.rollerSetpointVolts;
+    }
+  }
+
   private ManipulatorIO manipulatorIO;
   private ManipulatorIOInputsAutoLogged manipulatorIOInputs = new ManipulatorIOInputsAutoLogged();
 
@@ -34,9 +59,12 @@ public class Yoshivator extends SubsystemBase {
 
   private YoshiVisualizer yoshiVisualizer = new YoshiVisualizer(new Rotation2d());
 
-  private Rotation2d pivotSetpoint = null;
+  @AutoLogOutput(key = "Yoshivator/CurrentCommand")
+  private Command currentCommand = null;
 
-  /** Creates a new Yoshivator. */
+  @AutoLogOutput(key = "Yoshivator/CurrentSetpoint")
+  private YoshiSetpoints currentSetpoint = null;
+
   public Yoshivator(ManipulatorIO manipulatorIO) {
     this.manipulatorIO = manipulatorIO;
 
@@ -76,15 +104,42 @@ public class Yoshivator extends SubsystemBase {
             "Yoshivator/Pivot/Feedback/A", pivotFeedback.getConstraints().maxAcceleration);
   }
 
+  public Command runYoshi(YoshiSetpoints setpoint) {
+    currentCommand = Commands.runOnce(() -> setYoshiSetpoint(setpoint), this);
+    return currentCommand;
+  }
+
+  public Command scoreAmp() {
+    currentCommand =
+        new FunctionalCommand(
+            () -> setYoshiSetpoint(YoshiSetpoints.AMP_IDLE),
+            () -> {},
+            (interrupted) -> {
+              if (!interrupted) {
+                setYoshiSetpoint(YoshiSetpoints.AMP_SCORE);
+              }
+            },
+            () ->
+                Math.abs(
+                        currentSetpoint
+                            .getPivotRotation()
+                            .minus(manipulatorIOInputs.pivotPosition)
+                            .getDegrees())
+                    < 5);
+
+    return currentCommand;
+  }
+
   @Override
   public void periodic() {
     manipulatorIO.updateInputs(manipulatorIOInputs);
     Logger.processInputs("Yoshivator/Manipulator/Inputs", manipulatorIOInputs);
 
-    if (pivotSetpoint != null) {
+    if (currentSetpoint != null) {
       double pivotFeedbackOutput =
           pivotFeedback.calculate(
-              manipulatorIOInputs.pivotPosition.getDegrees(), pivotSetpoint.getDegrees());
+              manipulatorIOInputs.pivotPosition.getDegrees(),
+              currentSetpoint.getPivotRotation().getDegrees());
       double pivotFeedforwardOutput =
           pivotFeedforward.calculate(
               Math.toRadians(pivotFeedback.getSetpoint().position),
@@ -93,6 +148,8 @@ public class Yoshivator extends SubsystemBase {
       double pivotCombinedOutput = pivotFeedbackOutput + pivotFeedforwardOutput;
 
       manipulatorIO.setPivotVolts(pivotCombinedOutput);
+
+      manipulatorIO.setRollerVolts(currentSetpoint.getRollerVolts());
 
       Logger.recordOutput("Yoshivator/Pivot/Feedback/Output", pivotFeedbackOutput);
       Logger.recordOutput("Yoshivator/Pivot/Feedforward/Output", pivotFeedforwardOutput);
@@ -106,7 +163,6 @@ public class Yoshivator extends SubsystemBase {
     }
   }
 
-  /** Checks if tunable numbers have changed, if so update controllers */
   private void updateTunableNumbers() {
     if (pivotFeedbackP.hasChanged(hashCode())
         || pivotFeedbackI.hasChanged(hashCode())
@@ -122,57 +178,60 @@ public class Yoshivator extends SubsystemBase {
     }
   }
 
-  /** Stops the motors of the Yoshi */
   public void stopMotors(boolean stopPivot, boolean stopFlywheel) {
+    currentSetpoint = null;
     if (stopPivot) {
-      pivotSetpoint = null;
       setPivotVolts(0.0);
     }
     if (stopFlywheel) {
-      setFlywheelVolts(0.0);
+      setRollerVolts(0.0);
     }
   }
 
-  /** Set the goal of the pviot controller */
-  public void setPivotSetpoint(Rotation2d desiredPosition) {
-    pivotSetpoint = desiredPosition;
-
-    if (pivotSetpoint != null) {
+  public void setYoshiSetpoint(YoshiSetpoints setpoint) {
+    currentSetpoint = setpoint;
+    if (setpoint != null) {
+      pivotFeedback.setGoal(setpoint.getPivotRotation().getDegrees());
       pivotFeedback.reset(manipulatorIOInputs.pivotPosition.getDegrees());
+      setRollerVolts(setpoint.getRollerVolts());
     }
   }
 
-  /** Set the voltage of the pivot motor */
   public void setPivotVolts(double volts) {
     manipulatorIO.setPivotVolts(volts);
   }
 
-  /** Set the voltage of the flywheel motor */
-  public void setFlywheelVolts(double volts) {
-    manipulatorIO.setFlywheelVolts(volts);
+  public void setRollerVolts(double volts) {
+    manipulatorIO.setRollerVolts(volts);
   }
 
-  /** Returns the pivot's position goal */
+  public void setManualPivotVolts(double volts) {
+    currentSetpoint = null;
+    manipulatorIO.setPivotVolts(volts);
+  }
+
+  public void setManualRollerVolts(double volts) {
+    currentSetpoint = null;
+    manipulatorIO.setRollerVolts(volts);
+  }
+
   @AutoLogOutput(key = "Yoshivator/Pivot/Feedback/PositionGoal")
   public double getPivotPositionGoal() {
     return Math.toRadians(pivotFeedback.getGoal().position);
   }
 
-  /** Returns the pivot's velocity goal */
-  @AutoLogOutput(key = "Yoshivator/Pivot/Feedback/VelocityGoal")
-  public double getPivotVelocityGoal() {
-    return Math.toRadians(pivotFeedback.getGoal().velocity);
+  @AutoLogOutput(key = "Yoshivator/Pivot/Feedback/PositionSetpoint")
+  public double getPivotPositionSetpoint() {
+    return Math.toRadians(pivotFeedback.getSetpoint().position);
   }
 
-  /** Returns if the pivot is at the goal or not */
   @AutoLogOutput(key = "Yoshivator/Pivot/Feedback/AtGoal")
   public boolean isPivotAtGoal() {
     return pivotFeedback.atGoal();
   }
 
-  /** Returns the pivot's position setpoint */
-  @AutoLogOutput(key = "Yoshivator/Pivot/Feedback/PositionSetpoint")
-  public double getPivotPositionSetpoint() {
-    return Math.toRadians(pivotFeedback.getSetpoint().position);
+  @AutoLogOutput(key = "Yoshivator/Pivot/Feedback/AtGoal")
+  public boolean isPivotAtSetpoint() {
+    return pivotFeedback.atSetpoint();
   }
 }

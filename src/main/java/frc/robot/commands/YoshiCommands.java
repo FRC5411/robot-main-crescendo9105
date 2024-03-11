@@ -34,38 +34,38 @@ public class YoshiCommands {
     return currentCommand;
   }
 
-  /** Returns a command to run the pivot to a given setpoint */
-  public static Command runPivot(Yoshivator robotYoshi) {
-    currentCommand =
-        Commands.runOnce(
-                () -> {
-                  pivotSetpoint = Rotation2d.fromDegrees(pivotSetter.get());
-                },
-                robotYoshi)
-            .andThen(
-                Commands.runOnce(() -> robotYoshi.setPivotSetpoint(pivotSetpoint), robotYoshi));
+  // /** Returns a command to run the pivot to a given setpoint */
+  // public static Command runPivot(Yoshivator robotYoshi) {
+  //   currentCommand =
+  //       Commands.runOnce(
+  //               () -> {
+  //                 pivotSetpoint = Rotation2d.fromDegrees(pivotSetter.get());
+  //               },
+  //               robotYoshi)
+  //           .andThen(
+  //               Commands.runOnce(() -> robotYoshi.setPivotSetpoint(pivotSetpoint), robotYoshi));
 
-    return currentCommand;
-  }
+  //   return currentCommand;
+  // }
 
-  /** Returns a command to run the pivot to a given setpoint */
-  public static Command runPivotSetpoint(Yoshivator robotYoshi, YoshiPivotSetpoint setpoint) {
-    currentCommand =
-        Commands.runOnce(
-                () -> {
-                  pivotSetpoint = Rotation2d.fromDegrees(setpoint.getPositionDegrees());
-                },
-                robotYoshi)
-            .andThen(
-                Commands.runOnce(() -> robotYoshi.setPivotSetpoint(pivotSetpoint), robotYoshi));
+  // /** Returns a command to run the pivot to a given setpoint */
+  // public static Command runPivotSetpoint(Yoshivator robotYoshi, YoshiPivotSetpoint setpoint) {
+  //   currentCommand =
+  //       Commands.runOnce(
+  //               () -> {
+  //                 pivotSetpoint = Rotation2d.fromDegrees(setpoint.getPositionDegrees());
+  //               },
+  //               robotYoshi)
+  //           .andThen(
+  //               Commands.runOnce(() -> robotYoshi.setPivotSetpoint(pivotSetpoint), robotYoshi));
 
-    return currentCommand;
-  }
+  //   return currentCommand;
+  // }
 
   /** Returns a command to run the flywheel given a direction */
   public static Command runFlywheelManual(Yoshivator robotYoshi, YoshiFlywheelDirection direction) {
     currentCommand =
-        Commands.run(() -> robotYoshi.setFlywheelVolts(direction.getVolts()), robotYoshi)
+        Commands.run(() -> robotYoshi.setRollerVolts(direction.getVolts()), robotYoshi)
             .alongWith(new InstantCommand(() -> logDirection(direction)));
 
     return currentCommand;
@@ -80,10 +80,11 @@ public class YoshiCommands {
                   pivotSetpoint = Rotation2d.fromDegrees(setpoint.getPositionDegrees());
                 },
                 robotYoshi)
-            .andThen(Commands.runOnce(() -> robotYoshi.setPivotSetpoint(pivotSetpoint), robotYoshi))
+            // .andThen(Commands.runOnce(() -> robotYoshi.setPivotSetpoint(pivotSetpoint),
+            // robotYoshi))
             .andThen(
                 Commands.runOnce(
-                    () -> robotYoshi.setFlywheelVolts(direction.getVolts()), robotYoshi));
+                    () -> robotYoshi.setRollerVolts(direction.getVolts()), robotYoshi));
     return currentCommand;
   }
 
@@ -97,8 +98,8 @@ public class YoshiCommands {
         new FunctionalCommand(
             () -> {
               pivotSetpoint = Rotation2d.fromDegrees(setpoint.getPositionDegrees());
-              robotYoshi.setPivotSetpoint(pivotSetpoint);
-              robotYoshi.setFlywheelVolts(direction.getVolts());
+              // robotYoshi.setPivotSetpoint(pivotSetpoint);
+              robotYoshi.setRollerVolts(direction.getVolts());
             },
             () -> {},
             (interrupted) -> {
@@ -122,11 +123,11 @@ public class YoshiCommands {
         new FunctionalCommand(
             () -> {
               pivotSetpoint = Rotation2d.fromDegrees(YoshiPivotSetpoint.AMP.getPositionDegrees());
-              robotYoshi.setPivotSetpoint(pivotSetpoint);
+              // robotYoshi.setPivotSetpoint(pivotSetpoint);
             },
             () -> {
               if (debouncer.calculate(true)) {
-                robotYoshi.setFlywheelVolts(YoshiFlywheelDirection.IN.getVolts());
+                robotYoshi.setRollerVolts(YoshiFlywheelDirection.IN.getVolts());
               }
             },
             (interrupted) -> {

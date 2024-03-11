@@ -6,6 +6,7 @@ package frc.robot.subsystems.intake;
 
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
@@ -28,6 +29,15 @@ public class IntakeIOSparkMax implements IntakeIO {
     intakeMotor.setSmartCurrentLimit(30);
     intakeMotor.enableVoltageCompensation(12.0);
     intakeMotor.setIdleMode(IdleMode.kBrake);
+
+    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 100);
+    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 100);
+    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 100);
+    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 100);
+    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 100);
+    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 100);
+    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 100);
+    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 100);
 
     intakeEncoder.setPosition(0.0);
 
