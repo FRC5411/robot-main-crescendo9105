@@ -16,11 +16,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Caster.CasterState;
-import frc.robot.Superstructure.SuperstructureState;
-import frc.robot.commands.ClimbCommands;
-import frc.robot.commands.ClimbCommands.ClimbLeftDirection;
-import frc.robot.commands.ClimbCommands.ClimbRightDirection;
 import frc.robot.commands.IndexerCommands;
 import frc.robot.commands.IndexerCommands.IndexerDirection;
 import frc.robot.commands.IntakeCommands;
@@ -48,6 +43,8 @@ import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.leds.LEDSubsystem;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.Shooter.AnglerSetpoints;
+import frc.robot.subsystems.shooter.Shooter.LauncherSetpoints;
 import frc.robot.subsystems.shooter.TargetingSystem;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.angler.AnglerIOSim;
@@ -80,8 +77,6 @@ public class RobotContainer {
   private Superstructure superstructure;
   private Caster caster;
 
-  private TargetingSystem robotTargetingSystem = new TargetingSystem();
-
   private CommandXboxController pilotController = new CommandXboxController(0);
   private CommandXboxController copilotController = new CommandXboxController(1);
 
@@ -90,7 +85,7 @@ public class RobotContainer {
   public RobotContainer() {
     initializeSubsystems();
 
-    superstructure = new Superstructure(robotDrive, robotShooter, robotClimb, robotTargetingSystem);
+    superstructure = new Superstructure(robotDrive, robotShooter, robotClimb);
     caster = new Caster(robotIntake, robotIndexer, robotYoshi);
 
     configureAutonomous();
@@ -211,10 +206,7 @@ public class RobotContainer {
         "AutoShoot",
         IndexerCommands.stopIndexer(robotIndexer)
             .alongWith(IntakeCommands.stopIntake(robotIntake))
-            .alongWith(
-                ShooterCommands.automaticTarget(
-                        robotShooter, robotTargetingSystem, () -> robotDrive.getFilteredPose())
-                    .withTimeout(3.0)));
+            .alongWith(ShooterCommands.automaticTarget(robotShooter).withTimeout(3.0)));
 
     NamedCommands.registerCommand(
         "FirePiece",
@@ -261,7 +253,7 @@ public class RobotContainer {
                   robotDrive,
                   () -> 0.0,
                   () -> 0.0,
-                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getOdometryPose())))
+                  () -> TargetingSystem.getOptimalLaunchHeading()))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
       pilotController
@@ -279,112 +271,118 @@ public class RobotContainer {
               () -> -pilotController.getLeftX(),
               () -> -pilotController.getRightX()));
 
-      /* Intake a note from the ground */
-      pilotController
-          .leftBumper()
-          .whileTrue(
-              caster
-                  .getCommand(CasterState.INTAKE_GROUND)
-                  .alongWith(superstructure.getCommand(SuperstructureState.INTAKING)))
-          .whileFalse(
-              caster
-                  .getCommand(CasterState.IDLE)
-                  .alongWith(superstructure.getCommand(SuperstructureState.IDLE)));
-
-      /* Outtake a gamepiece */
-      pilotController
-          .rightBumper()
-          .whileTrue(caster.getCommand(CasterState.OUTTAKE))
-          .whileFalse(caster.getCommand(CasterState.IDLE));
-
-      /* Intake a note from the ground into the yoshi */
-      pilotController
-          .leftTrigger()
-          .whileTrue(caster.getCommand(CasterState.INTAKE_AMP))
-          .whileFalse(caster.getCommand(CasterState.IDLE));
-
-      /* Reset gyro */
-      pilotController.y().onTrue(SwerveCommands.resetGyro(robotDrive));
-
-      /* Auto heading to speaker */
       pilotController
           .a()
           .whileTrue(
-              SwerveCommands.setHeading(
-                  robotDrive,
-                  () -> 0.0,
-                  () -> 0.0,
-                  () -> robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getFilteredPose())))
-          .onFalse(SwerveCommands.stopDrive(robotDrive));
+              robotShooter.setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT))
+          .whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
 
-      /* Copilot bindings */
+      //   /* Intake a note from the ground */
+      //   pilotController
+      //       .leftBumper()
+      //       .whileTrue(
+      //           caster
+      //               .getCommand(CasterState.INTAKE_GROUND)
+      //               .alongWith(superstructure.getCommand(SuperstructureState.INTAKING)))
+      //       .whileFalse(
+      //           caster
+      //               .getCommand(CasterState.IDLE)
+      //               .alongWith(superstructure.getCommand(SuperstructureState.IDLE)));
 
-      /* Align yoshi to score in amp */
-      copilotController
-          .leftBumper()
-          .whileTrue(caster.getCommand(CasterState.OUTTAKE))
-          .whileFalse(caster.getCommand(CasterState.IDLE));
+      //   /* Outtake a gamepiece */
+      //   pilotController
+      //       .rightBumper()
+      //       .whileTrue(caster.getCommand(CasterState.OUTTAKE))
+      //       .whileFalse(caster.getCommand(CasterState.IDLE));
 
-      /* Prepare to climb */
-      copilotController
-          .rightTrigger()
-          .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_ANGLER_DOWN))
-          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
+      //   /* Intake a note from the ground into the yoshi */
+      //   pilotController
+      //       .leftTrigger()
+      //       .whileTrue(caster.getCommand(CasterState.INTAKE_AMP))
+      //       .whileFalse(caster.getCommand(CasterState.IDLE));
 
-      /* Climb to setpoint */
-      copilotController
-          .leftTrigger()
-          .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_ANGLER_UP))
-          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
+      //   /* Reset gyro */
+      //   pilotController.y().onTrue(SwerveCommands.resetGyro(robotDrive));
 
-      /* Index note */
-      copilotController
-          .povLeft()
-          .whileTrue(caster.getCommand(CasterState.INDEX))
-          .whileFalse(caster.getCommand(CasterState.IDLE));
+      //   /* Auto heading to speaker */
+      //   pilotController
+      //       .a()
+      //       .whileTrue(
+      //           SwerveCommands.setHeading(
+      //               robotDrive,
+      //               () -> 0.0,
+      //               () -> 0.0,
+      //               () -> TargetingSystem.getOptimalLaunchHeading()))
+      //       .onFalse(SwerveCommands.stopDrive(robotDrive));
 
-      /* Outdex note */
-      copilotController
-          .povRight()
-          .whileTrue(caster.getCommand(CasterState.OUTDEX))
-          .whileFalse(caster.getCommand(CasterState.IDLE));
+      //   /* Copilot bindings */
 
-      /* Prepare to fire a note at the speaker */
-      copilotController
-          .y()
-          .whileTrue(superstructure.getCommand(SuperstructureState.PREPARING_SHOT))
-          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
+      //   /* Align yoshi to score in amp */
+      //   copilotController
+      //       .leftBumper()
+      //       .whileTrue(caster.getCommand(CasterState.OUTTAKE))
+      //       .whileFalse(caster.getCommand(CasterState.IDLE));
 
-      /* Align yoshi to score in amp */
-      copilotController
-          .a()
-          .whileTrue(caster.getCommand(CasterState.SCORE_AMP))
-          .whileFalse(caster.getCommand(CasterState.IDLE));
+      //   /* Prepare to climb */
+      //   copilotController
+      //       .rightTrigger()
+      //       .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_ANGLER_DOWN))
+      //       .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
 
-      /* Test climb manual */
-      copilotController
-          .x()
-          .whileTrue(
-              ClimbCommands.runClimbManual(
-                  robotClimb, ClimbLeftDirection.IN, ClimbRightDirection.OUT))
-          .whileFalse(ClimbCommands.stopClimb(robotClimb));
+      //   /* Climb to setpoint */
+      //   copilotController
+      //       .leftTrigger()
+      //       .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_ANGLER_UP))
+      //       .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
 
-      /* Test manual climb flip direction */
-      copilotController.b().onTrue(superstructure.swapClimbDirection());
+      //   /* Index note */
+      //   copilotController
+      //       .povLeft()
+      //       .whileTrue(caster.getCommand(CasterState.INDEX))
+      //       .whileFalse(caster.getCommand(CasterState.IDLE));
 
-      /* Test manual climb left */
-      copilotController
-          .povUp()
-          .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_CLIMB_LEFT))
-          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
+      //   /* Outdex note */
+      //   copilotController
+      //       .povRight()
+      //       .whileTrue(caster.getCommand(CasterState.OUTDEX))
+      //       .whileFalse(caster.getCommand(CasterState.IDLE));
 
-      /* Test manual climb right */
-      copilotController
-          .povDown()
-          .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_CLIMB_RIGHT))
-          .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
+      //   /* Prepare to fire a note at the speaker */
+      //   copilotController
+      //       .y()
+      //       .whileTrue(superstructure.getCommand(SuperstructureState.PREPARING_SHOT))
+      //       .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
 
-      copilotController.rightBumper().onTrue(robotLEDs.lightDarkBlueGradientCommand(true));
+      //   /* Align yoshi to score in amp */
+      //   copilotController
+      //       .a()
+      //       .whileTrue(caster.getCommand(CasterState.SCORE_AMP))
+      //       .whileFalse(caster.getCommand(CasterState.IDLE));
+
+      //   /* Test climb manual */
+      //   copilotController
+      //       .x()
+      //       .whileTrue(
+      //           ClimbCommands.runClimbManual(
+      //               robotClimb, ClimbLeftDirection.IN, ClimbRightDirection.OUT))
+      //       .whileFalse(ClimbCommands.stopClimb(robotClimb));
+
+      //   /* Test manual climb flip direction */
+      //   copilotController.b().onTrue(superstructure.swapClimbDirection());
+
+      //   /* Test manual climb left */
+      //   copilotController
+      //       .povUp()
+      //       .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_CLIMB_LEFT))
+      //       .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
+
+      //   /* Test manual climb right */
+      //   copilotController
+      //       .povDown()
+      //       .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_CLIMB_RIGHT))
+      //       .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
+
+      //   copilotController.rightBumper().onTrue(robotLEDs.lightDarkBlueGradientCommand(true));
     }
   }
 
@@ -399,8 +397,7 @@ public class RobotContainer {
 
   public Optional<Rotation2d> getRotationTargetOverride() {
     if (robotDrive.getPPRotationTargetOverride()) {
-      return Optional.of(
-          robotTargetingSystem.getOptimalLaunchHeading(robotDrive.getFilteredPose()));
+      return Optional.of(TargetingSystem.getOptimalLaunchHeading());
     } else {
       return Optional.empty();
     }

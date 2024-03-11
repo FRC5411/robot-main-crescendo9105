@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.shooter.launcher;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -122,6 +123,19 @@ public class LauncherIOTalonFX implements LauncherIO {
 
     topMotor.getConfigurator().apply(topConfiguration);
     bottomMotor.getConfigurator().apply(bottomConfiguration);
+
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        10.0,
+        topMotor.getVelocity(),
+        topMotor.getMotorVoltage(),
+        topMotor.getSupplyCurrent(),
+        topMotor.getClosedLoopReference(),
+        topMotor.getClosedLoopError(),
+        bottomMotor.getVelocity(),
+        bottomMotor.getMotorVoltage(),
+        bottomMotor.getSupplyCurrent(),
+        bottomMotor.getClosedLoopReference(),
+        bottomMotor.getClosedLoopError());
   }
 
   @Override

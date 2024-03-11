@@ -4,17 +4,15 @@
 
 package frc.robot.commands;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.TargetingSystem;
+import frc.robot.subsystems.shooter.Shooter.AnglerSetpoints;
+import frc.robot.subsystems.shooter.Shooter.LauncherSetpoints;
 import frc.robot.utils.debugging.LoggedTunableNumber;
-import java.util.function.Supplier;
 
 /** Class to hold all of the commands for the Shooter */
 public class ShooterCommands {
@@ -41,7 +39,7 @@ public class ShooterCommands {
                 robotShooter)
             .andThen(
                 Commands.runOnce(
-                    () -> robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS, true),
+                    () -> robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS),
                     robotShooter));
 
     return currentCommand;
@@ -53,7 +51,7 @@ public class ShooterCommands {
         new FunctionalCommand(
             () -> {
               anglerPosition = Rotation2d.fromDegrees(angleSetter.get());
-              robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS, true);
+              robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS);
             },
             () -> {},
             (interrupted) -> {
@@ -75,25 +73,19 @@ public class ShooterCommands {
                 robotShooter)
             .andThen(
                 Commands.run(
-                    () -> robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS, true),
+                    () -> robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS),
                     robotShooter));
 
     return currentCommand;
   }
 
   /** Returns a command to run the angler motor */
-  public static Command automaticTarget(
-      Shooter robotShooter,
-      TargetingSystem robotTargetingSystem,
-      Supplier<Pose2d> robotPoseSupplier) {
+  public static Command automaticTarget(Shooter robotShooter) {
     currentCommand =
         new FunctionalCommand(
             () -> {},
             () -> {
-              anglerPosition = robotTargetingSystem.getLaunchMapAngle(robotPoseSupplier.get());
-              laucnherVelocityMPS = 38.0;
-
-              robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS, false);
+              robotShooter.setAllMotors(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT);
             },
             interrupted -> {
               anglerPosition = null;
@@ -110,7 +102,7 @@ public class ShooterCommands {
   /** Returns a command to run the angler manually */
   public static Command runAnglerManual(Shooter robotShooter, AnglerDirection direction) {
     currentCommand =
-        Commands.runOnce(() -> robotShooter.setAnglerPosition(null, false), robotShooter)
+        Commands.runOnce(() -> robotShooter.setAnglerPosition(null), robotShooter)
             .andThen(
                 Commands.runOnce(
                     () -> robotShooter.setAnglerVolts(direction.getVolts()), robotShooter))
@@ -130,7 +122,7 @@ public class ShooterCommands {
                 robotsShooter)
             .andThen(
                 Commands.run(
-                    () -> robotsShooter.setAllMotors(anglerPosition, laucnherVelocityMPS, true),
+                    () -> robotsShooter.setAllMotors(anglerPosition, laucnherVelocityMPS),
                     robotsShooter));
 
     return currentCommand;
@@ -146,7 +138,7 @@ public class ShooterCommands {
                 robotShooter)
             .andThen(
                 Commands.run(
-                    () -> robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS, true),
+                    () -> robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS),
                     robotShooter));
 
     return currentCommand;
@@ -165,35 +157,6 @@ public class ShooterCommands {
     return currentCommand;
   }
 
-  /** Returns command for a full cycle */
-  public static Command fullCycle(Shooter robotShooter, Indexer robotIndexer) {
-    currentCommand =
-        new FunctionalCommand(
-            () -> {
-              anglerPosition = Rotation2d.fromDegrees(angleSetter.get());
-              laucnherVelocityMPS = launcherSetter.get();
-
-              robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS, true);
-            },
-            () -> {
-              if (robotShooter.isAnglerAtGoal()
-                  && ((laucnherVelocityMPS - robotShooter.getTopLauncherVelocityMPS() < 0.75))) {
-                robotIndexer.setIndexerVolts(12.0);
-              }
-            },
-            (interrupted) -> {
-              anglerPosition = null;
-              laucnherVelocityMPS = 0.0;
-
-              robotShooter.stopMotors(true, true);
-              robotIndexer.stopMotors();
-            },
-            () -> false,
-            robotShooter);
-
-    return currentCommand;
-  }
-
   /** Returns a command to run all of the Shooter motors */
   public static Command runAll(
       Shooter robotShooter, Rotation2d desiredPosition, double desiredSpeedMPS) {
@@ -206,7 +169,7 @@ public class ShooterCommands {
                 robotShooter)
             .andThen(
                 Commands.runOnce(
-                    () -> robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS, true),
+                    () -> robotShooter.setAllMotors(anglerPosition, laucnherVelocityMPS),
                     robotShooter));
 
     return currentCommand;

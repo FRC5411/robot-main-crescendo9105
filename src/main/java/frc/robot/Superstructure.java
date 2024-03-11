@@ -18,7 +18,6 @@ import frc.robot.commands.ShooterCommands.AnglerDirection;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.TargetingSystem;
 import org.littletonrobotics.junction.Logger;
 
 /** State-machine for the Launcher, Angler, & Climb */
@@ -27,19 +26,14 @@ public class Superstructure extends SubsystemBase {
   private Shooter robotShooter;
   private Climb robotClimb;
 
-  private TargetingSystem robotTargetingSystem;
-
   private SuperstructureState currentState = SuperstructureState.IDLE;
   private boolean currentClimbDirectionIn = false;
 
   /** Creates a new Superstructure. */
-  public Superstructure(
-      Drive drive, Shooter shooter, Climb climb, TargetingSystem targetingSystem) {
+  public Superstructure(Drive drive, Shooter shooter, Climb climb) {
     robotDrive = drive;
     robotShooter = shooter;
     robotClimb = climb;
-
-    robotTargetingSystem = targetingSystem;
   }
 
   @Override
@@ -67,8 +61,7 @@ public class Superstructure extends SubsystemBase {
                 //         robotClimb,
                 //         ClimbPositions.LEFT_IDLE.getPosition(),
                 //         ClimbPositions.RIGHT_IDLE.getPosition()));
-              case PREPARING_SHOT -> ShooterCommands.automaticTarget(
-                  robotShooter, robotTargetingSystem, () -> robotDrive.getFilteredPose());
+              case PREPARING_SHOT -> ShooterCommands.automaticTarget(robotShooter);
                 // .alongWith(
                 //     ClimbCommands.runClimb(
                 //         robotClimb,
