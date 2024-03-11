@@ -4,7 +4,9 @@
 
 package frc.robot.subsystems.yoshivator;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -38,5 +40,8 @@ public class YoshiVisualizer {
     }
 
     Logger.recordOutput(PIVOT_LOG_KEY, pivotMechanismVisual);
+    Logger.recordOutput(
+        PIVOT_LOG_KEY + "3D",
+        new Pose3d(0.344, 0.009, 0.326, new Rotation3d(0.0, -angle.getRadians(), 0.0)));
   }
 }
