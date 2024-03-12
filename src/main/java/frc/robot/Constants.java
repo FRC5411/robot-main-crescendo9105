@@ -31,8 +31,7 @@ public final class Constants {
   public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : Mode.SIM;
   public static final Robot currentRobot = Robot.SYNTH;
   public static boolean tuningMode = true;
-  public static boolean useDebuggingBindings = true;
-  public static boolean usingAssistedControl = true;
+  public static boolean useDebuggingBindings = false;
 
   public static enum Mode {
     /** Running on a real robot. */

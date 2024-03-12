@@ -32,7 +32,7 @@ public class Shooter extends SubsystemBase {
     AIM(() -> TargetingSystem.getLaunchMapAngle()),
     CLIMB(() -> Rotation2d.fromDegrees(23.0)),
     INTAKE(() -> Rotation2d.fromDegrees(40.0)),
-    IDLE(() -> pivotPosition);
+    IDLE(() -> anglerPosition);
 
     private Supplier<Rotation2d> angleSupplier;
 
@@ -63,7 +63,7 @@ public class Shooter extends SubsystemBase {
     }
   }
 
-  public static Rotation2d pivotPosition = null;
+  public static Rotation2d anglerPosition = null;
 
   private AnglerIO anglerIO;
   private AnglerIOInputsAutoLogged anglerIOInputs = new AnglerIOInputsAutoLogged();
@@ -218,20 +218,39 @@ public class Shooter extends SubsystemBase {
     }
   }
 
+  private void updateTunableNumbers() {
+    if (anglerFeedbackP.hasChanged(hashCode())
+        || anglerFeedbackI.hasChanged(hashCode())
+        || anglerFeedbackD.hasChanged(hashCode())
+        || anglerFeedbackV.hasChanged(hashCode())
+        || anglerFeedbackA.hasChanged(hashCode())) {
+      anglerFeedback.setP(anglerFeedbackP.get());
+      anglerFeedback.setI(anglerFeedbackI.get());
+      anglerFeedback.setD(anglerFeedbackD.get());
+
+      anglerFeedback.setConstraints(
+          new TrapezoidProfile.Constraints(anglerFeedbackV.get(), anglerFeedbackA.get()));
+    }
+    if (anglerFeedforwardU.hasChanged(hashCode()) || anglerFeedforwardL.hasChanged(hashCode())) {
+      anglerFeedforward.updateU(anglerFeedforwardU.get());
+      anglerFeedforward.updateL(anglerFeedforwardL.get());
+    }
+  }
+
   public Command mapToCommand(ShooterStates state) {
     return switch (state) {
-      case OFF -> Commands.runOnce(() -> stopMotors(false, false), this);
+      case OFF -> Commands.runOnce(() -> stopMotors(true, true), this);
       case AIM -> setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT);
       case INTAKE -> setShooterState(AnglerSetpoints.INTAKE, LauncherSetpoints.STOP);
       case CLIMB -> setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.STOP);
       case EJECT -> setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.EJECT);
-      case UP -> setAnglerManual(9);
-      case DOWN -> setAnglerManual(-9);
+      case UP -> setAnglerManual(9.0);
+      case DOWN -> setAnglerManual(-9.0);
       case FIRE -> Commands.runOnce(
           () -> setLauncherVelocityMPS(LauncherSetpoints.SPEAKER_SHOT), this);
       case IDLE -> Commands.runOnce(
           () -> {
-            pivotPosition = currentAngle;
+            anglerPosition = currentAngle;
             setMotors(null, LauncherSetpoints.IDLE);
             setAnglerVolts(0);
           },
@@ -297,25 +316,6 @@ public class Shooter extends SubsystemBase {
       launcherSetpointMPS = null;
       launcherIO.setTopVolts(0.0);
       launcherIO.setBottomVolts(0.0);
-    }
-  }
-
-  private void updateTunableNumbers() {
-    if (anglerFeedbackP.hasChanged(hashCode())
-        || anglerFeedbackI.hasChanged(hashCode())
-        || anglerFeedbackD.hasChanged(hashCode())
-        || anglerFeedbackV.hasChanged(hashCode())
-        || anglerFeedbackA.hasChanged(hashCode())) {
-      anglerFeedback.setP(anglerFeedbackP.get());
-      anglerFeedback.setI(anglerFeedbackI.get());
-      anglerFeedback.setD(anglerFeedbackD.get());
-
-      anglerFeedback.setConstraints(
-          new TrapezoidProfile.Constraints(anglerFeedbackV.get(), anglerFeedbackA.get()));
-    }
-    if (anglerFeedforwardU.hasChanged(hashCode()) || anglerFeedforwardL.hasChanged(hashCode())) {
-      anglerFeedforward.updateU(anglerFeedforwardU.get());
-      anglerFeedforward.updateL(anglerFeedforwardL.get());
     }
   }
 

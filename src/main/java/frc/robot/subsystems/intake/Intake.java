@@ -13,7 +13,6 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
-  /** Direction of the Intake */
   public static enum IntakeSetpoint {
     IN(12.0),
     OUT(-12.0),
@@ -30,38 +29,14 @@ public class Intake extends SubsystemBase {
     }
   }
 
-  private IntakeIO intakeIO;
-  private IntakeIOInputsAutoLogged intakeIOInputs = new IntakeIOInputsAutoLogged();
-
   @AutoLogOutput(key = "Intake/CurrentSetpoint")
   private IntakeSetpoint currentSetpoint = IntakeSetpoint.OFF;
 
+  private IntakeIO intakeIO;
+  private IntakeIOInputsAutoLogged intakeIOInputs = new IntakeIOInputsAutoLogged();
+
   public Intake(IntakeIO IntakeIO) {
     this.intakeIO = IntakeIO;
-  }
-
-  public Command mapToCommand(IntakeStates desiredState) {
-    Logger.recordOutput("I RAN", "I RAN");
-    switch (desiredState) {
-      case INTAKE:
-        Logger.recordOutput("I RAN TOO", "Intake");
-        return runIntake(IntakeSetpoint.IN);
-      case OUTTAKE:
-        Logger.recordOutput("I RAN TOO", "OUTTAKE");
-        return runIntake(IntakeSetpoint.OUT);
-      case OFF:
-      default:
-        Logger.recordOutput("I RAN TOO", "OFF");
-        return runIntake(IntakeSetpoint.OFF);
-    }
-  }
-
-  public Command runIntake(IntakeSetpoint setpoint) {
-    return Commands.runOnce(() -> setCurrentSetpoint(setpoint), this);
-  }
-
-  public Command stopIntake() {
-    return Commands.runOnce(() -> setCurrentSetpoint(IntakeSetpoint.OFF), this);
   }
 
   @Override
@@ -76,6 +51,23 @@ public class Intake extends SubsystemBase {
     if (DriverStation.isDisabled()) {
       setVolts(0);
     }
+  }
+
+  public Command mapToCommand(IntakeStates desiredState) {
+    return switch (desiredState) {
+      case INTAKE -> runIntake(IntakeSetpoint.IN);
+      case OUTTAKE -> runIntake(IntakeSetpoint.OUT);
+      case OFF -> runIntake(IntakeSetpoint.OFF);
+      default -> runIntake(IntakeSetpoint.OFF);
+    };
+  }
+
+  public Command runIntake(IntakeSetpoint setpoint) {
+    return Commands.runOnce(() -> setCurrentSetpoint(setpoint), this);
+  }
+
+  public Command stopIntake() {
+    return Commands.runOnce(() -> setCurrentSetpoint(IntakeSetpoint.OFF), this);
   }
 
   private void setCurrentSetpoint(IntakeSetpoint setpoint) {

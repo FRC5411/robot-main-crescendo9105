@@ -15,7 +15,6 @@ import edu.wpi.first.math.MathUtil;
 public class IntakeIOSparkMax implements IntakeIO {
   private final double GEARING = 9.0 / 1.0;
 
-  // TODO Update IDs and constatns as needed
   private CANSparkMax intakeMotor = new CANSparkMax(51, MotorType.kBrushless);
   private RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
 
@@ -26,15 +25,15 @@ public class IntakeIOSparkMax implements IntakeIO {
     intakeMotor.clearFaults();
     intakeMotor.restoreFactoryDefaults();
 
-    intakeMotor.setSmartCurrentLimit(30);
-    intakeMotor.enableVoltageCompensation(12.0);
-    intakeMotor.setIdleMode(IdleMode.kBrake);
-
     intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 100);
     intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 100);
     intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 100);
     intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 100);
     intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 100);
+
+    intakeMotor.setSmartCurrentLimit(30);
+    intakeMotor.enableVoltageCompensation(12.0);
+    intakeMotor.setIdleMode(IdleMode.kBrake);
 
     intakeEncoder.setPosition(0.0);
 

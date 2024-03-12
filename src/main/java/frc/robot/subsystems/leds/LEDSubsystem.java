@@ -51,18 +51,19 @@ public class LEDSubsystem extends SubsystemBase {
   }
 
   public void setSolidBlue() {
-    setSolidHSV(228/2, 100, 100);
+    setSolidHSV(228 / 2, 100, 100);
   }
 
   private void setSolidHSV(int h, int s, int v) {
     shouldAnimate = false;
-    queuedPatterns.add(() -> {
-      taskDelaySec = 0.2;
-      for(int i = 0; i < ledBuffer.getLength(); i++) {
-        final int index = i;
-        queuedTasks.add(() -> ledBuffer.setHSV(index, h, s, v));
-      }
-    });
+    queuedPatterns.add(
+        () -> {
+          taskDelaySec = 0.2;
+          for (int i = 0; i < ledBuffer.getLength(); i++) {
+            final int index = i;
+            queuedTasks.add(() -> ledBuffer.setHSV(index, h, s, v));
+          }
+        });
   }
 
   private void setBuffer() {
@@ -73,7 +74,7 @@ public class LEDSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     if (shouldAnimate) {
-      if(Timer.getFPGATimestamp() >= animateTargetTimestamp) {
+      if (Timer.getFPGATimestamp() >= animateTargetTimestamp) {
         // Animate a single frameshift.
         Color lastLED = ledBuffer.getLED(ledBuffer.getLength() - 1);
         for (int i = ledBuffer.getLength() - 1; i > 0; i--)
@@ -97,8 +98,8 @@ public class LEDSubsystem extends SubsystemBase {
           }
         }
       } else if (Timer.getFPGATimestamp() >= taskTargetTimestamp) {
-          queuedTasks.remove(0).run();
-          taskTargetTimestamp = Timer.getFPGATimestamp() + taskDelaySec;
+        queuedTasks.remove(0).run();
+        taskTargetTimestamp = Timer.getFPGATimestamp() + taskDelaySec;
       }
     }
   }

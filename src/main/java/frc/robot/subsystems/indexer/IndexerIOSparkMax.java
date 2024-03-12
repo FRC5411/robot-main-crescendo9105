@@ -26,15 +26,15 @@ public class IndexerIOSparkMax implements IndexerIO {
     indexerMotor.clearFaults();
     indexerMotor.restoreFactoryDefaults();
 
-    indexerMotor.setSmartCurrentLimit(20);
-    indexerMotor.enableVoltageCompensation(12.0);
-    indexerMotor.setIdleMode(IdleMode.kBrake);
-
     indexerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 100);
     indexerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 100);
     indexerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 100);
     indexerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 100);
     indexerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 100);
+
+    indexerMotor.setSmartCurrentLimit(20);
+    indexerMotor.enableVoltageCompensation(12.0);
+    indexerMotor.setIdleMode(IdleMode.kBrake);
 
     indexerMotor.setInverted(false);
 
