@@ -383,8 +383,6 @@ public class RobotContainer {
           .povDown()
           .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_CLIMB_RIGHT))
           .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
-
-      copilotController.rightBumper().onTrue(robotLEDs.lightDarkBlueGradientCommand(true));
     }
   }
 
