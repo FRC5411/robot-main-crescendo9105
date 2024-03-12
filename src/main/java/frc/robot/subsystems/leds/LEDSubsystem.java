@@ -51,18 +51,55 @@ public class LEDSubsystem extends SubsystemBase {
   }
 
   public void setSolidBlue() {
-    setSolidHSV(228/2, 100, 100);
+    setSolidHSV(228 / 2, 100, 100);
   }
 
   private void setSolidHSV(int h, int s, int v) {
     shouldAnimate = false;
-    queuedPatterns.add(() -> {
-      taskDelaySec = 0.2;
-      for(int i = 0; i < ledBuffer.getLength(); i++) {
-        final int index = i;
-        queuedTasks.add(() -> ledBuffer.setHSV(index, h, s, v));
-      }
-    });
+    queuedPatterns.add(
+        () -> {
+          taskDelaySec = 0.2;
+          for (int i = 0; i < ledBuffer.getLength(); i++) {
+            final int index = i;
+            queuedTasks.add(() -> ledBuffer.setHSV(index, h, s, v));
+          }
+        });
+  }
+
+  public void setGradient(int startHue, int endHue) {
+    shouldAnimate = false;
+    queuedPatterns.add(
+        () -> {
+          int inc = (int) Math.floor((endHue - startHue) / ledBuffer.getLength());
+          for (int i = 0; i < ledBuffer.getLength(); i++) {
+            final int index = i;
+            queuedTasks.add(() -> ledBuffer.setHSV(index, startHue + (inc * index), 255, 255));
+          }
+        });
+  }
+
+  public void boomerangGradient(int startHue, int endHue) {
+    shouldAnimate = false;
+    queuedPatterns.add(
+        () -> {
+          int currentHue = startHue;
+          int inc = Math.round((endHue - startHue) / ledBuffer.getLength()) * 2;
+          for (int idx = 0; idx < Math.floor(ledBuffer.getLength() / 2); idx++) {
+            final int index = idx;
+            final int thisHue = currentHue;
+            queuedTasks.add(() -> ledBuffer.setHSV(index, thisHue, 255, 255));
+            currentHue += inc;
+          }
+          for (int idx = (int) Math.floor(ledBuffer.getLength() / 2);
+              idx < ledBuffer.getLength();
+              idx++) {
+            final int index = idx;
+            final int thisHue = currentHue;
+            queuedTasks.add(() -> ledBuffer.setHSV(index, thisHue, 255, 255));
+            currentHue += -inc;
+          }
+          queuedTasks.add(() -> shouldAnimate = true);
+        });
   }
 
   private void setBuffer() {
@@ -73,7 +110,7 @@ public class LEDSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     if (shouldAnimate) {
-      if(Timer.getFPGATimestamp() >= animateTargetTimestamp) {
+      if (Timer.getFPGATimestamp() >= animateTargetTimestamp) {
         // Animate a single frameshift.
         Color lastLED = ledBuffer.getLED(ledBuffer.getLength() - 1);
         for (int i = ledBuffer.getLength() - 1; i > 0; i--)
@@ -97,8 +134,8 @@ public class LEDSubsystem extends SubsystemBase {
           }
         }
       } else if (Timer.getFPGATimestamp() >= taskTargetTimestamp) {
-          queuedTasks.remove(0).run();
-          taskTargetTimestamp = Timer.getFPGATimestamp() + taskDelaySec;
+        queuedTasks.remove(0).run();
+        taskTargetTimestamp = Timer.getFPGATimestamp() + taskDelaySec;
       }
     }
   }
