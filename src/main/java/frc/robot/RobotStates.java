@@ -25,7 +25,11 @@ public class RobotStates {
     OFF,
     IDLE,
     GRAB,
-    PULL
+    PULL,
+    MOVE_LEFT,
+    MOVE_RIGHT,
+    MOVE_BOTH,
+    INVERT
   }
 
   public static enum ShooterStates {
@@ -33,6 +37,9 @@ public class RobotStates {
     AIM,
     INTAKE,
     CLIMB,
-    EJECT
+    EJECT,
+    UP,
+    DOWN,
+    FIRE
   }
 }

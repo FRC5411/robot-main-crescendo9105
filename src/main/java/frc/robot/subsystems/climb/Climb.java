@@ -10,7 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Robot;
@@ -47,6 +47,8 @@ public class Climb extends SubsystemBase {
 
   private Rotation2d leftAngleSetpoint = null;
   private Rotation2d rightAngleSetpoint = null;
+
+  private double climbDirection = 1;
 
   private ClimbVisualizer leftVisualizer = new ClimbVisualizer(ClimbSide.LEFT);
   private ClimbVisualizer rightVisualizer = new ClimbVisualizer(ClimbSide.RIGHT);
@@ -128,11 +130,15 @@ public class Climb extends SubsystemBase {
 
   public Command mapToCommand(ClimbStates state) {
     return switch (state) {
-      case OFF -> new InstantCommand(() -> setVolts(0, 0));
-      case IDLE -> new InstantCommand(() -> setAngle(new Rotation2d(0), new Rotation2d(0)));
-      case GRAB -> new InstantCommand(() -> setAngle(new Rotation2d(10), new Rotation2d(10)));
-      case PULL -> new InstantCommand(() -> setAngle(new Rotation2d(60), new Rotation2d(60)));
-      default -> new InstantCommand(() -> setVolts(0, 0));
+      case OFF -> Commands.runOnce(() -> setVolts(0, 0));
+      case IDLE -> Commands.runOnce(() -> setAngle(new Rotation2d(0), new Rotation2d(0)));
+      case GRAB -> Commands.runOnce(() -> setAngle(new Rotation2d(10), new Rotation2d(10)));
+      case PULL -> Commands.runOnce(() -> setAngle(new Rotation2d(60), new Rotation2d(60)));
+      case MOVE_LEFT -> setManualVoltsLeft(9);
+      case MOVE_RIGHT -> setManualVoltsRight(9);
+      case MOVE_BOTH -> setManualVolts(9, 9);
+      case INVERT -> Commands.runOnce(() -> climbDirection *= -1, this);
+      default -> Commands.runOnce(() -> setVolts(0, 0));
     };
   }
 
@@ -208,6 +214,34 @@ public class Climb extends SubsystemBase {
 
       rightClimbFeedback.setConstraints(newConstraints);
     }
+  }
+
+  public Command setManualVolts(double left, double right) {
+    return Commands.runOnce(
+        () -> {
+          leftAngleSetpoint = null;
+          rightAngleSetpoint = null;
+          setVolts(left * climbDirection, right * climbDirection);
+        },
+        this);
+  }
+
+  public Command setManualVoltsLeft(double left) {
+    return Commands.runOnce(
+        () -> {
+          leftAngleSetpoint = null;
+          setVoltsLeft(left * climbDirection);
+        },
+        this);
+  }
+
+  public Command setManualVoltsRight(double right) {
+    return Commands.runOnce(
+        () -> {
+          rightAngleSetpoint = null;
+          setVoltsRight(right * climbDirection);
+        },
+        this);
   }
 
   public void setVolts(double leftVolts, double rightVolts) {

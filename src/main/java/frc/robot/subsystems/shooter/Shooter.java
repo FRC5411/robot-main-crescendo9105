@@ -11,7 +11,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Robot;
@@ -29,6 +28,39 @@ import org.littletonrobotics.junction.Logger;
 
 /** Shooter subsystem */
 public class Shooter extends SubsystemBase {
+  public static enum AnglerSetpoints {
+    AIM(() -> TargetingSystem.getLaunchMapAngle()),
+    CLIMB(() -> Rotation2d.fromDegrees(23.0)),
+    INTAKE(() -> Rotation2d.fromDegrees(40.0));
+
+    private Supplier<Rotation2d> angleSupplier;
+
+    AnglerSetpoints(Supplier<Rotation2d> angle) {
+      this.angleSupplier = angle;
+    }
+
+    public Supplier<Rotation2d> getAngle() {
+      return angleSupplier;
+    }
+  }
+
+  public static enum LauncherSetpoints {
+    EJECT(() -> 5.0),
+    SPEAKER_SHOT(() -> 38.0),
+    FULL_SPEED(() -> 42.0),
+    STOP(() -> 0.0);
+
+    private DoubleSupplier speedSupplierMPS;
+
+    LauncherSetpoints(DoubleSupplier speedMPS) {
+      this.speedSupplierMPS = speedMPS;
+    }
+
+    public DoubleSupplier getSpeedMPS() {
+      return speedSupplierMPS;
+    }
+  }
+
   private AnglerIO anglerIO;
   private AnglerIOInputsAutoLogged anglerIOInputs = new AnglerIOInputsAutoLogged();
   private LauncherIO launcherIO;
@@ -50,47 +82,13 @@ public class Shooter extends SubsystemBase {
 
   private ShooterVisualizer anglerVisualizer = new ShooterVisualizer(new Rotation2d());
 
-  private Rotation2d anglerSetpoint = null;
-  private Double launcherSetpointMPS = null;
+  private AnglerSetpoints anglerSetpoint = null;
+  private LauncherSetpoints launcherSetpointMPS = null;
 
   private boolean angleEncoderCalibrated = false;
   private Rotation2d angleOffset = new Rotation2d();
   private Rotation2d currentAngle = new Rotation2d();
 
-  public static enum AnglerSetpoints {
-    AIM(() -> TargetingSystem.getLaunchMapAngle()),
-    CLIMB(() -> Rotation2d.fromDegrees(23.0)),
-    INTAKE(() -> Rotation2d.fromDegrees(40.0));
-
-    private Supplier<Rotation2d> angleSupplier;
-
-    AnglerSetpoints(Supplier<Rotation2d> angle) {
-      this.angleSupplier = angle;
-    }
-
-    public Rotation2d getAngle() {
-      return angleSupplier.get();
-    }
-  }
-
-  public static enum LauncherSetpoints {
-    EJECT(() -> 5.0),
-    SPEAKER_SHOT(() -> 38.0),
-    FULL_SPEED(() -> 42.0),
-    STOP(() -> 0.0);
-
-    private DoubleSupplier speedSupplierMPS;
-
-    LauncherSetpoints(DoubleSupplier speedMPS) {
-      this.speedSupplierMPS = speedMPS;
-    }
-
-    public double getSpeedMPS() {
-      return speedSupplierMPS.getAsDouble();
-    }
-  }
-
-  /** Creates a new Shooter. */
   public Shooter(AnglerIO anglerIO, LauncherIO launcherIO) {
     this.anglerIO = anglerIO;
     this.launcherIO = launcherIO;
@@ -167,7 +165,6 @@ public class Shooter extends SubsystemBase {
                           anglerIOInputs.anglerAbsolutePosition.getRadians(), 0, 2.0 * Math.PI))
                   .minus(anglerIOInputs.anglerRelativePosition);
           angleEncoderCalibrated = true;
-
           break;
         }
         if (i == 99) {
@@ -177,7 +174,6 @@ public class Shooter extends SubsystemBase {
                           anglerIOInputs.anglerAbsolutePosition.getRadians(), 0, 2.0 * Math.PI))
                   .minus(anglerIOInputs.anglerRelativePosition);
           angleEncoderCalibrated = true;
-
           break;
         }
         anglerVisualizer =
@@ -192,8 +188,10 @@ public class Shooter extends SubsystemBase {
 
     if (anglerSetpoint != null) {
       double anglerFeedbackOutput =
-          anglerFeedback.calculate(currentAngle.getDegrees(), anglerSetpoint.getDegrees());
-      double anglerFeedforwardOutput = anglerFeedforward.calculate(currentAngle, anglerSetpoint);
+          anglerFeedback.calculate(
+              currentAngle.getDegrees(), anglerSetpoint.getAngle().get().getDegrees());
+      double anglerFeedforwardOutput =
+          anglerFeedforward.calculate(currentAngle, anglerSetpoint.getAngle().get());
 
       double anglerCombinedOutput = (anglerFeedbackOutput + anglerFeedforwardOutput);
 
@@ -205,8 +203,8 @@ public class Shooter extends SubsystemBase {
     }
 
     if (launcherSetpointMPS != null) {
-      launcherIO.setTopVelocity(launcherSetpointMPS);
-      launcherIO.setBottomVelocity(launcherSetpointMPS);
+      launcherIO.setTopVelocity(launcherSetpointMPS.getSpeedMPS().getAsDouble());
+      launcherIO.setBottomVelocity(launcherSetpointMPS.getSpeedMPS().getAsDouble());
     }
 
     anglerVisualizer.updateShooterAngle(currentAngle);
@@ -216,7 +214,78 @@ public class Shooter extends SubsystemBase {
     }
   }
 
-  /** Checks if tunable numbers have changed, if so update controllers */
+  public Command mapToCommand(ShooterStates state) {
+    return switch (state) {
+      case OFF -> Commands.runOnce(() -> stopMotors(false, false), this);
+      case AIM -> setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT);
+      case INTAKE -> setShooterState(AnglerSetpoints.INTAKE, LauncherSetpoints.STOP);
+      case CLIMB -> setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.STOP);
+      case EJECT -> setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.EJECT);
+      case UP -> setAnglerManual(9);
+      case DOWN -> setAnglerManual(-9);
+      case FIRE -> Commands.runOnce(() -> setLauncherVelocityMPS(LauncherSetpoints.SPEAKER_SHOT));
+    };
+  }
+
+  public Command setShooterState(AnglerSetpoints anglerState, LauncherSetpoints launcherState) {
+    return Commands.runOnce(() -> setMotors(anglerState, launcherState), this);
+  }
+
+  public Command setAnglerManual(double volts) {
+    return Commands.runOnce(
+        () -> {
+          anglerSetpoint = null;
+          setAnglerVolts(volts);
+        },
+        this);
+  }
+
+  public void setMotors(AnglerSetpoints anglerGoal, LauncherSetpoints launcherGoal) {
+    setAnglerPosition(anglerGoal);
+    setLauncherVelocityMPS(launcherGoal);
+  }
+
+  public void setAnglerPosition(AnglerSetpoints position) {
+    anglerSetpoint = position;
+
+    DoubleSupplier errorDegrees =
+        () -> Math.abs(anglerSetpoint.getAngle().get().minus(currentAngle).getDegrees());
+    Logger.recordOutput("Shooter/ErrorDegrees", errorDegrees.getAsDouble());
+
+    if (anglerSetpoint != null && errorDegrees.getAsDouble() > 2.0) {
+      resetAnglerFeedback();
+    }
+  }
+
+  public void resetAnglerFeedback() {
+    anglerFeedback.reset(currentAngle.getDegrees(), 0.0);
+  }
+
+  public void setLauncherVelocityMPS(LauncherSetpoints velocityMPS) {
+    launcherSetpointMPS = velocityMPS;
+  }
+
+  public void setAnglerVolts(double volts) {
+    anglerIO.setVolts(volts);
+  }
+
+  public void setLauncherVolts(double topFlywheelVolts, double bottomFlywheelVolts) {
+    launcherIO.setTopVolts(topFlywheelVolts);
+    launcherIO.setBottomVolts(bottomFlywheelVolts);
+  }
+
+  public void stopMotors(boolean stopAngler, boolean stopLaunchers) {
+    if (stopAngler) {
+      anglerSetpoint = null;
+      anglerIO.setVolts(0.0);
+    }
+    if (stopLaunchers) {
+      launcherSetpointMPS = null;
+      launcherIO.setTopVolts(0.0);
+      launcherIO.setBottomVolts(0.0);
+    }
+  }
+
   private void updateTunableNumbers() {
     if (anglerFeedbackP.hasChanged(hashCode())
         || anglerFeedbackI.hasChanged(hashCode())
@@ -236,145 +305,45 @@ public class Shooter extends SubsystemBase {
     }
   }
 
-  /** Stop specified motors and set their setpoints to null */
-  public void stopMotors(boolean stopAngler, boolean stopLaunchers) {
-    if (stopAngler) {
-      anglerSetpoint = null;
-      anglerIO.setVolts(0.0);
-    }
-    if (stopLaunchers) {
-      launcherSetpointMPS = null;
-      launcherIO.setTopVolts(0.0);
-      launcherIO.setBottomVolts(0.0);
-    }
-  }
-
-  /** Reset the angler controller profile */
-  public void resetAnglerFeedback() {
-    anglerFeedback.reset(currentAngle.getDegrees(), 0.0);
-  }
-
-  /** Set the voltage of the angler motor */
-  public void setAnglerVolts(double volts) {
-    anglerIO.setVolts(volts);
-  }
-
-  /** Set the voltage of the launcher motors */
-  public void setLauncherVolts(double topFlywheelVolts, double bottomFlywheelVolts) {
-    launcherIO.setTopVolts(topFlywheelVolts);
-    launcherIO.setBottomVolts(bottomFlywheelVolts);
-  }
-
-  /** Set the position setpoint of the angler mechanism */
-  public void setAnglerPosition(Rotation2d position) {
-    anglerSetpoint = position;
-
-    DoubleSupplier errorDegrees = () -> Math.abs(anglerSetpoint.minus(currentAngle).getDegrees());
-    Logger.recordOutput("Shooter/ErrorDegrees", errorDegrees.getAsDouble());
-
-    if (anglerSetpoint != null && errorDegrees.getAsDouble() < 2.0) {
-      resetAnglerFeedback();
-    }
-  }
-
-  /** Set the velocity setpoint of the launcher flywheels */
-  public void setLauncherVelocityMPS(Double velocityMPS) {
-    launcherSetpointMPS = velocityMPS;
-  }
-
-  /** Set all of the motors to a desired state */
-  public void setAllMotors(AnglerSetpoints anglerGoal, LauncherSetpoints launcherGoal) {
-    setAnglerPosition(anglerGoal.getAngle());
-    setLauncherVelocityMPS(launcherGoal.getSpeedMPS());
-  }
-
-  /** Set all of the motors to a desired state */
-  public void setAllMotors(Rotation2d anglerGoal, double launcherGoal) {
-    setAnglerPosition(anglerGoal);
-    setLauncherVolts(launcherGoal, launcherGoal);
-  }
-
-  /** Returns a command based off of the current Shooter state */
-  public Command mapToCommand(ShooterStates state) {
-    return switch (state) {
-      case OFF -> Commands.runOnce(
-          () -> {
-            anglerSetpoint = null;
-            launcherSetpointMPS = null;
-            setAnglerVolts(0.0);
-            setLauncherVolts(0.0, 0.0);
-          },
-          this);
-      case AIM -> setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT);
-      case INTAKE -> setShooterState(AnglerSetpoints.INTAKE, LauncherSetpoints.STOP);
-      case CLIMB -> setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.STOP);
-      case EJECT -> setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.EJECT);
-    };
-  }
-
-  /** Returns a command to set the motors to a desired state */
-  public Command setShooterState(AnglerSetpoints anglerState, LauncherSetpoints launcherState) {
-    return new FunctionalCommand(
-        () -> {},
-        () -> {
-          setAnglerPosition(anglerState.getAngle());
-          setLauncherVelocityMPS(launcherState.getSpeedMPS());
-        },
-        (interupted) -> {
-          stopMotors(true, true);
-        },
-        () -> false,
-        this);
-  }
-
-  /** Returns the angle of the pivot */
   @AutoLogOutput(key = "Shooter/Angler/Position")
   public Rotation2d getAnglerPosition() {
     return currentAngle;
   }
 
-  /** Returns the setpoint state position of the angler feedback */
   @AutoLogOutput(key = "Shooter/Angler/Feedback/SetpointPosition")
   public Rotation2d getAnglerSetpointPosition() {
     return Rotation2d.fromDegrees(anglerFeedback.getSetpoint().position);
   }
 
-  /** Returns the setpoint state velocity of the angler feedback */
   @AutoLogOutput(key = "Shooter/Angler/Feedback/SetpointVelocity")
   public double getAnglerSetpointVelocity() {
     return anglerFeedback.getSetpoint().velocity;
   }
 
-  /** Returns the goal state position of the angler feedback */
   @AutoLogOutput(key = "Shooter/Angler/Feedback/GoalPosition")
   public double getAnglerGoalPosition() {
     return anglerFeedback.getGoal().position;
   }
 
-  /** Returns the position error of the angler feedback */
   @AutoLogOutput(key = "Shooter/Angler/Feedback/PositionError")
   public double getAnglerPositionError() {
     return anglerFeedback.getPositionError();
   }
 
-  /** Returns the velocity error of the angler feedback */
   @AutoLogOutput(key = "Shooter/Angler/Feedback/VelocityError")
   public double getAnglerVelocityError() {
     return anglerFeedback.getVelocityError();
   }
 
-  /** Returns whether or not the Angler is at the goal */
   @AutoLogOutput(key = "Shooter/Angler/Feedback/AtGoal")
   public boolean isAnglerAtGoal() {
     return anglerFeedback.atGoal();
   }
 
-  /** Returns the error of the top motor */
   public double getTopLauncherError() {
     return launcherIOInputs.topFlywheelErrorMPS;
   }
 
-  /** Returns the error of the bottom motor */
   public double getBottomLauncherError() {
     return launcherIOInputs.bottomFlywheelErrorMPS;
   }
