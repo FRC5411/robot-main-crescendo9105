@@ -31,7 +31,8 @@ public class Shooter extends SubsystemBase {
   public static enum AnglerSetpoints {
     AIM(() -> TargetingSystem.getLaunchMapAngle()),
     CLIMB(() -> Rotation2d.fromDegrees(23.0)),
-    INTAKE(() -> Rotation2d.fromDegrees(40.0));
+    INTAKE(() -> Rotation2d.fromDegrees(40.0)),
+    IDLE(() -> pivotPosition);
 
     private Supplier<Rotation2d> angleSupplier;
 
@@ -46,6 +47,7 @@ public class Shooter extends SubsystemBase {
 
   public static enum LauncherSetpoints {
     EJECT(() -> 5.0),
+    IDLE(() -> 9.0),
     SPEAKER_SHOT(() -> 38.0),
     FULL_SPEED(() -> 42.0),
     STOP(() -> 0.0);
@@ -60,6 +62,8 @@ public class Shooter extends SubsystemBase {
       return speedSupplierMPS;
     }
   }
+
+  public static Rotation2d pivotPosition = null;
 
   private AnglerIO anglerIO;
   private AnglerIOInputsAutoLogged anglerIOInputs = new AnglerIOInputsAutoLogged();
@@ -223,7 +227,15 @@ public class Shooter extends SubsystemBase {
       case EJECT -> setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.EJECT);
       case UP -> setAnglerManual(9);
       case DOWN -> setAnglerManual(-9);
-      case FIRE -> Commands.runOnce(() -> setLauncherVelocityMPS(LauncherSetpoints.SPEAKER_SHOT));
+      case FIRE -> Commands.runOnce(
+          () -> setLauncherVelocityMPS(LauncherSetpoints.SPEAKER_SHOT), this);
+      case IDLE -> Commands.runOnce(
+          () -> {
+            pivotPosition = currentAngle;
+            setMotors(null, LauncherSetpoints.IDLE);
+            setAnglerVolts(0);
+          },
+          this);
     };
   }
 
@@ -248,12 +260,14 @@ public class Shooter extends SubsystemBase {
   public void setAnglerPosition(AnglerSetpoints position) {
     anglerSetpoint = position;
 
-    DoubleSupplier errorDegrees =
-        () -> Math.abs(anglerSetpoint.getAngle().get().minus(currentAngle).getDegrees());
-    Logger.recordOutput("Shooter/ErrorDegrees", errorDegrees.getAsDouble());
+    if (anglerSetpoint != null) {
+      DoubleSupplier errorDegrees =
+          () -> Math.abs(anglerSetpoint.getAngle().get().minus(currentAngle).getDegrees());
+      Logger.recordOutput("Shooter/ErrorDegrees", errorDegrees.getAsDouble());
 
-    if (anglerSetpoint != null && errorDegrees.getAsDouble() > 2.0) {
-      resetAnglerFeedback();
+      if (anglerSetpoint != null && errorDegrees.getAsDouble() > 2.0) {
+        resetAnglerFeedback();
+      }
     }
   }
 
@@ -308,6 +322,12 @@ public class Shooter extends SubsystemBase {
   @AutoLogOutput(key = "Shooter/Angler/Position")
   public Rotation2d getAnglerPosition() {
     return currentAngle;
+  }
+
+  public boolean atAllSetpoint() {
+    return getAnglerPositionError() < 0.6
+        && launcherIOInputs.topFlywheelErrorMPS < 1
+        && launcherIOInputs.bottomFlywheelErrorMPS < 1;
   }
 
   @AutoLogOutput(key = "Shooter/Angler/Feedback/SetpointPosition")

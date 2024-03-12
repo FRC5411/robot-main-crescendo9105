@@ -54,7 +54,7 @@ public class DriverCommands {
     return stateMachine.getShooterCommand(ShooterStates.AIM);
   }
 
-  public static Command shooteNote() {
+  public static Command shootNote() {
     return new ParallelCommandGroup(
         stateMachine.getIndexerCommand(IndexerStates.INDEX),
         new ConditionalCommand(
@@ -63,12 +63,22 @@ public class DriverCommands {
             () -> stateMachine.getShooterState() != ShooterStates.AIM));
   }
 
+  public static Command stopShooting() {
+    return new ParallelCommandGroup(
+        stateMachine.getIndexerCommand(IndexerStates.OFF),
+        stateMachine.getShooterCommand(ShooterStates.AIM));
+  }
+
   public static Command moveAnglerUpManual() {
     return stateMachine.getShooterCommand(ShooterStates.UP);
   }
 
   public static Command moveAnglerDownManual() {
     return stateMachine.getShooterCommand(ShooterStates.DOWN);
+  }
+
+  public static Command shooterToIdle() {
+    return stateMachine.getShooterCommand(ShooterStates.IDLE);
   }
 
   /** Climb logic */

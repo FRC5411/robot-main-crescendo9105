@@ -14,19 +14,19 @@
         {
           "type": "named",
           "data": {
-            "name": "AutoShoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "FirePiece"
+            "name": "Shoot"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "DeployYoshi"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake"
           }
         },
         {
@@ -38,25 +38,13 @@
         {
           "type": "named",
           "data": {
-            "name": "AnglerDown"
+            "name": "Shoot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "IntakeInnerRollers"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "AutoShoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "FirePiece"
+            "name": "Intake"
           }
         },
         {
@@ -68,55 +56,19 @@
         {
           "type": "named",
           "data": {
-            "name": "AnglerDown"
+            "name": "Shoot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "IntakeInnerRollers"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "AutoShoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "FirePiece"
+            "name": "Intake"
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "W23"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "AnglerDown"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "IntakeInnerRollers"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "AutoShoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "FirePiece"
           }
         }
       ]

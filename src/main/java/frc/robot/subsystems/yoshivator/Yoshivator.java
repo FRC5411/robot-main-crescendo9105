@@ -8,6 +8,7 @@ import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
@@ -65,11 +66,8 @@ public class Yoshivator extends SubsystemBase {
 
   private YoshiVisualizer yoshiVisualizer = new YoshiVisualizer(new Rotation2d());
 
-  @AutoLogOutput(key = "Yoshivator/CurrentCommand")
-  private Command currentCommand = null;
-
   @AutoLogOutput(key = "Yoshivator/CurrentSetpoint")
-  private YoshivatorSetpoints currentSetpoint = null;
+  private YoshivatorSetpoints currentSetpoint = YoshivatorSetpoints.IDLE;
 
   public Yoshivator(ManipulatorIO manipulatorIO) {
     this.manipulatorIO = manipulatorIO;
@@ -125,35 +123,36 @@ public class Yoshivator extends SubsystemBase {
   }
 
   public Command runYoshi(YoshivatorSetpoints setpoint) {
-    currentCommand = Commands.runOnce(() -> setYoshiSetpoint(setpoint), this);
-    return currentCommand;
+    return Commands.runOnce(() -> setYoshiSetpoint(setpoint), this);
   }
 
   public Command scoreAmp() {
-    currentCommand =
-        new FunctionalCommand(
-            () -> setYoshiSetpoint(YoshivatorSetpoints.AMP_IDLE),
-            () -> {},
-            (interrupted) -> {
-              if (!interrupted) {
-                setYoshiSetpoint(YoshivatorSetpoints.AMP_SCORE);
-              }
-            },
-            () ->
-                Math.abs(
-                        currentSetpoint
-                            .getPivotRotation()
-                            .get()
-                            .minus(manipulatorIOInputs.pivotPosition)
-                            .getDegrees())
-                    < 5.0,
-            this);
-
-    return currentCommand;
+    return new FunctionalCommand(
+        () -> setYoshiSetpoint(YoshivatorSetpoints.AMP_IDLE),
+        () -> {},
+        (interrupted) -> {
+          if (!interrupted) {
+            setYoshiSetpoint(YoshivatorSetpoints.AMP_SCORE, false);
+          }
+        },
+        () ->
+            Math.abs(
+                    currentSetpoint
+                        .getPivotRotation()
+                        .get()
+                        .minus(manipulatorIOInputs.pivotPosition)
+                        .getDegrees())
+                < 5.0,
+        this);
   }
 
   public Command offYoshi() {
-    return Commands.runOnce(() -> stopMotors(true, true), this);
+    return Commands.runOnce(
+        () -> {
+          setYoshiSetpoint(null);
+          stopMotors(true, false);
+        },
+        this);
   }
 
   @Override
@@ -184,6 +183,9 @@ public class Yoshivator extends SubsystemBase {
 
     yoshiVisualizer.updateYoshiAngle(manipulatorIOInputs.pivotPosition);
 
+    if (DriverStation.isDisabled()) {
+      stopMotors(true, true);
+    }
     if (Constants.tuningMode) {
       updateTunableNumbers();
     }
@@ -207,7 +209,6 @@ public class Yoshivator extends SubsystemBase {
   }
 
   public void stopMotors(boolean stopPivot, boolean stopFlywheel) {
-    currentSetpoint = null;
     if (stopPivot) {
       setPivotVolts(0.0);
     }

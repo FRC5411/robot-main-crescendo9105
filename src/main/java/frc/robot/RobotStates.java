@@ -40,6 +40,7 @@ public class RobotStates {
     EJECT,
     UP,
     DOWN,
-    FIRE
+    FIRE,
+    IDLE
   }
 }

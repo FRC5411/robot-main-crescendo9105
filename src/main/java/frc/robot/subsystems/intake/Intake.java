@@ -41,13 +41,17 @@ public class Intake extends SubsystemBase {
   }
 
   public Command mapToCommand(IntakeStates desiredState) {
+    Logger.recordOutput("I RAN", "I RAN");
     switch (desiredState) {
       case INTAKE:
+        Logger.recordOutput("I RAN TOO", "Intake");
         return runIntake(IntakeSetpoint.IN);
       case OUTTAKE:
+        Logger.recordOutput("I RAN TOO", "OUTTAKE");
         return runIntake(IntakeSetpoint.OUT);
       case OFF:
       default:
+        Logger.recordOutput("I RAN TOO", "OFF");
         return runIntake(IntakeSetpoint.OFF);
     }
   }
