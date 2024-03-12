@@ -55,6 +55,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhoton;
 import frc.robot.subsystems.vision.VisionIOPhotonSim;
 import frc.robot.subsystems.yoshivator.Yoshivator;
+import frc.robot.subsystems.yoshivator.Yoshivator.YoshivatorSetpoints;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSim;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSparkMax;
