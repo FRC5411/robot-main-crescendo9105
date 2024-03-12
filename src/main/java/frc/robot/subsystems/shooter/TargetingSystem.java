@@ -5,9 +5,6 @@
 package frc.robot.subsystems.shooter;
 
 import edu.wpi.first.math.geometry.*;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -118,12 +115,20 @@ public class TargetingSystem {
                 () -> {
                   currentRobotPose = robotPose;
 
+                  final Transform3d anglerTransform =
+                      new Transform3d(
+                          0.105,
+                          0.0,
+                          0.232,
+                          new Rotation3d(0.0, anglerPosition.get().getRadians(), 0.0));
+
                   final Pose3d startPose =
                       new Pose3d(
-                          currentRobotPose.get().getX(),
-                          currentRobotPose.get().getY(),
-                          0.0,
-                          new Rotation3d(0.0, anglerPosition.get().getRadians(), 0.0));
+                              currentRobotPose.get().getX(),
+                              currentRobotPose.get().getY(),
+                              0.0,
+                              new Rotation3d(0.0, 0.0, robotPose.get().getRotation().getRadians()))
+                          .transformBy(anglerTransform);
                   final Pose3d endPose =
                       (DriverStation.getAlliance().get() == Alliance.Blue)
                           ? new Pose3d(speakerOpeningBlue, new Rotation3d())

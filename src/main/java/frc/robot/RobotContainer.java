@@ -57,6 +57,7 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhoton;
 import frc.robot.subsystems.vision.VisionIOPhotonSim;
 import frc.robot.subsystems.yoshivator.Yoshivator;
+import frc.robot.subsystems.yoshivator.Yoshivator.YoshivatorSetpoints;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSim;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSparkMax;
@@ -258,12 +259,19 @@ public class RobotContainer {
       pilotController
           .y()
           .whileTrue(
-              ShooterCommands.runAngler(robotShooter)
-                  .alongWith(
-                      TargetingSystem.shoot(
-                          () -> robotDrive.getOdometryPose(),
-                          () -> robotShooter.getAnglerPosition())))
-          .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
+              robotShooter
+                  .setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT)
+                  .alongWith(robotYoshi.runYoshi(YoshivatorSetpoints.GROUND)))
+          .whileFalse(
+              Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter)
+                  .alongWith(robotYoshi.runYoshi(YoshivatorSetpoints.IDLE)));
+
+      pilotController
+          .povLeft()
+          .whileTrue(
+              TargetingSystem.shoot(
+                  () -> robotDrive.getOdometryPose(), () -> robotShooter.getAnglerPosition()));
+
     } else {
       /* Pilot bindings */
 
