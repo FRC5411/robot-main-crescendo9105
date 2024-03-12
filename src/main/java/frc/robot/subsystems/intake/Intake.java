@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotStates.IntakeStates;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -16,7 +17,7 @@ public class Intake extends SubsystemBase {
   public static enum IntakeSetpoint {
     IN(12.0),
     OUT(-12.0),
-    IDLE(0.0);
+    OFF(0.0);
 
     private double volts;
 
@@ -32,29 +33,31 @@ public class Intake extends SubsystemBase {
   private IntakeIO intakeIO;
   private IntakeIOInputsAutoLogged intakeIOInputs = new IntakeIOInputsAutoLogged();
 
-  @AutoLogOutput(key = "Intake/CurrentCommand")
-  private Command currentCommand = null;
-
   @AutoLogOutput(key = "Intake/CurrentSetpoint")
-  private IntakeSetpoint currentSetpoint = IntakeSetpoint.IDLE;
+  private IntakeSetpoint currentSetpoint = IntakeSetpoint.OFF;
 
   public Intake(IntakeIO IntakeIO) {
     this.intakeIO = IntakeIO;
   }
 
-  public Command runIntake(IntakeSetpoint setpoint) {
-    currentCommand = Commands.runOnce(() -> setCurrentSetpoint(setpoint), this);
+  public Command mapToCommand(IntakeStates desiredState) {
+    switch (desiredState) {
+      case INTAKE:
+        return runIntake(IntakeSetpoint.IN);
+      case OUTTAKE:
+        return runIntake(IntakeSetpoint.OUT);
+      case OFF:
+      default:
+        return runIntake(IntakeSetpoint.OFF);
+    }
+  }
 
-    return currentCommand;
+  public Command runIntake(IntakeSetpoint setpoint) {
+    return Commands.runOnce(() -> setCurrentSetpoint(setpoint), this);
   }
 
   public Command stopIntake() {
-    if (currentCommand != null) {
-      currentCommand.cancel();
-    }
-    currentCommand = Commands.runOnce(() -> setCurrentSetpoint(IntakeSetpoint.IDLE), this);
-
-    return currentCommand;
+    return Commands.runOnce(() -> setCurrentSetpoint(IntakeSetpoint.OFF), this);
   }
 
   @Override

@@ -4,12 +4,18 @@
 
 package frc.robot.subsystems.shooter;
 
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
+import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -103,5 +109,43 @@ public class TargetingSystem {
     Logger.recordOutput("Shooter/TargetingSystem/Distance", distanceM);
 
     return () -> distanceM;
+  }
+
+  /** Returns a command to visualize a note being shot from the robot */
+  public static Command shoot(Supplier<Pose2d> robotPose, Supplier<Rotation2d> anglerPosition) {
+    return new ScheduleCommand(
+        Commands.defer(
+                () -> {
+                  currentRobotPose = robotPose;
+
+                  final Pose3d startPose =
+                      new Pose3d(
+                          currentRobotPose.get().getX(),
+                          currentRobotPose.get().getY(),
+                          0.0,
+                          new Rotation3d(0.0, anglerPosition.get().getRadians(), 0.0));
+                  final Pose3d endPose =
+                      (DriverStation.getAlliance().get() == Alliance.Blue)
+                          ? new Pose3d(speakerOpeningBlue, new Rotation3d())
+                          : new Pose3d(speakerOpeningRed, new Rotation3d());
+
+                  final double duration =
+                      startPose.getTranslation().getDistance(endPose.getTranslation()) / 9.0;
+                  final Timer timer = new Timer();
+
+                  timer.start();
+
+                  return Commands.run(
+                          () ->
+                              Logger.recordOutput(
+                                  "NoteVisualizer/ShotNotes",
+                                  new Pose3d[] {
+                                    startPose.interpolate(endPose, timer.get() / duration)
+                                  }))
+                      .until(() -> timer.hasElapsed(duration))
+                      .finallyDo(() -> Logger.recordOutput("NoteVisualizer/ShotNotes"));
+                },
+                Set.of())
+            .ignoringDisable(true));
   }
 }

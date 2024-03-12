@@ -32,9 +32,9 @@ public class ClimbVisualizer {
     climbTower.setColor(new Color8Bit(Color.kAqua));
     climbTower.setLineWeight(5.0);
 
-    if (NAME == ClimbSide.LEFT)       climbArm.setColor(new Color8Bit(Color.kWhite));
+    if (NAME == ClimbSide.LEFT) climbArm.setColor(new Color8Bit(Color.kWhite));
     else if (NAME == ClimbSide.RIGHT) climbArm.setColor(new Color8Bit(Color.kBlue));
-    
+
     climbArm.setLineWeight(5.0);
 
     Logger.recordOutput("Climb/Visualizer/" + NAME, climbMechanism);

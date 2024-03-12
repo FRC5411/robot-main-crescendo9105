@@ -74,8 +74,7 @@ public class RobotContainer {
   private LEDSubsystem robotLEDs;
 
   private VisionFuser visionFuser;
-  private Superstructure superstructure;
-//   private Caster caster;
+  private StateMachine stateMachine;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
   private CommandXboxController copilotController = new CommandXboxController(1);
@@ -85,8 +84,8 @@ public class RobotContainer {
   public RobotContainer() {
     initializeSubsystems();
 
-    superstructure = new Superstructure(robotDrive, robotShooter, robotClimb);
-    // caster = new Caster(robotIntake, robotIndexer, robotYoshi);
+    stateMachine =
+        new StateMachine(robotShooter, robotIntake, robotIndexer, robotYoshi, robotClimb);
 
     configureAutonomous();
 
@@ -258,7 +257,12 @@ public class RobotContainer {
 
       pilotController
           .y()
-          .whileTrue(ShooterCommands.runAngler(robotShooter))
+          .whileTrue(
+              ShooterCommands.runAngler(robotShooter)
+                  .alongWith(
+                      TargetingSystem.shoot(
+                          () -> robotDrive.getOdometryPose(),
+                          () -> robotShooter.getAnglerPosition())))
           .whileFalse(ShooterCommands.stopShooter(robotShooter, true, false));
     } else {
       /* Pilot bindings */

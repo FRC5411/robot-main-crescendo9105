@@ -9,9 +9,12 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Robot;
+import frc.robot.RobotStates.ClimbStates;
 import frc.robot.subsystems.climb.ClimbVisualizer.ClimbSide;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -118,9 +121,19 @@ public class Climb extends SubsystemBase {
 
     leftClimbFeedback.setTolerance(0.8);
     rightClimbFeedback.setTolerance(0.8);
-    
+
     leftClimbFeedback.enableContinuousInput(-180.0, 180.0);
     rightClimbFeedback.enableContinuousInput(-180.0, 180.0);
+  }
+
+  public Command mapToCommand(ClimbStates state) {
+    return switch (state) {
+      case OFF -> new InstantCommand(() -> setVolts(0, 0));
+      case IDLE -> new InstantCommand(() -> setAngle(new Rotation2d(0), new Rotation2d(0)));
+      case GRAB -> new InstantCommand(() -> setAngle(new Rotation2d(10), new Rotation2d(10)));
+      case PULL -> new InstantCommand(() -> setAngle(new Rotation2d(60), new Rotation2d(60)));
+      default -> new InstantCommand(() -> setVolts(0, 0));
+    };
   }
 
   @Override
@@ -166,7 +179,7 @@ public class Climb extends SubsystemBase {
     if (Constants.tuningMode) updateTunableNumbers();
   }
 
-  /**  If tunable numbers have changed, it updates controllers */
+  /** If tunable numbers have changed, it updates controllers */
   private void updateTunableNumbers() {
     if (leftFeedbackP.hasChanged(hashCode())
         || leftFeedbackI.hasChanged(hashCode())
@@ -246,23 +259,23 @@ public class Climb extends SubsystemBase {
 
   @AutoLogOutput(key = "Climb/LeftArm/Feedback/Goal")
   public double getLeftGoal() {
-    return (leftClimbFeedback.getGoal() == null) 
-              ? 0.0 
-              : Math.toRadians(leftClimbFeedback.getGoal().position);
+    return (leftClimbFeedback.getGoal() == null)
+        ? 0.0
+        : Math.toRadians(leftClimbFeedback.getGoal().position);
   }
 
   @AutoLogOutput(key = "Climb/RightArm/Feedback/Setpoint")
   public double getRightSetpoint() {
-    return (rightClimbFeedback.getSetpoint() == null) 
-              ? 0.0 
-              : Math.toRadians(rightClimbFeedback.getSetpoint().position);
+    return (rightClimbFeedback.getSetpoint() == null)
+        ? 0.0
+        : Math.toRadians(rightClimbFeedback.getSetpoint().position);
   }
 
   @AutoLogOutput(key = "Climb/LeftArm/Feedback/Goal")
   public double getRightGoal() {
-    return (leftClimbFeedback.getGoal() == null) 
-              ? 0.0 
-              : Math.toRadians(leftClimbFeedback.getGoal().position);
+    return (leftClimbFeedback.getGoal() == null)
+        ? 0.0
+        : Math.toRadians(leftClimbFeedback.getGoal().position);
   }
 
   @AutoLogOutput(key = "Climb/LeftArm/Feedback/isAtSetpoint")

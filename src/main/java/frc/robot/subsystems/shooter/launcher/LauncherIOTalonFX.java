@@ -148,8 +148,8 @@ public class LauncherIOTalonFX implements LauncherIO {
         new double[] {topMotor.getSupplyCurrent().getValueAsDouble()};
     inputs.topFlywheelTemperatureCelsius =
         new double[] {topMotor.getDeviceTemp().getValueAsDouble()};
-    inputs.topFlywheelSetpointMPS = topMotor.getClosedLoopReference().getValueAsDouble();
-    inputs.topFlywheelErrorMPS = topMotor.getClosedLoopError().getValueAsDouble();
+    inputs.topFlywheelSetpointMPS = topVelocityMPS;
+    inputs.topFlywheelErrorMPS = inputs.topFlywheelSetpointMPS - inputs.topFlywheelVelocityMPS;
 
     inputs.bottomFlywheelVelocityMPS =
         (bottomMotor.getVelocity().getValueAsDouble() * CIRCUMFRENCE_M) / GEARING;
@@ -159,8 +159,8 @@ public class LauncherIOTalonFX implements LauncherIO {
         new double[] {bottomMotor.getSupplyCurrent().getValueAsDouble()};
     inputs.bottomFlywheelTemperatureCelsius =
         new double[] {bottomMotor.getDeviceTemp().getValueAsDouble()};
-    inputs.bottomFlywheelSetpointMPS = bottomMotor.getClosedLoopReference().getValueAsDouble();
-    inputs.bottomFlywheelErrorMPS = bottomMotor.getClosedLoopError().getValueAsDouble();
+    inputs.bottomFlywheelSetpointMPS = bottomVelocityMPS;
+    inputs.bottomFlywheelErrorMPS = inputs.topFlywheelSetpointMPS - inputs.topFlywheelVelocityMPS;
 
     if (Constants.tuningMode) {
       updateTunableNumbers();

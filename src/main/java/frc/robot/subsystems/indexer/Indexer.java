@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotStates.IndexerStates;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -17,17 +18,15 @@ public class Indexer extends SubsystemBase {
   public static enum IndexerSetpoint {
     IN(12.0),
     OUT(-12.0),
-    IDLE(0.0),
+    OFF(0.0),
     STOW(4.0);
 
     private double volts;
 
-    /** Define the direction for the Indexer to spin */
     IndexerSetpoint(double volts) {
       this.volts = volts;
     }
 
-    /** Returns the voltage based on the direction specified */
     public double getVolts() {
       return this.volts;
     }
@@ -40,39 +39,43 @@ public class Indexer extends SubsystemBase {
   private Command currentCommand = null;
 
   @AutoLogOutput(key = "Indexer/CurrentSetpoint")
-  private IndexerSetpoint currentSetpoint = IndexerSetpoint.IDLE;
+  private IndexerSetpoint currentSetpoint = IndexerSetpoint.OFF;
 
   public Indexer(IndexerIO indexerIO) {
     this.indexerIO = indexerIO;
   }
 
-  public Command runIndexer(IndexerSetpoint setpoint) {
-    currentCommand = Commands.runOnce(() -> setCurrentSetpoint(setpoint), this);
+  public Command mapToCommand(IndexerStates desiredState) {
+    switch (desiredState) {
+      case INDEX:
+        return runIndexer(IndexerSetpoint.IN);
+      case OUTDEX:
+        return runIndexer(IndexerSetpoint.OUT);
+      case STOW:
+        return stowPiece();
+      case OFF:
+      default:
+        return runIndexer(IndexerSetpoint.OFF);
+    }
+  }
 
-    return currentCommand;
+  public Command runIndexer(IndexerSetpoint setpoint) {
+    return Commands.runOnce(() -> setCurrentSetpoint(setpoint), this);
   }
 
   public Command stopIndexer() {
-    if (currentCommand != null) {
-      currentCommand.cancel();
-    }
-    currentCommand = Commands.runOnce(() -> setCurrentSetpoint(IndexerSetpoint.IDLE), this);
-
-    return currentCommand;
+    return Commands.runOnce(() -> setCurrentSetpoint(IndexerSetpoint.OFF), this);
   }
 
   public Command stowPiece() {
-    currentCommand =
-        new FunctionalCommand(
-            () -> setCurrentSetpoint(IndexerSetpoint.STOW),
-            () -> {},
-            (interrupted) -> {
-              setCurrentSetpoint(IndexerSetpoint.IDLE);
-            },
-            () -> isBeamBroken(),
-            this);
-
-    return currentCommand;
+    return new FunctionalCommand(
+        () -> setCurrentSetpoint(IndexerSetpoint.STOW),
+        () -> {},
+        (interrupted) -> {
+          setCurrentSetpoint(IndexerSetpoint.OFF);
+        },
+        () -> isBeamBroken(),
+        this);
   }
 
   @Override
@@ -85,7 +88,7 @@ public class Indexer extends SubsystemBase {
     }
 
     if (DriverStation.isDisabled()) {
-      setCurrentSetpoint(IndexerSetpoint.IDLE);
+      setCurrentSetpoint(IndexerSetpoint.OFF);
       setVolts(0);
     }
   }

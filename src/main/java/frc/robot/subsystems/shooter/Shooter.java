@@ -10,10 +10,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Robot;
+import frc.robot.RobotStates.ShooterStates;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.angler.AnglerIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
@@ -290,6 +292,24 @@ public class Shooter extends SubsystemBase {
   public void setAllMotors(Rotation2d anglerGoal, double launcherGoal) {
     setAnglerPosition(anglerGoal);
     setLauncherVolts(launcherGoal, launcherGoal);
+  }
+
+  /** Returns a command based off of the current Shooter state */
+  public Command mapToCommand(ShooterStates state) {
+    return switch (state) {
+      case OFF -> Commands.runOnce(
+          () -> {
+            anglerSetpoint = null;
+            launcherSetpointMPS = null;
+            setAnglerVolts(0.0);
+            setLauncherVolts(0.0, 0.0);
+          },
+          this);
+      case AIM -> setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT);
+      case INTAKE -> setShooterState(AnglerSetpoints.INTAKE, LauncherSetpoints.STOP);
+      case CLIMB -> setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.STOP);
+      case EJECT -> setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.EJECT);
+    };
   }
 
   /** Returns a command to set the motors to a desired state */

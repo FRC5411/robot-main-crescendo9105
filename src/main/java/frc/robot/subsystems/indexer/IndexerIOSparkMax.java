@@ -35,9 +35,6 @@ public class IndexerIOSparkMax implements IndexerIO {
     indexerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 100);
     indexerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 100);
     indexerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 100);
-    indexerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 100);
-    indexerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 100);
-    indexerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 100);
 
     indexerMotor.setInverted(false);
 

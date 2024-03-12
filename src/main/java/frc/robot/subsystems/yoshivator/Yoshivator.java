@@ -14,35 +14,41 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Robot;
+import frc.robot.RobotStates.YoshiStates;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOInputsAutoLogged;
 import frc.robot.utils.debugging.LoggedTunableNumber;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Yoshivator extends SubsystemBase {
-  public static enum YoshiSetpoints {
-    IDLE(Rotation2d.fromDegrees(100), 0),
-    GROUND(Rotation2d.fromDegrees(-35), 12),
-    AMP_IDLE(Rotation2d.fromDegrees(85), 0),
-    AMP_SCORE(Rotation2d.fromDegrees(85), -12);
+  public static enum YoshivatorSetpoints {
+    IDLE(() -> Rotation2d.fromDegrees(100), () -> 0.0),
+    GROUND(() -> Rotation2d.fromDegrees(-35), () -> 12.0),
+    AMP_IDLE(() -> Rotation2d.fromDegrees(85), () -> 0.0),
+    AMP_SCORE(() -> Rotation2d.fromDegrees(85), () -> -12.0),
+    HOLD(() -> Yoshivator.pivotPosition, () -> 0.0);
 
-    private Rotation2d pivotSetpointRotation;
-    private double rollerSetpointVolts;
+    private Supplier<Rotation2d> pivotSetpointRotation;
+    private Supplier<Double> rollerSetpointVolts;
 
-    YoshiSetpoints(Rotation2d pivotSetpointRotation, double rollerSetpointVolts) {
+    YoshivatorSetpoints(
+        Supplier<Rotation2d> pivotSetpointRotation, Supplier<Double> rollerSetpointVolts) {
       this.pivotSetpointRotation = pivotSetpointRotation;
       this.rollerSetpointVolts = rollerSetpointVolts;
     }
 
-    public Rotation2d getPivotRotation() {
+    public Supplier<Rotation2d> getPivotRotation() {
       return this.pivotSetpointRotation;
     }
 
-    public double getRollerVolts() {
+    public Supplier<Double> getRollerVolts() {
       return this.rollerSetpointVolts;
     }
   }
+
+  public static Rotation2d pivotPosition = null;
 
   private ManipulatorIO manipulatorIO;
   private ManipulatorIOInputsAutoLogged manipulatorIOInputs = new ManipulatorIOInputsAutoLogged();
@@ -63,7 +69,7 @@ public class Yoshivator extends SubsystemBase {
   private Command currentCommand = null;
 
   @AutoLogOutput(key = "Yoshivator/CurrentSetpoint")
-  private YoshiSetpoints currentSetpoint = null;
+  private YoshivatorSetpoints currentSetpoint = null;
 
   public Yoshivator(ManipulatorIO manipulatorIO) {
     this.manipulatorIO = manipulatorIO;
@@ -104,7 +110,21 @@ public class Yoshivator extends SubsystemBase {
             "Yoshivator/Pivot/Feedback/A", pivotFeedback.getConstraints().maxAcceleration);
   }
 
-  public Command runYoshi(YoshiSetpoints setpoint) {
+  public Command mapToCommand(YoshiStates desiredState) {
+    switch (desiredState) {
+      case OFF:
+        return offYoshi();
+      case GROUND:
+        return runYoshi(YoshivatorSetpoints.GROUND);
+      case AMP:
+        return scoreAmp();
+      case IDLE:
+      default:
+        return runYoshi(YoshivatorSetpoints.IDLE);
+    }
+  }
+
+  public Command runYoshi(YoshivatorSetpoints setpoint) {
     currentCommand = Commands.runOnce(() -> setYoshiSetpoint(setpoint), this);
     return currentCommand;
   }
@@ -112,22 +132,28 @@ public class Yoshivator extends SubsystemBase {
   public Command scoreAmp() {
     currentCommand =
         new FunctionalCommand(
-            () -> setYoshiSetpoint(YoshiSetpoints.AMP_IDLE),
+            () -> setYoshiSetpoint(YoshivatorSetpoints.AMP_IDLE),
             () -> {},
             (interrupted) -> {
               if (!interrupted) {
-                setYoshiSetpoint(YoshiSetpoints.AMP_SCORE);
+                setYoshiSetpoint(YoshivatorSetpoints.AMP_SCORE);
               }
             },
             () ->
                 Math.abs(
                         currentSetpoint
                             .getPivotRotation()
+                            .get()
                             .minus(manipulatorIOInputs.pivotPosition)
                             .getDegrees())
-                    < 5);
+                    < 5.0,
+            this);
 
     return currentCommand;
+  }
+
+  public Command offYoshi() {
+    return Commands.runOnce(() -> stopMotors(true, true), this);
   }
 
   @Override
@@ -139,7 +165,7 @@ public class Yoshivator extends SubsystemBase {
       double pivotFeedbackOutput =
           pivotFeedback.calculate(
               manipulatorIOInputs.pivotPosition.getDegrees(),
-              currentSetpoint.getPivotRotation().getDegrees());
+              currentSetpoint.getPivotRotation().get().getDegrees());
       double pivotFeedforwardOutput =
           pivotFeedforward.calculate(
               Math.toRadians(pivotFeedback.getSetpoint().position),
@@ -147,9 +173,9 @@ public class Yoshivator extends SubsystemBase {
 
       double pivotCombinedOutput = pivotFeedbackOutput + pivotFeedforwardOutput;
 
-      manipulatorIO.setPivotVolts(pivotCombinedOutput);
+      setPivotVolts(pivotCombinedOutput);
 
-      manipulatorIO.setRollerVolts(currentSetpoint.getRollerVolts());
+      setRollerVolts(currentSetpoint.getRollerVolts().get());
 
       Logger.recordOutput("Yoshivator/Pivot/Feedback/Output", pivotFeedbackOutput);
       Logger.recordOutput("Yoshivator/Pivot/Feedforward/Output", pivotFeedforwardOutput);
@@ -161,6 +187,8 @@ public class Yoshivator extends SubsystemBase {
     if (Constants.tuningMode) {
       updateTunableNumbers();
     }
+
+    pivotPosition = manipulatorIOInputs.pivotPosition;
   }
 
   private void updateTunableNumbers() {
@@ -188,17 +216,16 @@ public class Yoshivator extends SubsystemBase {
     }
   }
 
-  public void setYoshiSetpoint(YoshiSetpoints setpoint) {
+  public void setYoshiSetpoint(YoshivatorSetpoints setpoint) {
     setYoshiSetpoint(setpoint, true);
   }
 
-  public void setYoshiSetpoint(YoshiSetpoints setpoint, boolean shouldReset) {
+  public void setYoshiSetpoint(YoshivatorSetpoints setpoint, boolean shouldReset) {
     currentSetpoint = setpoint;
     if (setpoint != null) {
-      pivotFeedback.setGoal(setpoint.getPivotRotation().getDegrees());
-      if(shouldReset)
-        pivotFeedback.reset(manipulatorIOInputs.pivotPosition.getDegrees());
-      setRollerVolts(setpoint.getRollerVolts());
+      pivotFeedback.setGoal(setpoint.getPivotRotation().get().getDegrees());
+      if (shouldReset) pivotFeedback.reset(manipulatorIOInputs.pivotPosition.getDegrees());
+      setRollerVolts(setpoint.getRollerVolts().get());
     }
   }
 

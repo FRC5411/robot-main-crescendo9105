@@ -35,9 +35,6 @@ public class IntakeIOSparkMax implements IntakeIO {
     intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 100);
     intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 100);
     intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 100);
-    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus5, 100);
-    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus6, 100);
-    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus7, 100);
 
     intakeEncoder.setPosition(0.0);
 

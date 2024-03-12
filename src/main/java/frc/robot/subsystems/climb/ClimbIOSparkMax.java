@@ -36,7 +36,7 @@ public class ClimbIOSparkMax implements ClimbIO {
     rightMotor.restoreFactoryDefaults();
     leftMotor.clearFaults();
     rightMotor.clearFaults();
-    
+
     leftMotor.setSmartCurrentLimit(40);
     leftMotor.enableVoltageCompensation(12.0);
     leftMotor.setIdleMode(IdleMode.kBrake);
