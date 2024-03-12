@@ -261,7 +261,7 @@ public class RobotContainer {
 
       pilotController
           .leftBumper()
-          .whileTrue(robotStateMachine.intakeNote())
+          .whileTrue(robotStateMachine.yoshiIntakeNote())
           .onFalse(robotStateMachine.stopTakeNote());
 
       pilotController
@@ -272,7 +272,7 @@ public class RobotContainer {
       /* Intake a note from the ground into the yoshi */
       pilotController
           .leftTrigger()
-          .whileTrue(robotStateMachine.yoshiIntakeNote())
+          .whileTrue(robotStateMachine.intakeNote())
           .onFalse(robotStateMachine.stopTakeNote());
 
       pilotController

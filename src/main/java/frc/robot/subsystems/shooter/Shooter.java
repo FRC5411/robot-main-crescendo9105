@@ -246,15 +246,16 @@ public class Shooter extends SubsystemBase {
       case EJECT -> setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.EJECT);
       case UP -> setAnglerManual(9.0);
       case DOWN -> setAnglerManual(-9.0);
-      case FIRE -> Commands.runOnce(
-          () -> setLauncherVelocityMPS(LauncherSetpoints.SPEAKER_SHOT), this);
-      case IDLE -> Commands.runOnce(
-          () -> {
-            anglerPosition = currentAngle;
-            setMotors(null, LauncherSetpoints.IDLE);
-            setAnglerVolts(0);
-          },
-          this);
+      case FIRE ->
+          Commands.runOnce(() -> setLauncherVelocityMPS(LauncherSetpoints.SPEAKER_SHOT), this);
+      case IDLE ->
+          Commands.runOnce(
+              () -> {
+                anglerPosition = currentAngle;
+                setMotors(null, LauncherSetpoints.IDLE);
+                setAnglerVolts(0);
+              },
+              this);
     };
   }
 

@@ -42,7 +42,7 @@ public class StateMachine {
     this.robotYoshi = robotYoshi;
     this.robotClimb = robotClimb;
 
-    shooterState = ShooterStates.AIM;
+    shooterState = ShooterStates.OFF;
     intakeState = IntakeStates.OFF;
     indexerState = IndexerStates.OFF;
     yoshiState = YoshiStates.IDLE;

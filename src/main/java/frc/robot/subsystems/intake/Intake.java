@@ -44,12 +44,12 @@ public class Intake extends SubsystemBase {
     intakeIO.updateInputs(intakeIOInputs);
     Logger.processInputs("Intake", intakeIOInputs);
 
-    if (currentSetpoint != null) {
-      setVolts(currentSetpoint.getVolts());
+    if (DriverStation.isDisabled()) {
+      setVolts(0.0);
     }
 
-    if (DriverStation.isDisabled()) {
-      setVolts(0);
+    if (currentSetpoint != null) {
+      setVolts(currentSetpoint.getVolts());
     }
   }
 

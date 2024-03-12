@@ -60,7 +60,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         driveMotor = new CANSparkMax(11, MotorType.kBrushless);
         azimuthMotor = new CANSparkMax(21, MotorType.kBrushless);
 
-        angleEncoder = new CANcoder(31);
+        angleEncoder = new CANcoder(31, "CTREBUS");
         angleOffset = Rotation2d.fromRotations(-0.275879);
 
         break;
@@ -68,7 +68,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         driveMotor = new CANSparkMax(12, MotorType.kBrushless);
         azimuthMotor = new CANSparkMax(22, MotorType.kBrushless);
 
-        angleEncoder = new CANcoder(32);
+        angleEncoder = new CANcoder(32, "CTREBUS");
         angleOffset = Rotation2d.fromRotations(-0.273926);
 
         break;
@@ -76,7 +76,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         driveMotor = new CANSparkMax(13, MotorType.kBrushless);
         azimuthMotor = new CANSparkMax(23, MotorType.kBrushless);
 
-        angleEncoder = new CANcoder(33);
+        angleEncoder = new CANcoder(33, "CTREBUS");
         angleOffset = Rotation2d.fromRotations(-0.390137);
 
         break;
@@ -84,7 +84,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         driveMotor = new CANSparkMax(14, MotorType.kBrushless);
         azimuthMotor = new CANSparkMax(24, MotorType.kBrushless);
 
-        angleEncoder = new CANcoder(34);
+        angleEncoder = new CANcoder(34, "CTREBUS");
         angleOffset = Rotation2d.fromRotations(0.382568);
 
         break;
