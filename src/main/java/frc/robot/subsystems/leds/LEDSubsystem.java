@@ -66,6 +66,42 @@ public class LEDSubsystem extends SubsystemBase {
         });
   }
 
+  public void setGradient(int startHue, int endHue) {
+    shouldAnimate = false;
+    queuedPatterns.add(
+        () -> {
+          int inc = (int) Math.floor((endHue - startHue) / ledBuffer.getLength());
+          for (int i = 0; i < ledBuffer.getLength(); i++) {
+            final int index = i;
+            queuedTasks.add(() -> ledBuffer.setHSV(index, startHue + (inc * index), 255, 255));
+          }
+        });
+  }
+
+  public void boomerangGradient(int startHue, int endHue) {
+    shouldAnimate = false;
+    queuedPatterns.add(
+        () -> {
+          int currentHue = startHue;
+          int inc = Math.round((endHue - startHue) / ledBuffer.getLength()) * 2;
+          for (int idx = 0; idx < Math.floor(ledBuffer.getLength() / 2); idx++) {
+            final int index = idx;
+            final int thisHue = currentHue;
+            queuedTasks.add(() -> ledBuffer.setHSV(index, thisHue, 255, 255));
+            currentHue += inc;
+          }
+          for (int idx = (int) Math.floor(ledBuffer.getLength() / 2);
+              idx < ledBuffer.getLength();
+              idx++) {
+            final int index = idx;
+            final int thisHue = currentHue;
+            queuedTasks.add(() -> ledBuffer.setHSV(index, thisHue, 255, 255));
+            currentHue += -inc;
+          }
+          queuedTasks.add(() -> shouldAnimate = true);
+        });
+  }
+
   private void setBuffer() {
     led.setData(ledBuffer);
     led.start();
