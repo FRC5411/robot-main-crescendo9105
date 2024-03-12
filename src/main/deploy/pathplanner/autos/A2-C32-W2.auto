@@ -1,0 +1,43 @@
+{
+  "version": 1.0,
+  "startingPose": null,
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C,5.3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "5.3, s(2)"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "(ts,5.2)J"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "(5.2,ts)J"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "s(2), 3.2"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "2024 Crescendo (CENTER)",
+  "choreoAuto": false
+}
