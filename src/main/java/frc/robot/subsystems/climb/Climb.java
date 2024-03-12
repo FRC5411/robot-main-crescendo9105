@@ -10,7 +10,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Robot;
@@ -47,6 +47,11 @@ public class Climb extends SubsystemBase {
 
   private Rotation2d leftAngleSetpoint = null;
   private Rotation2d rightAngleSetpoint = null;
+
+  private double leftVolts = 0.0;
+  private double rightVolts = 0.0;
+
+  private double climbDirection = 1;
 
   private ClimbVisualizer leftVisualizer = new ClimbVisualizer(ClimbSide.LEFT);
   private ClimbVisualizer rightVisualizer = new ClimbVisualizer(ClimbSide.RIGHT);
@@ -127,12 +132,17 @@ public class Climb extends SubsystemBase {
   }
 
   public Command mapToCommand(ClimbStates state) {
+    Logger.recordOutput("I RAN", "I RAN");
     return switch (state) {
-      case OFF -> new InstantCommand(() -> setVolts(0, 0));
-      case IDLE -> new InstantCommand(() -> setAngle(new Rotation2d(0), new Rotation2d(0)));
-      case GRAB -> new InstantCommand(() -> setAngle(new Rotation2d(10), new Rotation2d(10)));
-      case PULL -> new InstantCommand(() -> setAngle(new Rotation2d(60), new Rotation2d(60)));
-      default -> new InstantCommand(() -> setVolts(0, 0));
+      case OFF -> Commands.runOnce(() -> setVolts(0, 0));
+      case IDLE -> Commands.runOnce(() -> setAngle(new Rotation2d(0), new Rotation2d(0)));
+      case GRAB -> Commands.runOnce(() -> setAngle(new Rotation2d(10), new Rotation2d(10)));
+      case PULL -> Commands.runOnce(() -> setAngle(new Rotation2d(60), new Rotation2d(60)));
+      case MOVE_LEFT -> setManualVolts(9, 0);
+      case MOVE_RIGHT -> setManualVolts(0, 9);
+      case MOVE_BOTH -> setManualVolts(9, 9);
+      case INVERT -> Commands.runOnce(() -> climbDirection *= -1, this);
+      default -> Commands.runOnce(() -> setVolts(0, 0));
     };
   }
 
@@ -143,35 +153,39 @@ public class Climb extends SubsystemBase {
 
     if (DriverStation.isDisabled()) stopMotors();
 
-    if (leftAngleSetpoint != null) {
-      double leftFeedbackOutput =
-          -leftClimbFeedback.calculate(
-              climbIOInputs.leftPosition.getDegrees(), leftAngleSetpoint.getDegrees());
+    climbIO.setLeftVolts(leftVolts);
+    climbIO.setRightVolts(rightVolts);
 
-      double leftFeedforwardOutput =
-          -leftClimbFeedforward.calculate(
-              climbIOInputs.leftPosition.getRadians(), leftClimbFeedback.getSetpoint().velocity);
+    // if (leftAngleSetpoint != null) {
+    //   double leftFeedbackOutput =
+    //       -leftClimbFeedback.calculate(
+    //           climbIOInputs.leftPosition.getDegrees(), leftAngleSetpoint.getDegrees());
 
-      Logger.recordOutput("Climb/LeftArm/Feedback/Output", leftFeedbackOutput);
-      Logger.recordOutput("Climb/LeftArm/Feedforward/Output", leftFeedforwardOutput);
+    //   double leftFeedforwardOutput =
+    //       -leftClimbFeedforward.calculate(
+    //           climbIOInputs.leftPosition.getRadians(), leftClimbFeedback.getSetpoint().velocity);
 
-      climbIO.setLeftVolts(leftFeedbackOutput + leftFeedforwardOutput);
-    }
+    //   Logger.recordOutput("Climb/LeftArm/Feedback/Output", leftFeedbackOutput);
+    //   Logger.recordOutput("Climb/LeftArm/Feedforward/Output", leftFeedforwardOutput);
 
-    if (rightAngleSetpoint != null) {
-      double rightFeedbackOutput =
-          rightClimbFeedback.calculate(
-              climbIOInputs.rightPosition.getDegrees(), rightAngleSetpoint.getDegrees());
+    //   climbIO.setLeftVolts(leftFeedbackOutput + leftFeedforwardOutput);
+    // }
 
-      double rightFeedforwardOutput =
-          rightClimbFeedforward.calculate(
-              climbIOInputs.rightPosition.getRadians(), rightClimbFeedback.getSetpoint().velocity);
+    // if (rightAngleSetpoint != null) {
+    //   double rightFeedbackOutput =
+    //       rightClimbFeedback.calculate(
+    //           climbIOInputs.rightPosition.getDegrees(), rightAngleSetpoint.getDegrees());
 
-      Logger.recordOutput("Climb/RightArm/Feedback/Output", rightFeedbackOutput);
-      Logger.recordOutput("Climb/RightArm/Feedforward/Output", rightFeedforwardOutput);
+    //   double rightFeedforwardOutput =
+    //       rightClimbFeedforward.calculate(
+    //           climbIOInputs.rightPosition.getRadians(),
+    // rightClimbFeedback.getSetpoint().velocity);
 
-      climbIO.setRightVolts(rightFeedbackOutput + rightFeedforwardOutput);
-    }
+    //   Logger.recordOutput("Climb/RightArm/Feedback/Output", rightFeedbackOutput);
+    //   Logger.recordOutput("Climb/RightArm/Feedforward/Output", rightFeedforwardOutput);
+
+    //   climbIO.setRightVolts(rightFeedbackOutput + rightFeedforwardOutput);
+    // }
 
     leftVisualizer.updateClimbAngle(climbIOInputs.leftPosition);
     rightVisualizer.updateClimbAngle(climbIOInputs.rightPosition);
@@ -208,6 +222,19 @@ public class Climb extends SubsystemBase {
 
       rightClimbFeedback.setConstraints(newConstraints);
     }
+  }
+
+  public Command setManualVolts(double left, double right) {
+    return Commands.runOnce(
+        () -> {
+          leftAngleSetpoint = null;
+          rightAngleSetpoint = null;
+          Logger.recordOutput("I RAN", "I RAN" + left + right);
+          // setVolts(left * climbDirection, right * climbDirection);
+          leftVolts = left * climbDirection;
+          rightVolts = right * climbDirection;
+        },
+        this);
   }
 
   public void setVolts(double leftVolts, double rightVolts) {

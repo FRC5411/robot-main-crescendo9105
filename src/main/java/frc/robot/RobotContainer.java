@@ -15,16 +15,14 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.IndexerCommands;
-import frc.robot.commands.IndexerCommands.IndexerDirection;
-import frc.robot.commands.IntakeCommands;
-import frc.robot.commands.IntakeCommands.IntakeDirection;
-import frc.robot.commands.ShooterCommands;
+import frc.robot.RobotStates.IndexerStates;
+import frc.robot.RobotStates.IntakeStates;
+import frc.robot.RobotStates.ShooterStates;
+import frc.robot.RobotStates.YoshiStates;
 import frc.robot.commands.SwerveCommands;
-import frc.robot.commands.YoshiCommands;
-import frc.robot.commands.YoshiCommands.YoshiFlywheelDirection;
-import frc.robot.commands.YoshiCommands.YoshiPivotSetpoint;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.drive.Drive;
@@ -75,7 +73,7 @@ public class RobotContainer {
   private LEDSubsystem robotLEDs;
 
   private VisionFuser visionFuser;
-  private StateMachine stateMachine;
+  private StateMachine robotStateMachine;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
   private CommandXboxController copilotController = new CommandXboxController(1);
@@ -85,8 +83,11 @@ public class RobotContainer {
   public RobotContainer() {
     initializeSubsystems();
 
-    stateMachine =
+    robotStateMachine =
         new StateMachine(robotShooter, robotIntake, robotIndexer, robotYoshi, robotClimb);
+    DriverCommands.setStateMachine(robotStateMachine);
+
+    TargetingSystem.updateRobotPose(() -> robotDrive.getFilteredPose());
 
     configureAutonomous();
 
@@ -198,42 +199,31 @@ public class RobotContainer {
 
   /** Register commands with PathPlanner and add default autos to chooser */
   private void configureAutonomous() {
-    // Register commands with PathPlanner's AutoBuilder so it can call them
     NamedCommands.registerCommand(
-        "Print Pose", Commands.print("Pose: " + robotDrive.getPoseEstimate()));
+        "DeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.GROUND));
+    NamedCommands.registerCommand(
+        "UnDeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.IDLE));
+    NamedCommands.registerCommand(
+        "Intake",
+        new ParallelCommandGroup(
+                robotStateMachine.getIndexerCommand(IndexerStates.STOW),
+                robotStateMachine.getYoshiCommand(YoshiStates.GROUND),
+                robotStateMachine.getIntakeCommand(IntakeStates.INTAKE),
+                robotStateMachine.getShooterCommand(ShooterStates.INTAKE))
+            .withTimeout(2.0));
+    NamedCommands.registerCommand(
+        "Shoot",
+        robotStateMachine
+            .getShooterCommand(ShooterStates.AIM)
+            .andThen(new WaitCommand(1))
+            .andThen(robotStateMachine.getIndexerCommand(IndexerStates.INDEX))
+            .andThen(robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
 
     NamedCommands.registerCommand(
-        "AutoShoot",
-        IndexerCommands.stopIndexer(robotIndexer)
-            .alongWith(IntakeCommands.stopIntake(robotIntake))
-            .alongWith(ShooterCommands.automaticTarget(robotShooter).withTimeout(3.0)));
+        "EnableAutoAlign", Commands.runOnce(() -> robotDrive.setPProtationTargetOverride(true)));
 
     NamedCommands.registerCommand(
-        "FirePiece",
-        IntakeCommands.runIntake(robotIntake, IntakeDirection.IN)
-            .alongWith(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.IN))
-            .withTimeout(3.0));
-
-    NamedCommands.registerCommand(
-        "IntakeInnerRollers",
-        ShooterCommands.runAll(robotShooter, Rotation2d.fromDegrees(40.0), 0.0)
-            .alongWith(IntakeCommands.runIntake(robotIntake, IntakeDirection.IN))
-            .alongWith(IndexerCommands.stowPiece(robotIndexer))
-            .withTimeout(0.1)
-            .andThen(IndexerCommands.runIndexer(robotIndexer, IndexerDirection.STOP)));
-
-    NamedCommands.registerCommand(
-        "DeployYoshi",
-        YoshiCommands.runIntake(robotYoshi, YoshiPivotSetpoint.GROUND, YoshiFlywheelDirection.IN)
-            .withTimeout(3.0));
-
-    NamedCommands.registerCommand(
-        "RetractYoshi",
-        YoshiCommands.runIntake(robotYoshi, YoshiPivotSetpoint.IDLE, YoshiFlywheelDirection.STOP)
-            .withTimeout(3.0));
-
-    NamedCommands.registerCommand(
-        "AnglerDown", ShooterCommands.runAll(robotShooter, Rotation2d.fromDegrees(35.0), 0.0));
+        "EnableAutoAlign", Commands.runOnce(() -> robotDrive.setPProtationTargetOverride(false)));
   }
 
   /** Configure controllers */
@@ -256,25 +246,24 @@ public class RobotContainer {
                   () -> TargetingSystem.getOptimalLaunchHeading()))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
-      pilotController
+      copilotController
+          .a()
+          .whileTrue(DriverCommands.climbChain())
+          .onFalse(DriverCommands.stopClimb());
+
+      copilotController.b().whileTrue(DriverCommands.invertClimb());
+
+      copilotController
+          .x()
+          .whileTrue(DriverCommands.adjustLeftClimb())
+          .onFalse(DriverCommands.stopClimb());
+
+      copilotController
           .y()
-          .whileTrue(
-              robotShooter
-                  .setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT)
-                  .alongWith(robotYoshi.runYoshi(YoshivatorSetpoints.GROUND)))
-          .whileFalse(
-              Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter)
-                  .alongWith(robotYoshi.runYoshi(YoshivatorSetpoints.IDLE)));
-
-      pilotController
-          .povLeft()
-          .whileTrue(
-              TargetingSystem.shoot(
-                  () -> robotDrive.getOdometryPose(), () -> robotShooter.getAnglerPosition()));
-
+          .whileTrue(DriverCommands.adjustRight())
+          .onFalse(DriverCommands.stopClimb());
     } else {
       /* Pilot bindings */
-
       /* Drive with joysticks */
       robotDrive.setDefaultCommand(
           SwerveCommands.swerveDrive(
@@ -287,118 +276,86 @@ public class RobotContainer {
           .a()
           .whileTrue(
               robotShooter.setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT))
-          .whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
+          .onFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
 
-      //   /* Intake a note from the ground */
-      //   pilotController
-      //       .leftBumper()
-      //       .whileTrue(
-      //           caster
-      //               .getCommand(CasterState.INTAKE_GROUND)
-      //               .alongWith(superstructure.getCommand(SuperstructureState.INTAKING)))
-      //       .whileFalse(
-      //           caster
-      //               .getCommand(CasterState.IDLE)
-      //               .alongWith(superstructure.getCommand(SuperstructureState.IDLE)));
+      pilotController
+          .leftBumper()
+          .whileTrue(DriverCommands.intakeNote())
+          .onFalse(DriverCommands.stopTakeNote());
 
-      //   /* Outtake a gamepiece */
-      //   pilotController
-      //       .rightBumper()
-      //       .whileTrue(caster.getCommand(CasterState.OUTTAKE))
-      //       .whileFalse(caster.getCommand(CasterState.IDLE));
+      pilotController
+          .rightBumper()
+          .whileTrue(DriverCommands.outtakeNote())
+          .onFalse(DriverCommands.stopTakeNote());
 
-      //   /* Intake a note from the ground into the yoshi */
-      //   pilotController
-      //       .leftTrigger()
-      //       .whileTrue(caster.getCommand(CasterState.INTAKE_AMP))
-      //       .whileFalse(caster.getCommand(CasterState.IDLE));
+      /* Intake a note from the ground into the yoshi */
+      pilotController
+          .leftTrigger()
+          .whileTrue(DriverCommands.yoshiIntakeNote())
+          .onFalse(DriverCommands.stopTakeNote());
 
-      //   /* Reset gyro */
-      //   pilotController.y().onTrue(SwerveCommands.resetGyro(robotDrive));
+      pilotController
+          .rightTrigger()
+          .whileTrue(DriverCommands.scoreAmp())
+          .onFalse(DriverCommands.stopTakeNote());
 
-      //   /* Auto heading to speaker */
-      //   pilotController
-      //       .a()
-      //       .whileTrue(
-      //           SwerveCommands.setHeading(
-      //               robotDrive,
-      //               () -> 0.0,
-      //               () -> 0.0,
-      //               () -> TargetingSystem.getOptimalLaunchHeading()))
-      //       .onFalse(SwerveCommands.stopDrive(robotDrive));
+      /* Reset gyro */
+      pilotController.y().whileTrue(SwerveCommands.resetGyro(robotDrive));
 
-      //   /* Copilot bindings */
+      /* Auto heading to speaker */
+      pilotController
+          .a()
+          .whileTrue(
+              SwerveCommands.setHeading(
+                  robotDrive,
+                  () -> 0.0,
+                  () -> 0.0,
+                  () -> TargetingSystem.getOptimalLaunchHeading()))
+          .onFalse(SwerveCommands.stopDrive(robotDrive));
 
-      //   /* Align yoshi to score in amp */
-      //   copilotController
-      //       .leftBumper()
-      //       .whileTrue(caster.getCommand(CasterState.OUTTAKE))
-      //       .whileFalse(caster.getCommand(CasterState.IDLE));
+      /* Copilot bindings */
+      /* Prepare to fire a note at the speaker */
+      copilotController
+          .y()
+          .whileTrue(DriverCommands.prepareNoteShot())
+          .onFalse(DriverCommands.stopShooting());
 
-      //   /* Prepare to climb */
-      //   copilotController
-      //       .rightTrigger()
-      //       .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_ANGLER_DOWN))
-      //       .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
+      copilotController
+          .a()
+          .whileTrue(DriverCommands.shootNote())
+          .onFalse(DriverCommands.stopShooting());
 
-      //   /* Climb to setpoint */
-      //   copilotController
-      //       .leftTrigger()
-      //       .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_ANGLER_UP))
-      //       .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
+      copilotController
+          .rightBumper()
+          .whileTrue(DriverCommands.moveAnglerUpManual())
+          .onFalse(DriverCommands.shooterToIdle());
 
-      //   /* Index note */
-      //   copilotController
-      //       .povLeft()
-      //       .whileTrue(caster.getCommand(CasterState.INDEX))
-      //       .whileFalse(caster.getCommand(CasterState.IDLE));
+      copilotController
+          .leftBumper()
+          .whileTrue(DriverCommands.moveAnglerDownManual())
+          .onFalse(DriverCommands.shooterToIdle());
 
-      //   /* Outdex note */
-      //   copilotController
-      //       .povRight()
-      //       .whileTrue(caster.getCommand(CasterState.OUTDEX))
-      //       .whileFalse(caster.getCommand(CasterState.IDLE));
+      copilotController
+          .x()
+          .whileTrue(DriverCommands.climbChain())
+          .onFalse(DriverCommands.stopClimb());
 
-      //   /* Prepare to fire a note at the speaker */
-      //   copilotController
-      //       .y()
-      //       .whileTrue(superstructure.getCommand(SuperstructureState.PREPARING_SHOT))
-      //       .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
+      copilotController.b().whileTrue(DriverCommands.invertClimb());
 
-      //   /* Align yoshi to score in amp */
-      //   copilotController
-      //       .a()
-      //       .whileTrue(caster.getCommand(CasterState.SCORE_AMP))
-      //       .whileFalse(caster.getCommand(CasterState.IDLE));
+      copilotController
+          .povUp()
+          .whileTrue(DriverCommands.adjustLeftClimb())
+          .onFalse(DriverCommands.stopClimb());
 
-      //   /* Test climb manual */
-      //   copilotController
-      //       .x()
-      //       .whileTrue(
-      //           ClimbCommands.runClimbManual(
-      //               robotClimb, ClimbLeftDirection.IN, ClimbRightDirection.OUT))
-      //       .whileFalse(ClimbCommands.stopClimb(robotClimb));
+      copilotController
+          .povDown()
+          .whileTrue(DriverCommands.adjustRight())
+          .onFalse(DriverCommands.stopClimb());
 
-      //   /* Test manual climb flip direction */
-      //   copilotController.b().onTrue(superstructure.swapClimbDirection());
-
-      //   /* Test manual climb left */
-      //   copilotController
-      //       .povUp()
-      //       .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_CLIMB_LEFT))
-      //       .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
-
-      //   /* Test manual climb right */
-      //   copilotController
-      //       .povDown()
-      //       .whileTrue(superstructure.getCommand(SuperstructureState.MANUAL_CLIMB_RIGHT))
-      //       .whileFalse(superstructure.getCommand(SuperstructureState.IDLE));
-
-      //   copilotController.rightBumper().onTrue(robotLEDs.lightDarkBlueGradientCommand(true));
+      copilotController.rightBumper().whileTrue(robotLEDs.lightDarkBlueGradientCommand(true));
     }
   }
 
-  /** Returns the selected autonomous */
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }
@@ -414,4 +371,6 @@ public class RobotContainer {
       return Optional.empty();
     }
   }
+
+  public void updateTargetingSystemPose() {}
 }

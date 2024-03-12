@@ -1,9 +1,8 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotStates.ClimbStates;
 import frc.robot.RobotStates.IndexerStates;
 import frc.robot.RobotStates.IntakeStates;
@@ -16,7 +15,7 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.yoshivator.Yoshivator;
 import org.littletonrobotics.junction.AutoLogOutput;
 
-public class StateMachine extends SubsystemBase {
+public class StateMachine {
   private Shooter robotShooter;
   private Intake robotIntake;
   private Indexer robotIndexer;
@@ -41,47 +40,64 @@ public class StateMachine extends SubsystemBase {
     this.robotYoshi = robotYoshi;
     this.robotClimb = robotClimb;
 
-    shooterState = ShooterStates.OFF;
+    shooterState = ShooterStates.AIM;
     intakeState = IntakeStates.OFF;
     indexerState = IndexerStates.OFF;
-    yoshiState = YoshiStates.OFF;
+    yoshiState = YoshiStates.IDLE;
     climbState = ClimbStates.OFF;
   }
 
-  @Override
-  public void periodic() {}
-
   public Command getShooterCommand(ShooterStates state) {
     return new SequentialCommandGroup(
-            Commands.runOnce(() -> shooterState = state), robotShooter.mapToCommand(shooterState))
+            new InstantCommand(
+                () -> {
+                  shooterState = state;
+                  robotShooter.mapToCommand(shooterState).schedule();
+                }))
         .withName("StateMachince/ShooterCommand/" + shooterState);
   }
 
   public Command getIntakeCommand(IntakeStates state) {
     return new SequentialCommandGroup(
-            Commands.runOnce(() -> intakeState = state), robotIntake.mapToCommand(intakeState))
+            new InstantCommand(
+                () -> {
+                  intakeState = state;
+                  robotIntake.mapToCommand(intakeState).schedule();
+                }))
         .withName("StateMachince/IntakeCommand/" + intakeState);
   }
 
   public Command getIndexerCommand(IndexerStates state) {
     return new SequentialCommandGroup(
-            Commands.runOnce(() -> indexerState = state), robotIndexer.mapToCommand(indexerState))
+            new InstantCommand(
+                () -> {
+                  indexerState = state;
+                  robotIndexer.mapToCommand(indexerState).schedule();
+                }))
         .withName("StateMachince/IndexerCommand/" + indexerState);
   }
 
   public Command getYoshiCommand(YoshiStates state) {
     return new SequentialCommandGroup(
-            Commands.runOnce(() -> yoshiState = state), robotYoshi.mapToCommand(yoshiState))
+            new InstantCommand(
+                () -> {
+                  yoshiState = state;
+                  robotYoshi.mapToCommand(yoshiState).schedule();
+                }))
         .withName("StateMachince/YoshiCommand/" + yoshiState);
   }
 
   public Command getClimbCommand(ClimbStates state) {
     return new SequentialCommandGroup(
-            Commands.runOnce(() -> climbState = state), robotClimb.mapToCommand(climbState))
+            new InstantCommand(
+                () -> {
+                  climbState = state;
+                  robotClimb.mapToCommand(climbState).schedule();
+                }))
         .withName("StateMachince/ClimbCommand/" + climbState);
   }
 
-  @AutoLogOutput(key = "Caster/ShooterState")
+  @AutoLogOutput(key = "StateMachine/ShooterState")
   public ShooterStates getShooterState() {
     return shooterState;
   }
@@ -105,7 +121,4 @@ public class StateMachine extends SubsystemBase {
   public ClimbStates getClimbState() {
     return climbState;
   }
-
-  /** BASE COMMANDS */
-  /** DRIVER COMMANDS */
 }
