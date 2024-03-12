@@ -11,6 +11,10 @@ import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.leds.LEDConstants.Configs;
 import java.util.ArrayList;
+//import java.util.Arrays;
+import java.util.Collections;
+//import java.util.List;
+//import java.util.function.IntPredicate;
 
 public class LEDSubsystem extends SubsystemBase {
   private AddressableLED led;
@@ -28,6 +32,7 @@ public class LEDSubsystem extends SubsystemBase {
   private double animateTargetTimestamp;
   private double animateDelaySec;
 
+  private boolean direction;
   private boolean tasksJustRanOut;
 
   public LEDSubsystem() {
@@ -47,6 +52,7 @@ public class LEDSubsystem extends SubsystemBase {
     animateDelaySec = 1;
     shouldAnimate = false;
 
+    direction = true;
     tasksJustRanOut = false;
   }
 
@@ -63,7 +69,48 @@ public class LEDSubsystem extends SubsystemBase {
         queuedTasks.add(() -> ledBuffer.setHSV(index, h, s, v));
       }
     });
-  }
+  }  
+
+  public void dynamicPingPong(int affectedColor, int otherColor){ 
+     ArrayList<Integer> affectedLeds = new ArrayList<>(); 
+     affectedLeds.add(0);
+     boolean right = true;   
+     direction = false;
+     while (affectedLeds.size() < ledBuffer.getLength()){   
+          queuedPatterns.add(() -> { 
+           taskDelaySec = 0.2;
+           for (int idx = 0; idx < ledBuffer.getLength(); idx ++){  
+               final int index = idx; 
+               if (affectedLeds.contains(idx)){ 
+                  queuedTasks.add(() -> ledBuffer.setHSV(index, affectedColor,255,255));
+               } else { 
+                  queuedTasks.add(() -> ledBuffer.setHSV(index, otherColor, 255,255));
+              }
+            } 
+          }); 
+          setBuffer();
+          if (right){ 
+            if (Collections.max(affectedLeds) == ledBuffer.getLength()-1){  
+              affectedLeds.add(Collections.min(affectedLeds) - 1);
+              right = false;
+            } 
+            affectedLeds.forEach((number) -> { 
+              number += 1;
+            }); 
+          } else { 
+            if (Collections.min(affectedLeds) == 0){  
+              affectedLeds.add(Collections.max(affectedLeds) + 1);
+              right = true;
+            } 
+            affectedLeds.forEach((number) -> { 
+              number -= 1;
+            }); 
+          }
+     } 
+     direction = true;
+  } 
+
+  
 
   private void setBuffer() {
     led.setData(ledBuffer);
@@ -75,14 +122,20 @@ public class LEDSubsystem extends SubsystemBase {
     if (shouldAnimate) {
       if(Timer.getFPGATimestamp() >= animateTargetTimestamp) {
         // Animate a single frameshift.
-        Color lastLED = ledBuffer.getLED(ledBuffer.getLength() - 1);
-        for (int i = ledBuffer.getLength() - 1; i > 0; i--)
-          ledBuffer.setLED(i, ledBuffer.getLED(i - 1));
-        ledBuffer.setLED(0, lastLED);
-
+        if (direction){
+          Color lastLED = ledBuffer.getLED(ledBuffer.getLength() - 1);
+          for (int i = ledBuffer.getLength() - 1; i > 0; i--)
+            ledBuffer.setLED(i, ledBuffer.getLED(i - 1));
+          ledBuffer.setLED(0, lastLED);
+        } else  {
+          Color firstLED = ledBuffer.getLED(0);
+          for (int i = 0; i < ledBuffer.getLength(); i++)
+            ledBuffer.setLED(i, ledBuffer.getLED(i + 1));
+          ledBuffer.setLED(ledBuffer.getLength() - 1, firstLED);
+        }
         setBuffer();
         animateTargetTimestamp = Timer.getFPGATimestamp() + animateDelaySec;
-      }
+      } 
     } else {
       if (queuedTasks.size() == 0) {
         if (queuedPatterns.size() > 0) {

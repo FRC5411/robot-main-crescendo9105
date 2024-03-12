@@ -1,5 +1,11 @@
 <factorypath>
+<<<<<<< Updated upstream
     <factorypathentry kind="EXTJAR" id="/home/tnil/.gradle/caches/modules-2/files-2.1/com.squareup/javapoet/1.13.0/d6562d385049f35eb50403fa86bb11cce76b866a/javapoet-1.13.0.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="EXTJAR" id="/home/tnil/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.30/f195ee86e6c896ea47a1d39defbe20eb59cd149d/lombok-1.18.30.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="EXTJAR" id="/home/tnil/.gradle/caches/modules-2/files-2.1/org.littletonrobotics.akit.junction/junction-autolog/3.1.1/abaf89ad1ac7acc95dbc0d3f0785a39acf98dd0e/junction-autolog-3.1.1.jar" enabled="true" runInBatchMode="false"/>
+=======
+    <factorypathentry kind="EXTJAR" id="/home/talon-robotics/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.30/f195ee86e6c896ea47a1d39defbe20eb59cd149d/lombok-1.18.30.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="EXTJAR" id="/home/talon-robotics/.gradle/caches/modules-2/files-2.1/com.squareup/javapoet/1.13.0/d6562d385049f35eb50403fa86bb11cce76b866a/javapoet-1.13.0.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="EXTJAR" id="/home/talon-robotics/.gradle/caches/modules-2/files-2.1/org.littletonrobotics.akit.junction/junction-autolog/3.1.1/abaf89ad1ac7acc95dbc0d3f0785a39acf98dd0e/junction-autolog-3.1.1.jar" enabled="true" runInBatchMode="false"/>
+>>>>>>> Stashed changes
 </factorypath>
