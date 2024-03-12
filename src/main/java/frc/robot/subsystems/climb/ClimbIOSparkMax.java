@@ -6,6 +6,7 @@ package frc.robot.subsystems.climb;
 
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
@@ -36,6 +37,18 @@ public class ClimbIOSparkMax implements ClimbIO {
     rightMotor.restoreFactoryDefaults();
     leftMotor.clearFaults();
     rightMotor.clearFaults();
+
+    leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 100);
+    leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 100);
+    leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 100);
+    leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 100);
+    leftMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 100);
+
+    rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 100);
+    rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 100);
+    rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 100);
+    rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 100);
+    rightMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 100);
 
     leftMotor.setSmartCurrentLimit(40);
     leftMotor.enableVoltageCompensation(12.0);

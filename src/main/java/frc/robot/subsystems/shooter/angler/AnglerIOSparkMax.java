@@ -49,7 +49,6 @@ public class AnglerIOSparkMax implements AnglerIO {
 
   @Override
   public void updateInputs(AnglerIOInputs inputs) {
-    // TODO Fix velocity to accurately reflect encoder readings
     inputs.anglerAbsolutePosition =
         Rotation2d.fromDegrees(360.0)
             .minus(

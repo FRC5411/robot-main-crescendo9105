@@ -6,6 +6,7 @@ package frc.robot.subsystems.yoshivator.manipulator;
 
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
@@ -31,15 +32,17 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
   private double pivotAppliedVolts = 0.0;
   private double flywheelAppliedVolts = 0.0;
 
-  // Ground setpoint : -30.4
-  // Idle setpoint : 100.0
-
   /** Create a new hardware implementation of the manipulator */
   public ManipulatorIOSparkMax() {
     pivotMotor.clearFaults();
     pivotMotor.restoreFactoryDefaults();
 
-    // pivotMotor.setCANTimeout(20);
+    pivotMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 100);
+    pivotMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 100);
+    pivotMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 100);
+    pivotMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 100);
+    pivotMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 100);
+
     pivotMotor.setSmartCurrentLimit(40);
     pivotMotor.enableVoltageCompensation(12.0);
     pivotMotor.setIdleMode(IdleMode.kBrake);
@@ -53,7 +56,12 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
     flywheelMotor.clearFaults();
     flywheelMotor.restoreFactoryDefaults();
 
-    // flywheelMotor.setCANTimeout(20);
+    flywheelMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 100);
+    flywheelMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 100);
+    flywheelMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 100);
+    flywheelMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 100);
+    flywheelMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 100);
+
     flywheelMotor.setSmartCurrentLimit(60);
     flywheelMotor.enableVoltageCompensation(12.0);
     flywheelMotor.setIdleMode(IdleMode.kBrake);

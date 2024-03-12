@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.drive;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -145,6 +146,8 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     driveMotor.burnFlash();
     azimuthMotor.burnFlash();
+
+    BaseStatusSignal.setUpdateFrequencyForAll(10.0, angleEncoder.getAbsolutePosition());
   }
 
   @Override

@@ -14,7 +14,6 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Indexer extends SubsystemBase {
-  /** Direction of the indexer */
   public static enum IndexerSetpoint {
     IN(12.0),
     OUT(-12.0),
@@ -32,17 +31,29 @@ public class Indexer extends SubsystemBase {
     }
   }
 
-  private IndexerIO indexerIO;
-  private IndexerIOInputsAutoLogged indexerIOInputs = new IndexerIOInputsAutoLogged();
-
-  @AutoLogOutput(key = "Indexer/CurrentCommand")
-  private Command currentCommand = null;
-
   @AutoLogOutput(key = "Indexer/CurrentSetpoint")
   private IndexerSetpoint currentSetpoint = IndexerSetpoint.OFF;
 
+  private IndexerIO indexerIO;
+  private IndexerIOInputsAutoLogged indexerIOInputs = new IndexerIOInputsAutoLogged();
+
   public Indexer(IndexerIO indexerIO) {
     this.indexerIO = indexerIO;
+  }
+
+  @Override
+  public void periodic() {
+    indexerIO.updateInputs(indexerIOInputs);
+    Logger.processInputs("Indexer", indexerIOInputs);
+
+    if (DriverStation.isDisabled()) {
+      setCurrentSetpoint(IndexerSetpoint.OFF);
+      setVolts(0.0);
+    }
+
+    if (currentSetpoint != null) {
+      setVolts(currentSetpoint.getVolts());
+    }
   }
 
   public Command mapToCommand(IndexerStates desiredState) {
@@ -76,21 +87,6 @@ public class Indexer extends SubsystemBase {
         },
         () -> isBeamBroken(),
         this);
-  }
-
-  @Override
-  public void periodic() {
-    indexerIO.updateInputs(indexerIOInputs);
-    Logger.processInputs("Indexer", indexerIOInputs);
-
-    if (currentSetpoint != null) {
-      setVolts(currentSetpoint.getVolts());
-    }
-
-    if (DriverStation.isDisabled()) {
-      setCurrentSetpoint(IndexerSetpoint.OFF);
-      setVolts(0);
-    }
   }
 
   private void setCurrentSetpoint(IndexerSetpoint setpoint) {

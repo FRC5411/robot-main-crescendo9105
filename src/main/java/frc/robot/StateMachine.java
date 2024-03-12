@@ -1,7 +1,9 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotStates.ClimbStates;
 import frc.robot.RobotStates.IndexerStates;
@@ -95,6 +97,92 @@ public class StateMachine {
                   robotClimb.mapToCommand(climbState).schedule();
                 }))
         .withName("StateMachince/ClimbCommand/" + climbState);
+  }
+
+  public Command intakeNote() {
+    return new ParallelCommandGroup(
+        getShooterCommand(ShooterStates.INTAKE),
+        getIntakeCommand(IntakeStates.INTAKE),
+        getIndexerCommand(IndexerStates.STOW));
+  }
+
+  public Command yoshiIntakeNote() {
+    return intakeNote().alongWith(getYoshiCommand(YoshiStates.GROUND));
+  }
+
+  public Command outtakeNote() {
+    return new ParallelCommandGroup(
+        getYoshiCommand(YoshiStates.IDLE),
+        getIntakeCommand(IntakeStates.OUTTAKE),
+        getIndexerCommand(IndexerStates.OUTDEX),
+        getShooterCommand(ShooterStates.INTAKE));
+  }
+
+  public Command stopTakeNote() {
+    return new ParallelCommandGroup(
+        getYoshiCommand(YoshiStates.IDLE),
+        getIntakeCommand(IntakeStates.OFF),
+        getIndexerCommand(IndexerStates.OFF),
+        getShooterCommand(ShooterStates.AIM));
+  }
+
+  public Command scoreAmp() {
+    return getYoshiCommand(YoshiStates.AMP);
+  }
+
+  public Command prepareNoteShot() {
+    return getShooterCommand(ShooterStates.AIM);
+  }
+
+  public Command shootNote() {
+    return new ParallelCommandGroup(
+        getIndexerCommand(IndexerStates.INDEX),
+        new ConditionalCommand(
+            getShooterCommand(ShooterStates.FIRE),
+            new InstantCommand(),
+            () -> getShooterState() != ShooterStates.AIM));
+  }
+
+  public Command stopShooting() {
+    return new ParallelCommandGroup(
+        getIndexerCommand(IndexerStates.OFF), getShooterCommand(ShooterStates.AIM));
+  }
+
+  public Command moveAnglerUpManual() {
+    return getShooterCommand(ShooterStates.UP);
+  }
+
+  public Command moveAnglerDownManual() {
+    return getShooterCommand(ShooterStates.DOWN);
+  }
+
+  public Command shooterToIdle() {
+    return getShooterCommand(ShooterStates.IDLE);
+  }
+
+  public Command climbChain() {
+    return new ParallelCommandGroup(
+        getClimbCommand(ClimbStates.MOVE_BOTH), getShooterCommand(ShooterStates.CLIMB));
+  }
+
+  public Command adjustLeftClimb() {
+    return new ParallelCommandGroup(
+        getClimbCommand(ClimbStates.MOVE_LEFT), getShooterCommand(ShooterStates.CLIMB));
+  }
+
+  public Command adjustRightClimb() {
+    return new ParallelCommandGroup(
+        getClimbCommand(ClimbStates.MOVE_RIGHT), getShooterCommand(ShooterStates.CLIMB));
+  }
+
+  public Command invertClimb() {
+    return new ParallelCommandGroup(
+        getClimbCommand(ClimbStates.INVERT), getShooterCommand(ShooterStates.CLIMB));
+  }
+
+  public Command stopClimb() {
+    return new ParallelCommandGroup(
+        getClimbCommand(ClimbStates.OFF), getShooterCommand(ShooterStates.CLIMB));
   }
 
   @AutoLogOutput(key = "StateMachine/ShooterState")
