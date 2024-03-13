@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /** Class that calculates projectile motion given certain parameters */
@@ -28,13 +27,15 @@ public class TargetingSystem {
   private static Translation3d speakerOpeningRed = new Translation3d(16.26, 5.53, 2.045);
 
   private static final double LAUNCH_MAP_OFFSET_M = 0.93 + 0.46 - 0.23 - 0.17;
-  private static final double LUANCH_MAP_OFFSET_DEGREES = 0.0; // 3.0;
+  private static final double LUANCH_MAP_OFFSET_DEGREES = -1.0; // 3.0;
 
   private static Drive robotDrive;
   private static Vision robotVision;
 
-  @AutoLogOutput(key = "TargetingSystem/MultiTagEnabled")
+  // @AutoLogOutput(key = "Shooter/TargetingSystem/MultiTagEnabled")
   private static boolean multiTagEnabled = true;
+
+  private static Rotation2d lastHeading = new Rotation2d();
 
   private static LinearFilter distanceFilter = LinearFilter.movingAverage(10);
   private static LinearFilter rotationFilter = LinearFilter.movingAverage(10);
@@ -44,6 +45,11 @@ public class TargetingSystem {
    * optimal launch angle (degrees)
    */
   private static InterpolatingDoubleTreeMap launchMap = new InterpolatingDoubleTreeMap();
+
+  public static void setSubsystems(Drive drive, Vision vision) {
+    robotDrive = drive;
+    robotVision = vision;
+  }
 
   /** Initialize the launch map */
   private static void initializeLaunchMap() {
@@ -68,7 +74,10 @@ public class TargetingSystem {
   public static Rotation2d getLaunchMapAngle() {
     initializeLaunchMap();
 
-    Rotation2d angle = Rotation2d.fromDegrees(launchMap.get(speakerDistanceM().getAsDouble()));
+    double distanceM = speakerDistanceM().getAsDouble();
+
+    if (!multiTagEnabled) distanceM -= 0.4;
+    Rotation2d angle = Rotation2d.fromDegrees(launchMap.get(distanceM));
 
     Logger.recordOutput("Shooter/TargetingSystem/Angle", angle);
 
@@ -92,19 +101,28 @@ public class TargetingSystem {
       heading = new Rotation2d(xDelta, yDelta);
     } else if (robotVision.getInputsLeft().hasSpeakerTarget) {
       heading = robotVision.getInputsLeft().speakerTagTransform.getTranslation().getAngle();
+      lastHeading = heading;
     } else if (robotVision.getInputsRight().hasSpeakerTarget) {
       heading = robotVision.getInputsLeft().speakerTagTransform.getTranslation().getAngle();
+      lastHeading = heading;
     } else {
-      heading = robotVision.getInputsLeft().speakerTagTransform.getTranslation().getAngle();
+      heading = lastHeading;
     }
-
-    if (DriverStation.getAlliance().get() == Alliance.Blue) {
-      heading = heading.plus(Rotation2d.fromDegrees(180.0));
+    if (multiTagEnabled) {
+      if (DriverStation.getAlliance().get() == Alliance.Blue) {
+        heading = heading.plus(Rotation2d.fromDegrees(180.0));
+      }
+    } else {
+      if (DriverStation.getAlliance().get() == Alliance.Red) {
+        heading = heading.plus(Rotation2d.fromDegrees(180.0));
+      }
     }
 
     Logger.recordOutput("Shooter/TargetingSystem/Heading", heading);
 
-    heading = Rotation2d.fromDegrees(rotationFilter.calculate(heading.getDegrees()));
+    if (!multiTagEnabled) {
+      heading = Rotation2d.fromDegrees(rotationFilter.calculate(heading.getDegrees()));
+    }
 
     return heading;
   }
@@ -141,11 +159,15 @@ public class TargetingSystem {
   }
 
   public static boolean isAtShootRange() {
-    if (robotVision.getInputsLeft().hasSpeakerTarget
-        || robotVision.getInputsRight().hasSpeakerTarget) {
+    try {
+      if (robotVision.getInputsLeft().hasSpeakerTarget
+          || robotVision.getInputsRight().hasSpeakerTarget) {
+        return false;
+      }
+      return speakerDistanceM().getAsDouble() <= 3;
+    } catch (Exception e) {
       return false;
     }
-    return speakerDistanceM().getAsDouble() <= 3;
   }
 
   public static BooleanSupplier atShootRange() {
@@ -157,7 +179,7 @@ public class TargetingSystem {
     return new ScheduleCommand(
         Commands.defer(
                 () -> {
-                  Pose2d currentRobotPose = robotDrive.getOdometryPose();
+                  Pose2d currentRobotPose = robotDrive.getFilteredPose();
 
                   final Transform3d anglerTransform =
                       new Transform3d(
@@ -174,7 +196,7 @@ public class TargetingSystem {
                               new Rotation3d(
                                   0.0,
                                   0.0,
-                                  robotDrive.getOdometryPose().getRotation().getRadians()))
+                                  robotDrive.getFilteredPose().getRotation().getRadians()))
                           .transformBy(anglerTransform);
                   final Pose3d endPose =
                       (DriverStation.getAlliance().get() == Alliance.Blue)
@@ -203,5 +225,13 @@ public class TargetingSystem {
 
   public static void toggleMultiTagEnabled() {
     multiTagEnabled = !multiTagEnabled;
+  }
+
+  public static void logMultiTagEnabled() {
+    Logger.recordOutput("Shooter/TargetingSystem/MulitTagEnabled", multiTagEnabled);
+  }
+
+  public static boolean getMultiTagEnabled() {
+    return multiTagEnabled;
   }
 }

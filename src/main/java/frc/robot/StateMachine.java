@@ -103,8 +103,11 @@ public class StateMachine {
     return new ParallelCommandGroup(
         getShooterCommand(ShooterStates.INTAKE),
         getIntakeCommand(IntakeStates.INTAKE),
-        getYoshiCommand(YoshiStates.GROUND_INTAKE),
         getIndexerCommand(IndexerStates.STOW));
+  }
+
+  public Command yoshiIntakeNote() {
+    return intakeNote().alongWith(getYoshiCommand(YoshiStates.GROUND_INTAKE));
   }
 
   public Command yoshiIntakeNoteAmp() {
@@ -142,6 +145,10 @@ public class StateMachine {
             getShooterCommand(ShooterStates.FIRE),
             new InstantCommand(),
             () -> getShooterState() != ShooterStates.AIM));
+  }
+
+  public Command revUp() {
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.FIRE));
   }
 
   public Command stopShooting() {

@@ -197,6 +197,8 @@ public class RobotContainer {
     visionFuser = new VisionFuser(robotDrive, robotVision);
 
     PPHolonomicDriveController.setRotationTargetOverride(this::getRotationTargetOverride);
+
+    TargetingSystem.setSubsystems(robotDrive, robotVision);
   }
 
   /** Register commands with PathPlanner and add default autos to chooser */
@@ -222,6 +224,10 @@ public class RobotContainer {
             robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
 
     NamedCommands.registerCommand(
+        "ShootIdle",
+        Commands.waitSeconds(1).andThen(robotStateMachine.getShooterCommand(ShooterStates.IDLE)));
+
+    NamedCommands.registerCommand(
         "EnableAutoAlign", Commands.runOnce(() -> robotDrive.setPProtationTargetOverride(true)));
 
     NamedCommands.registerCommand(
@@ -233,8 +239,7 @@ public class RobotContainer {
     new Trigger(
             () ->
                 robotShooter.atAllSetpoint()
-                    && TargetingSystem.isAtShootRange()
-                    && SwerveCommands.isAtYawGoal())
+                    && robotStateMachine.getShooterState() == ShooterStates.AIM)
         .onTrue(new InstantCommand(() -> robotLEDs.setReadyColor()))
         .onFalse(new InstantCommand(() -> robotLEDs.setDefaultColor()));
 
@@ -275,7 +280,7 @@ public class RobotContainer {
 
       pilotController
           .leftBumper()
-          .whileTrue(robotStateMachine.intakeNote())
+          .whileTrue(robotStateMachine.yoshiIntakeNote())
           .onFalse(robotStateMachine.stopTakeNote());
 
       pilotController
@@ -336,11 +341,13 @@ public class RobotContainer {
           .onFalse(robotStateMachine.stopShooting());
 
       copilotController
+          .b()
+          .whileTrue(robotStateMachine.revUp())
+          .whileFalse(robotStateMachine.stopShooting());
+
+      copilotController
           .leftBumper()
-          .whileTrue(
-              robotStateMachine
-                  .shootNote()
-                  .alongWith(TargetingSystem.shoot(() -> robotShooter.getAnglerPosition())))
+          .whileTrue(robotStateMachine.shootNote())
           .onFalse(robotStateMachine.stopShooting());
 
       copilotController

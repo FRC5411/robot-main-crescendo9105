@@ -26,11 +26,11 @@ import org.littletonrobotics.junction.Logger;
 
 public class Yoshivator extends SubsystemBase {
   public static enum YoshivatorSetpoints {
-    IDLE(() -> Rotation2d.fromDegrees(100.0), () -> 0.0),
-    GROUND_AMP(() -> Rotation2d.fromDegrees(-35.0), () -> 12.0),
+    IDLE(() -> Rotation2d.fromDegrees(105.0), () -> 0.0),
+    GROUND_AMP(() -> Rotation2d.fromDegrees(-37.0), () -> 12.0),
     GROUND_INTAKE(() -> Rotation2d.fromDegrees(-35.0), () -> -12.0),
     AMP_IDLE(() -> Rotation2d.fromDegrees(85), () -> -0.0),
-    AMP_SCORE(() -> Rotation2d.fromDegrees(85), () -> -4.25),
+    AMP_SCORE(() -> Rotation2d.fromDegrees(85), () -> -4.75),
     HOLD(() -> Yoshivator.pivotPosition, () -> 0.0);
 
     private Supplier<Rotation2d> pivotSetpointRotation;
@@ -110,6 +110,8 @@ public class Yoshivator extends SubsystemBase {
     pivotFeedbackA =
         new LoggedTunableNumber(
             "Yoshivator/Pivot/Feedback/A", pivotFeedback.getConstraints().maxAcceleration);
+
+    Logger.recordOutput("Limited", false);
   }
 
   public Command mapToCommand(YoshiStates desiredState) {
@@ -137,8 +139,13 @@ public class Yoshivator extends SubsystemBase {
       stopMotors(true, true);
     }
 
-    if (yoshiLinearFilter.calculate(manipulatorIOInputs.rollerAppliedCurrentAmps[0]) > 60.0) {
+    if (yoshiLinearFilter.calculate(manipulatorIOInputs.rollerAppliedCurrentAmps[0]) > 60.0
+        && (currentSetpoint == YoshivatorSetpoints.GROUND_INTAKE
+            || currentSetpoint == YoshivatorSetpoints.GROUND_AMP)) {
       stopMotors(false, true);
+      Logger.recordOutput("Limited", true);
+    } else {
+      Logger.recordOutput("Limited", false);
     }
 
     if (currentSetpoint != null) {

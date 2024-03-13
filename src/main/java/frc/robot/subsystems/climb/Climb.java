@@ -189,6 +189,16 @@ public class Climb extends SubsystemBase {
       climbIO.setRightVolts(rightFeedbackOutput + rightFeedforwardOutput);
     }
 
+    if(climbIOInputs.leftPosition.getDegrees() > 180.0 
+    && climbIOInputs.leftPosition.getDegrees() < -60.0) {
+      climbIO.setLeftVolts(0);
+    }
+
+    if(climbIOInputs.rightPosition.getDegrees() > 180.0 
+    && climbIOInputs.rightPosition.getDegrees() < -60.0) {
+      climbIO.setRightVolts(0);
+    }
+
     leftVisualizer.updateClimbAngle(climbIOInputs.leftPosition);
     rightVisualizer.updateClimbAngle(climbIOInputs.rightPosition);
 

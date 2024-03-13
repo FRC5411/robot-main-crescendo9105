@@ -57,6 +57,7 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
     flywheelMotor.restoreFactoryDefaults();
 
     flywheelMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 100);
+    flywheelMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 50);
     flywheelMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 100);
     flywheelMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 100);
     flywheelMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 100);

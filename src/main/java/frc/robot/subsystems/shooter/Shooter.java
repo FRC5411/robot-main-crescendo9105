@@ -31,7 +31,7 @@ public class Shooter extends SubsystemBase {
   public static enum AnglerSetpoints {
     AIM(() -> TargetingSystem.getLaunchMapAngle()),
     CLIMB(() -> Rotation2d.fromDegrees(25.0)),
-    INTAKE(() -> Rotation2d.fromDegrees(40.0)),
+    INTAKE(() -> Rotation2d.fromDegrees(45.0)),
     IDLE(() -> anglerPosition);
 
     private Supplier<Rotation2d> angleSupplier;
