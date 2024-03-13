@@ -15,11 +15,11 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Constants.Mode;
 import frc.robot.RobotStates.IndexerStates;
 import frc.robot.RobotStates.IntakeStates;
 import frc.robot.RobotStates.ShooterStates;
@@ -86,12 +86,6 @@ public class RobotContainer {
 
     robotStateMachine =
         new StateMachine(robotShooter, robotIntake, robotIndexer, robotYoshi, robotClimb);
-
-    if (Constants.currentMode == Mode.REAL) {
-      TargetingSystem.updateRobotPose(() -> robotDrive.getFilteredPose());
-    } else {
-      TargetingSystem.updateRobotPose(() -> robotDrive.getOdometryPose());
-    }
 
     configureAutonomous();
 
@@ -221,9 +215,7 @@ public class RobotContainer {
             robotStateMachine.getShooterCommand(ShooterStates.AIM),
             new WaitCommand(1.0),
             robotStateMachine.getIndexerCommand(IndexerStates.INDEX),
-            robotStateMachine.getIntakeCommand(IntakeStates.OFF),
-            TargetingSystem.shoot(
-                () -> robotDrive.getPoseEstimate(), () -> robotShooter.getAnglerPosition())));
+            robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
 
     NamedCommands.registerCommand(
         "EnableAutoAlign", Commands.runOnce(() -> robotDrive.setPProtationTargetOverride(true)));
@@ -335,7 +327,6 @@ public class RobotContainer {
                   .shootNote()
                   .alongWith(
                       TargetingSystem.shoot(
-                          () -> robotDrive.getFilteredPose(),
                           () -> robotShooter.getAnglerPosition())))
           .onFalse(robotStateMachine.stopShooting());
 
@@ -345,6 +336,8 @@ public class RobotContainer {
           .onFalse(robotStateMachine.stopClimb());
 
       copilotController.b().whileTrue(robotStateMachine.invertClimb());
+
+      copilotController.rightTrigger().onTrue(new InstantCommand( () -> TargetingSystem.toggleMultiTagEnabled()));
     }
   }
 

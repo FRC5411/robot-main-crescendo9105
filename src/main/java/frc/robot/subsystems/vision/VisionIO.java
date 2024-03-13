@@ -7,6 +7,7 @@ package frc.robot.subsystems.vision;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -39,6 +40,7 @@ public interface VisionIO {
     public double thetaStandardDeviation = 0.0;
 
     public Pose2d speakerTagPose = new Pose2d();
+    public Transform2d speakerTagTransform = new Transform2d();
 
     public boolean hasSpeakerTarget = false;
 

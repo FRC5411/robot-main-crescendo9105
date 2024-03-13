@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems.vision;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -54,21 +53,13 @@ public class VisionIOPhotonSim implements VisionIO {
     limelightCam = new PhotonCamera(name);
     PhotonCamera.setVersionCheckEnabled(false);
     this.cameraTransform = cameraTransform;
-    try {
-      poseEstimator =
-          new PhotonPoseEstimator(
-              AprilTagFieldLayout.loadFromResource("/src/main/deploy/2024-crescendo.json"),
-              PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-              limelightCam,
-              cameraTransform);
-    } catch (Exception e) {
-      poseEstimator =
-          new PhotonPoseEstimator(
-              AprilTagFields.k2024Crescendo.loadAprilTagLayoutField(),
-              PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-              limelightCam,
-              cameraTransform);
-    }
+    poseEstimator =
+        new PhotonPoseEstimator(
+            AprilTagFields.k2024Crescendo.loadAprilTagLayoutField(),
+            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+            limelightCam,
+            cameraTransform);
+
     poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
     debouncer = new Debouncer(debouncerTime);
