@@ -13,7 +13,6 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -104,6 +103,8 @@ public class RobotContainer {
         new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
 
     configureTriggers();
+
+    // Use assisted control by default
     configureButtonBindings();
   }
 
@@ -237,10 +238,13 @@ public class RobotContainer {
   }
 
   private void configureTriggers() {
-    
     // For LEDS
-    new Trigger(() -> robotShooter.atAllSetpoint() && TargetingSystem.isAtShootRange() && SwerveCommands.isAtYawGoal())
-        .onTrue(new InstantCommand(() -> robotLEDs.setReadyColor()));    
+    new Trigger(
+            () ->
+                robotShooter.atAllSetpoint()
+                    && TargetingSystem.isAtShootRange()
+                    && SwerveCommands.isAtYawGoal())
+        .onTrue(new InstantCommand(() -> robotLEDs.setReadyColor()));
   }
 
   /** Configure controllers */
@@ -311,10 +315,6 @@ public class RobotContainer {
       /* Copilot bindings */
 
       copilotController
-          .leftTrigger()
-          .onTrue(Commands.runOnce(() -> robotLEDs.setSolidBlue(), robotLEDs));
-
-      copilotController
           .povUp()
           .whileTrue(robotStateMachine.moveAnglerUpManual())
           .onFalse(robotStateMachine.shooterToIdle());
@@ -340,7 +340,7 @@ public class RobotContainer {
           .onFalse(robotStateMachine.stopShooting());
 
       copilotController
-          .a()
+          .leftBumper()
           .whileTrue(
               robotStateMachine
                   .shootNote()

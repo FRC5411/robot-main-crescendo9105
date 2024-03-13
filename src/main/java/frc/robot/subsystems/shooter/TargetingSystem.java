@@ -94,18 +94,22 @@ public class TargetingSystem {
 
   /** Calculate the tangental distance from the speaker */
   private static DoubleSupplier calculateSpeakerDistanceM() {
-    double distanceM =
-        (DriverStation.getAlliance().get() == Alliance.Blue)
-            ? Math.hypot(
-                speakerOpeningBlue.getX() - currentRobotPose.get().getX(),
-                speakerOpeningBlue.getY() - currentRobotPose.get().getY())
-            : Math.hypot(
-                speakerOpeningRed.getX() - currentRobotPose.get().getX(),
-                speakerOpeningRed.getY() - currentRobotPose.get().getY());
+    if (DriverStation.getAlliance().isPresent()) {
+      double distanceM =
+          (DriverStation.getAlliance().get() == Alliance.Blue)
+              ? Math.hypot(
+                  speakerOpeningBlue.getX() - currentRobotPose.get().getX(),
+                  speakerOpeningBlue.getY() - currentRobotPose.get().getY())
+              : Math.hypot(
+                  speakerOpeningRed.getX() - currentRobotPose.get().getX(),
+                  speakerOpeningRed.getY() - currentRobotPose.get().getY());
 
-    Logger.recordOutput("Shooter/TargetingSystem/Distance", distanceM);
+      Logger.recordOutput("Shooter/TargetingSystem/Distance", distanceM);
 
-    return () -> distanceM;
+      return () -> distanceM;
+    } else {
+      return () -> 0.0;
+    }
   }
 
   public static boolean isAtShootRange() {

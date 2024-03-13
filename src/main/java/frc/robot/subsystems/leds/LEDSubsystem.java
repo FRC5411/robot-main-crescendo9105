@@ -19,7 +19,7 @@ public class LEDSubsystem extends SubsystemBase {
     led = new AddressableLED(Configs.PWM_PORT);
     ledBuffer = new AddressableLEDBuffer(Configs.LED_COUNT);
     led.setLength(ledBuffer.getLength());
-  
+
     setDefaultColor();
   }
 
@@ -40,7 +40,7 @@ public class LEDSubsystem extends SubsystemBase {
     return (int) ((Hues.GREEN - Hues.RED) * percentDecimal + Hues.RED);
   }
 
-  public void setSolidColor(int h, int s, int v){
+  public void setSolidColor(int h, int s, int v) {
     for (int i = 0; i < ledBuffer.getLength(); i++) {
       ledBuffer.setHSV(i, h, s, v);
     }
@@ -53,6 +53,5 @@ public class LEDSubsystem extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {
-  }
+  public void periodic() {}
 }

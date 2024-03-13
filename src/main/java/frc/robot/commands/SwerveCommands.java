@@ -165,7 +165,7 @@ public class SwerveCommands {
             },
             (interrupted) -> {
               if (interrupted) robotDrive.stop();
-              
+
               isAtYawGoal = thetaFeedback.atGoal();
             },
             () -> thetaFeedback.atGoal(),
@@ -219,8 +219,6 @@ public class SwerveCommands {
 
     return currentCommand;
   }
-
-
 
   /** Returns a command to stop the drivetrain */
   public static Command stopDrive(Drive robotDrive) {
