@@ -142,6 +142,10 @@ public class TargetingSystem {
     return () -> calculateSpeakerDistanceM();
   }
 
+  public static boolean isAtShootRange() {
+    return (speakerDistanceM().getAsDouble() <= 3);
+  }
+
   /** Returns a command to visualize a note being shot from the robot */
   public static Command shoot(Supplier<Rotation2d> anglerPosition) {
     return new ScheduleCommand(

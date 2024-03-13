@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.Mode;
 import frc.robot.RobotStates.IndexerStates;
 import frc.robot.RobotStates.IntakeStates;
 import frc.robot.RobotStates.ShooterStates;
@@ -340,13 +339,6 @@ public class RobotContainer {
                       TargetingSystem.shoot(
                           () -> robotShooter.getAnglerPosition())))
           .onFalse(robotStateMachine.stopShooting());
-
-      copilotController
-          .x()
-          .whileTrue(robotStateMachine.climbChain())
-          .onFalse(robotStateMachine.stopClimb());
-
-      copilotController.b().whileTrue(robotStateMachine.invertClimb());
 
       copilotController.rightTrigger().onTrue(new InstantCommand( () -> TargetingSystem.toggleMultiTagEnabled()));
     }
