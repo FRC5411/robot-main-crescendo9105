@@ -235,7 +235,12 @@ public class RobotContainer {
                 robotShooter.atAllSetpoint()
                     && TargetingSystem.isAtShootRange()
                     && SwerveCommands.isAtYawGoal())
-        .onTrue(new InstantCommand(() -> robotLEDs.setReadyColor()));
+        .onTrue(new InstantCommand(() -> robotLEDs.setReadyColor()))
+        .onFalse(new InstantCommand(() -> robotLEDs.setDefaultColor()));
+
+    new Trigger(() -> robotIndexer.isBeamBroken())
+        .onTrue(new InstantCommand(() -> robotLEDs.setHasPiece()))
+        .onFalse(new InstantCommand(() -> robotLEDs.setDefaultColor()));
   }
 
   /** Configure controllers */
@@ -335,12 +340,12 @@ public class RobotContainer {
           .whileTrue(
               robotStateMachine
                   .shootNote()
-                  .alongWith(
-                      TargetingSystem.shoot(
-                          () -> robotShooter.getAnglerPosition())))
+                  .alongWith(TargetingSystem.shoot(() -> robotShooter.getAnglerPosition())))
           .onFalse(robotStateMachine.stopShooting());
 
-      copilotController.rightTrigger().onTrue(new InstantCommand( () -> TargetingSystem.toggleMultiTagEnabled()));
+      copilotController
+          .rightTrigger()
+          .onTrue(new InstantCommand(() -> TargetingSystem.toggleMultiTagEnabled()));
     }
   }
 

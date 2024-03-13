@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems.leds;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -54,11 +53,10 @@ public class LEDSubsystem extends SubsystemBase {
   //   setLeftArm(h, s, v);
   // }
 
-
   // public void setShooterStatus(int shooterPercentage, int anglerPercentage) {
   //   int shooterHue = getRedGreenHue(shooterPercentage);
   //   int anglerHue = getRedGreenHue(anglerPercentage);
-    
+
   //   setArms(shooterHue, 255, 255);
   //   setAngler(anglerHue, 255, 255);
   //   setBuffer();

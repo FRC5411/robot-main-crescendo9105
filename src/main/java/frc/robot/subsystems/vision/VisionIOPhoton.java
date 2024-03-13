@@ -51,7 +51,7 @@ public class VisionIOPhoton implements VisionIO {
             AprilTagFields.k2024Crescendo.loadAprilTagLayoutField(),
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
             limelightCam,
-              cameraTransform);
+            cameraTransform);
     poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
     debouncer = new Debouncer(debouncerTime);
@@ -197,12 +197,14 @@ public class VisionIOPhoton implements VisionIO {
 
   private void getSpeakerTagTransform(PhotonPipelineResult result, VisionIOInputs inputs) {
     boolean hasSpeakerTag = false;
-    for(int i = 0; i < result.getTargets().size(); i++) {
-      if(result.getTargets().get(i).getFiducialId() != 7) {
+    for (int i = 0; i < result.getTargets().size(); i++) {
+      if (result.getTargets().get(i).getFiducialId() != 7) {
         continue;
       }
-      Transform3d transform3d = result.getTargets().get(i).getBestCameraToTarget().plus(cameraTransform.inverse());
-      inputs.speakerTagTransform = new Transform2d(transform3d.getX(), transform3d.getY(), new Rotation2d());
+      Transform3d transform3d =
+          result.getTargets().get(i).getBestCameraToTarget().plus(cameraTransform.inverse());
+      inputs.speakerTagTransform =
+          new Transform2d(transform3d.getX(), transform3d.getY(), new Rotation2d());
       hasSpeakerTag = true;
     }
     inputs.hasSpeakerTarget = hasSpeakerTag;

@@ -15,12 +15,10 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.Vision;
-
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -70,8 +68,7 @@ public class TargetingSystem {
   public static Rotation2d getLaunchMapAngle() {
     initializeLaunchMap();
 
-    Rotation2d angle =
-        Rotation2d.fromDegrees(launchMap.get(speakerDistanceM().getAsDouble()));
+    Rotation2d angle = Rotation2d.fromDegrees(launchMap.get(speakerDistanceM().getAsDouble()));
 
     Logger.recordOutput("Shooter/TargetingSystem/Angle", angle);
 
@@ -81,7 +78,7 @@ public class TargetingSystem {
   /** Returns the optimal heading for shooting */
   public static Rotation2d getOptimalLaunchHeading() {
     Rotation2d heading;
-    if(multiTagEnabled) {
+    if (multiTagEnabled) {
       double xDelta =
           (DriverStation.getAlliance().get() == Alliance.Blue)
               ? speakerOpeningBlue.getX() - robotDrive.getFilteredPose().getX()
@@ -93,9 +90,9 @@ public class TargetingSystem {
               : speakerOpeningRed.getY() - robotDrive.getFilteredPose().getY();
 
       heading = new Rotation2d(xDelta, yDelta);
-    } else if(robotVision.getInputsLeft().hasSpeakerTarget) {
+    } else if (robotVision.getInputsLeft().hasSpeakerTarget) {
       heading = robotVision.getInputsLeft().speakerTagTransform.getTranslation().getAngle();
-    } else if(robotVision.getInputsRight().hasSpeakerTarget) {
+    } else if (robotVision.getInputsRight().hasSpeakerTarget) {
       heading = robotVision.getInputsLeft().speakerTagTransform.getTranslation().getAngle();
     } else {
       heading = robotVision.getInputsLeft().speakerTagTransform.getTranslation().getAngle();
@@ -112,11 +109,10 @@ public class TargetingSystem {
     return heading;
   }
 
-
   /** Calculate the tangental distance from the speaker */
   private static double calculateSpeakerDistanceM() {
     double distanceM;
-    if(multiTagEnabled) {
+    if (multiTagEnabled) {
       distanceM =
           (DriverStation.getAlliance().get() == Alliance.Blue)
               ? Math.hypot(
@@ -125,17 +121,15 @@ public class TargetingSystem {
               : Math.hypot(
                   speakerOpeningRed.getX() - robotDrive.getFilteredPose().getX(),
                   speakerOpeningRed.getY() - robotDrive.getFilteredPose().getY());
-    } else if(robotVision.getInputsLeft().hasSpeakerTarget) {
-        distanceM =
-          robotVision.getInputsLeft().speakerTagTransform.getTranslation().getNorm();
-    } else if(robotVision.getInputsRight().hasSpeakerTarget) {
-        distanceM =
-          robotVision.getInputsRight().speakerTagTransform.getTranslation().getNorm();
+    } else if (robotVision.getInputsLeft().hasSpeakerTarget) {
+      distanceM = robotVision.getInputsLeft().speakerTagTransform.getTranslation().getNorm();
+    } else if (robotVision.getInputsRight().hasSpeakerTarget) {
+      distanceM = robotVision.getInputsRight().speakerTagTransform.getTranslation().getNorm();
     } else {
       distanceM = -1;
     }
 
-      Logger.recordOutput("Shooter/TargetingSystem/Distance", distanceM);
+    Logger.recordOutput("Shooter/TargetingSystem/Distance", distanceM);
 
     distanceM = distanceFilter.calculate(distanceM);
 
@@ -147,8 +141,8 @@ public class TargetingSystem {
   }
 
   public static boolean isAtShootRange() {
-    if(robotVision.getInputsLeft().hasSpeakerTarget
-    || robotVision.getInputsRight().hasSpeakerTarget) {
+    if (robotVision.getInputsLeft().hasSpeakerTarget
+        || robotVision.getInputsRight().hasSpeakerTarget) {
       return false;
     }
     return speakerDistanceM().getAsDouble() <= 3;
@@ -177,7 +171,10 @@ public class TargetingSystem {
                               currentRobotPose.getX(),
                               currentRobotPose.getY(),
                               0.0,
-                              new Rotation3d(0.0, 0.0, robotDrive.getOdometryPose().getRotation().getRadians()))
+                              new Rotation3d(
+                                  0.0,
+                                  0.0,
+                                  robotDrive.getOdometryPose().getRotation().getRadians()))
                           .transformBy(anglerTransform);
                   final Pose3d endPose =
                       (DriverStation.getAlliance().get() == Alliance.Blue)

@@ -10,7 +10,7 @@ public class LEDConstants {
     public static final int DARK_BLUE = 240 / 2;
     public static final int GREEN = 130 / 2;
     public static final int RED = 0;
-    public static final int ORANGE = 24/2;
+    public static final int ORANGE = 24 / 2;
   }
 
   public class Configs {
