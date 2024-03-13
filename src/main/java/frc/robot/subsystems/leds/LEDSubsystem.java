@@ -4,102 +4,47 @@
 
 package frc.robot.subsystems.leds;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.leds.LEDConstants.Configs;
-import java.util.ArrayList;
+import frc.robot.subsystems.leds.LEDConstants.Hues;
 
 public class LEDSubsystem extends SubsystemBase {
   private AddressableLED led;
   private AddressableLEDBuffer ledBuffer;
 
-  private ArrayList<Runnable> queuedTasks;
-  private double taskTargetTimestamp;
-  private double taskDelaySec;
-
-  private ArrayList<Runnable> queuedPatterns;
-  private double patternTargetTimestamp;
-  private double patternDelaySec;
-
-  private boolean shouldAnimate;
-  private double animateTargetTimestamp;
-  private double animateDelaySec;
-
-  private boolean tasksJustRanOut;
-
   public LEDSubsystem() {
     led = new AddressableLED(Configs.PWM_PORT);
     ledBuffer = new AddressableLEDBuffer(Configs.LED_COUNT);
     led.setLength(ledBuffer.getLength());
-
-    queuedTasks = new ArrayList<Runnable>();
-    taskTargetTimestamp = Timer.getFPGATimestamp();
-    taskDelaySec = 0.1;
-
-    queuedPatterns = new ArrayList<Runnable>();
-    patternTargetTimestamp = Timer.getFPGATimestamp();
-    patternDelaySec = 0.0;
-
-    animateTargetTimestamp = Timer.getFPGATimestamp();
-    animateDelaySec = 1;
-    shouldAnimate = false;
-
-    tasksJustRanOut = false;
+  
+    setDefaultColor();
   }
 
-  public void setSolidBlue() {
-    setSolidHSV(228 / 2, 100, 100);
+  public void setReadyColor() {
+    setSolidColor(Hues.LIGHT_BLUE, 255, 255);
   }
 
-  private void setSolidHSV(int h, int s, int v) {
-    shouldAnimate = false;
-    queuedPatterns.add(
-        () -> {
-          taskDelaySec = 0.2;
-          for (int i = 0; i < ledBuffer.getLength(); i++) {
-            final int index = i;
-            queuedTasks.add(() -> ledBuffer.setHSV(index, h, s, v));
-          }
-        });
+  public void setDefaultColor() {
+    setSolidColor(Hues.DARK_BLUE, 255, 255);
   }
 
-  public void setGradient(int startHue, int endHue) {
-    shouldAnimate = false;
-    queuedPatterns.add(
-        () -> {
-          int inc = (int) Math.floor((endHue - startHue) / ledBuffer.getLength());
-          for (int i = 0; i < ledBuffer.getLength(); i++) {
-            final int index = i;
-            queuedTasks.add(() -> ledBuffer.setHSV(index, startHue + (inc * index), 255, 255));
-          }
-        });
+  /*
+   * This class is used to set the color of the LED strip to red, green, or anything in between
+   * @param percentage 0-100, 0 being red, 100 being green
+   */
+  private int getRedGreenHue(int percentage) {
+    double percentDecimal = MathUtil.clamp(percentage, 0, 100) / 100.0;
+    return (int) ((Hues.GREEN - Hues.RED) * percentDecimal + Hues.RED);
   }
 
-  public void boomerangGradient(int startHue, int endHue) {
-    shouldAnimate = false;
-    queuedPatterns.add(
-        () -> {
-          int currentHue = startHue;
-          int inc = Math.round((endHue - startHue) / ledBuffer.getLength()) * 2;
-          for (int idx = 0; idx < Math.floor(ledBuffer.getLength() / 2); idx++) {
-            final int index = idx;
-            final int thisHue = currentHue;
-            queuedTasks.add(() -> ledBuffer.setHSV(index, thisHue, 255, 255));
-            currentHue += inc;
-          }
-          for (int idx = (int) Math.floor(ledBuffer.getLength() / 2);
-              idx < ledBuffer.getLength();
-              idx++) {
-            final int index = idx;
-            final int thisHue = currentHue;
-            queuedTasks.add(() -> ledBuffer.setHSV(index, thisHue, 255, 255));
-            currentHue += -inc;
-          }
-          queuedTasks.add(() -> shouldAnimate = true);
-        });
+  public void setSolidColor(int h, int s, int v){
+    for (int i = 0; i < ledBuffer.getLength(); i++) {
+      ledBuffer.setHSV(i, h, s, v);
+    }
+    setBuffer();
   }
 
   private void setBuffer() {
@@ -109,34 +54,5 @@ public class LEDSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    if (shouldAnimate) {
-      if (Timer.getFPGATimestamp() >= animateTargetTimestamp) {
-        // Animate a single frameshift.
-        Color lastLED = ledBuffer.getLED(ledBuffer.getLength() - 1);
-        for (int i = ledBuffer.getLength() - 1; i > 0; i--)
-          ledBuffer.setLED(i, ledBuffer.getLED(i - 1));
-        ledBuffer.setLED(0, lastLED);
-
-        setBuffer();
-        animateTargetTimestamp = Timer.getFPGATimestamp() + animateDelaySec;
-      }
-    } else {
-      if (queuedTasks.size() == 0) {
-        if (queuedPatterns.size() > 0) {
-          if (!tasksJustRanOut) {
-            patternTargetTimestamp = Timer.getFPGATimestamp() + patternDelaySec;
-            tasksJustRanOut = true;
-          }
-
-          if (Timer.getFPGATimestamp() >= patternTargetTimestamp) {
-            queuedPatterns.remove(0).run(); // The pattern should populate the tasks arraylist
-            tasksJustRanOut = false;
-          }
-        }
-      } else if (Timer.getFPGATimestamp() >= taskTargetTimestamp) {
-        queuedTasks.remove(0).run();
-        taskTargetTimestamp = Timer.getFPGATimestamp() + taskDelaySec;
-      }
-    }
   }
 }

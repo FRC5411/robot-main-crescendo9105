@@ -29,6 +29,7 @@ public class SwerveCommands {
   private static final boolean IS_FIELD = true;
 
   private static Command currentCommand = null;
+  private static boolean isAtYawGoal = false;
 
   private SwerveCommands() {}
 
@@ -163,12 +164,18 @@ public class SwerveCommands {
               Logger.recordOutput("Drive/HeadingController/Output", thetaDesiredDegrees);
             },
             (interrupted) -> {
-              robotDrive.stop();
+              if (interrupted) robotDrive.stop();
+              
+              isAtYawGoal = thetaFeedback.atGoal();
             },
             () -> thetaFeedback.atGoal(),
             robotDrive);
 
     return currentCommand;
+  }
+
+  public static boolean isAtYawGoal() {
+    return isAtYawGoal;
   }
 
   // private static double driveVoltage = 0.0;
@@ -212,6 +219,8 @@ public class SwerveCommands {
 
     return currentCommand;
   }
+
+
 
   /** Returns a command to stop the drivetrain */
   public static Command stopDrive(Drive robotDrive) {

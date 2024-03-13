@@ -13,12 +13,15 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.Mode;
 import frc.robot.RobotStates.IndexerStates;
 import frc.robot.RobotStates.IntakeStates;
@@ -100,6 +103,7 @@ public class RobotContainer {
     autoChooser =
         new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
 
+    configureTriggers();
     configureButtonBindings();
   }
 
@@ -232,6 +236,13 @@ public class RobotContainer {
         "DiableAutoAlign", Commands.runOnce(() -> robotDrive.setPProtationTargetOverride(false)));
   }
 
+  private void configureTriggers() {
+    
+    // For LEDS
+    new Trigger(() -> robotShooter.atAllSetpoint() && TargetingSystem.isAtShootRange() && SwerveCommands.isAtYawGoal())
+        .onTrue(new InstantCommand(() -> robotLEDs.setReadyColor()));    
+  }
+
   /** Configure controllers */
   private void configureButtonBindings() {
     if (Constants.useDebuggingBindings) {
@@ -308,10 +319,6 @@ public class RobotContainer {
           .rightBumper()
           .whileTrue(robotStateMachine.adjustRightClimb())
           .onFalse(robotStateMachine.stopClimb());
-
-      copilotController
-          .leftTrigger()
-          .onTrue(Commands.runOnce(() -> robotLEDs.setSolidBlue(), robotLEDs));
 
       copilotController
           .povUp()
