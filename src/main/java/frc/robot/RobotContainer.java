@@ -13,7 +13,6 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -95,6 +94,8 @@ public class RobotContainer {
     } else {
       TargetingSystem.updateRobotPose(() -> robotDrive.getOdometryPose());
     }
+
+    // robotLEDs.testMyStuff();
 
     configureAutonomous();
 
@@ -237,10 +238,19 @@ public class RobotContainer {
   }
 
   private void configureTriggers() {
-    
+
     // For LEDS
-    new Trigger(() -> robotShooter.atAllSetpoint() && TargetingSystem.isAtShootRange() && SwerveCommands.isAtYawGoal())
-        .onTrue(new InstantCommand(() -> robotLEDs.setReadyColor()));    
+    new Trigger(
+            () ->
+                robotShooter.atAllSetpoint()
+                    && TargetingSystem.isAtShootRange()
+                    && SwerveCommands.isAtYawGoal())
+        .onTrue(new InstantCommand(() -> robotLEDs.setReadyColor()))
+        .onFalse(new InstantCommand(() -> robotLEDs.setDefaultColor()));
+    
+    new Trigger(() -> robotIndexer.isBeamBroken())
+        .onTrue(new InstantCommand(() -> robotLEDs.setHasPiece()))
+        .onFalse(new InstantCommand(() -> robotLEDs.setDefaultColor()));
   }
 
   /** Configure controllers */
