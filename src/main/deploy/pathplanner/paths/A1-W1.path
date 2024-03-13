@@ -3,12 +3,12 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.7326298288960215,
+        "x": 0.73,
         "y": 6.670053340106681
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.5868417153500975,
+        "x": 1.5842118864540762,
         "y": 6.506449378639498
       },
       "isLocked": false,
@@ -16,11 +16,11 @@
     },
     {
       "anchor": {
-        "x": 2.2576476495545585,
+        "x": 2.43,
         "y": 6.670053340106681
       },
       "prevControl": {
-        "x": 1.9598943781220899,
+        "x": 2.1322467285675315,
         "y": 6.453300360304424
       },
       "nextControl": null,
@@ -30,25 +30,7 @@
   ],
   "rotationTargets": [],
   "constraintZones": [],
-  "eventMarkers": [
-    {
-      "name": "Intake",
-      "waypointRelativePos": 0,
-      "command": {
-        "type": "parallel",
-        "data": {
-          "commands": [
-            {
-              "type": "named",
-              "data": {
-                "name": "DeployYoshi"
-              }
-            }
-          ]
-        }
-      }
-    }
-  ],
+  "eventMarkers": [],
   "globalConstraints": {
     "maxVelocity": 2.0,
     "maxAcceleration": 1.0,

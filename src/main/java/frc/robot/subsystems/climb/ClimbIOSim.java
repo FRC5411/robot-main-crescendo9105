@@ -83,18 +83,12 @@ public class ClimbIOSim implements ClimbIO {
   @Override
   public void setLeftVolts(double volts) {
     leftAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
-
-    System.out.println("LEFT VOLTS : " + volts + "\nLEFT APPLIED : " + leftAppliedVolts);
-
     leftMotor.setInputVoltage(leftAppliedVolts);
   }
 
   @Override
   public void setRightVolts(double volts) {
     rightAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
-
-    System.out.println("RIGHT VOLTS : " + volts + "\nRIGHT APPLIED : " + rightAppliedVolts);
-
     rightMotor.setInputVoltage(rightAppliedVolts);
   }
 }
