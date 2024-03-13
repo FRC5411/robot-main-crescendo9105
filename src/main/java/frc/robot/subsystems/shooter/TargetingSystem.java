@@ -20,6 +20,8 @@ import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /** Class that calculates projectile motion given certain parameters */
@@ -33,6 +35,7 @@ public class TargetingSystem {
   private static Drive robotDrive;
   private static Vision robotVision;
 
+  @AutoLogOutput(key = "TargetingSystem/MultiTagEnabled")
   private static boolean multiTagEnabled = true;
 
   private static LinearFilter distanceFilter = LinearFilter.movingAverage(10);
