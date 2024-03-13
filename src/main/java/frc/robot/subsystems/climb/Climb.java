@@ -22,9 +22,10 @@ import org.littletonrobotics.junction.Logger;
 /** Climb subsystem */
 public class Climb extends SubsystemBase {
   public static enum ClimbVoltSetpoints {
-    LEFT(9.0, 0.0),
-    RIGHT(0.0, 9.0),
-    BOTH(9.0, 9.0),
+    // LEFT(9.0, 0.0),
+    // RIGHT(0.0, 9.0),
+    BOTH_UP(12.0, 12.0),
+    BOTH_DOWN(-12.0, -12.0),
     OFF(0.0, 0.0);
 
     private double leftVolts;
@@ -154,17 +155,17 @@ public class Climb extends SubsystemBase {
     }
 
     if (currentSetpoint != null) {
-      climbIO.setLeftVolts(currentSetpoint.leftVolts * climbDirection);
-      climbIO.setRightVolts(currentSetpoint.rightVolts * climbDirection);
+      climbIO.setLeftVolts(currentSetpoint.leftVolts);
+      climbIO.setRightVolts(currentSetpoint.rightVolts);
     }
 
     if (leftAngleSetpoint != null) {
       double leftFeedbackOutput =
-          -leftClimbFeedback.calculate(
+          leftClimbFeedback.calculate(
               climbIOInputs.leftPosition.getDegrees(), leftAngleSetpoint.getDegrees());
 
       double leftFeedforwardOutput =
-          -leftClimbFeedforward.calculate(
+          leftClimbFeedforward.calculate(
               climbIOInputs.leftPosition.getRadians(), leftClimbFeedback.getSetpoint().velocity);
 
       Logger.recordOutput("Climb/LeftArm/Feedback/Output", leftFeedbackOutput);
@@ -229,12 +230,11 @@ public class Climb extends SubsystemBase {
 
   public Command mapToCommand(ClimbStates state) {
     return switch (state) {
-      case OFF -> Commands.runOnce(() -> setVolts(0.0, 0.0));
-      case MOVE_LEFT -> setManualVolts(ClimbVoltSetpoints.LEFT);
-      case MOVE_RIGHT -> setManualVolts(ClimbVoltSetpoints.RIGHT);
-      case MOVE_BOTH -> setManualVolts(ClimbVoltSetpoints.BOTH);
+      case OFF -> setManualVolts(ClimbVoltSetpoints.OFF);
+      case MOVE_BOTH_UP -> setManualVolts(ClimbVoltSetpoints.BOTH_UP);
+      case MOVE_BOTH_DOWN -> setManualVolts(ClimbVoltSetpoints.BOTH_DOWN);
       case INVERT -> Commands.runOnce(() -> climbDirection *= -1.0, this);
-      default -> Commands.runOnce(() -> setVolts(0.0, 0.0));
+      default -> setManualVolts(ClimbVoltSetpoints.OFF);
     };
   }
 

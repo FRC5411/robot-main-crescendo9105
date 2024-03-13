@@ -23,7 +23,7 @@ public class TargetingSystem {
   private static Translation3d speakerOpeningRed = new Translation3d(16.26, 5.53, 2.045);
 
   private static final double LAUNCH_MAP_OFFSET_M = 0.93 + 0.46 - 0.23 - 0.17;
-  private static final double LUANCH_MAP_OFFSET_DEGREES = 3.0;
+  private static final double LUANCH_MAP_OFFSET_DEGREES = 0.0; // 3.0;
 
   private static Supplier<Pose2d> currentRobotPose = () -> new Pose2d();
 

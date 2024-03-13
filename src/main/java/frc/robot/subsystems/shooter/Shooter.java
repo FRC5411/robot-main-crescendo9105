@@ -30,7 +30,7 @@ import org.littletonrobotics.junction.Logger;
 public class Shooter extends SubsystemBase {
   public static enum AnglerSetpoints {
     AIM(() -> TargetingSystem.getLaunchMapAngle()),
-    CLIMB(() -> Rotation2d.fromDegrees(23.0)),
+    CLIMB(() -> Rotation2d.fromDegrees(25.0)),
     INTAKE(() -> Rotation2d.fromDegrees(40.0)),
     IDLE(() -> anglerPosition);
 
