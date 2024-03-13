@@ -6,6 +6,7 @@ package frc.robot.subsystems.yoshivator;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -26,7 +27,8 @@ import org.littletonrobotics.junction.Logger;
 public class Yoshivator extends SubsystemBase {
   public static enum YoshivatorSetpoints {
     IDLE(() -> Rotation2d.fromDegrees(100.0), () -> 0.0),
-    GROUND(() -> Rotation2d.fromDegrees(-35.0), () -> 12.0),
+    GROUND_AMP(() -> Rotation2d.fromDegrees(-35.0), () -> 12.0),
+    GROUND_INTAKE(() -> Rotation2d.fromDegrees(-35.0), () -> -12.0),
     AMP_IDLE(() -> Rotation2d.fromDegrees(85), () -> -0.0),
     AMP_SCORE(() -> Rotation2d.fromDegrees(85), () -> -4.25),
     HOLD(() -> Yoshivator.pivotPosition, () -> 0.0);
@@ -68,6 +70,8 @@ public class Yoshivator extends SubsystemBase {
   private LoggedTunableNumber pivotFeedbackA;
 
   private YoshiVisualizer yoshiVisualizer = new YoshiVisualizer(new Rotation2d());
+
+  private LinearFilter yoshiLinearFilter = LinearFilter.movingAverage(20);
 
   public Yoshivator(ManipulatorIO manipulatorIO) {
     this.manipulatorIO = manipulatorIO;
@@ -112,8 +116,10 @@ public class Yoshivator extends SubsystemBase {
     switch (desiredState) {
       case OFF:
         return offYoshi();
-      case GROUND:
-        return runYoshi(YoshivatorSetpoints.GROUND);
+      case GROUND_AMP:
+        return runYoshi(YoshivatorSetpoints.GROUND_AMP);
+      case GROUND_INTAKE:
+        return runYoshi(YoshivatorSetpoints.GROUND_INTAKE);
       case AMP:
         return scoreAmp();
       case IDLE:
@@ -129,6 +135,10 @@ public class Yoshivator extends SubsystemBase {
 
     if (DriverStation.isDisabled()) {
       stopMotors(true, true);
+    }
+
+    if (yoshiLinearFilter.calculate(manipulatorIOInputs.rollerAppliedCurrentAmps[0]) > 60.0) {
+      stopMotors(false, true);
     }
 
     if (currentSetpoint != null) {

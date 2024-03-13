@@ -20,6 +20,8 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants.Mode;
 import frc.robot.RobotStates.IndexerStates;
 import frc.robot.RobotStates.IntakeStates;
 import frc.robot.RobotStates.ShooterStates;
@@ -94,6 +96,9 @@ public class RobotContainer {
     autoChooser =
         new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
 
+    configureTriggers();
+
+    // Use assisted control by default
     configureButtonBindings();
   }
 
@@ -198,14 +203,14 @@ public class RobotContainer {
   /** Register commands with PathPlanner and add default autos to chooser */
   private void configureAutonomous() {
     NamedCommands.registerCommand(
-        "DeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.GROUND));
+        "DeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.GROUND_INTAKE));
     NamedCommands.registerCommand(
         "UnDeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.IDLE));
     NamedCommands.registerCommand(
         "Intake",
         new ParallelCommandGroup(
                 robotStateMachine.getIndexerCommand(IndexerStates.STOW),
-                robotStateMachine.getYoshiCommand(YoshiStates.GROUND),
+                robotStateMachine.getYoshiCommand(YoshiStates.GROUND_INTAKE),
                 robotStateMachine.getIntakeCommand(IntakeStates.INTAKE),
                 robotStateMachine.getShooterCommand(ShooterStates.INTAKE))
             .withTimeout(2.0));
@@ -222,6 +227,16 @@ public class RobotContainer {
 
     NamedCommands.registerCommand(
         "DiableAutoAlign", Commands.runOnce(() -> robotDrive.setPProtationTargetOverride(false)));
+  }
+
+  private void configureTriggers() {
+    // For LEDS
+    new Trigger(
+            () ->
+                robotShooter.atAllSetpoint()
+                    && TargetingSystem.isAtShootRange()
+                    && SwerveCommands.isAtYawGoal())
+        .onTrue(new InstantCommand(() -> robotLEDs.setReadyColor()));
   }
 
   /** Configure controllers */
@@ -256,7 +271,7 @@ public class RobotContainer {
 
       pilotController
           .leftBumper()
-          .whileTrue(robotStateMachine.yoshiIntakeNote())
+          .whileTrue(robotStateMachine.intakeNote())
           .onFalse(robotStateMachine.stopTakeNote());
 
       pilotController
@@ -267,7 +282,7 @@ public class RobotContainer {
       /* Intake a note from the ground into the yoshi */
       pilotController
           .leftTrigger()
-          .whileTrue(robotStateMachine.intakeNote())
+          .whileTrue(robotStateMachine.yoshiIntakeNoteAmp())
           .onFalse(robotStateMachine.stopTakeNote());
 
       pilotController
@@ -292,20 +307,6 @@ public class RobotContainer {
       /* Copilot bindings */
 
       copilotController
-          .leftBumper()
-          .whileTrue(robotStateMachine.adjustLeftClimb())
-          .onFalse(robotStateMachine.stopClimb());
-
-      copilotController
-          .rightBumper()
-          .whileTrue(robotStateMachine.adjustRightClimb())
-          .onFalse(robotStateMachine.stopClimb());
-
-      copilotController
-          .leftTrigger()
-          .onTrue(Commands.runOnce(() -> robotLEDs.setSolidBlue(), robotLEDs));
-
-      copilotController
           .povUp()
           .whileTrue(robotStateMachine.moveAnglerUpManual())
           .onFalse(robotStateMachine.shooterToIdle());
@@ -316,12 +317,22 @@ public class RobotContainer {
           .onFalse(robotStateMachine.shooterToIdle());
 
       copilotController
+          .povLeft()
+          .whileTrue(robotStateMachine.climbUp())
+          .whileFalse(robotStateMachine.stopClimb());
+
+      copilotController
+          .povRight()
+          .whileTrue(robotStateMachine.climbDown())
+          .whileFalse(robotStateMachine.stopClimb());
+
+      copilotController
           .y()
           .whileTrue(robotStateMachine.prepareNoteShot())
           .onFalse(robotStateMachine.stopShooting());
 
       copilotController
-          .a()
+          .leftBumper()
           .whileTrue(
               robotStateMachine
                   .shootNote()
