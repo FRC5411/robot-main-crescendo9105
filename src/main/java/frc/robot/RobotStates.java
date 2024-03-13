@@ -17,7 +17,8 @@ public class RobotStates {
   public static enum YoshiStates {
     OFF,
     IDLE,
-    GROUND,
+    GROUND_AMP,
+    GROUND_INTAKE,
     AMP
   }
 
@@ -26,9 +27,8 @@ public class RobotStates {
     IDLE,
     GRAB,
     PULL,
-    MOVE_LEFT,
-    MOVE_RIGHT,
-    MOVE_BOTH,
+    MOVE_BOTH_UP,
+    MOVE_BOTH_DOWN,
     INVERT
   }
 

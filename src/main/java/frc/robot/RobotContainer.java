@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Constants.Mode;
 import frc.robot.RobotStates.IndexerStates;
 import frc.robot.RobotStates.IntakeStates;
 import frc.robot.RobotStates.ShooterStates;
@@ -89,14 +88,6 @@ public class RobotContainer {
     robotStateMachine =
         new StateMachine(robotShooter, robotIntake, robotIndexer, robotYoshi, robotClimb);
 
-    if (Constants.currentMode == Mode.REAL) {
-      TargetingSystem.updateRobotPose(() -> robotDrive.getFilteredPose());
-    } else {
-      TargetingSystem.updateRobotPose(() -> robotDrive.getOdometryPose());
-    }
-
-    // robotLEDs.testMyStuff();
-
     configureAutonomous();
 
     // AutoBuilder is configured when Drive is initialized, thus chooser must be instantiated after
@@ -105,6 +96,8 @@ public class RobotContainer {
         new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
 
     configureTriggers();
+
+    // Use assisted control by default
     configureButtonBindings();
   }
 
@@ -209,14 +202,14 @@ public class RobotContainer {
   /** Register commands with PathPlanner and add default autos to chooser */
   private void configureAutonomous() {
     NamedCommands.registerCommand(
-        "DeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.GROUND));
+        "DeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.GROUND_INTAKE));
     NamedCommands.registerCommand(
         "UnDeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.IDLE));
     NamedCommands.registerCommand(
         "Intake",
         new ParallelCommandGroup(
                 robotStateMachine.getIndexerCommand(IndexerStates.STOW),
-                robotStateMachine.getYoshiCommand(YoshiStates.GROUND),
+                robotStateMachine.getYoshiCommand(YoshiStates.GROUND_INTAKE),
                 robotStateMachine.getIntakeCommand(IntakeStates.INTAKE),
                 robotStateMachine.getShooterCommand(ShooterStates.INTAKE))
             .withTimeout(2.0));
@@ -226,9 +219,7 @@ public class RobotContainer {
             robotStateMachine.getShooterCommand(ShooterStates.AIM),
             new WaitCommand(1.0),
             robotStateMachine.getIndexerCommand(IndexerStates.INDEX),
-            robotStateMachine.getIntakeCommand(IntakeStates.OFF),
-            TargetingSystem.shoot(
-                () -> robotDrive.getPoseEstimate(), () -> robotShooter.getAnglerPosition())));
+            robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
 
     NamedCommands.registerCommand(
         "EnableAutoAlign", Commands.runOnce(() -> robotDrive.setPProtationTargetOverride(true)));
@@ -238,19 +229,13 @@ public class RobotContainer {
   }
 
   private void configureTriggers() {
-
     // For LEDS
     new Trigger(
             () ->
                 robotShooter.atAllSetpoint()
                     && TargetingSystem.isAtShootRange()
                     && SwerveCommands.isAtYawGoal())
-        .onTrue(new InstantCommand(() -> robotLEDs.setReadyColor()))
-        .onFalse(new InstantCommand(() -> robotLEDs.setDefaultColor()));
-    
-    new Trigger(() -> robotIndexer.isBeamBroken())
-        .onTrue(new InstantCommand(() -> robotLEDs.setHasPiece()))
-        .onFalse(new InstantCommand(() -> robotLEDs.setDefaultColor()));
+        .onTrue(new InstantCommand(() -> robotLEDs.setReadyColor()));
   }
 
   /** Configure controllers */
@@ -285,7 +270,7 @@ public class RobotContainer {
 
       pilotController
           .leftBumper()
-          .whileTrue(robotStateMachine.yoshiIntakeNote())
+          .whileTrue(robotStateMachine.intakeNote())
           .onFalse(robotStateMachine.stopTakeNote());
 
       pilotController
@@ -296,7 +281,7 @@ public class RobotContainer {
       /* Intake a note from the ground into the yoshi */
       pilotController
           .leftTrigger()
-          .whileTrue(robotStateMachine.intakeNote())
+          .whileTrue(robotStateMachine.yoshiIntakeNoteAmp())
           .onFalse(robotStateMachine.stopTakeNote());
 
       pilotController
@@ -321,16 +306,6 @@ public class RobotContainer {
       /* Copilot bindings */
 
       copilotController
-          .leftBumper()
-          .whileTrue(robotStateMachine.adjustLeftClimb())
-          .onFalse(robotStateMachine.stopClimb());
-
-      copilotController
-          .rightBumper()
-          .whileTrue(robotStateMachine.adjustRightClimb())
-          .onFalse(robotStateMachine.stopClimb());
-
-      copilotController
           .povUp()
           .whileTrue(robotStateMachine.moveAnglerUpManual())
           .onFalse(robotStateMachine.shooterToIdle());
@@ -341,27 +316,31 @@ public class RobotContainer {
           .onFalse(robotStateMachine.shooterToIdle());
 
       copilotController
+          .povLeft()
+          .whileTrue(robotStateMachine.climbUp())
+          .whileFalse(robotStateMachine.stopClimb());
+
+      copilotController
+          .povRight()
+          .whileTrue(robotStateMachine.climbDown())
+          .whileFalse(robotStateMachine.stopClimb());
+
+      copilotController
           .y()
           .whileTrue(robotStateMachine.prepareNoteShot())
           .onFalse(robotStateMachine.stopShooting());
 
       copilotController
-          .a()
+          .leftBumper()
           .whileTrue(
               robotStateMachine
                   .shootNote()
                   .alongWith(
                       TargetingSystem.shoot(
-                          () -> robotDrive.getFilteredPose(),
                           () -> robotShooter.getAnglerPosition())))
           .onFalse(robotStateMachine.stopShooting());
 
-      copilotController
-          .x()
-          .whileTrue(robotStateMachine.climbChain())
-          .onFalse(robotStateMachine.stopClimb());
-
-      copilotController.b().whileTrue(robotStateMachine.invertClimb());
+      copilotController.rightTrigger().onTrue(new InstantCommand( () -> TargetingSystem.toggleMultiTagEnabled()));
     }
   }
 
