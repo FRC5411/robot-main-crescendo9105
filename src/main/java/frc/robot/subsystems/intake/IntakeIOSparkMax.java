@@ -6,17 +6,15 @@ package frc.robot.subsystems.intake;
 
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
-import org.littletonrobotics.junction.Logger;
 
 /** Class to interact with the physical intake structure */
 public class IntakeIOSparkMax implements IntakeIO {
   private final double GEARING = 9.0 / 1.0;
 
-  // TODO Update IDs and constatns as needed
   private CANSparkMax intakeMotor = new CANSparkMax(51, MotorType.kBrushless);
   private RelativeEncoder intakeEncoder = intakeMotor.getEncoder();
 
@@ -26,6 +24,12 @@ public class IntakeIOSparkMax implements IntakeIO {
   public IntakeIOSparkMax() {
     intakeMotor.clearFaults();
     intakeMotor.restoreFactoryDefaults();
+
+    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 100);
+    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 100);
+    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 100);
+    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 100);
+    intakeMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 100);
 
     intakeMotor.setSmartCurrentLimit(30);
     intakeMotor.enableVoltageCompensation(12.0);
@@ -38,14 +42,11 @@ public class IntakeIOSparkMax implements IntakeIO {
 
   @Override
   public void updateInputs(IntakeIOInputs inputs) {
-    inputs.angleRotations = Rotation2d.fromRotations(intakeEncoder.getPosition() / GEARING);
     inputs.velocityRPM = intakeEncoder.getVelocity() / GEARING;
     inputs.appliedVolts = appliedVolts;
+    inputs.internalVolts = intakeMotor.getAppliedOutput() * intakeMotor.getBusVoltage();
     inputs.appliedCurrentAmps = new double[] {intakeMotor.getOutputCurrent()};
     inputs.temperatureCelsius = new double[] {intakeMotor.getMotorTemperature()};
-
-    Logger.recordOutput(
-        "Intake/InternalVolts", intakeMotor.getAppliedOutput() * intakeMotor.getBusVoltage());
   }
 
   @Override

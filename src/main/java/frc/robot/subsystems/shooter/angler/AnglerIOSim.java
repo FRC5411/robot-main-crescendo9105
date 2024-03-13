@@ -23,11 +23,11 @@ public class AnglerIOSim implements AnglerIO {
           GEARING,
           0.167248163371,
           0.4826,
-          Rotation2d.fromDegrees(25.0).getRadians(),
-          Rotation2d.fromDegrees(55.0).getRadians(),
+          Rotation2d.fromDegrees(20.0).getRadians(),
+          Rotation2d.fromDegrees(60.0).getRadians(),
           false,
           Rotation2d.fromDegrees(45.0).getRadians(),
-          VecBuilder.fill(0.0001));
+          VecBuilder.fill(0.000));
 
   private double appliedVolts = 0.0;
 

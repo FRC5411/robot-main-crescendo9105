@@ -4,55 +4,60 @@
 
 package frc.robot.subsystems.shooter;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ScheduleCommand;
+import java.util.Set;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
 
 /** Class that calculates projectile motion given certain parameters */
 public class TargetingSystem {
-  private Translation3d speakerOpeningBlue = new Translation3d(0.26, 5.49, 2.045);
-  private Translation3d speakerOpeningRed = new Translation3d(16.26, 5.49, 2.045);
+  private static Translation3d speakerOpeningBlue = new Translation3d(0.0, 5.53, 2.045);
+  private static Translation3d speakerOpeningRed = new Translation3d(16.26, 5.53, 2.045);
 
-  private boolean usingLaunchMap = true;
-  private final double LAUNCH_MAP_OFFSET_M = 0.93 + 0.46 - 0.23;
+  private static final double LAUNCH_MAP_OFFSET_M = 0.93 + 0.46 - 0.23 - 0.17;
+  private static final double LUANCH_MAP_OFFSET_DEGREES = 3.0;
+
+  private static Supplier<Pose2d> currentRobotPose = () -> new Pose2d();
 
   /**
    * Tree Map that represents the robot's horizontal (X) distance from the Speaker (meters) and the
    * optimal launch angle (degrees)
    */
-  private InterpolatingDoubleTreeMap launchMap = new InterpolatingDoubleTreeMap();
-
-  /** Initialize targeting system */
-  public TargetingSystem() {
-    initializeLaunchMap();
-  }
+  private static InterpolatingDoubleTreeMap launchMap = new InterpolatingDoubleTreeMap();
 
   /** Initialize the launch map */
-  private void initializeLaunchMap() {
-    launchMap.put(0.0 + LAUNCH_MAP_OFFSET_M, 55.0);
-    launchMap.put(0.25 + LAUNCH_MAP_OFFSET_M, 52.0);
-    launchMap.put(0.50 + LAUNCH_MAP_OFFSET_M, 48.0);
-    launchMap.put(0.75 + LAUNCH_MAP_OFFSET_M, 45.0);
-    launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 42.5);
-    launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 40.0);
-    launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 38.5);
-    launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 37.0);
-    launchMap.put(2.0 + LAUNCH_MAP_OFFSET_M, 35.6);
-    launchMap.put(2.25 + LAUNCH_MAP_OFFSET_M, 34.5);
-    launchMap.put(2.5 + LAUNCH_MAP_OFFSET_M, 33.5);
-    launchMap.put(2.75 + LAUNCH_MAP_OFFSET_M, 32.0);
-    launchMap.put(3.0 + LAUNCH_MAP_OFFSET_M, 31.1);
-    launchMap.put(3.25 + LAUNCH_MAP_OFFSET_M, 30.3);
-    launchMap.put(3.5 + LAUNCH_MAP_OFFSET_M, 29.9);
+  private static void initializeLaunchMap() {
+    launchMap.put(0.0 + LAUNCH_MAP_OFFSET_M, 55.0 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(0.25 + LAUNCH_MAP_OFFSET_M, 52.0 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(0.50 + LAUNCH_MAP_OFFSET_M, 48.0 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(0.75 + LAUNCH_MAP_OFFSET_M, 45.0 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 42.5 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 40.0 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 38.5 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 37.0 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(2.0 + LAUNCH_MAP_OFFSET_M, 35.6 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(2.25 + LAUNCH_MAP_OFFSET_M, 34.5 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(2.5 + LAUNCH_MAP_OFFSET_M, 33.5 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(2.75 + LAUNCH_MAP_OFFSET_M, 32.0 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(3.0 + LAUNCH_MAP_OFFSET_M, 31.1 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(3.25 + LAUNCH_MAP_OFFSET_M, 30.3 + LUANCH_MAP_OFFSET_DEGREES);
+    launchMap.put(3.5 + LAUNCH_MAP_OFFSET_M, 29.9 + LUANCH_MAP_OFFSET_DEGREES);
   }
 
   /** Returns the optimal angle given the robot's current pose */
-  public Rotation2d getLaunchMapAngle(double distance) {
-    Rotation2d angle = Rotation2d.fromDegrees(launchMap.get(distance));
+  public static Rotation2d getLaunchMapAngle() {
+    initializeLaunchMap();
+
+    Rotation2d angle =
+        Rotation2d.fromDegrees(launchMap.get(calculateSpeakerDistanceM().getAsDouble()));
 
     Logger.recordOutput("Shooter/TargetingSystem/Angle", angle);
 
@@ -60,45 +65,92 @@ public class TargetingSystem {
   }
 
   /** Returns the optimal heading for shooting */
-  public Rotation2d getOptimalLaunchHeading(Pose2d robotPose) {
-    double distanceFromTarget = calculateDistanceM(robotPose);
+  public static Rotation2d getOptimalLaunchHeading() {
+    double xDelta =
+        (DriverStation.getAlliance().get() == Alliance.Blue)
+            ? speakerOpeningBlue.getX() - currentRobotPose.get().getX()
+            : speakerOpeningRed.getX() - currentRobotPose.get().getX();
 
-    Rotation2d heading = Rotation2d.fromDegrees(Math.atan(distanceFromTarget));
+    double yDelta =
+        (DriverStation.getAlliance().get() == Alliance.Blue)
+            ? speakerOpeningBlue.getY() - currentRobotPose.get().getY()
+            : speakerOpeningRed.getY() - currentRobotPose.get().getY();
+
+    Rotation2d heading = new Rotation2d(xDelta, yDelta);
+
+    if (DriverStation.getAlliance().get() == Alliance.Blue) {
+      heading = heading.plus(Rotation2d.fromDegrees(180.0));
+    }
 
     Logger.recordOutput("Shooter/TargetingSystem/Heading", heading);
 
     return heading;
   }
 
-  /** Calculate the tangental distance from target (X,Y) */
-  private double calculateDistanceM(Pose2d robotPose) {
-    double distanceM = 0.0;
+  /** Update the current robot pose the targeting system uses */
+  public static void updateRobotPose(Supplier<Pose2d> robotPose) {
+    currentRobotPose = robotPose;
+  }
 
-    // If we are using shot map values, we must account for a minor offset we experienced when
-    // measuring
-    if (usingLaunchMap) {
-      distanceM =
-          (DriverStation.getAlliance().get() == Alliance.Blue)
-              ? Math.sqrt(
-                  Math.pow(
-                          (speakerOpeningBlue.getX() - robotPose.getX()) - LAUNCH_MAP_OFFSET_M, 2.0)
-                      + Math.pow(speakerOpeningBlue.getY() - robotPose.getY(), 2.0))
-              : Math.sqrt(
-                  Math.pow((speakerOpeningRed.getX() - robotPose.getX()) - LAUNCH_MAP_OFFSET_M, 2.0)
-                      + Math.pow(speakerOpeningRed.getY() - robotPose.getY(), 2.0));
-    } else {
-      distanceM =
-          (DriverStation.getAlliance().get() == Alliance.Blue)
-              ? Math.sqrt(
-                  Math.pow((robotPose.getX() - speakerOpeningBlue.getX()), 2.0)
-                      + Math.pow(robotPose.getY() - speakerOpeningBlue.getY(), 2.0))
-              : Math.sqrt(
-                  Math.pow((speakerOpeningRed.getX() - robotPose.getX()), 2.0)
-                      + Math.pow(speakerOpeningRed.getY() - robotPose.getY(), 2.0));
-    }
+  /** Calculate the tangental distance from the speaker */
+  private static DoubleSupplier calculateSpeakerDistanceM() {
+    double distanceM =
+        (DriverStation.getAlliance().get() == Alliance.Blue)
+            ? Math.hypot(
+                speakerOpeningBlue.getX() - currentRobotPose.get().getX(),
+                speakerOpeningBlue.getY() - currentRobotPose.get().getY())
+            : Math.hypot(
+                speakerOpeningRed.getX() - currentRobotPose.get().getX(),
+                speakerOpeningRed.getY() - currentRobotPose.get().getY());
 
-    Logger.recordOutput("Shooter/TargetingSystem/DistanceM", distanceM);
+    Logger.recordOutput("Shooter/TargetingSystem/Distance", distanceM);
 
-    return distanceM;
+    return () -> distanceM;
+  }
+
+  /** Returns a command to visualize a note being shot from the robot */
+  public static Command shoot(Supplier<Pose2d> robotPose, Supplier<Rotation2d> anglerPosition) {
+    return new ScheduleCommand(
+        Commands.defer(
+                () -> {
+                  currentRobotPose = robotPose;
+
+                  final Transform3d anglerTransform =
+                      new Transform3d(
+                          0.105,
+                          0.0,
+                          0.232,
+                          new Rotation3d(0.0, anglerPosition.get().getRadians(), 0.0));
+
+                  final Pose3d startPose =
+                      new Pose3d(
+                              currentRobotPose.get().getX(),
+                              currentRobotPose.get().getY(),
+                              0.0,
+                              new Rotation3d(0.0, 0.0, robotPose.get().getRotation().getRadians()))
+                          .transformBy(anglerTransform);
+                  final Pose3d endPose =
+                      (DriverStation.getAlliance().get() == Alliance.Blue)
+                          ? new Pose3d(speakerOpeningBlue, new Rotation3d())
+                          : new Pose3d(speakerOpeningRed, new Rotation3d());
+
+                  final double duration =
+                      startPose.getTranslation().getDistance(endPose.getTranslation()) / 9.0;
+                  final Timer timer = new Timer();
+
+                  timer.start();
+
+                  return Commands.run(
+                          () ->
+                              Logger.recordOutput(
+                                  "NoteVisualizer/ShotNotes",
+                                  new Pose3d[] {
+                                    startPose.interpolate(endPose, timer.get() / duration)
+                                  }))
+                      .until(() -> timer.hasElapsed(duration))
+                      .finallyDo(() -> Logger.recordOutput("NoteVisualizer/ShotNotes"));
+                },
+                Set.of())
+            .ignoringDisable(true));
   }
 }

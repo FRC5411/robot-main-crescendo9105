@@ -1,0 +1,73 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.73,
+      "y": 6.67
+    },
+    "rotation": 60.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "FirePiece"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "DeployYoshi"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "A1-W1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AnglerDown"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeInnerRollers"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AutoShoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "FirePiece"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "W1-C1"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "TopAutos",
+  "choreoAuto": false
+}

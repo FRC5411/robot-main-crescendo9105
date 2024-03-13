@@ -1,0 +1,55 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.72,
+      "y": 4.4
+    },
+    "rotation": -60.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "DeployYoshi"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "A3-W3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "W3-C"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "BottomAutos",
+  "choreoAuto": false
+}

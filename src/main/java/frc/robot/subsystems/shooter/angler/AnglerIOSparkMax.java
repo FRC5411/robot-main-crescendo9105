@@ -6,6 +6,7 @@ package frc.robot.subsystems.shooter.angler;
 
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -29,6 +30,12 @@ public class AnglerIOSparkMax implements AnglerIO {
     anglerMotor.clearFaults();
     anglerMotor.restoreFactoryDefaults();
 
+    anglerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus0, 100);
+    anglerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus1, 100);
+    anglerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus2, 100);
+    anglerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 100);
+    anglerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 100);
+
     anglerMotor.setSmartCurrentLimit(60);
     anglerMotor.enableVoltageCompensation(12.0);
     anglerMotor.setIdleMode(IdleMode.kBrake);
@@ -42,7 +49,6 @@ public class AnglerIOSparkMax implements AnglerIO {
 
   @Override
   public void updateInputs(AnglerIOInputs inputs) {
-    // TODO Fix velocity to accurately reflect encoder readings
     inputs.anglerAbsolutePosition =
         Rotation2d.fromDegrees(360.0)
             .minus(
@@ -57,13 +63,6 @@ public class AnglerIOSparkMax implements AnglerIO {
     inputs.temperatureCelsius = new double[] {anglerMotor.getMotorTemperature()};
 
     Logger.recordOutput("Shooter/Angler/AppliedOutput", anglerMotor.getAppliedOutput());
-
-    // Logger.recordOutput(
-    //     "Shooter/Angler/DutyCycleAbsolute",
-    //     Units.rotationsToDegrees(absoluteEncoder.getAbsolutePosition()));
-    // Logger.recordOutput("Shooter/Angler/DutyCycleGet", absoluteEncoder.get());
-    // Logger.recordOutput("Shooter/Angler/DutyCycleFreq", absoluteEncoder.getFrequency());
-    // Logger.recordOutput("Shooter/Angler/DutyCycleFPGA", absoluteEncoder.getFPGAIndex());
   }
 
   @Override
@@ -71,6 +70,5 @@ public class AnglerIOSparkMax implements AnglerIO {
     appliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
 
     anglerMotor.setVoltage(appliedVolts);
-    // anglerMotor.set(appliedVolts / 12.0);
   }
 }

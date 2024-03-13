@@ -8,219 +8,135 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.util.Color;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.leds.LEDConstants.Colors;
 import frc.robot.subsystems.leds.LEDConstants.Configs;
+import java.util.ArrayList;
 
 public class LEDSubsystem extends SubsystemBase {
-  private AddressableLED m_led;
-  private AddressableLEDBuffer m_ledBuffer;
+  private AddressableLED led;
+  private AddressableLEDBuffer ledBuffer;
+
+  private ArrayList<Runnable> queuedTasks;
+  private double taskTargetTimestamp;
+  private double taskDelaySec;
+
+  private ArrayList<Runnable> queuedPatterns;
+  private double patternTargetTimestamp;
+  private double patternDelaySec;
+
   private boolean shouldAnimate;
-  private boolean acoustic;
+  private double animateTargetTimestamp;
+  private double animateDelaySec;
+
+  private boolean tasksJustRanOut;
 
   public LEDSubsystem() {
-    m_led = new AddressableLED(Configs.PWM_PORT);
+    led = new AddressableLED(Configs.PWM_PORT);
+    ledBuffer = new AddressableLEDBuffer(Configs.LED_COUNT);
+    led.setLength(ledBuffer.getLength());
 
-    m_ledBuffer = new AddressableLEDBuffer(Configs.LED_COUNT);
-    m_led.setLength(m_ledBuffer.getLength());
+    queuedTasks = new ArrayList<Runnable>();
+    taskTargetTimestamp = Timer.getFPGATimestamp();
+    taskDelaySec = 0.1;
 
+    queuedPatterns = new ArrayList<Runnable>();
+    patternTargetTimestamp = Timer.getFPGATimestamp();
+    patternDelaySec = 0.0;
+
+    animateTargetTimestamp = Timer.getFPGATimestamp();
+    animateDelaySec = 1;
     shouldAnimate = false;
-    acoustic = true;
+
+    tasksJustRanOut = false;
   }
 
-  /*
-   * Set the LED strip to display a rainbow pattern.
-   * rainbowLED() is from WPILib documentation. 
-   */
-  public void rainbowLED() {
-    int m_rainbowFirstPixelHue = 0;
-
-    for (int i = 0; i < m_ledBuffer.getLength(); i++) {
-      final int hue = (m_rainbowFirstPixelHue + (i * 180 / m_ledBuffer.getLength())) % 180;
-      m_ledBuffer.setHSV(i, hue, 255, 128);
-    }
-
-    m_rainbowFirstPixelHue += 3;
-    m_rainbowFirstPixelHue %= 180;
-
-    setBuffer();
+  public void setSolidBlue() {
+    setSolidHSV(228 / 2, 100, 100);
   }
 
-  /*
-   * Set the LED strip to display a gradient from red to green. 
-   * @param value A value between 0 and 1 that represents the red to green gradient.
-   */
-  public void solidRedToGreenLED(double value) {
-    // Clamp value between 0 and 1.
-    if (value < 0) value = 0;
-    if (value > 1) value = 1;
-    
-    // Hue value for red in HSV is 0 degrees and for green is 120 degrees.
-    // Since we want a gradient between red and green, we map the input value to this range.
-    // Have to divide by 2 because WPILib hsv range is from 0-180.
-    int hue = ((int) Math.round(value * 120)) / 2; // Map the value to the 0-120 degree range.
-
-    setEveryLED(hue, 100, 100);
-  }
-
-  public void everythingReady() {
-    int extra = m_ledBuffer.getLength() % 3;
-    boolean isBlue = true;
-    for(int i = 0; i < m_ledBuffer.getLength() - extra; i+=3) {
-      if (i % 2 == 0){
-        isBlue = true;
-        m_ledBuffer.setHSV(i, Colors.BLUE, 100, 100);  
-        m_ledBuffer.setHSV(i+1, Colors.BLUE, 100, 100); 
-        m_ledBuffer.setHSV(i+2, Colors.BLUE, 100, 100); 
-      } else {
-        isBlue = false;
-        m_ledBuffer.setHSV(i, Colors.PURPLE, 100, 100); 
-        m_ledBuffer.setHSV(i+1, Colors.PURPLE, 100, 100); 
-        m_ledBuffer.setHSV(i+2, Colors.PURPLE, 100, 100); 
-      }
-    }
-
-    for(int i = m_ledBuffer.getLength() - 1; i >= m_ledBuffer.getLength() - 1 - extra; i--) {
-      if (isBlue) {
-        m_ledBuffer.setHSV(i, Colors.PURPLE, 100, 100); 
-      } else {
-        m_ledBuffer.setHSV(i, Colors.BLUE, 100, 100); 
-      }
-    }
-    setBuffer();
-  }
-
-  public void alternateRedGreenLED(double val1, double val2, boolean isAtGoal){
-    alternateRedGreenLED(val1, val2);
-    
-    if (isAtGoal) everythingReady();
-  }
-
-  public void alternateRedGreenLED(double val1, double val2) {
-
-  }
-
-  public void blueBlackWhiteGradient() {
-
-  }
-
-  /*
-   *  [NOT COMPLETE, DO NOT USE] Set the LED strip to display a message in morse code.
-   * @param message The message to be displayed in morse code with - and . characters. For example, 'synth' would be "... -.-- -. - ...."
-   */
-  public void wordToMorseCodeLED(String message) {
-    final int DOT_LENGTH      = 1;
-    final int DASH_LENGTH     = 3;
-    final int MORSE_SPACE     = 1;    // space between each - or . in a letter.
-    final int LETTER_SPACE    = 3;    // space between each letter in morse code
-    final int REPEAT_SPACE    = 4;    // space before the animation repeats
-    final int WORD_SPACE      = 1;    // space before and after each word
-    final boolean CHECK_SPACE = true; // checks if there is enough space before repeating
-
-
-    String[] letters = message.split(" ");
-
-    int ledsNeeded = 0; 
-    
-    if (CHECK_SPACE) {
-      ledsNeeded = WORD_SPACE + (letters.length - 1) * LETTER_SPACE + WORD_SPACE;
-      // Make sure each letter is valid. And allocate space for the LED buffer.
-      for (String letter : letters) {
-        if (letter.length() > 5) throw new IllegalArgumentException("wordToMorseCodeLED() invalid morse letter, maximum length 5 for each letter.");
-        for (int i = 0; i < letter.length(); i++) {
-          char character = letter.charAt(i);
-
-          if (character == '.') ledsNeeded += DOT_LENGTH;
-          else if (character == '-') ledsNeeded += DASH_LENGTH;
-          else throw new IllegalArgumentException("wordToMorseCodeLED() parameter can only contain . or - characters.");
-        }
-        ledsNeeded += (letter.length() - 1) * MORSE_SPACE;
-      }
-    }
-    int ledsLeft = m_ledBuffer.getLength() - ledsNeeded;
-
-    while (ledsLeft >= 0) {
-      for (String letter : letters) {
-        for (int i = 0; i < letter.length(); i++) {
-          char character = letter.charAt(i);
-          if (character == '.') {
-            
-          } else if (character == '-') {
-            
+  private void setSolidHSV(int h, int s, int v) {
+    shouldAnimate = false;
+    queuedPatterns.add(
+        () -> {
+          taskDelaySec = 0.2;
+          for (int i = 0; i < ledBuffer.getLength(); i++) {
+            final int index = i;
+            queuedTasks.add(() -> ledBuffer.setHSV(index, h, s, v));
           }
-        }
-      }
-
-      if (CHECK_SPACE) ledsLeft -= REPEAT_SPACE;
-    }
-
-    setBuffer();
+        });
   }
 
-  private void setEveryLED(int hue, int saturation, int value) {
-    for (int i = 0; i < m_ledBuffer.getLength(); i++) {
-      m_ledBuffer.setHSV(i, hue, saturation, value);
-    }
-    setBuffer();
+  public void setGradient(int startHue, int endHue) {
+    shouldAnimate = false;
+    queuedPatterns.add(
+        () -> {
+          int inc = (int) Math.floor((endHue - startHue) / ledBuffer.getLength());
+          for (int i = 0; i < ledBuffer.getLength(); i++) {
+            final int index = i;
+            queuedTasks.add(() -> ledBuffer.setHSV(index, startHue + (inc * index), 255, 255));
+          }
+        });
+  }
+
+  public void boomerangGradient(int startHue, int endHue) {
+    shouldAnimate = false;
+    queuedPatterns.add(
+        () -> {
+          int currentHue = startHue;
+          int inc = Math.round((endHue - startHue) / ledBuffer.getLength()) * 2;
+          for (int idx = 0; idx < Math.floor(ledBuffer.getLength() / 2); idx++) {
+            final int index = idx;
+            final int thisHue = currentHue;
+            queuedTasks.add(() -> ledBuffer.setHSV(index, thisHue, 255, 255));
+            currentHue += inc;
+          }
+          for (int idx = (int) Math.floor(ledBuffer.getLength() / 2);
+              idx < ledBuffer.getLength();
+              idx++) {
+            final int index = idx;
+            final int thisHue = currentHue;
+            queuedTasks.add(() -> ledBuffer.setHSV(index, thisHue, 255, 255));
+            currentHue += -inc;
+          }
+          queuedTasks.add(() -> shouldAnimate = true);
+        });
   }
 
   private void setBuffer() {
-    m_led.setData(m_ledBuffer);
-    m_led.start();
-  }
-
-  public int[] hexToHSV(String hexColor) {
-    // Convert hex to RGB
-    hexColor = hexColor.toUpperCase();
-    int r = Integer.valueOf(hexColor.substring(1, 3), 16);
-    int g = Integer.valueOf(hexColor.substring(3, 5), 16);
-    int b = Integer.valueOf(hexColor.substring(5, 7), 16);
-    
-    // Convert RGB to HSV
-    float[] hsv = new float[3];
-    java.awt.Color.RGBtoHSB(r, g, b, hsv);
-    
-    // Adjust hue to be in the range of 0-180
-    hsv[0] *= 180;
-    hsv[1] *= 100;
-    hsv[2] *= 100;
-    
-    // Convert float array to double for the return value
-    int[] adjustedHSV = new int[hsv.length];
-    for (int i = 0; i < hsv.length; i++) {
-        adjustedHSV[i] = (int) hsv[i];
-    }
-    
-    return adjustedHSV;
-  }
-
-  private void wait(int milliseconds) {
-    double initialTime = Timer.getFPGATimestamp();
-
-    while (Timer.getFPGATimestamp() - initialTime < milliseconds / 1000.0) {
-      // Do nothing
-    }
-  }
-
-  private Command setLEDCommand(int index, int hue, int saturation, int value) {
-    return new InstantCommand(() -> {
-      m_ledBuffer.setHSV(index, hue, saturation, value);
-      setBuffer();
-    });
+    led.setData(ledBuffer);
+    led.start();
   }
 
   @Override
   public void periodic() {
     if (shouldAnimate) {
-      Color lastLED = m_ledBuffer.getLED(m_ledBuffer.getLength() - 1);
-      for (int i = 1; i < m_ledBuffer.getLength(); i++) {
-        m_ledBuffer.setLED(i, m_ledBuffer.getLED(i - 1));
+      if (Timer.getFPGATimestamp() >= animateTargetTimestamp) {
+        // Animate a single frameshift.
+        Color lastLED = ledBuffer.getLED(ledBuffer.getLength() - 1);
+        for (int i = ledBuffer.getLength() - 1; i > 0; i--)
+          ledBuffer.setLED(i, ledBuffer.getLED(i - 1));
+        ledBuffer.setLED(0, lastLED);
+
         setBuffer();
+        animateTargetTimestamp = Timer.getFPGATimestamp() + animateDelaySec;
       }
-      m_ledBuffer.setLED(0, lastLED);
-      setBuffer();
+    } else {
+      if (queuedTasks.size() == 0) {
+        if (queuedPatterns.size() > 0) {
+          if (!tasksJustRanOut) {
+            patternTargetTimestamp = Timer.getFPGATimestamp() + patternDelaySec;
+            tasksJustRanOut = true;
+          }
+
+          if (Timer.getFPGATimestamp() >= patternTargetTimestamp) {
+            queuedPatterns.remove(0).run(); // The pattern should populate the tasks arraylist
+            tasksJustRanOut = false;
+          }
+        }
+      } else if (Timer.getFPGATimestamp() >= taskTargetTimestamp) {
+        queuedTasks.remove(0).run();
+        taskTargetTimestamp = Timer.getFPGATimestamp() + taskDelaySec;
+      }
     }
   }
 }

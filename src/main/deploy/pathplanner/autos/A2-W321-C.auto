@@ -1,0 +1,37 @@
+{
+  "version": 1.0,
+  "startingPose": null,
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "A2-W3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "W32"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "W21"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "W1-C"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "CenterAutos",
+  "choreoAuto": false
+}

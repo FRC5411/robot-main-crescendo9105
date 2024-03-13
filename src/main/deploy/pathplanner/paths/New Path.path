@@ -3,25 +3,41 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 15.05,
-        "y": 5.807910939895954
+        "x": 1.4017999934148018,
+        "y": 5.52856682565217
       },
       "prevControl": null,
       "nextControl": {
-        "x": 16.05000000000002,
-        "y": 5.307910939895954
+        "x": 2.4017999934148024,
+        "y": 5.02856682565217
       },
       "isLocked": false,
       "linkedName": null
     },
     {
       "anchor": {
-        "x": 0.0,
-        "y": 8.2
+        "x": 5.0,
+        "y": 5.0
       },
       "prevControl": {
-        "x": 0.14180786946654855,
-        "y": 7.400042697775228
+        "x": 4.0,
+        "y": 6.0
+      },
+      "nextControl": {
+        "x": 6.0,
+        "y": 4.0
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 7.0,
+        "y": 1.0
+      },
+      "prevControl": {
+        "x": 6.75,
+        "y": 2.5
       },
       "nextControl": null,
       "isLocked": false,
@@ -43,7 +59,7 @@
     "rotateFast": false
   },
   "reversed": false,
-  "folder": null,
+  "folder": "Debugging",
   "previewStartingState": null,
   "useDefaultConstraints": false
 }

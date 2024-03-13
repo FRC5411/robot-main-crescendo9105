@@ -1,0 +1,49 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.72,
+      "y": 4.4
+    },
+    "rotation": -60.22000000000003
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "A3-W3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "W3-C5"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C5-BS"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "BS-C4"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C4-BS"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "BottomAutos",
+  "choreoAuto": false
+}

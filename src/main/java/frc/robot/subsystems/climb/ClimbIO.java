@@ -7,20 +7,20 @@ package frc.robot.subsystems.climb;
 import edu.wpi.first.math.geometry.Rotation2d;
 import org.littletonrobotics.junction.AutoLog;
 
-/** Hardware interface for the climb */
 public interface ClimbIO {
-  /** Climb subsystem sensor data */
   @AutoLog
   public static class ClimbIOInputs {
-    public Rotation2d leftAngle = new Rotation2d();
+    public Rotation2d leftPosition = new Rotation2d();
     public double leftVelocityRPS = 0.0;
     public double leftAppliedVolts = 0.0;
+    public double leftInternalVolts = 0.0;
     public double[] leftCurrentAmps = new double[] {0.0};
     public double[] leftTemperatureCelsius = new double[] {0.0};
 
-    public Rotation2d rightAngle = new Rotation2d();
+    public Rotation2d rightPosition = new Rotation2d();
     public double rightVelocityRPS = 0.0;
     public double rightAppliedVolts = 0.0;
+    public double rightInternalVolts = 0.0;
     public double[] rightCurrentAmps = new double[] {0.0};
     public double[] rightTemperatureCelsius = new double[] {0.0};
   }

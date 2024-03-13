@@ -4,7 +4,9 @@
 
 package frc.robot.subsystems.shooter;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
@@ -19,11 +21,13 @@ public class ShooterVisualizer {
   private Mechanism2d anglerMechanismVisual = new Mechanism2d(1.0, 1.0);
   private MechanismRoot2d anglerPivotVisual =
       anglerMechanismVisual.getRoot("ANGLER_PIVOT", 0.5, 0.0);
-  private MechanismLigament2d shooterVisual =
-      anglerPivotVisual.append(new MechanismLigament2d("SHOOTER", 0.4958, Math.toRadians(0.0)));
+  private MechanismLigament2d shooterVisual;
 
   /** Create a new visualizer */
-  public ShooterVisualizer() {
+  public ShooterVisualizer(Rotation2d initialAngle) {
+    shooterVisual =
+        anglerPivotVisual.append(
+            new MechanismLigament2d("SHOOTER", 0.4958, initialAngle.getRadians()));
     shooterVisual.setColor(new Color8Bit(Color.kWhite));
 
     Logger.recordOutput(ANGLER_LOG_KEY, anglerMechanismVisual);
@@ -31,8 +35,15 @@ public class ShooterVisualizer {
 
   /** Update the shooter visualizer */
   public void updateShooterAngle(Rotation2d angle) {
-    shooterVisual.setAngle(angle);
+    if (angle == null) {
+      shooterVisual.setAngle(Rotation2d.fromDegrees(25.0));
+    } else {
+      shooterVisual.setAngle(angle.minus(Rotation2d.fromDegrees(180.0)).times(-1.0));
+    }
 
     Logger.recordOutput(ANGLER_LOG_KEY, anglerMechanismVisual);
+    Logger.recordOutput(
+        ANGLER_LOG_KEY + "3D",
+        new Pose3d(0.105, 0.0, 0.232, new Rotation3d(0.0, angle.getRadians(), 0.0)));
   }
 }

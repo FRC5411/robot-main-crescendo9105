@@ -70,6 +70,11 @@ public class Module {
     angleSetpoint = null;
   }
 
+  /** Set the drive volts */
+  public void setDriveVoltage(double voltage) {
+    moduleIO.setDriveVolts(voltage);
+  }
+
   /** Sets the module's IdleMode */
   public void setBrake(boolean shouldBrake) {
     moduleIO.setDriveBrake(shouldBrake);

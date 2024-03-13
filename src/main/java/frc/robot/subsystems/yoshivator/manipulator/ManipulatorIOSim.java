@@ -15,11 +15,12 @@ import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 /** Class to represent the manipulator mechanism in simulation */
 public class ManipulatorIOSim implements ManipulatorIO {
   private final double LOOP_PERIOD_S = 0.02;
-  private final double PIVOT_GEARING = 75.0 / 1.0;
-  private final double FLYWHEEL_GEARING = 3.0 / 1.0;
+  private final double PIVOT_GEARING = (64.0 / 1.0) * (3.0 / 1.0);
+  private final double FLYWHEEL_GEARING = 5.0 / 1.0;
 
   private SingleJointedArmSim pivotMotor =
-      new SingleJointedArmSim(DCMotor.getNEO(1), PIVOT_GEARING, 0.002, 0.5, 0.0, 0.0, true, 0.0);
+      new SingleJointedArmSim(
+          DCMotor.getNEO(1), PIVOT_GEARING, 0.002, 0.5, -15.0, 120.0, true, 0.0);
   private FlywheelSim flywheelMotor =
       new FlywheelSim(DCMotor.getNeo550(1), FLYWHEEL_GEARING, 0.002);
 
@@ -44,11 +45,11 @@ public class ManipulatorIOSim implements ManipulatorIO {
     inputs.pivotAppliedCurrentAmps = new double[] {pivotMotor.getCurrentDrawAmps()};
     inputs.pivotTemperatureCelsius = new double[] {0.0};
 
-    inputs.flywheelVelocityRPM = flywheelMotor.getAngularVelocityRPM();
-    inputs.flywheelAppliedVolts = flywheelAppliedVolts;
-    inputs.flywheelInternalVolts = 0.0;
-    inputs.flywheelAppliedCurrentAmps = new double[] {flywheelMotor.getCurrentDrawAmps()};
-    inputs.flywheelTemperatureCelsius = new double[] {0.0};
+    inputs.rollerVelocityRPM = flywheelMotor.getAngularVelocityRPM();
+    inputs.rollerAppliedVolts = flywheelAppliedVolts;
+    inputs.rollerInternalVolts = 0.0;
+    inputs.rollerAppliedCurrentAmps = new double[] {flywheelMotor.getCurrentDrawAmps()};
+    inputs.rollerTemperatureCelsius = new double[] {0.0};
   }
 
   @Override
@@ -59,7 +60,7 @@ public class ManipulatorIOSim implements ManipulatorIO {
   }
 
   @Override
-  public void setFlywheelVolts(double volts) {
+  public void setRollerVolts(double volts) {
     flywheelAppliedVolts = MathUtil.clamp(volts, -12.0, 12.0);
 
     flywheelMotor.setInputVoltage(flywheelAppliedVolts);

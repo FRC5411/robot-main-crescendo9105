@@ -4,120 +4,95 @@
 
 package frc.robot.subsystems.intake;
 
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.utils.debugging.LoggedTunableNumber;
+import frc.robot.RobotStates.IntakeStates;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
-/** Intake subsystem */
 public class Intake extends SubsystemBase {
-  private IntakeIO io;
-  private IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
+  public static enum IntakeSetpoint {
+    IN(12.0),
+    OUT(-12.0),
+    OFF(0.0);
 
-  private ProfiledPIDController intakeFeedback =
-      new ProfiledPIDController(0.0, 0.0, 0.0, new TrapezoidProfile.Constraints(0.0, 0.0));
-  private SimpleMotorFeedforward intakeFeedforward = new SimpleMotorFeedforward(0.0, 0.0);
+    private double volts;
 
-  private LoggedTunableNumber feedbackP =
-      new LoggedTunableNumber("Intake/Feedback/P", intakeFeedback.getP());
-  private LoggedTunableNumber feedbackI =
-      new LoggedTunableNumber("Intake/Feedback/I", intakeFeedback.getI());
-  private LoggedTunableNumber feedbackD =
-      new LoggedTunableNumber("Intake/Feedback/D", intakeFeedback.getD());
-  private LoggedTunableNumber feedbackA =
-      new LoggedTunableNumber(
-          "Intake/Feedback/Accel", intakeFeedback.getConstraints().maxAcceleration);
-  private LoggedTunableNumber feedbackV =
-      new LoggedTunableNumber("Intake/Feedback/Vel", intakeFeedback.getConstraints().maxVelocity);
+    IntakeSetpoint(double volts) {
+      this.volts = volts;
+    }
 
-  private Double velocitySetpointRPM = null;
+    public double getVolts() {
+      return this.volts;
+    }
+  }
 
-  /** Creates a new Intake. */
-  public Intake(IntakeIO io) {
-    this.io = io;
+  @AutoLogOutput(key = "Intake/CurrentSetpoint")
+  private IntakeSetpoint currentSetpoint = IntakeSetpoint.OFF;
 
-    intakeFeedback.setTolerance(50.0, 100.0);
+  private IntakeIO intakeIO;
+  private IntakeIOInputsAutoLogged intakeIOInputs = new IntakeIOInputsAutoLogged();
+
+  public Intake(IntakeIO IntakeIO) {
+    this.intakeIO = IntakeIO;
   }
 
   @Override
   public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("Intake/Inputs", inputs);
+    intakeIO.updateInputs(intakeIOInputs);
+    Logger.processInputs("Intake", intakeIOInputs);
 
     if (DriverStation.isDisabled()) {
-      stopMotor();
+      setVolts(0.0);
     }
 
-    if (velocitySetpointRPM != null) {
-      var motorOutput =
-          (intakeFeedback.calculate(inputs.velocityRPM, velocitySetpointRPM))
-              + intakeFeedforward.calculate(intakeFeedback.getGoal().velocity);
-
-      io.setVolts(motorOutput / 12.0);
-      Logger.recordOutput("Intake/Feedback/Outupt", motorOutput);
-    }
-
-    updateTunableNumbers();
-  }
-
-  /** Checks if tunable numbers have changed, if so update controllers */
-  private void updateTunableNumbers() {
-    // hashCode() updates when class is changed (I think)
-    if (feedbackP.hasChanged(hashCode())
-        || feedbackI.hasChanged(hashCode())
-        || feedbackD.hasChanged(hashCode())) {
-      intakeFeedback.setP(feedbackP.get());
-      intakeFeedback.setI(feedbackI.get());
-      intakeFeedback.setD(feedbackD.get());
-    }
-    if (feedbackA.hasChanged(hashCode()) || feedbackV.hasChanged(hashCode())) {
-      var newConstraints = new TrapezoidProfile.Constraints(feedbackA.get(), feedbackV.get());
-
-      intakeFeedback.setConstraints(newConstraints);
+    if (currentSetpoint != null) {
+      setVolts(currentSetpoint.getVolts());
     }
   }
 
-  /** Sets the desired velocity in RPM */
-  public void setVelocity(double desiredVelocityRPM) {
-    velocitySetpointRPM = desiredVelocityRPM;
-
-    Logger.recordOutput("Intake/Feedback/Setpoint", velocitySetpointRPM);
+  public Command mapToCommand(IntakeStates desiredState) {
+    return switch (desiredState) {
+      case INTAKE -> runIntake(IntakeSetpoint.IN);
+      case OUTTAKE -> runIntake(IntakeSetpoint.OUT);
+      case OFF -> runIntake(IntakeSetpoint.OFF);
+      default -> runIntake(IntakeSetpoint.OFF);
+    };
   }
 
+  public Command runIntake(IntakeSetpoint setpoint) {
+    return Commands.runOnce(() -> setCurrentSetpoint(setpoint), this);
+  }
+
+  public Command stopIntake() {
+    return Commands.runOnce(() -> setCurrentSetpoint(IntakeSetpoint.OFF), this);
+  }
+
+  private void setCurrentSetpoint(IntakeSetpoint setpoint) {
+    currentSetpoint = setpoint;
+  }
+
+  // Nulls current setpoint for manual control
   public void setVolts(double volts) {
-    io.setVolts(volts);
+    intakeIO.setVolts(volts);
   }
 
-  /** Stops the motor */
+  // Nulls current setpoint for manual control
   public void stopMotor() {
-    io.setVolts(0.0);
+    intakeIO.setVolts(0.0);
   }
 
-  /** Returns the intake motor's velocity */
-  @AutoLogOutput(key = "Intake/IntakeMotor/Velocity")
-  public double getVelocity() {
-    return inputs.velocityRPM;
+  // Nulls current setpoint for manual control
+  public void setManualVolts(double volts) {
+    setCurrentSetpoint(null);
+    intakeIO.setVolts(volts);
   }
 
-  /** Returns the bus voltage from the intake */
-  @AutoLogOutput(key = "Intake/IntakeMotor/AppliedVolts")
-  public double[] getAppliedVolts() {
-    return inputs.appliedCurrentAmps;
-  }
-
-  /** Returns if the controller is at the setpoint */
-  @AutoLogOutput(key = "Intake/Feedback/AtSetpoint")
-  public boolean isAtSetpoint() {
-    return intakeFeedback.atSetpoint();
-  }
-
-  /** Returns the controller's velocity error */
-  @AutoLogOutput(key = "Intake/Feedback/VelocityError")
-  public double getFeedbackError() {
-    return intakeFeedback.getVelocityError();
+  // Nulls current setpoint for manual control
+  public void stopManualMotor() {
+    setCurrentSetpoint(null);
+    intakeIO.setVolts(0.0);
   }
 }

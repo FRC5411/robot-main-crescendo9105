@@ -4,14 +4,39 @@
 
 package frc.robot.subsystems.indexer;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotStates.IndexerStates;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Indexer extends SubsystemBase {
+  public static enum IndexerSetpoint {
+    IN(12.0),
+    OUT(-12.0),
+    OFF(0.0),
+    STOW(4.0);
+
+    private double volts;
+
+    IndexerSetpoint(double volts) {
+      this.volts = volts;
+    }
+
+    public double getVolts() {
+      return this.volts;
+    }
+  }
+
+  @AutoLogOutput(key = "Indexer/CurrentSetpoint")
+  private IndexerSetpoint currentSetpoint = IndexerSetpoint.OFF;
+
   private IndexerIO indexerIO;
   private IndexerIOInputsAutoLogged indexerIOInputs = new IndexerIOInputsAutoLogged();
 
-  /** Creates a new Indexer. */
   public Indexer(IndexerIO indexerIO) {
     this.indexerIO = indexerIO;
   }
@@ -19,21 +44,80 @@ public class Indexer extends SubsystemBase {
   @Override
   public void periodic() {
     indexerIO.updateInputs(indexerIOInputs);
-    Logger.processInputs("Indexer/Inputs", indexerIOInputs);
+    Logger.processInputs("Indexer", indexerIOInputs);
+
+    if (DriverStation.isDisabled()) {
+      setCurrentSetpoint(IndexerSetpoint.OFF);
+      setVolts(0.0);
+    }
+
+    if (currentSetpoint != null) {
+      setVolts(currentSetpoint.getVolts());
+    }
   }
 
-  /** Stop the indexer motor */
-  public void stopMotors() {
-    indexerIO.setVolts(0.0);
+  public Command mapToCommand(IndexerStates desiredState) {
+    switch (desiredState) {
+      case INDEX:
+        return runIndexer(IndexerSetpoint.IN);
+      case OUTDEX:
+        return runIndexer(IndexerSetpoint.OUT);
+      case STOW:
+        return stowPiece();
+      case OFF:
+      default:
+        return runIndexer(IndexerSetpoint.OFF);
+    }
   }
 
-  /** Set the voltage of the indexer motor */
-  public void setIndexerVolts(double volts) {
+  public Command runIndexer(IndexerSetpoint setpoint) {
+    return Commands.runOnce(() -> setCurrentSetpoint(setpoint), this);
+  }
+
+  public Command stopIndexer() {
+    return Commands.runOnce(() -> setCurrentSetpoint(IndexerSetpoint.OFF), this);
+  }
+
+  public Command stowPiece() {
+    return new FunctionalCommand(
+        () -> setCurrentSetpoint(IndexerSetpoint.STOW),
+        () -> {},
+        (interrupted) -> {
+          setCurrentSetpoint(IndexerSetpoint.OFF);
+        },
+        () -> isBeamBroken(),
+        this);
+  }
+
+  private void setCurrentSetpoint(IndexerSetpoint setpoint) {
+    currentSetpoint = setpoint;
+  }
+
+  public boolean isBeamBroken() {
+    return indexerIOInputs.isBeamBroken;
+  }
+
+  // Nulls current setpoints for manual control
+  public void setVolts(double volts) {
+    setCurrentSetpoint(null);
     indexerIO.setVolts(volts);
   }
 
-  /** Returns the status of the beam break sensor; checks if a note is stowed or not */
-  public boolean isBeamBroken() {
-    return indexerIOInputs.isBeamBroken;
+  // Nulls current setpoint for manual control
+  public void stopMotor() {
+    setCurrentSetpoint(null);
+    indexerIO.setVolts(0.0);
+  }
+
+  // Nulls current setpoints for manual control
+  public void setManualVolts(double volts) {
+    setCurrentSetpoint(null);
+    indexerIO.setVolts(volts);
+  }
+
+  // Nulls current setpoint for manual control
+  public void stopManualMotor() {
+    setCurrentSetpoint(null);
+    indexerIO.setVolts(0.0);
   }
 }

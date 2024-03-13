@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.shooter.launcher;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -12,6 +13,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import frc.robot.Constants;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 
 /** Class to interact with the physical launcher structure */
@@ -61,7 +63,7 @@ public class LauncherIOTalonFX implements LauncherIO {
   private LoggedTunableNumber bottomFeedforwardG =
       new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/G", 0.0);
   private LoggedTunableNumber bottomFeedforwardV =
-      new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/V", 0.11973);
+      new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/V", 0.11973 * (38.0 / 41.0));
   private LoggedTunableNumber bottomFeedforwardA =
       new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/A", 0.0);
 
@@ -121,6 +123,19 @@ public class LauncherIOTalonFX implements LauncherIO {
 
     topMotor.getConfigurator().apply(topConfiguration);
     bottomMotor.getConfigurator().apply(bottomConfiguration);
+
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        10.0,
+        topMotor.getVelocity(),
+        topMotor.getMotorVoltage(),
+        topMotor.getSupplyCurrent(),
+        topMotor.getClosedLoopReference(),
+        topMotor.getClosedLoopError(),
+        bottomMotor.getVelocity(),
+        bottomMotor.getMotorVoltage(),
+        bottomMotor.getSupplyCurrent(),
+        bottomMotor.getClosedLoopReference(),
+        bottomMotor.getClosedLoopError());
   }
 
   @Override
@@ -130,24 +145,26 @@ public class LauncherIOTalonFX implements LauncherIO {
     inputs.topFlywheelAppliedVolts = topAppliedVolts;
     inputs.topFlywheelInternalVolts = topMotor.getMotorVoltage().getValueAsDouble();
     inputs.topFlywheelAppliedCurrentAmps =
-        new double[] {topMotor.getStatorCurrent().getValueAsDouble()};
+        new double[] {topMotor.getSupplyCurrent().getValueAsDouble()};
     inputs.topFlywheelTemperatureCelsius =
         new double[] {topMotor.getDeviceTemp().getValueAsDouble()};
-    inputs.topFlywheelSetpointMPS = topMotor.getClosedLoopReference().getValueAsDouble();
-    inputs.topFlywheelErrorMPS = topMotor.getClosedLoopError().getValueAsDouble();
+    inputs.topFlywheelSetpointMPS = topVelocityMPS;
+    inputs.topFlywheelErrorMPS = inputs.topFlywheelSetpointMPS - inputs.topFlywheelVelocityMPS;
 
     inputs.bottomFlywheelVelocityMPS =
         (bottomMotor.getVelocity().getValueAsDouble() * CIRCUMFRENCE_M) / GEARING;
     inputs.bottomFlywheelAppliedVolts = bottomAppliedVolts;
     inputs.bottomFlywheelInternalVolts = bottomMotor.getMotorVoltage().getValueAsDouble();
     inputs.bottomFlywheelAppliedCurrentAmps =
-        new double[] {bottomMotor.getStatorCurrent().getValueAsDouble()};
+        new double[] {bottomMotor.getSupplyCurrent().getValueAsDouble()};
     inputs.bottomFlywheelTemperatureCelsius =
         new double[] {bottomMotor.getDeviceTemp().getValueAsDouble()};
-    inputs.bottomFlywheelSetpointMPS = bottomMotor.getClosedLoopReference().getValueAsDouble();
-    inputs.bottomFlywheelErrorMPS = bottomMotor.getClosedLoopError().getValueAsDouble();
+    inputs.bottomFlywheelSetpointMPS = bottomVelocityMPS;
+    inputs.bottomFlywheelErrorMPS = inputs.topFlywheelSetpointMPS - inputs.topFlywheelVelocityMPS;
 
-    updateTunableNumbers();
+    if (Constants.tuningMode) {
+      updateTunableNumbers();
+    }
   }
 
   @Override

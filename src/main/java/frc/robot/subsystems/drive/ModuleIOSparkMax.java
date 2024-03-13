@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.drive;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -36,17 +37,17 @@ public class ModuleIOSparkMax implements ModuleIO {
   private SparkPIDController driveFeedback;
   private SparkPIDController azimuthFeedback;
 
-  private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.21 / 12.0);
+  private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.27 / 12.0);
 
   private LoggedTunableNumber driveFeedbackP =
-      new LoggedTunableNumber("Drive/ModuleIO/Drive/Feedback/P", 0.00005);
+      new LoggedTunableNumber("Drive/ModuleIO/Drive/Feedback/P", 0.0001);
   private LoggedTunableNumber driveFeedbackI =
       new LoggedTunableNumber("Drive/ModuleIO/Drive/Feedback/I", 0.0);
   private LoggedTunableNumber driveFeedbackD =
       new LoggedTunableNumber("Drive/ModuleIO/Drive/Feedback/D", 0.0);
 
   private LoggedTunableNumber azimuthFeedbackP =
-      new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/P", 0.155);
+      new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/P", 0.175);
   private LoggedTunableNumber azimuthFeedbackI =
       new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/I", 0.0);
   private LoggedTunableNumber azimuthFeedbackD =
@@ -59,7 +60,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         driveMotor = new CANSparkMax(11, MotorType.kBrushless);
         azimuthMotor = new CANSparkMax(21, MotorType.kBrushless);
 
-        angleEncoder = new CANcoder(31);
+        angleEncoder = new CANcoder(31, "CTREBUS");
         angleOffset = Rotation2d.fromRotations(-0.275879);
 
         break;
@@ -67,7 +68,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         driveMotor = new CANSparkMax(12, MotorType.kBrushless);
         azimuthMotor = new CANSparkMax(22, MotorType.kBrushless);
 
-        angleEncoder = new CANcoder(32);
+        angleEncoder = new CANcoder(32, "CTREBUS");
         angleOffset = Rotation2d.fromRotations(-0.273926);
 
         break;
@@ -75,7 +76,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         driveMotor = new CANSparkMax(13, MotorType.kBrushless);
         azimuthMotor = new CANSparkMax(23, MotorType.kBrushless);
 
-        angleEncoder = new CANcoder(33);
+        angleEncoder = new CANcoder(33, "CTREBUS");
         angleOffset = Rotation2d.fromRotations(-0.390137);
 
         break;
@@ -83,7 +84,7 @@ public class ModuleIOSparkMax implements ModuleIO {
         driveMotor = new CANSparkMax(14, MotorType.kBrushless);
         azimuthMotor = new CANSparkMax(24, MotorType.kBrushless);
 
-        angleEncoder = new CANcoder(34);
+        angleEncoder = new CANcoder(34, "CTREBUS");
         angleOffset = Rotation2d.fromRotations(0.382568);
 
         break;
@@ -145,6 +146,8 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     driveMotor.burnFlash();
     azimuthMotor.burnFlash();
+
+    BaseStatusSignal.setUpdateFrequencyForAll(10.0, angleEncoder.getAbsolutePosition());
   }
 
   @Override
