@@ -17,6 +17,7 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.Vision;
 
 import java.util.Set;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -143,7 +144,15 @@ public class TargetingSystem {
   }
 
   public static boolean isAtShootRange() {
-    return (speakerDistanceM().getAsDouble() <= 3);
+    if(robotVision.getInputsLeft().hasSpeakerTarget
+    || robotVision.getInputsRight().hasSpeakerTarget) {
+      return false;
+    }
+    return speakerDistanceM().getAsDouble() <= 3;
+  }
+
+  public static BooleanSupplier atShootRange() {
+    return () -> isAtShootRange();
   }
 
   /** Returns a command to visualize a note being shot from the robot */
