@@ -86,6 +86,8 @@ public class Climb extends SubsystemBase {
   private ClimbVisualizer leftVisualizer = new ClimbVisualizer(ClimbSide.LEFT);
   private ClimbVisualizer rightVisualizer = new ClimbVisualizer(ClimbSide.RIGHT);
 
+  private Double volts = null;
+
   /** Creates a new Climb. */
   public Climb(ClimbIO io) {
     this.climbIO = io;
@@ -195,17 +197,20 @@ public class Climb extends SubsystemBase {
       climbIO.setRightVolts(rightFeedbackOutput);
     }
 
-    if (climbIOInputs.leftPosition.getDegrees() > 160.0 && currentSetpoint.leftVolts > 0.0) {
-      climbIO.setLeftVolts(0.0);
-    } else if (climbIOInputs.leftPosition.getDegrees() < -30.0 && currentSetpoint.leftVolts < 0.0) {
-      climbIO.setLeftVolts(0.0);
-    }
+    if (currentSetpoint != null) {
+      if (climbIOInputs.leftPosition.getDegrees() > 160.0 && currentSetpoint.leftVolts > 0.0) {
+        climbIO.setLeftVolts(0.0);
+      } else if (climbIOInputs.leftPosition.getDegrees() < -30.0
+          && currentSetpoint.leftVolts < 0.0) {
+        climbIO.setLeftVolts(0.0);
+      }
 
-    if (climbIOInputs.rightPosition.getDegrees() > 160.0 && currentSetpoint.rightVolts > 0.0) {
-      climbIO.setRightVolts(0.0);
-    } else if (climbIOInputs.rightPosition.getDegrees() < -30.0
-        && currentSetpoint.rightVolts < 0.0) {
-      climbIO.setRightVolts(0.0);
+      if (climbIOInputs.rightPosition.getDegrees() > 160.0 && currentSetpoint.rightVolts > 0.0) {
+        climbIO.setRightVolts(0.0);
+      } else if (climbIOInputs.rightPosition.getDegrees() < -30.0
+          && currentSetpoint.rightVolts < 0.0) {
+        climbIO.setRightVolts(0.0);
+      }
     }
 
     leftVisualizer.updateClimbAngle(climbIOInputs.leftPosition);

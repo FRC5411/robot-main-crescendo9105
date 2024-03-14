@@ -225,7 +225,7 @@ public class RobotContainer {
 
     NamedCommands.registerCommand(
         "ShootIdle",
-        Commands.waitSeconds(1).andThen(robotStateMachine.getShooterCommand(ShooterStates.IDLE)));
+        Commands.waitSeconds(1.0).andThen(robotStateMachine.getShooterCommand(ShooterStates.IDLE)));
 
     NamedCommands.registerCommand(
         "EnableAutoAlign", Commands.runOnce(() -> robotDrive.setPProtationTargetOverride(true)));
