@@ -93,12 +93,12 @@ public class Climb extends SubsystemBase {
     if (Constants.currentRobot == Robot.SYNTH) {
       switch (Constants.currentMode) {
         case REAL:
-          leftClimbFeedback.setP(1.0);
+          leftClimbFeedback.setP(0.1);
           leftClimbFeedback.setI(0.0);
           leftClimbFeedback.setD(0.0);
           // leftClimbFeedback.setConstraints(new TrapezoidProfile.Constraints(100.0, 100.0));
 
-          rightClimbFeedback.setP(1.0);
+          rightClimbFeedback.setP(0.1);
           rightClimbFeedback.setI(0.0);
           rightClimbFeedback.setD(0.0);
           // rightClimbFeedback.setConstraints(new TrapezoidProfile.Constraints(100.0, 100.0));
