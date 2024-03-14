@@ -14,13 +14,7 @@
         {
           "type": "named",
           "data": {
-            "name": "AutoShoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "FirePiece"
+            "name": "Shoot"
           }
         },
         {
@@ -38,31 +32,37 @@
         {
           "type": "named",
           "data": {
-            "name": "AnglerDown"
+            "name": "Intake"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "IntakeInnerRollers"
+            "name": "Shoot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "AutoShoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "FirePiece"
+            "name": "UnDeployYoshi"
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "W1-C1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Intake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootIdle"
           }
         }
       ]

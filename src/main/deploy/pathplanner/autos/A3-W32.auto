@@ -58,10 +58,16 @@
           "data": {
             "name": "Shoot"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootIdle"
+          }
         }
       ]
     }
   },
-  "folder": "TopAutos",
+  "folder": "BottomAutos",
   "choreoAuto": false
 }

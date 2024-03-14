@@ -46,6 +46,12 @@
           "data": {
             "pathName": "W3-C"
           }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootIdle"
+          }
         }
       ]
     }

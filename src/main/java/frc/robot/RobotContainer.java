@@ -350,9 +350,9 @@ public class RobotContainer {
           .whileTrue(robotStateMachine.shootNote())
           .onFalse(robotStateMachine.stopShooting());
 
-      copilotController
-          .rightTrigger()
-          .onTrue(new InstantCommand(() -> TargetingSystem.toggleMultiTagEnabled()));
+    //   copilotController
+    //       .rightTrigger()
+    //       .onTrue(new InstantCommand(() -> TargetingSystem.toggleMultiTagEnabled()));
     }
   }
 

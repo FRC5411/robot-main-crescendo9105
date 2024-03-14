@@ -36,9 +36,21 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "UnDeployYoshi"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "W2-C"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ShootIdle"
           }
         }
       ]
