@@ -30,7 +30,7 @@ public class Yoshivator extends SubsystemBase {
     GROUND_AMP(() -> Rotation2d.fromDegrees(-37.0), () -> 12.0),
     GROUND_INTAKE(() -> Rotation2d.fromDegrees(-35.0), () -> -12.0),
     AMP_IDLE(() -> Rotation2d.fromDegrees(85), () -> -0.0),
-    AMP_SCORE(() -> Rotation2d.fromDegrees(85), () -> -4.75),
+    AMP_SCORE(() -> Rotation2d.fromDegrees(85), () -> -4.5),
     HOLD(() -> Yoshivator.pivotPosition, () -> 0.0);
 
     private Supplier<Rotation2d> pivotSetpointRotation;
