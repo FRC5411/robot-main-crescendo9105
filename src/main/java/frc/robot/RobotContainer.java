@@ -354,6 +354,14 @@ public class RobotContainer {
           .x()
           .whileTrue(robotStateMachine.climbToAmp())
           .onFalse(robotStateMachine.stopClimb());
+
+      copilotController
+          .rightTrigger(0.1)
+          .onTrue(
+              new InstantCommand(
+                  () -> {
+                    TargetingSystem.toggleUseVision();
+                  }));
     }
   }
 
