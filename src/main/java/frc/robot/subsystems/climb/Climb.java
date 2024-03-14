@@ -4,13 +4,12 @@
 
 package frc.robot.subsystems.climb;
 
-import edu.wpi.first.math.controller.ArmFeedforward;
-import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Robot;
@@ -37,30 +36,47 @@ public class Climb extends SubsystemBase {
     }
   }
 
+  public static enum ClimPosSetpoints {
+    AMP(Rotation2d.fromDegrees(110.0));
+
+    private Rotation2d m_setpoint;
+
+    ClimPosSetpoints(Rotation2d setpoint) {
+      this.m_setpoint = setpoint;
+    }
+
+    private Rotation2d getRotation() {
+      return m_setpoint;
+    }
+  }
+
   private double climbDirection = 1.0;
 
   private ClimbIO climbIO;
   private ClimbIOInputsAutoLogged climbIOInputs = new ClimbIOInputsAutoLogged();
 
-  private ProfiledPIDController leftClimbFeedback =
-      new ProfiledPIDController(1.0, 0.0, 0.0, new TrapezoidProfile.Constraints(100.0, 100.0));
-  private ProfiledPIDController rightClimbFeedback =
-      new ProfiledPIDController(1.0, 0.0, 0.0, new TrapezoidProfile.Constraints(100.0, 100.0));
+  private PIDController leftClimbFeedback = new PIDController(0.0, 0.0, 0.0);
+  private PIDController rightClimbFeedback = new PIDController(0.0, 0.0, 0.0);
 
-  private ArmFeedforward leftClimbFeedforward = new ArmFeedforward(0.0, 0.0, 0.0);
-  private ArmFeedforward rightClimbFeedforward = new ArmFeedforward(0.0, 0.0, 0.0);
+  // private ProfiledPIDController leftClimbFeedback =
+  //     new ProfiledPIDController(1.0, 0.0, 0.0, new TrapezoidProfile.Constraints(100.0, 100.0));
+  // private ProfiledPIDController rightClimbFeedback =
+  //     new ProfiledPIDController(1.0, 0.0, 0.0, new TrapezoidProfile.Constraints(100.0, 100.0));
+
+  // private ArmFeedforward leftClimbFeedforward = new ArmFeedforward(0.0, 0.0, 0.0);
+  // private ArmFeedforward rightClimbFeedforward = new ArmFeedforward(0.0, 0.0, 0.0);
 
   private LoggedTunableNumber leftFeedbackP;
   private LoggedTunableNumber leftFeedbackI;
   private LoggedTunableNumber leftFeedbackD;
-  private LoggedTunableNumber leftFeedbackA;
-  private LoggedTunableNumber leftFeedbackV;
+  // private LoggedTunableNumber leftFeedbackA;
+  // private LoggedTunableNumber leftFeedbackV;
 
   private LoggedTunableNumber rightFeedbackP;
   private LoggedTunableNumber rightFeedbackI;
   private LoggedTunableNumber rightFeedbackD;
-  private LoggedTunableNumber rightFeedbackA;
-  private LoggedTunableNumber rightFeedbackV;
+  // private LoggedTunableNumber rightFeedbackA;
+  // private LoggedTunableNumber rightFeedbackV;
 
   private Rotation2d leftAngleSetpoint = null;
   private Rotation2d rightAngleSetpoint = null;
@@ -80,36 +96,36 @@ public class Climb extends SubsystemBase {
           leftClimbFeedback.setP(1.0);
           leftClimbFeedback.setI(0.0);
           leftClimbFeedback.setD(0.0);
-          leftClimbFeedback.setConstraints(new TrapezoidProfile.Constraints(100.0, 100.0));
+          // leftClimbFeedback.setConstraints(new TrapezoidProfile.Constraints(100.0, 100.0));
 
           rightClimbFeedback.setP(1.0);
           rightClimbFeedback.setI(0.0);
           rightClimbFeedback.setD(0.0);
-          rightClimbFeedback.setConstraints(new TrapezoidProfile.Constraints(100.0, 100.0));
+          // rightClimbFeedback.setConstraints(new TrapezoidProfile.Constraints(100.0, 100.0));
 
           break;
         case SIM:
           leftClimbFeedback.setP(1.0);
           leftClimbFeedback.setI(0.0);
           leftClimbFeedback.setD(0.0);
-          leftClimbFeedback.setConstraints(new TrapezoidProfile.Constraints(100.0, 100.0));
+          // leftClimbFeedback.setConstraints(new TrapezoidProfile.Constraints(100.0, 100.0));
 
           rightClimbFeedback.setP(1.0);
           rightClimbFeedback.setI(0.0);
           rightClimbFeedback.setD(0.0);
-          rightClimbFeedback.setConstraints(new TrapezoidProfile.Constraints(100.0, 100.0));
+          // rightClimbFeedback.setConstraints(new TrapezoidProfile.Constraints(100.0, 100.0));
 
           break;
         default:
           leftClimbFeedback.setP(0.0);
           leftClimbFeedback.setI(0.0);
           leftClimbFeedback.setD(0.0);
-          leftClimbFeedback.setConstraints(new TrapezoidProfile.Constraints(0.0, 0.0));
+          // leftClimbFeedback.setConstraints(new TrapezoidProfile.Constraints(0.0, 0.0));
 
           rightClimbFeedback.setP(0.0);
           rightClimbFeedback.setI(0.0);
           rightClimbFeedback.setD(0.0);
-          rightClimbFeedback.setConstraints(new TrapezoidProfile.Constraints(0.0, 0.0));
+          // rightClimbFeedback.setConstraints(new TrapezoidProfile.Constraints(0.0, 0.0));
 
           break;
       }
@@ -118,12 +134,12 @@ public class Climb extends SubsystemBase {
     leftFeedbackP = new LoggedTunableNumber("Climb/LeftArm/Feedback/P", leftClimbFeedback.getP());
     leftFeedbackI = new LoggedTunableNumber("Climb/LeftArm/Feedback/I", leftClimbFeedback.getI());
     leftFeedbackD = new LoggedTunableNumber("Climb/LeftArm/Feedback/D", leftClimbFeedback.getD());
-    leftFeedbackA =
-        new LoggedTunableNumber(
-            "Climb/LeftArm/Feedback/V", leftClimbFeedback.getConstraints().maxVelocity);
-    leftFeedbackV =
-        new LoggedTunableNumber(
-            "Climb/LeftArm/Feedback/A", leftClimbFeedback.getConstraints().maxAcceleration);
+    // leftFeedbackA =
+    //     new LoggedTunableNumber(
+    //         "Climb/LeftArm/Feedback/V", leftClimbFeedback.getConstraints().maxVelocity);
+    // leftFeedbackV =
+    //     new LoggedTunableNumber(
+    //         "Climb/LeftArm/Feedback/A", leftClimbFeedback.getConstraints().maxAcceleration);
 
     rightFeedbackP =
         new LoggedTunableNumber("Climb/RightArm/Feedback/P", rightClimbFeedback.getP());
@@ -131,15 +147,15 @@ public class Climb extends SubsystemBase {
         new LoggedTunableNumber("Climb/RightArm/Feedback/I", rightClimbFeedback.getI());
     rightFeedbackD =
         new LoggedTunableNumber("Climb/RightArm/Feedback/D", rightClimbFeedback.getD());
-    rightFeedbackA =
-        new LoggedTunableNumber(
-            "Climb/RightArm/Feedback/V", rightClimbFeedback.getConstraints().maxVelocity);
-    rightFeedbackV =
-        new LoggedTunableNumber(
-            "Climb/RightArm/Feedback/A", rightClimbFeedback.getConstraints().maxAcceleration);
+    // rightFeedbackA =
+    //     new LoggedTunableNumber(
+    //         "Climb/RightArm/Feedback/V", rightClimbFeedback.getConstraints().maxVelocity);
+    // rightFeedbackV =
+    //     new LoggedTunableNumber(
+    //         "Climb/RightArm/Feedback/A", rightClimbFeedback.getConstraints().maxAcceleration);
 
-    leftClimbFeedback.setTolerance(0.8);
-    rightClimbFeedback.setTolerance(0.8);
+    leftClimbFeedback.setTolerance(2.0);
+    rightClimbFeedback.setTolerance(2.0);
 
     leftClimbFeedback.enableContinuousInput(-180.0, 180.0);
     rightClimbFeedback.enableContinuousInput(-180.0, 180.0);
@@ -155,51 +171,40 @@ public class Climb extends SubsystemBase {
     }
 
     if (currentSetpoint != null) {
-      climbIO.setLeftVolts(currentSetpoint.leftVolts);
+      // climbIO.setLeftVolts(currentSetpoint.leftVolts);
       climbIO.setRightVolts(currentSetpoint.rightVolts);
     }
 
-    if (leftAngleSetpoint != null) {
-      double leftFeedbackOutput =
-          leftClimbFeedback.calculate(
-              climbIOInputs.leftPosition.getDegrees(), leftAngleSetpoint.getDegrees());
+    // if (leftAngleSetpoint != null) {
+    //   double leftFeedbackOutput =
+    //       leftClimbFeedback.calculate(
+    //           climbIOInputs.leftPosition.getDegrees(), leftAngleSetpoint.getDegrees());
 
-      double leftFeedforwardOutput =
-          leftClimbFeedforward.calculate(
-              climbIOInputs.leftPosition.getRadians(), leftClimbFeedback.getSetpoint().velocity);
+    //   Logger.recordOutput("Climb/LeftArm/Feedback/Output", leftFeedbackOutput);
 
-      Logger.recordOutput("Climb/LeftArm/Feedback/Output", leftFeedbackOutput);
-      Logger.recordOutput("Climb/LeftArm/Feedforward/Output", leftFeedforwardOutput);
-
-      climbIO.setLeftVolts(leftFeedbackOutput + leftFeedforwardOutput);
-    }
+    //   climbIO.setLeftVolts(leftFeedbackOutput);
+    // }
 
     if (rightAngleSetpoint != null) {
       double rightFeedbackOutput =
           rightClimbFeedback.calculate(
               climbIOInputs.rightPosition.getDegrees(), rightAngleSetpoint.getDegrees());
 
-      double rightFeedforwardOutput =
-          rightClimbFeedforward.calculate(
-              climbIOInputs.rightPosition.getRadians(), rightClimbFeedback.getSetpoint().velocity);
-
       Logger.recordOutput("Climb/RightArm/Feedback/Output", rightFeedbackOutput);
-      Logger.recordOutput("Climb/RightArm/Feedforward/Output", rightFeedforwardOutput);
 
-      climbIO.setRightVolts(rightFeedbackOutput + rightFeedforwardOutput);
+      climbIO.setRightVolts(rightFeedbackOutput);
     }
 
-    if (climbIOInputs.leftPosition.getDegrees() > 180.0 && currentSetpoint.leftVolts > 0.0) {
+    if (climbIOInputs.leftPosition.getDegrees() > 160.0 && currentSetpoint.leftVolts > 0.0) {
+      climbIO.setLeftVolts(0.0);
+    } else if (climbIOInputs.leftPosition.getDegrees() < -30.0 && currentSetpoint.leftVolts < 0.0) {
       climbIO.setLeftVolts(0.0);
     }
-    else if (climbIOInputs.leftPosition.getDegrees() < -60.0 && currentSetpoint.leftVolts < 0.0) {
-      climbIO.setLeftVolts(0.0);
-    }
-    
-    if (climbIOInputs.rightPosition.getDegrees() > 180.0 && currentSetpoint.rightVolts > 0.0) {
+
+    if (climbIOInputs.rightPosition.getDegrees() > 160.0 && currentSetpoint.rightVolts > 0.0) {
       climbIO.setRightVolts(0.0);
-    }
-    else if (climbIOInputs.rightPosition.getDegrees() < -60.0 && currentSetpoint.rightVolts < 0.0) {
+    } else if (climbIOInputs.rightPosition.getDegrees() < -30.0
+        && currentSetpoint.rightVolts < 0.0) {
       climbIO.setRightVolts(0.0);
     }
 
@@ -220,12 +225,6 @@ public class Climb extends SubsystemBase {
       leftClimbFeedback.setI(leftFeedbackI.get());
       leftClimbFeedback.setD(leftFeedbackD.get());
     }
-    if (leftFeedbackA.hasChanged(hashCode()) || leftFeedbackV.hasChanged(hashCode())) {
-      TrapezoidProfile.Constraints newConstraints =
-          new TrapezoidProfile.Constraints(leftFeedbackA.get(), leftFeedbackV.get());
-
-      leftClimbFeedback.setConstraints(newConstraints);
-    }
 
     if (rightFeedbackP.hasChanged(hashCode())
         || rightFeedbackI.hasChanged(hashCode())
@@ -233,12 +232,6 @@ public class Climb extends SubsystemBase {
       rightClimbFeedback.setP(rightFeedbackP.get());
       rightClimbFeedback.setI(rightFeedbackI.get());
       rightClimbFeedback.setD(rightFeedbackD.get());
-    }
-    if (rightFeedbackA.hasChanged(hashCode()) || rightFeedbackV.hasChanged(hashCode())) {
-      TrapezoidProfile.Constraints newConstraints =
-          new TrapezoidProfile.Constraints(rightFeedbackA.get(), rightFeedbackV.get());
-
-      rightClimbFeedback.setConstraints(newConstraints);
     }
   }
 
@@ -248,12 +241,29 @@ public class Climb extends SubsystemBase {
       case MOVE_BOTH_UP -> setManualVolts(ClimbVoltSetpoints.BOTH_UP);
       case MOVE_BOTH_DOWN -> setManualVolts(ClimbVoltSetpoints.BOTH_DOWN);
       case INVERT -> Commands.runOnce(() -> climbDirection *= -1.0, this);
+      case AMP -> setPositionSetpoint(ClimPosSetpoints.AMP.getRotation());
       default -> setManualVolts(ClimbVoltSetpoints.OFF);
     };
   }
 
+  public Command setPositionSetpoint(Rotation2d pos) {
+    return new InstantCommand(
+        () -> {
+          currentSetpoint = null;
+          leftAngleSetpoint = pos;
+          rightAngleSetpoint = pos;
+        },
+        this);
+  }
+
   public Command setManualVolts(ClimbVoltSetpoints setpoint) {
-    return Commands.runOnce(() -> currentSetpoint = setpoint, this);
+    return Commands.runOnce(
+        () -> {
+          leftAngleSetpoint = null;
+          rightAngleSetpoint = null;
+          currentSetpoint = setpoint;
+        },
+        this);
   }
 
   public void setVolts(double leftVolts, double rightVolts) {

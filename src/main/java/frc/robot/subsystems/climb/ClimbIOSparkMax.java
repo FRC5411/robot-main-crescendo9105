@@ -63,6 +63,8 @@ public class ClimbIOSparkMax implements ClimbIO {
     leftEncoder.setPosition(0.0);
     rightEncoder.setPosition(0.0);
 
+    leftMotor.follow(rightMotor);
+
     leftMotor.burnFlash();
     rightMotor.burnFlash();
   }

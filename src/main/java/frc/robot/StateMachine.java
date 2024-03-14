@@ -134,6 +134,10 @@ public class StateMachine {
     return getYoshiCommand(YoshiStates.AMP);
   }
 
+  public Command climbToAmp() {
+    return getClimbCommand(ClimbStates.AMP);
+  }
+
   public Command prepareNoteShot() {
     return getShooterCommand(ShooterStates.AIM);
   }

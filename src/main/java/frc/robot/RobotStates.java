@@ -29,7 +29,8 @@ public class RobotStates {
     PULL,
     MOVE_BOTH_UP,
     MOVE_BOTH_DOWN,
-    INVERT
+    INVERT,
+    AMP
   }
 
   public static enum ShooterStates {
