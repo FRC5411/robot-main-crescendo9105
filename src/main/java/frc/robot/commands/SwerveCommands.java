@@ -29,6 +29,7 @@ public class SwerveCommands {
   private static final boolean IS_FIELD = true;
 
   private static Command currentCommand = null;
+  private static boolean isAtYawGoal = false;
 
   private SwerveCommands() {}
 
@@ -124,7 +125,7 @@ public class SwerveCommands {
               Rotation2d currentHeading = robotDrive.getRotation();
 
               // If the error is small, set the goal to be the current heading
-              if (Math.abs(headingGoal.getDegrees() - currentHeading.getDegrees()) > 2.0) {
+              if (Math.abs(headingGoal.getDegrees() - currentHeading.getDegrees()) > 7.5) {
                 // Add 180 since front is the intake, not the shooter
                 thetaFeedback.reset(currentHeading.getDegrees());
               }
@@ -163,12 +164,18 @@ public class SwerveCommands {
               Logger.recordOutput("Drive/HeadingController/Output", thetaDesiredDegrees);
             },
             (interrupted) -> {
-              robotDrive.stop();
+              if (interrupted) robotDrive.stop();
+
+              isAtYawGoal = thetaFeedback.atGoal();
             },
             () -> thetaFeedback.atGoal(),
             robotDrive);
 
     return currentCommand;
+  }
+
+  public static boolean isAtYawGoal() {
+    return isAtYawGoal;
   }
 
   // private static double driveVoltage = 0.0;

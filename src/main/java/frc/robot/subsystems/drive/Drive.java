@@ -27,6 +27,8 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
@@ -88,6 +90,8 @@ public class Drive extends SubsystemBase {
   private LinearFilter xFilter = LinearFilter.movingAverage(5);
   private LinearFilter yFilter = LinearFilter.movingAverage(5);
 
+  private Field2d field = new Field2d();
+
   /** Creates a new swerve Drive. */
   public Drive(
       ModuleIO moduleFL, ModuleIO moduleFR, ModuleIO moduleBL, ModuleIO moduleBR, GyroIO gyro) {
@@ -106,7 +110,7 @@ public class Drive extends SubsystemBase {
 
     // Configure PathPlanner
     AutoBuilder.configureHolonomic(
-        this::getPoseEstimate,
+        () -> odometry.getPoseMeters(),
         this::setPose,
         () -> KINEMATICS.toChassisSpeeds(getModuleStates()),
         this::runSwerve,
@@ -132,6 +136,8 @@ public class Drive extends SubsystemBase {
           Logger.recordOutput(
               "Drive/Odometry/TrajectorySetpoint", targetPose); // Auto log the target setpoint
         });
+
+    SmartDashboard.putData(field);
   }
 
   @Override
@@ -180,6 +186,9 @@ public class Drive extends SubsystemBase {
     }
 
     currentPose = poseEstimator.getEstimatedPosition();
+
+    field.setRobotPose(currentPose);
+    field.getObject("OdometryPose").setPose(odometry.getPoseMeters());
   }
 
   /** Runs the swerve drive based on speeds */
@@ -263,7 +272,7 @@ public class Drive extends SubsystemBase {
       odometry.resetPosition(pose.getRotation(), getModulePositions(), pose);
     } else {
       poseEstimator.resetPosition(getRotation(), getModulePositions(), pose);
-      odometry.resetPosition(pose.getRotation(), getModulePositions(), pose);
+      odometry.resetPosition(getRotation(), getModulePositions(), pose);
     }
 
     currentPose = poseEstimator.getEstimatedPosition();

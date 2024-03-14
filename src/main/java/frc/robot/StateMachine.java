@@ -107,7 +107,11 @@ public class StateMachine {
   }
 
   public Command yoshiIntakeNote() {
-    return intakeNote().alongWith(getYoshiCommand(YoshiStates.GROUND));
+    return intakeNote().alongWith(getYoshiCommand(YoshiStates.GROUND_INTAKE));
+  }
+
+  public Command yoshiIntakeNoteAmp() {
+    return intakeNote().alongWith(getYoshiCommand(YoshiStates.GROUND_AMP));
   }
 
   public Command outtakeNote() {
@@ -123,11 +127,15 @@ public class StateMachine {
         getYoshiCommand(YoshiStates.IDLE),
         getIntakeCommand(IntakeStates.OFF),
         getIndexerCommand(IndexerStates.OFF),
-        getShooterCommand(ShooterStates.AIM));
+        getShooterCommand(ShooterStates.OFF));
   }
 
   public Command scoreAmp() {
     return getYoshiCommand(YoshiStates.AMP);
+  }
+
+  public Command climbToAmp() {
+    return getClimbCommand(ClimbStates.AMP);
   }
 
   public Command prepareNoteShot() {
@@ -143,9 +151,13 @@ public class StateMachine {
             () -> getShooterState() != ShooterStates.AIM));
   }
 
+  public Command revUp() {
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.FIRE));
+  }
+
   public Command stopShooting() {
     return new ParallelCommandGroup(
-        getIndexerCommand(IndexerStates.OFF), getShooterCommand(ShooterStates.AIM));
+        getIndexerCommand(IndexerStates.OFF), getShooterCommand(ShooterStates.IDLE));
   }
 
   public Command moveAnglerUpManual() {
@@ -160,20 +172,25 @@ public class StateMachine {
     return getShooterCommand(ShooterStates.IDLE);
   }
 
-  public Command climbChain() {
+  public Command climbDown() {
     return new ParallelCommandGroup(
-        getClimbCommand(ClimbStates.MOVE_BOTH), getShooterCommand(ShooterStates.CLIMB));
+        getClimbCommand(ClimbStates.MOVE_BOTH_UP), getShooterCommand(ShooterStates.CLIMB));
   }
 
-  public Command adjustLeftClimb() {
+  public Command climbUp() {
     return new ParallelCommandGroup(
-        getClimbCommand(ClimbStates.MOVE_LEFT), getShooterCommand(ShooterStates.CLIMB));
+        getClimbCommand(ClimbStates.MOVE_BOTH_DOWN), getShooterCommand(ShooterStates.CLIMB));
   }
 
-  public Command adjustRightClimb() {
-    return new ParallelCommandGroup(
-        getClimbCommand(ClimbStates.MOVE_RIGHT), getShooterCommand(ShooterStates.CLIMB));
-  }
+  // public Command adjustLeftClimb() {
+  //   return new ParallelCommandGroup(
+  //       getClimbCommand(ClimbStates.MOVE_LEFT), getShooterCommand(ShooterStates.CLIMB));
+  // }
+
+  // public Command adjustRightClimb() {
+  //   return new ParallelCommandGroup(
+  //       getClimbCommand(ClimbStates.MOVE_RIGHT), getShooterCommand(ShooterStates.CLIMB));
+  // }
 
   public Command invertClimb() {
     return new ParallelCommandGroup(

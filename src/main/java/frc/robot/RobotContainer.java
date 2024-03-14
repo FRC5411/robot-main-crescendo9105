@@ -15,11 +15,12 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Constants.Mode;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotStates.IndexerStates;
 import frc.robot.RobotStates.IntakeStates;
 import frc.robot.RobotStates.ShooterStates;
@@ -87,12 +88,6 @@ public class RobotContainer {
     robotStateMachine =
         new StateMachine(robotShooter, robotIntake, robotIndexer, robotYoshi, robotClimb);
 
-    if (Constants.currentMode == Mode.REAL) {
-      TargetingSystem.updateRobotPose(() -> robotDrive.getFilteredPose());
-    } else {
-      TargetingSystem.updateRobotPose(() -> robotDrive.getOdometryPose());
-    }
-
     configureAutonomous();
 
     // AutoBuilder is configured when Drive is initialized, thus chooser must be instantiated after
@@ -100,6 +95,9 @@ public class RobotContainer {
     autoChooser =
         new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
 
+    configureTriggers();
+
+    // Use assisted control by default
     configureButtonBindings();
   }
 
@@ -199,19 +197,21 @@ public class RobotContainer {
     visionFuser = new VisionFuser(robotDrive, robotVision);
 
     PPHolonomicDriveController.setRotationTargetOverride(this::getRotationTargetOverride);
+
+    TargetingSystem.setSubsystems(robotDrive, robotVision);
   }
 
   /** Register commands with PathPlanner and add default autos to chooser */
   private void configureAutonomous() {
     NamedCommands.registerCommand(
-        "DeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.GROUND));
+        "DeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.GROUND_INTAKE));
     NamedCommands.registerCommand(
         "UnDeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.IDLE));
     NamedCommands.registerCommand(
         "Intake",
         new ParallelCommandGroup(
                 robotStateMachine.getIndexerCommand(IndexerStates.STOW),
-                robotStateMachine.getYoshiCommand(YoshiStates.GROUND),
+                robotStateMachine.getYoshiCommand(YoshiStates.GROUND_INTAKE),
                 robotStateMachine.getIntakeCommand(IntakeStates.INTAKE),
                 robotStateMachine.getShooterCommand(ShooterStates.INTAKE))
             .withTimeout(2.0));
@@ -221,15 +221,31 @@ public class RobotContainer {
             robotStateMachine.getShooterCommand(ShooterStates.AIM),
             new WaitCommand(1.0),
             robotStateMachine.getIndexerCommand(IndexerStates.INDEX),
-            robotStateMachine.getIntakeCommand(IntakeStates.OFF),
-            TargetingSystem.shoot(
-                () -> robotDrive.getPoseEstimate(), () -> robotShooter.getAnglerPosition())));
+            robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
+
+    NamedCommands.registerCommand(
+        "ShootIdle",
+        Commands.waitSeconds(1).andThen(robotStateMachine.getShooterCommand(ShooterStates.IDLE)));
 
     NamedCommands.registerCommand(
         "EnableAutoAlign", Commands.runOnce(() -> robotDrive.setPProtationTargetOverride(true)));
 
     NamedCommands.registerCommand(
         "DiableAutoAlign", Commands.runOnce(() -> robotDrive.setPProtationTargetOverride(false)));
+  }
+
+  private void configureTriggers() {
+    // For LEDS
+    new Trigger(
+            () ->
+                robotShooter.atAllSetpoint()
+                    && robotStateMachine.getShooterState() == ShooterStates.AIM)
+        .onTrue(new InstantCommand(() -> robotLEDs.setReadyColor()))
+        .onFalse(new InstantCommand(() -> robotLEDs.setDefaultColor()));
+
+    new Trigger(() -> robotIndexer.isBeamBroken())
+        .onTrue(new InstantCommand(() -> robotLEDs.setHasPiece()))
+        .onFalse(new InstantCommand(() -> robotLEDs.setDefaultColor()));
   }
 
   /** Configure controllers */
@@ -275,7 +291,7 @@ public class RobotContainer {
       /* Intake a note from the ground into the yoshi */
       pilotController
           .leftTrigger()
-          .whileTrue(robotStateMachine.intakeNote())
+          .whileTrue(robotStateMachine.yoshiIntakeNoteAmp())
           .onFalse(robotStateMachine.stopTakeNote());
 
       pilotController
@@ -300,20 +316,6 @@ public class RobotContainer {
       /* Copilot bindings */
 
       copilotController
-          .leftBumper()
-          .whileTrue(robotStateMachine.adjustLeftClimb())
-          .onFalse(robotStateMachine.stopClimb());
-
-      copilotController
-          .rightBumper()
-          .whileTrue(robotStateMachine.adjustRightClimb())
-          .onFalse(robotStateMachine.stopClimb());
-
-      copilotController
-          .leftTrigger()
-          .onTrue(Commands.runOnce(() -> robotLEDs.setSolidBlue(), robotLEDs));
-
-      copilotController
           .povUp()
           .whileTrue(robotStateMachine.moveAnglerUpManual())
           .onFalse(robotStateMachine.shooterToIdle());
@@ -324,27 +326,34 @@ public class RobotContainer {
           .onFalse(robotStateMachine.shooterToIdle());
 
       copilotController
+          .povLeft()
+          .whileTrue(robotStateMachine.climbUp())
+          .whileFalse(robotStateMachine.stopClimb());
+
+      copilotController
+          .povRight()
+          .whileTrue(robotStateMachine.climbDown())
+          .whileFalse(robotStateMachine.stopClimb());
+
+      copilotController
           .y()
           .whileTrue(robotStateMachine.prepareNoteShot())
           .onFalse(robotStateMachine.stopShooting());
 
       copilotController
-          .a()
-          .whileTrue(
-              robotStateMachine
-                  .shootNote()
-                  .alongWith(
-                      TargetingSystem.shoot(
-                          () -> robotDrive.getFilteredPose(),
-                          () -> robotShooter.getAnglerPosition())))
+          .b()
+          .whileTrue(robotStateMachine.revUp())
+          .whileFalse(robotStateMachine.stopShooting());
+
+      copilotController
+          .leftBumper()
+          .whileTrue(robotStateMachine.shootNote())
           .onFalse(robotStateMachine.stopShooting());
 
       copilotController
           .x()
-          .whileTrue(robotStateMachine.climbChain())
+          .whileTrue(robotStateMachine.climbToAmp())
           .onFalse(robotStateMachine.stopClimb());
-
-      copilotController.b().whileTrue(robotStateMachine.invertClimb());
     }
   }
 

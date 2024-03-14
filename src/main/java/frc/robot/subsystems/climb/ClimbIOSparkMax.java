@@ -57,11 +57,13 @@ public class ClimbIOSparkMax implements ClimbIO {
     rightMotor.enableVoltageCompensation(12.0);
     rightMotor.setIdleMode(IdleMode.kBrake);
 
-    leftMotor.setInverted(false);
+    leftMotor.setInverted(true);
     rightMotor.setInverted(true);
 
     leftEncoder.setPosition(0.0);
     rightEncoder.setPosition(0.0);
+
+    leftMotor.follow(rightMotor);
 
     leftMotor.burnFlash();
     rightMotor.burnFlash();

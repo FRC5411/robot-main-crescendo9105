@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems.vision;
 
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -12,6 +11,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -47,21 +47,12 @@ public class VisionIOPhoton implements VisionIO {
     limelightCam = new PhotonCamera(name);
     PhotonCamera.setVersionCheckEnabled(false);
     this.cameraTransform = cameraTransform;
-    try {
-      poseEstimator =
-          new PhotonPoseEstimator(
-              AprilTagFieldLayout.loadFromResource("/edu/wpi/first/apriltag/2024-crescendo.json"),
-              PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-              limelightCam,
-              cameraTransform);
-    } catch (Exception e) {
-      poseEstimator =
-          new PhotonPoseEstimator(
-              AprilTagFields.k2024Crescendo.loadAprilTagLayoutField(),
-              PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-              limelightCam,
-              cameraTransform);
-    }
+    poseEstimator =
+        new PhotonPoseEstimator(
+            AprilTagFields.k2024Crescendo.loadAprilTagLayoutField(),
+            PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+            limelightCam,
+            cameraTransform);
     poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
     debouncer = new Debouncer(debouncerTime);
@@ -97,6 +88,8 @@ public class VisionIOPhoton implements VisionIO {
               .orElse(new Pose3d())
               .plus(inputs.robotToApriltag)
               .toPose2d();
+
+      getSpeakerTagTransform(result, inputs);
       Matrix<N3, N1> speakerStdDevs = singleTagStdDevs;
       if (inputs.cameraToApriltag.getTranslation().getNorm() > 5 && inputs.hasSpeakerTarget) {
         inputs.speakerXStdDev =
@@ -201,5 +194,27 @@ public class VisionIOPhoton implements VisionIO {
     }
 
     return numTags;
+  }
+
+  private void getSpeakerTagTransform(PhotonPipelineResult result, VisionIOInputs inputs) {
+    boolean hasSpeakerTag = false;
+    for (int i = 0; i < result.getTargets().size(); i++) {
+      if (result.getTargets().get(i).getFiducialId() != 7) {
+        continue;
+      }
+      Transform3d transform3d =
+          result
+              .getTargets()
+              .get(i)
+              .getBestCameraToTarget()
+              .plus(cameraTransform.inverse())
+              .plus(new Transform3d(0.0, 0.0, 0.0, new Rotation3d()));
+      transform3d =
+          transform3d.plus(new Transform3d(0.0, transform3d.getX() / 2, 0.0, new Rotation3d()));
+      inputs.speakerTagTransform =
+          new Transform2d(transform3d.getX(), transform3d.getY(), new Rotation2d());
+      hasSpeakerTag = true;
+    }
+    inputs.hasSpeakerTarget = hasSpeakerTag;
   }
 }

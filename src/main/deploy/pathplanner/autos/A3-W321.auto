@@ -1,6 +1,12 @@
 {
   "version": 1.0,
-  "startingPose": null,
+  "startingPose": {
+    "position": {
+      "x": 0.72,
+      "y": 4.4
+    },
+    "rotation": -60.0
+  },
   "command": {
     "type": "sequential",
     "data": {
@@ -20,7 +26,7 @@
         {
           "type": "path",
           "data": {
-            "pathName": "A2-W3"
+            "pathName": "A3-W3"
           }
         },
         {
@@ -74,6 +80,6 @@
       ]
     }
   },
-  "folder": "CenterAutos",
+  "folder": "BottomAutos",
   "choreoAuto": false
 }
