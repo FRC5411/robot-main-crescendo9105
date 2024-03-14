@@ -125,7 +125,7 @@ public class SwerveCommands {
               Rotation2d currentHeading = robotDrive.getRotation();
 
               // If the error is small, set the goal to be the current heading
-              if (Math.abs(headingGoal.getDegrees() - currentHeading.getDegrees()) > 2.0) {
+              if (Math.abs(headingGoal.getDegrees() - currentHeading.getDegrees()) > 7.5) {
                 // Add 180 since front is the intake, not the shooter
                 thetaFeedback.reset(currentHeading.getDegrees());
               }
