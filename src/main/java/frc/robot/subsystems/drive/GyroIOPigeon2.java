@@ -26,8 +26,8 @@ public class GyroIOPigeon2 implements GyroIO {
     gyro.getConfigurator().apply(new Pigeon2Configuration());
     gyro.getConfigurator().setYaw(0.0);
 
-    yaw.setUpdateFrequency(Module.ODOMETRY_FREQUENCY);
-    yawVelocity.setUpdateFrequency(100.0);
+    yaw.setUpdateFrequency(100.0);
+    yawVelocity.setUpdateFrequency(50.0);
 
     gyro.optimizeBusUtilization();
   }
