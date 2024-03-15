@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems.drive;
 
-import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -146,8 +145,6 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     driveMotor.burnFlash();
     azimuthMotor.burnFlash();
-
-    BaseStatusSignal.setUpdateFrequencyForAll(50.0, angleEncoder.getAbsolutePosition());
   }
 
   @Override
@@ -246,5 +243,10 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     // The number of rotations a motor makes is affected by the gear ratio
     azimuthEncoder.setPosition(currentAbsolutePosition.getRotations() * AZIMUTH_GEAR_RATIO);
+  }
+
+  @Override
+  public void reset() {
+    resetAzimuthEncoder();
   }
 }

@@ -53,7 +53,7 @@ public class Shooter extends SubsystemBase {
     IDLE(() -> 9.0),
     SPEAKER_SHOT(() -> 38.0),
     FULL_SPEED(() -> 42.0),
-    STOP(() -> 0.0);
+    OFF(() -> 0.0);
 
     private DoubleSupplier speedSupplierMPS;
 
@@ -244,19 +244,19 @@ public class Shooter extends SubsystemBase {
     return switch (state) {
       case OFF -> Commands.runOnce(() -> stopMotors(true, true), this);
       case AIM -> setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT);
-      case INTAKE -> setShooterState(AnglerSetpoints.INTAKE, LauncherSetpoints.STOP);
-      case CLIMB -> setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.STOP);
+      case INTAKE -> setShooterState(AnglerSetpoints.INTAKE, LauncherSetpoints.OFF);
+      case CLIMB -> setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.OFF);
       case EJECT -> setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.EJECT);
-      case UP -> setAnglerManual(9.0);
-      case DOWN -> setAnglerManual(-9.0);
+      case UP -> setAnglerManual(5.0);
+      case DOWN -> setAnglerManual(-5.0);
       case FIRE ->
           Commands.runOnce(() -> setLauncherVelocityMPS(LauncherSetpoints.SPEAKER_SHOT), this);
       case IDLE ->
           Commands.runOnce(
               () -> {
                 anglerPosition = currentAngle;
-                setMotors(null, LauncherSetpoints.IDLE);
-                setAnglerVolts(0);
+                setMotors(null, LauncherSetpoints.OFF);
+                setAnglerVolts(0.0);
               },
               this);
       case PODIUM -> setShooterState(AnglerSetpoints.PODIUM, LauncherSetpoints.SPEAKER_SHOT);
@@ -329,6 +329,11 @@ public class Shooter extends SubsystemBase {
   @AutoLogOutput(key = "Shooter/Angler/Position")
   public Rotation2d getAnglerPosition() {
     return currentAngle;
+  }
+
+  @AutoLogOutput(key = "Shooter/Angler/PositionDegrees")
+  public double getAnglerDegrees() {
+    return currentAngle.getDegrees();
   }
 
   public boolean atAllSetpoint() {

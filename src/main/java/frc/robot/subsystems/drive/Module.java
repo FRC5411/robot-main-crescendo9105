@@ -105,4 +105,8 @@ public class Module {
   public SwerveModuleState getModuleState() {
     return new SwerveModuleState(getVelocityMPS(), getAngle());
   }
+
+  public void reset() {
+    moduleIO.reset();
+  }
 }

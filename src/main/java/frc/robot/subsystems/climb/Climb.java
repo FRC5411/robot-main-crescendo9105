@@ -37,7 +37,8 @@ public class Climb extends SubsystemBase {
   }
 
   public static enum ClimPosSetpoints {
-    AMP(Rotation2d.fromDegrees(110.0));
+    AMP(Rotation2d.fromDegrees(110.0)),
+    IDLE(Rotation2d.fromDegrees(5.0));
 
     private Rotation2d m_setpoint;
 
@@ -242,6 +243,7 @@ public class Climb extends SubsystemBase {
 
   public Command mapToCommand(ClimbStates state) {
     return switch (state) {
+      case IDLE -> setPositionSetpoint(ClimPosSetpoints.IDLE.getRotation());
       case OFF -> setManualVolts(ClimbVoltSetpoints.OFF);
       case MOVE_BOTH_UP -> setManualVolts(ClimbVoltSetpoints.BOTH_UP);
       case MOVE_BOTH_DOWN -> setManualVolts(ClimbVoltSetpoints.BOTH_DOWN);

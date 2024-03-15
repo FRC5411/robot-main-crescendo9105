@@ -10,7 +10,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotStates.IntakeStates;
 import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
   public static enum IntakeSetpoint {
@@ -42,7 +41,7 @@ public class Intake extends SubsystemBase {
   @Override
   public void periodic() {
     intakeIO.updateInputs(intakeIOInputs);
-    Logger.processInputs("Intake", intakeIOInputs);
+    // Logger.processInputs("Intake", intakeIOInputs);
 
     if (DriverStation.isDisabled()) {
       setVolts(0.0);

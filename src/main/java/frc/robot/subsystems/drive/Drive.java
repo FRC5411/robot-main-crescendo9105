@@ -111,7 +111,21 @@ public class Drive extends SubsystemBase {
     // Configure PathPlanner
     AutoBuilder.configureHolonomic(
         () -> odometry.getPoseMeters(),
-        this::setPose,
+        (pose) -> {
+          Rotation2d rot;
+          if (DriverStation.getAlliance().isPresent()) {
+            if (DriverStation.getAlliance().get() == Alliance.Blue) {
+              rot = pose.getRotation();
+            } else if (DriverStation.getAlliance().get() == Alliance.Red) {
+              rot = pose.getRotation().minus(Rotation2d.fromDegrees(180));
+            } else {
+              rot = pose.getRotation();
+            }
+          } else {
+            rot = pose.getRotation();
+          }
+          setPoses(new Pose2d(pose.getTranslation(), rot), pose);
+        },
         () -> KINEMATICS.toChassisSpeeds(getModuleStates()),
         this::runSwerve,
         new HolonomicPathFollowerConfig(
@@ -168,8 +182,13 @@ public class Drive extends SubsystemBase {
     }
 
     if (gyroIOInputs.connected) {
-      poseEstimator.update(getRotation(), getModulePositions());
-      odometry.update(getRotation(), getModulePositions());
+      if (DriverStation.getAlliance().get() == Alliance.Blue) {
+        poseEstimator.update(getVisionRotation(), getModulePositions());
+        odometry.update(getRotation(), getModulePositions());
+      } else {
+        poseEstimator.update(getVisionRotation(), getModulePositions());
+        odometry.update(getRotation(), getModulePositions());
+      }
     } else {
       poseEstimator.update(
           Rotation2d.fromDegrees(
@@ -188,7 +207,7 @@ public class Drive extends SubsystemBase {
     currentPose = poseEstimator.getEstimatedPosition();
 
     field.setRobotPose(currentPose);
-    field.getObject("OdometryPose").setPose(odometry.getPoseMeters());
+    // field.getObject("OdometryPose").setPose(odometry.getPoseMeters());
   }
 
   /** Runs the swerve drive based on speeds */
@@ -263,6 +282,9 @@ public class Drive extends SubsystemBase {
   /** Reset the gyro heading */
   public void resetGyro() {
     gyroIO.resetGyro();
+    setPoses(
+        new Pose2d(currentPose.getTranslation(), getRotation()),
+        new Pose2d(odometry.getPoseMeters().getTranslation(), getRotation()));
   }
 
   /** Set the pose of the robot */
@@ -273,6 +295,18 @@ public class Drive extends SubsystemBase {
     } else {
       poseEstimator.resetPosition(getRotation(), getModulePositions(), pose);
       odometry.resetPosition(getRotation(), getModulePositions(), pose);
+    }
+
+    currentPose = poseEstimator.getEstimatedPosition();
+  }
+
+  public void setPoses(Pose2d vision, Pose2d drive) {
+    if (Constants.currentMode == Mode.SIM) {
+      poseEstimator.resetPosition(vision.getRotation(), getModulePositions(), vision);
+      odometry.resetPosition(drive.getRotation(), getModulePositions(), drive);
+    } else {
+      poseEstimator.resetPosition(getRotation(), getModulePositions(), vision);
+      odometry.resetPosition(getRotation(), getModulePositions(), drive);
     }
 
     currentPose = poseEstimator.getEstimatedPosition();
@@ -329,6 +363,20 @@ public class Drive extends SubsystemBase {
   public Rotation2d getRotation() {
     // return currentHeading;
     return gyroIOInputs.yawPosition;
+  }
+
+  @AutoLogOutput(key = "Drive/Odometry/VisionRotation")
+  public Rotation2d getVisionRotation() {
+    Rotation2d pos;
+    if (DriverStation.getAlliance().isPresent()) {
+      if (DriverStation.getAlliance().get() == Alliance.Blue) pos = gyroIOInputs.yawPosition;
+      if (DriverStation.getAlliance().get() == Alliance.Red)
+        pos = gyroIOInputs.yawPosition.plus(Rotation2d.fromDegrees(180));
+      else pos = gyroIOInputs.yawPosition;
+    } else {
+      pos = gyroIOInputs.yawPosition;
+    }
+    return pos;
   }
 
   /** Returns the maximum allowed linear (translational) speed */
@@ -389,5 +437,11 @@ public class Drive extends SubsystemBase {
 
   public Pose2d getFilteredPose() {
     return filteredPose;
+  }
+
+  public void resetModules() {
+    for (int i = 0; i < 4; i++) {
+      modules[i].reset();
+    }
   }
 }

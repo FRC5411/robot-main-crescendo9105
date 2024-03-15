@@ -68,14 +68,14 @@ public class SwerveCommands {
                     linearVelocity.getX() * robotDrive.getMaxLinearSpeedMPS(),
                     linearVelocity.getY() * robotDrive.getMaxLinearSpeedMPS(),
                     theta * robotDrive.getMaxAngularSpeedMPS(),
-                    robotDrive.getPoseEstimate().getRotation()));
+                    robotDrive.getRotation()));
           } else {
             robotDrive.runSwerve(
                 ChassisSpeeds.fromRobotRelativeSpeeds(
                     linearVelocity.getX() * robotDrive.getMaxLinearSpeedMPS(),
                     linearVelocity.getY() * robotDrive.getMaxLinearSpeedMPS(),
                     theta * robotDrive.getMaxAngularSpeedMPS(),
-                    robotDrive.getPoseEstimate().getRotation()));
+                    robotDrive.getRotation()));
           }
         },
         robotDrive);

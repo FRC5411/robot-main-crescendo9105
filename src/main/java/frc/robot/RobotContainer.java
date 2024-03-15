@@ -10,7 +10,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -200,9 +199,6 @@ public class RobotContainer {
     PPHolonomicDriveController.setRotationTargetOverride(this::getRotationTargetOverride);
 
     TargetingSystem.setSubsystems(robotDrive, robotVision);
-
-    robotDrive.setPose(
-        new Pose2d(robotDrive.getPoseEstimate().getTranslation(), Rotation2d.fromDegrees(180)));
   }
 
   /** Register commands with PathPlanner and add default autos to chooser */
@@ -227,14 +223,24 @@ public class RobotContainer {
             robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
 
     NamedCommands.registerCommand(
-        "ShootIdle",
-        Commands.waitSeconds(1.0).andThen(robotStateMachine.getShooterCommand(ShooterStates.IDLE)));
+        "Eject",
+        new SequentialCommandGroup(
+            robotStateMachine.getShooterCommand(ShooterStates.EJECT),
+            new WaitCommand(1.0),
+            robotStateMachine.getIndexerCommand(IndexerStates.INDEX),
+            robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
+
+    NamedCommands.registerCommand(
+        "ShootIdle", robotStateMachine.getShooterCommand(ShooterStates.IDLE));
 
     NamedCommands.registerCommand(
         "EnableAutoAlign", Commands.runOnce(() -> robotDrive.setPProtationTargetOverride(true)));
 
     NamedCommands.registerCommand(
-        "DiableAutoAlign", Commands.runOnce(() -> robotDrive.setPProtationTargetOverride(false)));
+        "DisableAutoAlign", Commands.runOnce(() -> robotDrive.setPProtationTargetOverride(false)));
+
+    NamedCommands.registerCommand(
+        "IntakeOnly", robotStateMachine.getIntakeCommand(IntakeStates.INTAKE));
   }
 
   private void configureTriggers() {
@@ -244,7 +250,12 @@ public class RobotContainer {
                 robotShooter.atAllSetpoint()
                     && robotStateMachine.getShooterState() == ShooterStates.AIM)
         .onTrue(new InstantCommand(() -> robotLEDs.setReadyColor()))
-        .onFalse(new InstantCommand(() -> robotLEDs.setDefaultColor()));
+        .onFalse(
+            new InstantCommand(
+                () -> {
+                  if (robotIndexer.isBeamBroken()) robotLEDs.setHasPiece();
+                  else robotLEDs.setDefaultColor();
+                }));
 
     new Trigger(() -> robotIndexer.isBeamBroken())
         .onTrue(new InstantCommand(() -> robotLEDs.setHasPiece()))
@@ -316,11 +327,11 @@ public class RobotContainer {
                   () -> TargetingSystem.getOptimalLaunchHeading()))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
-      pilotController
-          .b()
-          .onTrue(
-              new InstantCommand(
-                  () -> robotDrive.setPose(new Pose2d(1.34, 5.54, new Rotation2d()))));
+      //   pilotController
+      //       .b()
+      //       .onTrue(
+      //           new InstantCommand(
+      //               () -> robotDrive.setPose(new Pose2d(1.34, 5.54, new Rotation2d()))));
 
       /* Copilot bindings */
 
@@ -398,5 +409,9 @@ public class RobotContainer {
     } else {
       return Optional.empty();
     }
+  }
+
+  public void reset() {
+    robotDrive.resetModules();
   }
 }

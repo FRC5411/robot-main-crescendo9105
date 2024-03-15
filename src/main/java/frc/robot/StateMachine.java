@@ -101,21 +101,22 @@ public class StateMachine {
 
   public Command intakeNote() {
     return new ParallelCommandGroup(
-        getShooterCommand(ShooterStates.INTAKE),
-        getIntakeCommand(IntakeStates.INTAKE),
-        getIndexerCommand(IndexerStates.STOW));
+            getShooterCommand(ShooterStates.INTAKE),
+            getIntakeCommand(IntakeStates.INTAKE),
+            getIndexerCommand(IndexerStates.STOW))
+        .alongWith(getClimbCommand(ClimbStates.IDLE));
   }
 
   public Command podiumShot() {
-    return getShooterCommand(ShooterStates.PODIUM);
+    return getShooterCommand(ShooterStates.PODIUM).alongWith(getClimbCommand(ClimbStates.IDLE));
   }
 
   public Command speakerShot() {
-    return getShooterCommand(ShooterStates.SPEAKER);
+    return getShooterCommand(ShooterStates.SPEAKER).alongWith(getClimbCommand(ClimbStates.IDLE));
   }
 
   public Command feedShot() {
-    return getShooterCommand(ShooterStates.FEEDER);
+    return getShooterCommand(ShooterStates.FEEDER).alongWith(getClimbCommand(ClimbStates.IDLE));
   }
 
   public Command yoshiIntakeNote() {
@@ -131,7 +132,8 @@ public class StateMachine {
         getYoshiCommand(YoshiStates.IDLE),
         getIntakeCommand(IntakeStates.OUTTAKE),
         getIndexerCommand(IndexerStates.OUTDEX),
-        getShooterCommand(ShooterStates.INTAKE));
+        getShooterCommand(ShooterStates.INTAKE),
+        getClimbCommand(ClimbStates.IDLE));
   }
 
   public Command stopTakeNote() {
@@ -139,7 +141,8 @@ public class StateMachine {
         getYoshiCommand(YoshiStates.IDLE),
         getIntakeCommand(IntakeStates.OFF),
         getIndexerCommand(IndexerStates.OFF),
-        getShooterCommand(ShooterStates.OFF));
+        getShooterCommand(ShooterStates.OFF),
+        getClimbCommand(ClimbStates.IDLE));
   }
 
   public Command scoreAmp() {
@@ -151,37 +154,40 @@ public class StateMachine {
   }
 
   public Command prepareNoteShot() {
-    return getShooterCommand(ShooterStates.AIM);
+    return getShooterCommand(ShooterStates.AIM).alongWith(getClimbCommand(ClimbStates.IDLE));
   }
 
   public Command shootNote() {
     return new ParallelCommandGroup(
-        getIndexerCommand(IndexerStates.INDEX),
-        new ConditionalCommand(
-            getShooterCommand(ShooterStates.FIRE),
-            new InstantCommand(),
-            () -> getShooterState() != ShooterStates.AIM));
+            getIndexerCommand(IndexerStates.INDEX),
+            new ConditionalCommand(
+                getShooterCommand(ShooterStates.FIRE),
+                new InstantCommand(),
+                () -> getShooterState() != ShooterStates.AIM))
+        .alongWith(getClimbCommand(ClimbStates.IDLE));
   }
 
   public Command revUp() {
-    return new ParallelCommandGroup(getShooterCommand(ShooterStates.FIRE));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.FIRE))
+        .alongWith(getClimbCommand(ClimbStates.IDLE));
   }
 
   public Command stopShooting() {
     return new ParallelCommandGroup(
-        getIndexerCommand(IndexerStates.OFF), getShooterCommand(ShooterStates.IDLE));
+            getIndexerCommand(IndexerStates.OFF), getShooterCommand(ShooterStates.IDLE))
+        .alongWith(getClimbCommand(ClimbStates.IDLE));
   }
 
   public Command moveAnglerUpManual() {
-    return getShooterCommand(ShooterStates.UP);
+    return getShooterCommand(ShooterStates.UP).alongWith(getClimbCommand(ClimbStates.IDLE));
   }
 
   public Command moveAnglerDownManual() {
-    return getShooterCommand(ShooterStates.DOWN);
+    return getShooterCommand(ShooterStates.DOWN).alongWith(getClimbCommand(ClimbStates.IDLE));
   }
 
   public Command shooterToIdle() {
-    return getShooterCommand(ShooterStates.IDLE);
+    return getShooterCommand(ShooterStates.IDLE).alongWith(getClimbCommand(ClimbStates.IDLE));
   }
 
   public Command climbDown() {

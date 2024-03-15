@@ -86,6 +86,8 @@ public class Robot extends LoggedRobot {
     Logger.start();
 
     robotContainer = new RobotContainer();
+
+    robotContainer.reset();
   }
 
   /** This function is called periodically during all modes. */
@@ -101,6 +103,7 @@ public class Robot extends LoggedRobot {
   /** This function is called once when autonomous is enabled. */
   @Override
   public void autonomousInit() {
+    robotContainer.reset();
     autonomousCommand = robotContainer.getAutonomousCommand();
 
     if (autonomousCommand != null) {
@@ -115,6 +118,7 @@ public class Robot extends LoggedRobot {
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
+    robotContainer.reset();
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
