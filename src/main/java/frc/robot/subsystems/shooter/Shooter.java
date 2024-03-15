@@ -32,7 +32,10 @@ public class Shooter extends SubsystemBase {
     AIM(() -> TargetingSystem.getLaunchMapAngle()),
     CLIMB(() -> Rotation2d.fromDegrees(25.0)),
     INTAKE(() -> Rotation2d.fromDegrees(45.0)),
-    IDLE(() -> anglerPosition);
+    IDLE(() -> anglerPosition),
+    PODIUM(() -> Rotation2d.fromDegrees(34.5)),
+    SPEAKER(() -> Rotation2d.fromDegrees(57)),
+    FEEDER(() -> Rotation2d.fromDegrees(45));
 
     private Supplier<Rotation2d> angleSupplier;
 
@@ -256,6 +259,9 @@ public class Shooter extends SubsystemBase {
                 setAnglerVolts(0);
               },
               this);
+      case PODIUM -> setShooterState(AnglerSetpoints.PODIUM, LauncherSetpoints.SPEAKER_SHOT);
+      case SPEAKER -> setShooterState(AnglerSetpoints.SPEAKER, LauncherSetpoints.SPEAKER_SHOT);
+      case FEEDER -> setShooterState(AnglerSetpoints.FEEDER, LauncherSetpoints.FULL_SPEED);
     };
   }
 

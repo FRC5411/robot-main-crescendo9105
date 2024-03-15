@@ -147,7 +147,7 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveMotor.burnFlash();
     azimuthMotor.burnFlash();
 
-    BaseStatusSignal.setUpdateFrequencyForAll(10.0, angleEncoder.getAbsolutePosition());
+    BaseStatusSignal.setUpdateFrequencyForAll(50.0, angleEncoder.getAbsolutePosition());
   }
 
   @Override

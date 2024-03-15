@@ -42,6 +42,9 @@ public class RobotStates {
     UP,
     DOWN,
     FIRE,
-    IDLE
+    IDLE,
+    PODIUM,
+    SPEAKER,
+    FEEDER
   }
 }

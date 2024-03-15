@@ -10,6 +10,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -199,6 +200,9 @@ public class RobotContainer {
     PPHolonomicDriveController.setRotationTargetOverride(this::getRotationTargetOverride);
 
     TargetingSystem.setSubsystems(robotDrive, robotVision);
+
+    robotDrive.setPose(
+        new Pose2d(robotDrive.getPoseEstimate().getTranslation(), Rotation2d.fromDegrees(180)));
   }
 
   /** Register commands with PathPlanner and add default autos to chooser */
@@ -211,7 +215,6 @@ public class RobotContainer {
         "Intake",
         new ParallelCommandGroup(
                 robotStateMachine.getIndexerCommand(IndexerStates.STOW),
-                robotStateMachine.getYoshiCommand(YoshiStates.GROUND_INTAKE),
                 robotStateMachine.getIntakeCommand(IntakeStates.INTAKE),
                 robotStateMachine.getShooterCommand(ShooterStates.INTAKE))
             .withTimeout(2.0));
@@ -313,6 +316,12 @@ public class RobotContainer {
                   () -> TargetingSystem.getOptimalLaunchHeading()))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
+      pilotController
+          .b()
+          .onTrue(
+              new InstantCommand(
+                  () -> robotDrive.setPose(new Pose2d(1.34, 5.54, new Rotation2d()))));
+
       /* Copilot bindings */
 
       copilotController
@@ -356,12 +365,22 @@ public class RobotContainer {
           .onFalse(robotStateMachine.stopClimb());
 
       copilotController
-          .rightTrigger(0.1)
+          .a()
           .onTrue(
               new InstantCommand(
                   () -> {
                     TargetingSystem.toggleUseVision();
                   }));
+
+      copilotController
+          .rightTrigger()
+          .whileTrue(robotStateMachine.feedShot())
+          .onFalse(robotStateMachine.stopShooting());
+
+      copilotController
+          .leftTrigger()
+          .whileTrue(robotStateMachine.podiumShot())
+          .onFalse(robotStateMachine.stopShooting());
     }
   }
 

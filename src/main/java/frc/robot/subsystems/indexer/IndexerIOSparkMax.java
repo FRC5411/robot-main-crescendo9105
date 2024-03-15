@@ -18,7 +18,7 @@ public class IndexerIOSparkMax implements IndexerIO {
   private CANSparkMax indexerMotor = new CANSparkMax(42, MotorType.kBrushless);
   private RelativeEncoder indexerEncoder = indexerMotor.getEncoder();
 
-  private DigitalInput beamBreakSensor = new DigitalInput(1);
+  private DigitalInput beamBreakSensor = new DigitalInput(7);
 
   private double appliedVolts = 0.0;
 
@@ -32,7 +32,7 @@ public class IndexerIOSparkMax implements IndexerIO {
     indexerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus3, 100);
     indexerMotor.setPeriodicFramePeriod(PeriodicFrame.kStatus4, 100);
 
-    indexerMotor.setSmartCurrentLimit(20);
+    indexerMotor.setSmartCurrentLimit(30);
     indexerMotor.enableVoltageCompensation(12.0);
     indexerMotor.setIdleMode(IdleMode.kBrake);
 

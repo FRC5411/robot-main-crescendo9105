@@ -106,6 +106,18 @@ public class StateMachine {
         getIndexerCommand(IndexerStates.STOW));
   }
 
+  public Command podiumShot() {
+    return getShooterCommand(ShooterStates.PODIUM);
+  }
+
+  public Command speakerShot() {
+    return getShooterCommand(ShooterStates.SPEAKER);
+  }
+
+  public Command feedShot() {
+    return getShooterCommand(ShooterStates.FEEDER);
+  }
+
   public Command yoshiIntakeNote() {
     return intakeNote().alongWith(getYoshiCommand(YoshiStates.GROUND_INTAKE));
   }
@@ -225,5 +237,9 @@ public class StateMachine {
   @AutoLogOutput(key = "StateMachine/ClimbState")
   public ClimbStates getClimbState() {
     return climbState;
+  }
+
+  public Command eject() {
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.EJECT));
   }
 }

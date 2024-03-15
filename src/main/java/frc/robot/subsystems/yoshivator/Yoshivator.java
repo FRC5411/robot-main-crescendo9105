@@ -26,11 +26,11 @@ import org.littletonrobotics.junction.Logger;
 
 public class Yoshivator extends SubsystemBase {
   public static enum YoshivatorSetpoints {
-    IDLE(() -> Rotation2d.fromDegrees(105.0), () -> 0.0),
-    GROUND_AMP(() -> Rotation2d.fromDegrees(-37.0), () -> 12.0),
-    GROUND_INTAKE(() -> Rotation2d.fromDegrees(-35.0), () -> -12.0),
-    AMP_IDLE(() -> Rotation2d.fromDegrees(85), () -> -0.0),
-    AMP_SCORE(() -> Rotation2d.fromDegrees(85), () -> -4.5),
+    IDLE(() -> Rotation2d.fromDegrees(90.0), () -> 0.0),
+    GROUND_AMP(() -> Rotation2d.fromDegrees(-49.0), () -> 12.0),
+    GROUND_INTAKE(() -> Rotation2d.fromDegrees(-46.0), () -> -12.0),
+    AMP_IDLE(() -> Rotation2d.fromDegrees(78.5), () -> 0.0),
+    AMP_SCORE(() -> Rotation2d.fromDegrees(78.5), () -> -5.0),
     HOLD(() -> Yoshivator.pivotPosition, () -> 0.0);
 
     private Supplier<Rotation2d> pivotSetpointRotation;
@@ -195,7 +195,7 @@ public class Yoshivator extends SubsystemBase {
                         .get()
                         .minus(manipulatorIOInputs.pivotPosition)
                         .getDegrees())
-                < 8.0,
+                < 10.0,
         this);
   }
 

@@ -27,7 +27,7 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
   private CANSparkMax flywheelMotor = new CANSparkMax(53, MotorType.kBrushless);
   private RelativeEncoder flywheelEncoder = flywheelMotor.getEncoder();
 
-  private Rotation2d pivotAbsoluteOffset = Rotation2d.fromDegrees(114.0);
+  private Rotation2d pivotAbsoluteOffset = Rotation2d.fromDegrees(114.0 - 80);
 
   private double pivotAppliedVolts = 0.0;
   private double flywheelAppliedVolts = 0.0;
@@ -47,7 +47,7 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
     pivotMotor.enableVoltageCompensation(12.0);
     pivotMotor.setIdleMode(IdleMode.kBrake);
 
-    pivotMotor.setInverted(false);
+    pivotMotor.setInverted(true);
 
     pivotMotor.burnFlash();
 
@@ -75,7 +75,7 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
   public void updateInputs(ManipulatorIOInputs inputs) {
     // TODO Fix pivot position when DutyCycle is added
     inputs.pivotPosition =
-        Rotation2d.fromRotations(pivotAbsoluteEncoder.get()).minus(pivotAbsoluteOffset);
+        Rotation2d.fromRotations(pivotAbsoluteEncoder.get()).minus(pivotAbsoluteOffset).times(-1.0);
     inputs.pivotRelativePosition =
         Rotation2d.fromRotations(pivotRelativeEncoder.getPosition() / PIVOT_GEARING);
     inputs.pivotVelocityRadiansPerSecond =
