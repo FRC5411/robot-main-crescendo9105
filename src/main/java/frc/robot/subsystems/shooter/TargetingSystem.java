@@ -29,7 +29,7 @@ public class TargetingSystem {
   private static final double LAUNCH_MAP_OFFSET_M = 0.93 + 0.46 - 0.23 - 0.17;
   private static final double LUANCH_MAP_OFFSET_DEGREES = 3.0 + 2.0; // 3.0;
 
-  private static final double LUANCH_MAP_OFFSET_DEG_AUTON = -0.25;
+  private static final double LUANCH_MAP_OFFSET_DEG_AUTON = -0.75;
 
   private static Drive robotDrive;
   private static Vision robotVision;
@@ -82,7 +82,11 @@ public class TargetingSystem {
 
     if (!multiTagEnabled) distanceM -= 0.4;
     Rotation2d angle = Rotation2d.fromDegrees(launchMap.get(distanceM));
-    if(DriverStation.isAutonomous()) angle.plus(Rotation2d.fromDegrees(LUANCH_MAP_OFFSET_DEG_AUTON));
+    if (DriverStation.isAutonomous()) {
+      System.out.print("Angle:" + angle.getDegrees());
+      angle = angle.plus(Rotation2d.fromDegrees(LUANCH_MAP_OFFSET_DEG_AUTON));
+      System.out.print("Angle Off:" + angle.getDegrees());
+    }
 
     Logger.recordOutput("Shooter/TargetingSystem/Angle", angle);
 

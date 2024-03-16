@@ -172,6 +172,14 @@ public class StateMachine {
         .alongWith(getClimbCommand(ClimbStates.IDLE));
   }
 
+  public Command ejectSlow() {
+    return getShooterCommand(ShooterStates.EJECT);
+  }
+
+  public Command runIndexer() {
+    return getIndexerCommand(IndexerStates.INDEX);
+  }
+
   public Command stopShooting() {
     return new ParallelCommandGroup(
             getIndexerCommand(IndexerStates.OFF), getShooterCommand(ShooterStates.IDLE))

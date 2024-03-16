@@ -370,18 +370,19 @@ public class RobotContainer {
           .whileTrue(robotStateMachine.shootNote())
           .onFalse(robotStateMachine.stopShooting());
 
+      //   copilotController
+      //       .x()
+      //       .whileTrue(robotStateMachine.ejectSlow())
+      //       .onFalse(robotStateMachine.stopShooting());
+
+      //   copilotController
+      //       .a()
+      //       .whileTrue(robotStateMachine.runIndexer())
+      //       .whileFalse(robotStateMachine.stopShooting());
       copilotController
           .x()
           .whileTrue(robotStateMachine.climbToAmp())
-          .onFalse(robotStateMachine.stopClimb());
-
-      copilotController
-          .a()
-          .onTrue(
-              new InstantCommand(
-                  () -> {
-                    TargetingSystem.toggleUseVision();
-                  }));
+          .whileFalse(robotStateMachine.stopClimb());
 
       copilotController
           .rightTrigger()

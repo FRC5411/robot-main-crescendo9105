@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.72,
-      "y": 4.4
+      "x": 0.73,
+      "y": 4.43
     },
     "rotation": -60.0
   },
@@ -20,19 +20,25 @@
         {
           "type": "named",
           "data": {
-            "name": "DeployYoshi"
+            "name": "IntakeOnly"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "A3-W3"
+            "pathName": "A3-C5"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C5-TS"
           }
         },
         {
@@ -44,30 +50,36 @@
         {
           "type": "named",
           "data": {
-            "name": "UnDeployYoshi"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
             "name": "IntakeOnly"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "W3-C"
+            "pathName": "TS-C4"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "ShootIdle"
+            "name": "Intake"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C4-TS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
           }
         }
       ]
     }
   },
-  "folder": "BottomAutos",
+  "folder": null,
   "choreoAuto": false
 }
