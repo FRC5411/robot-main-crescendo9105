@@ -92,8 +92,19 @@ public class RobotContainer {
 
     // AutoBuilder is configured when Drive is initialized, thus chooser must be instantiated after
     // initializeSubsystems()
-    autoChooser =
-        new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
+    try {
+      autoChooser =
+          new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
+    } catch (Exception e) {
+      autoChooser = new LoggedDashboardChooser<>("Autonomous Selector");
+      autoChooser.addDefaultOption(
+          "ShootNoteException",
+          new SequentialCommandGroup(
+              robotStateMachine.getShooterCommand(ShooterStates.AIM),
+              new WaitCommand(1.0),
+              robotStateMachine.getIndexerCommand(IndexerStates.INDEX),
+              robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
+    }
 
     configureTriggers();
 
@@ -224,11 +235,12 @@ public class RobotContainer {
 
     NamedCommands.registerCommand(
         "Eject",
-        new SequentialCommandGroup(
-            robotStateMachine.getShooterCommand(ShooterStates.EJECT),
-            new WaitCommand(1.0),
-            robotStateMachine.getIndexerCommand(IndexerStates.INDEX),
-            robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
+        new WaitCommand(2)
+            .andThen(
+                new SequentialCommandGroup(
+                    robotStateMachine.getShooterCommand(ShooterStates.EJECT),
+                    robotStateMachine.getIndexerCommand(IndexerStates.INDEX),
+                    robotStateMachine.getIntakeCommand(IntakeStates.INTAKE))));
 
     NamedCommands.registerCommand(
         "ShootIdle", robotStateMachine.getShooterCommand(ShooterStates.IDLE));
@@ -371,28 +383,14 @@ public class RobotContainer {
           .onFalse(robotStateMachine.stopShooting());
 
       //   copilotController
-      //       .x()
-      //       .whileTrue(robotStateMachine.ejectSlow())
+      //       .rightTrigger()
+      //       .whileTrue(robotStateMachine.feedShot())
       //       .onFalse(robotStateMachine.stopShooting());
 
       //   copilotController
-      //       .a()
-      //       .whileTrue(robotStateMachine.runIndexer())
-      //       .whileFalse(robotStateMachine.stopShooting());
-      copilotController
-          .x()
-          .whileTrue(robotStateMachine.climbToAmp())
-          .whileFalse(robotStateMachine.stopClimb());
-
-      copilotController
-          .rightTrigger()
-          .whileTrue(robotStateMachine.feedShot())
-          .onFalse(robotStateMachine.stopShooting());
-
-      copilotController
-          .leftTrigger()
-          .whileTrue(robotStateMachine.podiumShot())
-          .onFalse(robotStateMachine.stopShooting());
+      //       .leftTrigger()
+      //       .whileTrue(robotStateMachine.podiumShot())
+      //       .onFalse(robotStateMachine.stopShooting());
     }
   }
 

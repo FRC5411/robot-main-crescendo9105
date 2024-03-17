@@ -23,13 +23,17 @@ import org.littletonrobotics.junction.Logger;
 
 /** Class that calculates projectile motion given certain parameters */
 public class TargetingSystem {
-  private static Translation3d speakerOpeningBlue = new Translation3d(0.0, 5.53, 2.045);
-  private static Translation3d speakerOpeningRed = new Translation3d(16.26, 5.53, 2.045);
+  private static Translation3d speakerOpeningBlue = new Translation3d(0.0, 5.53, 1.045);
+  private static Translation3d speakerOpeningRed = new Translation3d(16.26, 5.53, 1.045);
 
   private static final double LAUNCH_MAP_OFFSET_M = 0.93 + 0.46 - 0.23 - 0.17;
-  private static final double LUANCH_MAP_OFFSET_DEGREES = 3.0 + 2.0; // 3.0;
+  private static final double LUANCH_MAP_OFFSET_DEGREES_BLUE = 3.0 + 2.0; // 3.0;
 
-  private static final double LUANCH_MAP_OFFSET_DEG_AUTON = -0.75;
+  private static final double LUANCH_MAP_OFFSET_DEG_AUTON_BLUE = -1.0;
+
+  private static final double LUANCH_MAP_OFFSET_DEGREES_RED = 3.0 + 1.0; // 3.0;
+
+  private static final double LUANCH_MAP_OFFSET_DEG_AUTON_RED = -0.0;
 
   private static Drive robotDrive;
   private static Vision robotVision;
@@ -57,21 +61,40 @@ public class TargetingSystem {
 
   /** Initialize the launch map */
   private static void initializeLaunchMap() {
-    launchMap.put(0.0 + LAUNCH_MAP_OFFSET_M, 55.0 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(0.25 + LAUNCH_MAP_OFFSET_M, 52.0 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(0.50 + LAUNCH_MAP_OFFSET_M, 48.0 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(0.75 + LAUNCH_MAP_OFFSET_M, 45.0 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 42.5 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 40.0 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 38.5 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 37.0 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(2.0 + LAUNCH_MAP_OFFSET_M, 35.6 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(2.25 + LAUNCH_MAP_OFFSET_M, 34.5 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(2.5 + LAUNCH_MAP_OFFSET_M, 33.5 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(2.75 + LAUNCH_MAP_OFFSET_M, 32.0 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(3.0 + LAUNCH_MAP_OFFSET_M, 31.1 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(3.25 + LAUNCH_MAP_OFFSET_M, 30.3 + LUANCH_MAP_OFFSET_DEGREES);
-    launchMap.put(3.5 + LAUNCH_MAP_OFFSET_M, 29.9 + LUANCH_MAP_OFFSET_DEGREES);
+    if (DriverStation.getAlliance().isPresent()
+        && DriverStation.getAlliance().get() == Alliance.Blue) {
+      launchMap.put(0.0 + LAUNCH_MAP_OFFSET_M, 55.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+      launchMap.put(0.25 + LAUNCH_MAP_OFFSET_M, 52.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+      launchMap.put(0.50 + LAUNCH_MAP_OFFSET_M, 48.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+      launchMap.put(0.75 + LAUNCH_MAP_OFFSET_M, 45.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+      launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 42.5 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+      launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 40.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+      launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 38.5 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+      launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 37.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+      launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 35.6 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+      launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 34.5 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+      launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 33.5 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+      launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 32.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+      launchMap.put(3.0 + LAUNCH_MAP_OFFSET_M, 31.1 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+      launchMap.put(3.25 + LAUNCH_MAP_OFFSET_M, 30.3 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+      launchMap.put(3.5 + LAUNCH_MAP_OFFSET_M, 29.9 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+    } else {
+      launchMap.put(0.0 + LAUNCH_MAP_OFFSET_M, 55.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
+      launchMap.put(0.25 + LAUNCH_MAP_OFFSET_M, 52.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
+      launchMap.put(0.50 + LAUNCH_MAP_OFFSET_M, 48.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
+      launchMap.put(0.75 + LAUNCH_MAP_OFFSET_M, 45.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
+      launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 42.5 + LUANCH_MAP_OFFSET_DEGREES_RED);
+      launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 40.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
+      launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 38.5 + LUANCH_MAP_OFFSET_DEGREES_RED);
+      launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 37.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
+      launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 35.6 + LUANCH_MAP_OFFSET_DEGREES_RED);
+      launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 34.5 + LUANCH_MAP_OFFSET_DEGREES_RED);
+      launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 33.5 + LUANCH_MAP_OFFSET_DEGREES_RED);
+      launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 32.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
+      launchMap.put(3.0 + LAUNCH_MAP_OFFSET_M, 31.1 + LUANCH_MAP_OFFSET_DEGREES_RED);
+      launchMap.put(3.25 + LAUNCH_MAP_OFFSET_M, 30.3 + LUANCH_MAP_OFFSET_DEGREES_RED);
+      launchMap.put(3.5 + LAUNCH_MAP_OFFSET_M, 29.9 + LUANCH_MAP_OFFSET_DEGREES_RED);
+    }
   }
 
   /** Returns the optimal angle given the robot's current pose */
@@ -83,9 +106,16 @@ public class TargetingSystem {
     if (!multiTagEnabled) distanceM -= 0.4;
     Rotation2d angle = Rotation2d.fromDegrees(launchMap.get(distanceM));
     if (DriverStation.isAutonomous()) {
-      System.out.print("Angle:" + angle.getDegrees());
-      angle = angle.plus(Rotation2d.fromDegrees(LUANCH_MAP_OFFSET_DEG_AUTON));
-      System.out.print("Angle Off:" + angle.getDegrees());
+      if (DriverStation.getAlliance().isPresent()
+          && DriverStation.getAlliance().get() == Alliance.Blue) {
+        System.out.print("Angle:" + angle.getDegrees());
+        angle = angle.plus(Rotation2d.fromDegrees(LUANCH_MAP_OFFSET_DEG_AUTON_BLUE));
+        System.out.print("Angle Off:" + angle.getDegrees());
+      } else {
+        System.out.print("Angle:" + angle.getDegrees());
+        angle = angle.plus(Rotation2d.fromDegrees(LUANCH_MAP_OFFSET_DEG_AUTON_RED));
+        System.out.print("Angle Off:" + angle.getDegrees());
+      }
     }
 
     Logger.recordOutput("Shooter/TargetingSystem/Angle", angle);

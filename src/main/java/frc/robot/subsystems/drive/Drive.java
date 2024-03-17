@@ -82,8 +82,8 @@ public class Drive extends SubsystemBase {
 
   // private PIDConstants translationPathplannerConstants = new PIDConstants(2.02, 0.0, 0.0);
   // private PIDConstants rotationPathplannerConstants = new PIDConstants(0.66, 0.0, 0.0);
-  private PIDConstants translationPathplannerConstants = new PIDConstants(1.0, 0.0, 0.0);
-  private PIDConstants rotationPathplannerConstants = new PIDConstants(1.0, 0.0, 0.0);
+  private PIDConstants translationPathplannerConstants = new PIDConstants(1.25, 0.0, 0.0);
+  private PIDConstants rotationPathplannerConstants = new PIDConstants(1.25, 0.0, 0.0);
 
   private Pose2d filteredPose = new Pose2d();
 
