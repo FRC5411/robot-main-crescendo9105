@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotStates.IndexerStates;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class Indexer extends SubsystemBase {
   public static enum IndexerSetpoint {
@@ -43,7 +44,7 @@ public class Indexer extends SubsystemBase {
   @Override
   public void periodic() {
     indexerIO.updateInputs(indexerIOInputs);
-    // Logger.processInputs("Indexer", indexerIOInputs);
+    Logger.processInputs("Indexer", indexerIOInputs);
 
     if (DriverStation.isDisabled()) {
       setCurrentSetpoint(IndexerSetpoint.OFF);

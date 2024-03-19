@@ -20,6 +20,6 @@ public interface GyroIO {
   /** Update the inputs from the sensors */
   public default void updateInputs(GyroIOInputs inputs) {}
 
-  /** Reset the gyro */
+  /** Reset the gyro yaw */
   public default void resetGyro() {}
 }
