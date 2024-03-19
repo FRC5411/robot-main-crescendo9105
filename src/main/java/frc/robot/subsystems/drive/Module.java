@@ -11,7 +11,6 @@ import org.littletonrobotics.junction.Logger;
 
 /** Swerve module wrapper */
 public class Module {
-  public static final double ODOMETRY_FREQUENCY = 250.0;
   private final int MODULE_ID;
 
   private ModuleIO moduleIO;
@@ -57,8 +56,6 @@ public class Module {
 
     return optimizedState;
   }
-
-  // TODO Add characterization methods
 
   /** Disables all motor outputs */
   public void stop() {
