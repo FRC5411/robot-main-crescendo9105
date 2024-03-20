@@ -76,6 +76,9 @@ public class Shooter extends SubsystemBase {
   private LauncherIO launcherIO;
   private LauncherIOInputsAutoLogged launcherIOInputs = new LauncherIOInputsAutoLogged();
 
+  private final Rotation2d minAngle = Rotation2d.fromDegrees(26.5);
+  private final Rotation2d maxAngle = Rotation2d.fromDegrees(57.0);
+
   // Default to real values
   private ProfiledPIDController anglerFeedback =
       new ProfiledPIDController(0.49, 2.0, 0.018, new TrapezoidProfile.Constraints(1000.0, 1000.0));
@@ -200,11 +203,16 @@ public class Shooter extends SubsystemBase {
     currentAngle = anglerIOInputs.anglerRelativePosition.plus(angleOffset);
 
     if (anglerSetpoint != null) {
+      Rotation2d angleSetpoint =
+          Rotation2d.fromDegrees(
+              MathUtil.clamp(
+                  anglerSetpoint.getAngle().get().getDegrees(),
+                  minAngle.getDegrees(),
+                  maxAngle.getDegrees()));
+
       double anglerFeedbackOutput =
-          anglerFeedback.calculate(
-              currentAngle.getDegrees(), anglerSetpoint.getAngle().get().getDegrees());
-      double anglerFeedforwardOutput =
-          anglerFeedforward.calculate(currentAngle, anglerSetpoint.getAngle().get());
+          anglerFeedback.calculate(currentAngle.getDegrees(), angleSetpoint.getDegrees());
+      double anglerFeedforwardOutput = anglerFeedforward.calculate(currentAngle, angleSetpoint);
 
       double anglerCombinedOutput = (anglerFeedbackOutput + anglerFeedforwardOutput);
 
