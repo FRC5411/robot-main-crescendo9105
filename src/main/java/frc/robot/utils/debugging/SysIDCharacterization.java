@@ -65,7 +65,6 @@ public class SysIDCharacterization {
                 (voltage) -> voltageSetter.accept(voltage.magnitude()), null, subsystem));
 
     return new SequentialCommandGroup(
-        startCTRELoggingRoutine(),
         Commands.waitSeconds(5),
         sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward),
         Commands.waitSeconds(5),
@@ -74,8 +73,7 @@ public class SysIDCharacterization {
         sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward),
         Commands.waitSeconds(5),
         sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse),
-        Commands.waitSeconds(5),
-        stopCTRELoggingRoutine());
+        Commands.waitSeconds(5));
     // For rev logs extract using wpilib's data log tool:
     // https://docs.wpilib.org/en/stable/docs/software/telemetry/datalog-download.html
     // For talon logs extract using phoenix tuner x:
@@ -86,5 +84,4 @@ public class SysIDCharacterization {
   private static void sysIDREVStateLogger(String state) {
     Logger.recordOutput("Shooter/sysIDTestState", state);
   }
-
 }
