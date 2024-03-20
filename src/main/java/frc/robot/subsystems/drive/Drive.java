@@ -80,10 +80,6 @@ public class Drive extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(KINEMATICS, getRotation(), getModulePositions(), currentPose);
 
-  private boolean PProtationTargetOverride = false;
-
-  // private PIDConstants translationPathplannerConstants = new PIDConstants(2.02, 0.0, 0.0);
-  // private PIDConstants rotationPathplannerConstants = new PIDConstants(0.66, 0.0, 0.0);
   private PIDConstants translationPathplannerConstants = new PIDConstants(1.25, 0.0, 0.0);
   private PIDConstants rotationPathplannerConstants = new PIDConstants(1.25, 0.0, 0.0);
 
@@ -113,21 +109,7 @@ public class Drive extends SubsystemBase {
     // Configure PathPlanner
     AutoBuilder.configureHolonomic(
         () -> odometry.getPoseMeters(),
-        (pose) -> {
-          Rotation2d rot;
-          if (DriverStation.getAlliance().isPresent()) {
-            if (DriverStation.getAlliance().get() == Alliance.Blue) {
-              rot = pose.getRotation();
-            } else if (DriverStation.getAlliance().get() == Alliance.Red) {
-              rot = pose.getRotation().minus(Rotation2d.fromDegrees(180));
-            } else {
-              rot = pose.getRotation();
-            }
-          } else {
-            rot = pose.getRotation();
-          }
-          setPoses(new Pose2d(pose.getTranslation(), rot), pose);
-        },
+        this::setPose,
         () -> KINEMATICS.toChassisSpeeds(getModuleStates()),
         this::runSwerve,
         new HolonomicPathFollowerConfig(
@@ -184,32 +166,32 @@ public class Drive extends SubsystemBase {
     }
 
     if (gyroIOInputs.connected) {
-      if (DriverStation.getAlliance().get() == Alliance.Blue) {
-        poseEstimator.update(getVisionRotation(), getModulePositions());
-        odometry.update(getRotation(), getModulePositions());
-      } else {
-        poseEstimator.update(getVisionRotation(), getModulePositions());
-        odometry.update(getRotation(), getModulePositions());
-      }
+      poseEstimator.update(getRotation(), getModulePositions());
+      odometry.update(getRotation(), getModulePositions());
     } else {
       poseEstimator.update(
           Rotation2d.fromDegrees(
               (poseEstimator.getEstimatedPosition().getRotation().getDegrees()
-                      + (180 / Math.PI) * getChassisSpeeds().omegaRadiansPerSecond * 0.02)
+                      + Math.toRadians(getChassisSpeeds().omegaRadiansPerSecond) * 0.02)
                   % 360.0),
           getModulePositions());
       odometry.update(
           Rotation2d.fromDegrees(
               (odometry.getPoseMeters().getRotation().getDegrees()
-                      + (180 / Math.PI) * getChassisSpeeds().omegaRadiansPerSecond * 0.02)
+                      + Math.toRadians(getChassisSpeeds().omegaRadiansPerSecond) * 0.02)
                   % 360.0),
           getModulePositions());
     }
 
     currentPose = poseEstimator.getEstimatedPosition();
 
-    field.setRobotPose(currentPose);
-    // field.getObject("OdometryPose").setPose(odometry.getPoseMeters());
+    filteredPose =
+        new Pose2d(
+            xFilter.calculate(getPoseEstimate().getX()),
+            yFilter.calculate(getPoseEstimate().getY()),
+            getPoseEstimate().getRotation());
+
+    field.setRobotPose(getFilteredPose());
   }
 
   /** Runs the swerve drive based on speeds */
@@ -222,7 +204,6 @@ public class Drive extends SubsystemBase {
 
     SwerveModuleState[] optimizedSetpointStates = new SwerveModuleState[4];
 
-    // TODO Find out what the areModulesOrienting variable does lol
     if (!areModulesOrienting) {
       currentSetpoint =
           setpointGenerator.generateSetpoint(MODULE_LIMITS, currentSetpoint, discreteSpeeds, 0.02);
@@ -251,8 +232,6 @@ public class Drive extends SubsystemBase {
                 setpointStates[i]); // setDesiredState returns the optimized state
       }
     }
-
-    updateFilteredPose();
 
     Logger.recordOutput("Drive/Swerve/Setpoints", setpointStates);
     Logger.recordOutput("Drive/Swerve/SetpointsOptimized", optimizedSetpointStates);
@@ -284,9 +263,13 @@ public class Drive extends SubsystemBase {
   /** Reset the gyro heading */
   public void resetGyro() {
     gyroIO.resetGyro();
-    setPoses(
-        new Pose2d(currentPose.getTranslation(), getRotation()),
-        new Pose2d(odometry.getPoseMeters().getTranslation(), getRotation()));
+  }
+
+  /** Reset the swerve modules */
+  public void resetModules() {
+    for (int i = 0; i < 4; i++) {
+      modules[i].reset();
+    }
   }
 
   /** Set the pose of the robot */
@@ -302,18 +285,6 @@ public class Drive extends SubsystemBase {
     currentPose = poseEstimator.getEstimatedPosition();
   }
 
-  public void setPoses(Pose2d vision, Pose2d drive) {
-    if (Constants.currentMode == Mode.SIM) {
-      poseEstimator.resetPosition(vision.getRotation(), getModulePositions(), vision);
-      odometry.resetPosition(drive.getRotation(), getModulePositions(), drive);
-    } else {
-      poseEstimator.resetPosition(getRotation(), getModulePositions(), vision);
-      odometry.resetPosition(getRotation(), getModulePositions(), drive);
-    }
-
-    currentPose = poseEstimator.getEstimatedPosition();
-  }
-
   /** Add a vision measurement for the poseEstimator */
   public void addVisionMeasurement(
       Pose2d visionMeasurement, double timestampS, Matrix<N3, N1> stdDevs) {
@@ -322,7 +293,8 @@ public class Drive extends SubsystemBase {
 
   /** Returns PathFinder constraints */
   public PathConstraints getPathConstraints() {
-    return new PathConstraints(3.0, 3.0, Units.degreesToRadians(540), Units.degreesToRadians(720));
+    return new PathConstraints(
+        3.0, 3.0, Units.degreesToRadians(540.0), Units.degreesToRadians(720.0));
   }
 
   /** Returns the drive's measured state (module azimuth angles and drive velocities) */
@@ -360,25 +332,16 @@ public class Drive extends SubsystemBase {
     return odometry.getPoseMeters();
   }
 
+  /** Returns the filter pose of the robot */
+  @AutoLogOutput(key = "Drive/Odometry/FilteredPose")
+  public Pose2d getFilteredPose() {
+    return filteredPose;
+  }
+
   /** Returns the rotation of the robot */
   @AutoLogOutput(key = "Drive/Odometry/Rotation")
   public Rotation2d getRotation() {
-    // return currentHeading;
     return gyroIOInputs.yawPosition;
-  }
-
-  @AutoLogOutput(key = "Drive/Odometry/VisionRotation")
-  public Rotation2d getVisionRotation() {
-    Rotation2d pos;
-    if (DriverStation.getAlliance().isPresent()) {
-      if (DriverStation.getAlliance().get() == Alliance.Blue) pos = gyroIOInputs.yawPosition;
-      if (DriverStation.getAlliance().get() == Alliance.Red)
-        pos = gyroIOInputs.yawPosition.plus(Rotation2d.fromDegrees(180));
-      else pos = gyroIOInputs.yawPosition;
-    } else {
-      pos = gyroIOInputs.yawPosition;
-    }
-    return pos;
   }
 
   /** Returns the maximum allowed linear (translational) speed */

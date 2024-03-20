@@ -47,5 +47,6 @@ public interface ModuleIO {
   /** Brake the azimuth motor */
   public default void setAzimuthBrake(boolean isBrake) {}
 
+  /** Reset the azimuth encoder */
   public default void reset() {}
 }

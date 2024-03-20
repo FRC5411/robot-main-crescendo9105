@@ -15,14 +15,14 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
+import frc.robot.Constants;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 
 /** Class to interact with the physical swerve module structure, SDS L2+ */
 public class ModuleIOSparkMax implements ModuleIO {
-  // TODO Update these for our latest swerve modules
   private final double DRIVE_GEAR_RATIO = 6.75 / 1.0;
   private final double AZIMUTH_GEAR_RATIO = 150.0 / 7.0;
-  private final double CIRCUMFRENCE_METERS = 2 * Math.PI * (5.08 / 100);
+  private final double CIRCUMFRENCE_METERS = 2.0 * Math.PI * (5.08 / 100);
 
   private CANSparkMax driveMotor;
   private CANSparkMax azimuthMotor;
@@ -126,12 +126,12 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveMotor.setCANTimeout(0);
     azimuthMotor.setCANTimeout(0);
 
-    driveFeedback.setP(0.00005);
+    driveFeedback.setP(0.0001);
     driveFeedback.setI(0.0);
     driveFeedback.setD(0.0);
     driveFeedback.setFeedbackDevice(driveEncoder);
 
-    azimuthFeedback.setP(0.155);
+    azimuthFeedback.setP(0.175);
     azimuthFeedback.setI(0.0);
     azimuthFeedback.setD(0.0);
     azimuthFeedback.setFeedbackDevice(azimuthEncoder);
@@ -168,7 +168,9 @@ public class ModuleIOSparkMax implements ModuleIO {
     inputs.azimuthCurrentAmps = new double[] {azimuthMotor.getOutputCurrent()};
     inputs.azimuthTemperatureCelsius = new double[] {azimuthMotor.getMotorTemperature()};
 
-    updateTunableNumbers();
+    if (Constants.tuningMode) {
+      updateTunableNumbers();
+    }
   }
 
   @Override
