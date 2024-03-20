@@ -29,22 +29,24 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
+import frc.robot.utils.debugging.SysIDCharacterization;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /** Swerve drive */
 public class Drive extends SubsystemBase {
-  private final double TRACK_WIDTH_X_M = Units.inchesToMeters(29.5);
-  private final double TRACK_WIDTH_Y_M = Units.inchesToMeters(29.5);
-  private final double DRIVEBASE_RADIUS_M =
+  public static final double TRACK_WIDTH_X_M = Units.inchesToMeters(29.5);
+  public static final double TRACK_WIDTH_Y_M = Units.inchesToMeters(29.5);
+  public static final double DRIVEBASE_RADIUS_M =
       Math.hypot(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0);
-  private final double MAX_LINEAR_SPEED_MPS = Units.feetToMeters(14.0);
-  private final double MAX_ANGULAR_SPEED_MPS = MAX_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS_M;
+  public static final double MAX_LINEAR_SPEED_MPS = Units.feetToMeters(14.0);
+  public static final double MAX_ANGULAR_SPEED_MPS = MAX_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS_M;
   // Second argument is the max accel
-  private final ModuleLimits MODULE_LIMITS =
+  public static final ModuleLimits MODULE_LIMITS =
       new ModuleLimits(MAX_LINEAR_SPEED_MPS, MAX_LINEAR_SPEED_MPS * 5, MAX_ANGULAR_SPEED_MPS);
 
   private final Translation2d[] MODULE_TRANSLATIONS = getModuleTranslations();
@@ -375,5 +377,48 @@ public class Drive extends SubsystemBase {
   /** Returns the kinematics of the drivetrain */
   public SwerveDriveKinematics getKinematics() {
     return new SwerveDriveKinematics(getModuleTranslations());
+  }
+
+  @AutoLogOutput(key = "Drive/PP/RotationTargetOverride")
+  public boolean getPPRotationTargetOverride() {
+    return PProtationTargetOverride;
+  }
+
+  public void setPProtationTargetOverride(boolean override) {
+    PProtationTargetOverride = override;
+  }
+
+  /** Returns the filtered pose */
+  @AutoLogOutput(key = "Drive/Odometry/FilteredPose")
+  public Pose2d updateFilteredPose() {
+    filteredPose =
+        new Pose2d(
+            xFilter.calculate(getPoseEstimate().getX()),
+            yFilter.calculate(getPoseEstimate().getY()),
+            getPoseEstimate().getRotation());
+
+    return filteredPose;
+  }
+
+  public Pose2d getFilteredPose() {
+    return filteredPose;
+  }
+
+  public void resetModules() {
+    for (int i = 0; i < 4; i++) {
+      modules[i].reset();
+    }
+  }
+
+  public Command runDriveVoltageSysIDTests() {
+    return SysIDCharacterization.runDriveSysIDTests(
+        (voltage) -> {
+          for (var module : modules) {
+            module.angleSetpoint = new Rotation2d(0.0);
+            module.velocitySetpoint = null;
+            module.setDriveVoltage(voltage);
+          }
+        },
+        this);
   }
 }

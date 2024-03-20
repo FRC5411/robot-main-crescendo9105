@@ -14,14 +14,6 @@ public class RobotStates {
     STOW
   }
 
-  public static enum YoshiStates {
-    OFF,
-    IDLE,
-    GROUND_AMP,
-    GROUND_INTAKE,
-    AMP
-  }
-
   public static enum ClimbStates {
     OFF,
     IDLE,

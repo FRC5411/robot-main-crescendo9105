@@ -63,7 +63,7 @@ public class ClimbIOSparkMax implements ClimbIO {
     leftEncoder.setPosition(0.0);
     rightEncoder.setPosition(0.0);
 
-    leftMotor.follow(rightMotor);
+    // leftMotor.follow(rightMotor);
 
     leftMotor.burnFlash();
     rightMotor.burnFlash();
@@ -72,10 +72,8 @@ public class ClimbIOSparkMax implements ClimbIO {
   @Override
   public void updateInputs(ClimbIOInputs inputs) {
     // TODO Add conversion factors as needed
-    // inputs.leftPosition =
-    //
-    // Rotation2d.fromRotations(leftAbsoluteEncoder.getAbsolutePosition()).plus(leftEncoderOffset);
-    inputs.leftPosition = Rotation2d.fromDegrees(0.0);
+    inputs.leftPosition =
+        Rotation2d.fromRotations(leftAbsoluteEncoder.getAbsolutePosition()).plus(leftEncoderOffset);
     inputs.leftVelocityRPS =
         Units.rotationsPerMinuteToRadiansPerSecond(leftEncoder.getVelocity() / GEARING);
     inputs.leftAppliedVolts = leftAppliedVolts;
@@ -86,7 +84,6 @@ public class ClimbIOSparkMax implements ClimbIO {
         Rotation2d.fromDegrees(360.0)
             .minus(Rotation2d.fromRotations(rightAbsoluteEncoder.getAbsolutePosition()))
             .plus(rightEncoderOffset);
-    // inputs.rightPosition = Rotation2d.fromDegrees(0.0);
     inputs.rightVelocityRPS =
         Units.rotationsPerMinuteToRadiansPerSecond(rightEncoder.getVelocity() / GEARING);
     inputs.rightAppliedVolts = rightAppliedVolts;

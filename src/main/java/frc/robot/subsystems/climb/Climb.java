@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.climb;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -87,7 +88,8 @@ public class Climb extends SubsystemBase {
   private ClimbVisualizer leftVisualizer = new ClimbVisualizer(ClimbSide.LEFT);
   private ClimbVisualizer rightVisualizer = new ClimbVisualizer(ClimbSide.RIGHT);
 
-  private Double volts = null;
+  private Rotation2d minAngle = Rotation2d.fromDegrees(-30.0);
+  private Rotation2d maxAngle = Rotation2d.fromDegrees(150.0);
 
   /** Creates a new Climb. */
   public Climb(ClimbIO io) {
@@ -174,45 +176,49 @@ public class Climb extends SubsystemBase {
     }
 
     if (currentSetpoint != null) {
-      // climbIO.setLeftVolts(currentSetpoint.leftVolts);
+      climbIO.setLeftVolts(currentSetpoint.leftVolts);
       climbIO.setRightVolts(currentSetpoint.rightVolts);
     }
 
-    // if (leftAngleSetpoint != null) {
-    //   double leftFeedbackOutput =
-    //       leftClimbFeedback.calculate(
-    //           climbIOInputs.leftPosition.getDegrees(), leftAngleSetpoint.getDegrees());
+    if (leftAngleSetpoint != null) {
+      double leftFeedbackOutput =
+          leftClimbFeedback.calculate(
+              climbIOInputs.leftPosition.getDegrees(),
+              MathUtil.clamp(
+                  leftAngleSetpoint.getDegrees(), minAngle.getDegrees(), maxAngle.getDegrees()));
 
-    //   Logger.recordOutput("Climb/LeftArm/Feedback/Output", leftFeedbackOutput);
+      Logger.recordOutput("Climb/LeftArm/Feedback/Output", leftFeedbackOutput);
 
-    //   climbIO.setLeftVolts(leftFeedbackOutput);
-    // }
+      climbIO.setLeftVolts(leftFeedbackOutput);
+    }
 
     if (rightAngleSetpoint != null) {
       double rightFeedbackOutput =
           rightClimbFeedback.calculate(
-              climbIOInputs.rightPosition.getDegrees(), rightAngleSetpoint.getDegrees());
+              climbIOInputs.rightPosition.getDegrees(),
+              MathUtil.clamp(
+                  rightAngleSetpoint.getDegrees(), minAngle.getDegrees(), maxAngle.getDegrees()));
 
       Logger.recordOutput("Climb/RightArm/Feedback/Output", rightFeedbackOutput);
 
       climbIO.setRightVolts(rightFeedbackOutput);
     }
 
-    // if (currentSetpoint != null) {
-    //   if (climbIOInputs.leftPosition.getDegrees() > 160.0 && currentSetpoint.leftVolts > 0.0) {
-    //     climbIO.setLeftVolts(0.0);
-    //   } else if (climbIOInputs.leftPosition.getDegrees() < -30.0
-    //       && currentSetpoint.leftVolts < 0.0) {
-    //     climbIO.setLeftVolts(0.0);
-    //   }
+    if (currentSetpoint != null) {
+      if (climbIOInputs.leftPosition.getDegrees() > 160.0 && currentSetpoint.leftVolts > 0.0) {
+        climbIO.setLeftVolts(0.0);
+      } else if (climbIOInputs.leftPosition.getDegrees() < -30.0
+          && currentSetpoint.leftVolts < 0.0) {
+        climbIO.setLeftVolts(0.0);
+      }
 
-    //   if (climbIOInputs.rightPosition.getDegrees() > 160.0 && currentSetpoint.rightVolts > 0.0) {
-    //     climbIO.setRightVolts(0.0);
-    //   } else if (climbIOInputs.rightPosition.getDegrees() < -30.0
-    //       && currentSetpoint.rightVolts < 0.0) {
-    //     climbIO.setRightVolts(0.0);
-    //   }
-    // }
+      if (climbIOInputs.rightPosition.getDegrees() > 160.0 && currentSetpoint.rightVolts > 0.0) {
+        climbIO.setRightVolts(0.0);
+      } else if (climbIOInputs.rightPosition.getDegrees() < -30.0
+          && currentSetpoint.rightVolts < 0.0) {
+        climbIO.setRightVolts(0.0);
+      }
+    }
 
     leftVisualizer.updateClimbAngle(climbIOInputs.leftPosition);
     rightVisualizer.updateClimbAngle(climbIOInputs.rightPosition);

@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import java.util.function.Consumer;
+import org.littletonrobotics.junction.Logger;
 
 public class SysIDCharacterization {
   public static Command runShooterSysIDTests(Consumer<Double> voltageSetter, Subsystem subsystem) {
@@ -17,21 +18,21 @@ public class SysIDCharacterization {
                 Units.Volts.of(1).per(Units.Seconds.of(1)),
                 Units.Volts.of(4),
                 Units.Seconds.of(15),
-                (state) -> sysIDStateLogger(state.toString())),
+                (state) -> sysIDCTREStateLogger(state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> voltageSetter.accept(voltage.magnitude()), null, subsystem));
 
     return new SequentialCommandGroup(
         startCTRELoggingRoutine(),
-        Commands.waitSeconds(5),
+        Commands.waitSeconds(5.0),
         sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward),
-        Commands.waitSeconds(5),
+        Commands.waitSeconds(5.0),
         sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse),
-        Commands.waitSeconds(5),
+        Commands.waitSeconds(5.0),
         sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward),
-        Commands.waitSeconds(5),
+        Commands.waitSeconds(5.0),
         sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse),
-        Commands.waitSeconds(5),
+        Commands.waitSeconds(5.0),
         stopCTRELoggingRoutine());
     // For rev logs extract using wpilib's data log tool:
     // https://docs.wpilib.org/en/stable/docs/software/telemetry/datalog-download.html
@@ -43,11 +44,42 @@ public class SysIDCharacterization {
     return Commands.runOnce(() -> SignalLogger.start());
   }
 
-  private static void sysIDStateLogger(String state) {
+  private static void sysIDCTREStateLogger(String state) {
     SignalLogger.writeString("Shooter/sysIDTestState", state);
   }
 
   private static Command stopCTRELoggingRoutine() {
     return Commands.runOnce(() -> SignalLogger.stop());
+  }
+
+  public static Command runDriveSysIDTests(Consumer<Double> voltageSetter, Subsystem subsystem) {
+    SysIdRoutine sysIdRoutine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(
+                Units.Volts.of(1).per(Units.Seconds.of(1)),
+                Units.Volts.of(6),
+                Units.Seconds.of(10),
+                (state) -> sysIDREVStateLogger(state.toString())),
+            new SysIdRoutine.Mechanism(
+                (voltage) -> voltageSetter.accept(voltage.magnitude()), null, subsystem));
+
+    return new SequentialCommandGroup(
+        Commands.waitSeconds(3.0),
+        sysIdRoutine.quasistatic(SysIdRoutine.Direction.kForward),
+        Commands.waitSeconds(3.0),
+        sysIdRoutine.quasistatic(SysIdRoutine.Direction.kReverse),
+        Commands.waitSeconds(3.0),
+        sysIdRoutine.dynamic(SysIdRoutine.Direction.kForward),
+        Commands.waitSeconds(3.0),
+        sysIdRoutine.dynamic(SysIdRoutine.Direction.kReverse),
+        Commands.waitSeconds(3.0));
+    // For rev logs extract using wpilib's data log tool:
+    // https://docs.wpilib.org/en/stable/docs/software/telemetry/datalog-download.html
+    // For talon logs extract using phoenix tuner x:
+    // https://pro.docs.ctr-electronics.com/en/latest/docs/tuner/tools/log-extractor.html
+  }
+
+  private static void sysIDREVStateLogger(String state) {
+    Logger.recordOutput("Shooter/sysIDTestState", state);
   }
 }

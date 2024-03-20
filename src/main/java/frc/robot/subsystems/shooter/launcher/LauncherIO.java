@@ -38,8 +38,12 @@ public interface LauncherIO {
   public default void setBottomVolts(double volts) {}
 
   /** Set the top motor velocity setpoint for closed-loop control */
-  public default void setTopVelocity(double velocityMPS) {}
+  public default void setTopVelocity(double velocityMPS, double accelerationMPS) {}
 
   /** Set the bottom motor velocity setpoint for closed-loop control */
-  public default void setBottomVelocity(double velocityMPS) {}
+  public default void setBottomVelocity(double velocityMPS, double accelerationMPS) {}
+
+  public default void resetTopProfile() {}
+
+  public default void resetBottomProfile() {}
 }
