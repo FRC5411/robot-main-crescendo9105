@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotStates.IndexerStates;
 import frc.robot.RobotStates.IntakeStates;
 import frc.robot.RobotStates.ShooterStates;
-import frc.robot.RobotStates.YoshiStates;
 import frc.robot.commands.SwerveCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
@@ -57,10 +56,6 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhoton;
 import frc.robot.subsystems.vision.VisionIOPhotonSim;
-import frc.robot.subsystems.yoshivator.Yoshivator;
-import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
-import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSim;
-import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSparkMax;
 import java.util.Optional;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -70,7 +65,6 @@ public class RobotContainer {
   private Shooter robotShooter;
   private Climb robotClimb;
   private Indexer robotIndexer;
-  private Yoshivator robotYoshi;
   private Vision robotVision;
   private LEDSubsystem robotLEDs;
 
@@ -85,8 +79,7 @@ public class RobotContainer {
   public RobotContainer() {
     initializeSubsystems();
 
-    robotStateMachine =
-        new StateMachine(robotShooter, robotIntake, robotIndexer, robotYoshi, robotClimb);
+    robotStateMachine = new StateMachine(robotShooter, robotIntake, robotIndexer, robotClimb);
 
     configureAutonomous();
 
@@ -127,7 +120,6 @@ public class RobotContainer {
         robotShooter = new Shooter(new AnglerIOSparkMax(), new LauncherIOTalonFX());
         robotClimb = new Climb(new ClimbIOSparkMax());
         robotIndexer = new Indexer(new IndexerIOSparkMax());
-        robotYoshi = new Yoshivator(new ManipulatorIOSparkMax());
         robotLEDs = new LEDSubsystem();
         robotVision =
             new Vision(
@@ -162,7 +154,6 @@ public class RobotContainer {
         robotShooter = new Shooter(new AnglerIOSim(), new LauncherIOSim());
         robotClimb = new Climb(new ClimbIOSim());
         robotIndexer = new Indexer(new IndexerIOSim());
-        robotYoshi = new Yoshivator(new ManipulatorIOSim());
         robotLEDs = new LEDSubsystem();
         robotVision =
             new Vision(
@@ -199,7 +190,6 @@ public class RobotContainer {
         robotShooter = new Shooter(new AnglerIO() {}, new LauncherIO() {});
         robotClimb = new Climb(new ClimbIO() {});
         robotIndexer = new Indexer(new IndexerIO() {});
-        robotYoshi = new Yoshivator(new ManipulatorIO() {});
         robotLEDs = new LEDSubsystem();
         robotVision = new Vision(new VisionIO() {}, new VisionIO() {});
         break;
@@ -209,15 +199,11 @@ public class RobotContainer {
 
     PPHolonomicDriveController.setRotationTargetOverride(this::getRotationTargetOverride);
 
-    TargetingSystem.setSubsystems(robotDrive, robotVision);
+    TargetingSystem.getInstance().setSubsystems(robotDrive, robotVision);
   }
 
   /** Register commands with PathPlanner and add default autos to chooser */
   private void configureAutonomous() {
-    NamedCommands.registerCommand(
-        "DeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.GROUND_INTAKE));
-    NamedCommands.registerCommand(
-        "UnDeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.IDLE));
     NamedCommands.registerCommand(
         "Intake",
         new ParallelCommandGroup(
@@ -291,8 +277,14 @@ public class RobotContainer {
                   robotDrive,
                   () -> 0.0,
                   () -> 0.0,
-                  () -> TargetingSystem.getOptimalLaunchHeading()))
+                  () -> TargetingSystem.getInstance().getOptimalLaunchHeading()))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
+
+      pilotController
+          .b()
+          .whileTrue(robotStateMachine.getShooterCommand(ShooterStates.AIM))
+          .onFalse(robotStateMachine.getShooterCommand(ShooterStates.IDLE));
+
     } else {
       /* Pilot bindings */
 
@@ -306,23 +298,12 @@ public class RobotContainer {
 
       pilotController
           .leftBumper()
-          .whileTrue(robotStateMachine.yoshiIntakeNote())
+          .whileTrue(robotStateMachine.intakeNote())
           .onFalse(robotStateMachine.stopTakeNote());
 
       pilotController
           .rightBumper()
           .whileTrue(robotStateMachine.outtakeNote())
-          .onFalse(robotStateMachine.stopTakeNote());
-
-      /* Intake a note from the ground into the yoshi */
-      pilotController
-          .leftTrigger()
-          .whileTrue(robotStateMachine.yoshiIntakeNoteAmp())
-          .onFalse(robotStateMachine.stopTakeNote());
-
-      pilotController
-          .rightTrigger()
-          .whileTrue(robotStateMachine.scoreAmp())
           .onFalse(robotStateMachine.stopTakeNote());
 
       /* Reset gyro */
@@ -336,7 +317,7 @@ public class RobotContainer {
                   robotDrive,
                   () -> 0.0,
                   () -> 0.0,
-                  () -> TargetingSystem.getOptimalLaunchHeading()))
+                  () -> TargetingSystem.getInstance().getOptimalLaunchHeading()))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
       //   pilotController
@@ -404,7 +385,7 @@ public class RobotContainer {
 
   public Optional<Rotation2d> getRotationTargetOverride() {
     if (robotDrive.getPPRotationTargetOverride()) {
-      return Optional.of(TargetingSystem.getOptimalLaunchHeading());
+      return Optional.of(TargetingSystem.getInstance().getOptimalLaunchHeading());
     } else {
       return Optional.empty();
     }

@@ -11,6 +11,8 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Robot;
@@ -20,6 +22,7 @@ import frc.robot.subsystems.shooter.angler.AnglerIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOInputsAutoLogged;
 import frc.robot.utils.debugging.LoggedTunableNumber;
+import frc.robot.utils.math.LinearProfile;
 import frc.robot.utils.math.ScrewArmFeedforward;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
@@ -29,7 +32,7 @@ import org.littletonrobotics.junction.Logger;
 /** Shooter subsystem */
 public class Shooter extends SubsystemBase {
   public static enum AnglerSetpoints {
-    AIM(() -> TargetingSystem.getLaunchMapAngle()),
+    AIM(() -> TargetingSystem.getInstance().getLaunchMapAngle()),
     CLIMB(() -> Rotation2d.fromDegrees(25.0)),
     INTAKE(() -> Rotation2d.fromDegrees(45.0)),
     IDLE(() -> anglerPosition),
@@ -77,6 +80,9 @@ public class Shooter extends SubsystemBase {
   private ProfiledPIDController anglerFeedback =
       new ProfiledPIDController(0.49, 2.0, 0.018, new TrapezoidProfile.Constraints(1000.0, 1000.0));
   private ScrewArmFeedforward anglerFeedforward = new ScrewArmFeedforward(0.2, 0.0);
+
+  private LinearProfile topWheelProfile = new LinearProfile(50, 0.02);
+  private LinearProfile bottomWheelProfile = new LinearProfile(50, 0.02);
 
   private LoggedTunableNumber anglerFeedbackP;
   private LoggedTunableNumber anglerFeedbackI;
@@ -210,8 +216,10 @@ public class Shooter extends SubsystemBase {
     }
 
     if (launcherSetpointMPS != null) {
-      launcherIO.setTopVelocity(launcherSetpointMPS.getSpeedMPS().getAsDouble());
-      launcherIO.setBottomVelocity(launcherSetpointMPS.getSpeedMPS().getAsDouble());
+      launcherIO.setTopVelocity(
+          topWheelProfile.calculateSetpoint(), topWheelProfile.getCurrentAcceleration());
+      launcherIO.setBottomVelocity(
+          bottomWheelProfile.calculateSetpoint(), bottomWheelProfile.getCurrentAcceleration());
     }
 
     anglerVisualizer.updateShooterAngle(currentAngle);
@@ -243,7 +251,7 @@ public class Shooter extends SubsystemBase {
   public Command mapToCommand(ShooterStates state) {
     return switch (state) {
       case OFF -> Commands.runOnce(() -> stopMotors(true, true), this);
-      case AIM -> setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT);
+      case AIM -> setShooterStateInstant(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT);
       case INTAKE -> setShooterState(AnglerSetpoints.INTAKE, LauncherSetpoints.OFF);
       case CLIMB -> setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.OFF);
       case EJECT -> setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.EJECT);
@@ -266,7 +274,17 @@ public class Shooter extends SubsystemBase {
   }
 
   public Command setShooterState(AnglerSetpoints anglerState, LauncherSetpoints launcherState) {
-    return Commands.runOnce(() -> setMotors(anglerState, launcherState), this);
+    return new FunctionalCommand(
+        () -> setMotors(anglerState, launcherState),
+        () -> {},
+        (interrupted) -> {},
+        this::atAllSetpoint,
+        this);
+  }
+
+  public Command setShooterStateInstant(
+      AnglerSetpoints anglerState, LauncherSetpoints launcherState) {
+    return new InstantCommand(() -> setMotors(anglerState, launcherState), this);
   }
 
   public Command setAnglerManual(double volts) {
@@ -302,6 +320,10 @@ public class Shooter extends SubsystemBase {
   }
 
   public void setLauncherVelocityMPS(LauncherSetpoints velocityMPS) {
+    topWheelProfile.setGoal(
+        velocityMPS.getSpeedMPS().getAsDouble(), launcherIOInputs.topFlywheelVelocityMPS);
+    bottomWheelProfile.setGoal(
+        velocityMPS.getSpeedMPS().getAsDouble(), launcherIOInputs.bottomFlywheelVelocityMPS);
     launcherSetpointMPS = velocityMPS;
   }
 
@@ -336,6 +358,7 @@ public class Shooter extends SubsystemBase {
     return currentAngle.getDegrees();
   }
 
+  @AutoLogOutput(key = "Shooter/Angler/AtAllSetpoints")
   public boolean atAllSetpoint() {
     return getAnglerPositionError() < 0.6
         && launcherIOInputs.topFlywheelErrorMPS < 1

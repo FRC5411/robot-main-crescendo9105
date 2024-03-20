@@ -34,6 +34,8 @@ import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.utils.debugging.SysIDCharacterization;
 
 /** Swerve drive */
 public class Drive extends SubsystemBase {
@@ -443,5 +445,17 @@ public class Drive extends SubsystemBase {
     for (int i = 0; i < 4; i++) {
       modules[i].reset();
     }
+  }
+
+  public Command runDriveVoltageSysIDTests() {
+    return SysIDCharacterization.runDriveSysIDTests(
+        (voltage) -> {
+          for (var module : modules) {
+            module.angleSetpoint = new Rotation2d(0.0);
+            module.velocitySetpoint = null;
+            module.setDriveVoltage(voltage);
+          }
+        },
+        this);
   }
 }

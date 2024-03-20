@@ -23,46 +23,89 @@ import org.littletonrobotics.junction.Logger;
 
 /** Class that calculates projectile motion given certain parameters */
 public class TargetingSystem {
-  private static Translation3d speakerOpeningBlue = new Translation3d(0.0, 5.53, 1.045);
-  private static Translation3d speakerOpeningRed = new Translation3d(16.26, 5.53, 1.045);
+  private Translation3d speakerOpeningBlue = new Translation3d(0.0, 5.53, 1.045);
+  private Translation3d speakerOpeningRed = new Translation3d(16.26, 5.53, 1.045);
 
-  private static final double LAUNCH_MAP_OFFSET_M = 0.93 + 0.46 - 0.23 - 0.17;
-  private static final double LUANCH_MAP_OFFSET_DEGREES_BLUE = 3.0 + 2.0; // 3.0;
+  private final double LAUNCH_MAP_OFFSET_M = 0.93 + 0.46 - 0.23 - 0.17;
+  private final double LUANCH_MAP_OFFSET_DEGREES_BLUE = 3.0 + 2.0; // 3.0;
 
-  private static final double LUANCH_MAP_OFFSET_DEG_AUTON_BLUE = -1.0;
+  private final double LUANCH_MAP_OFFSET_DEG_AUTON_BLUE = -1.0;
 
-  private static final double LUANCH_MAP_OFFSET_DEGREES_RED = 3.0 + 1.0; // 3.0;
+  private final double LUANCH_MAP_OFFSET_DEGREES_RED = 3.0 + 1.0; // 3.0;
 
-  private static final double LUANCH_MAP_OFFSET_DEG_AUTON_RED = -0.0;
+  private final double LUANCH_MAP_OFFSET_DEG_AUTON_RED = -0.0;
 
-  private static Drive robotDrive;
-  private static Vision robotVision;
+  private Drive robotDrive;
+  private Vision robotVision;
 
   // @AutoLogOutput(key = "Shooter/TargetingSystem/MultiTagEnabled")
-  private static boolean multiTagEnabled = true;
+  private boolean multiTagEnabled = true;
 
-  private static Rotation2d lastHeading = new Rotation2d();
+  private Rotation2d lastHeading = new Rotation2d();
 
-  private static LinearFilter distanceFilter = LinearFilter.movingAverage(10);
-  private static LinearFilter rotationFilter = LinearFilter.movingAverage(10);
+  private LinearFilter distanceFilter = LinearFilter.movingAverage(10);
+  private LinearFilter rotationFilter = LinearFilter.movingAverage(10);
 
-  private static boolean useVision = true;
+  private boolean useVision = true;
+
+  private static TargetingSystem instance;
 
   /**
    * Tree Map that represents the robot's horizontal (X) distance from the Speaker (meters) and the
    * optimal launch angle (degrees)
    */
-  private static InterpolatingDoubleTreeMap launchMap = new InterpolatingDoubleTreeMap();
+  private InterpolatingDoubleTreeMap launchMap = new InterpolatingDoubleTreeMap();
 
-  public static void setSubsystems(Drive drive, Vision vision) {
+  public static TargetingSystem getInstance() {
+    if (instance == null) {
+      instance = new TargetingSystem();
+      instance.initializeLaunchMap();
+    }
+    return instance;
+  }
+
+  public void setSubsystems(Drive drive, Vision vision) {
     robotDrive = drive;
     robotVision = vision;
   }
 
   /** Initialize the launch map */
-  private static void initializeLaunchMap() {
-    if (DriverStation.getAlliance().isPresent()
-        && DriverStation.getAlliance().get() == Alliance.Blue) {
+  public void initializeLaunchMap() {
+    if (DriverStation.getAlliance().isPresent()) {
+      if (DriverStation.getAlliance().get() == Alliance.Blue) {
+        launchMap.put(0.0 + LAUNCH_MAP_OFFSET_M, 55.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+        launchMap.put(0.25 + LAUNCH_MAP_OFFSET_M, 52.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+        launchMap.put(0.50 + LAUNCH_MAP_OFFSET_M, 48.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+        launchMap.put(0.75 + LAUNCH_MAP_OFFSET_M, 45.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+        launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 42.5 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+        launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 40.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+        launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 38.5 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+        launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 37.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+        launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 35.6 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+        launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 34.5 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+        launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 33.5 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+        launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 32.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+        launchMap.put(3.0 + LAUNCH_MAP_OFFSET_M, 31.1 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+        launchMap.put(3.25 + LAUNCH_MAP_OFFSET_M, 30.3 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+        launchMap.put(3.5 + LAUNCH_MAP_OFFSET_M, 29.9 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+      } else if (DriverStation.getAlliance().get() == Alliance.Red) {
+        launchMap.put(0.0 + LAUNCH_MAP_OFFSET_M, 55.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
+        launchMap.put(0.25 + LAUNCH_MAP_OFFSET_M, 52.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
+        launchMap.put(0.50 + LAUNCH_MAP_OFFSET_M, 48.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
+        launchMap.put(0.75 + LAUNCH_MAP_OFFSET_M, 45.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
+        launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 42.5 + LUANCH_MAP_OFFSET_DEGREES_RED);
+        launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 40.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
+        launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 38.5 + LUANCH_MAP_OFFSET_DEGREES_RED);
+        launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 37.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
+        launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 35.6 + LUANCH_MAP_OFFSET_DEGREES_RED);
+        launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 34.5 + LUANCH_MAP_OFFSET_DEGREES_RED);
+        launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 33.5 + LUANCH_MAP_OFFSET_DEGREES_RED);
+        launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 32.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
+        launchMap.put(3.0 + LAUNCH_MAP_OFFSET_M, 31.1 + LUANCH_MAP_OFFSET_DEGREES_RED);
+        launchMap.put(3.25 + LAUNCH_MAP_OFFSET_M, 30.3 + LUANCH_MAP_OFFSET_DEGREES_RED);
+        launchMap.put(3.5 + LAUNCH_MAP_OFFSET_M, 29.9 + LUANCH_MAP_OFFSET_DEGREES_RED);
+      }
+    } else {
       launchMap.put(0.0 + LAUNCH_MAP_OFFSET_M, 55.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
       launchMap.put(0.25 + LAUNCH_MAP_OFFSET_M, 52.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
       launchMap.put(0.50 + LAUNCH_MAP_OFFSET_M, 48.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
@@ -78,29 +121,11 @@ public class TargetingSystem {
       launchMap.put(3.0 + LAUNCH_MAP_OFFSET_M, 31.1 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
       launchMap.put(3.25 + LAUNCH_MAP_OFFSET_M, 30.3 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
       launchMap.put(3.5 + LAUNCH_MAP_OFFSET_M, 29.9 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-    } else {
-      launchMap.put(0.0 + LAUNCH_MAP_OFFSET_M, 55.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
-      launchMap.put(0.25 + LAUNCH_MAP_OFFSET_M, 52.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
-      launchMap.put(0.50 + LAUNCH_MAP_OFFSET_M, 48.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
-      launchMap.put(0.75 + LAUNCH_MAP_OFFSET_M, 45.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
-      launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 42.5 + LUANCH_MAP_OFFSET_DEGREES_RED);
-      launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 40.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
-      launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 38.5 + LUANCH_MAP_OFFSET_DEGREES_RED);
-      launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 37.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
-      launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 35.6 + LUANCH_MAP_OFFSET_DEGREES_RED);
-      launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 34.5 + LUANCH_MAP_OFFSET_DEGREES_RED);
-      launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 33.5 + LUANCH_MAP_OFFSET_DEGREES_RED);
-      launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 32.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
-      launchMap.put(3.0 + LAUNCH_MAP_OFFSET_M, 31.1 + LUANCH_MAP_OFFSET_DEGREES_RED);
-      launchMap.put(3.25 + LAUNCH_MAP_OFFSET_M, 30.3 + LUANCH_MAP_OFFSET_DEGREES_RED);
-      launchMap.put(3.5 + LAUNCH_MAP_OFFSET_M, 29.9 + LUANCH_MAP_OFFSET_DEGREES_RED);
     }
   }
 
   /** Returns the optimal angle given the robot's current pose */
-  public static Rotation2d getLaunchMapAngle() {
-    initializeLaunchMap();
-
+  public Rotation2d getLaunchMapAngle() {
     double distanceM = speakerDistanceM().getAsDouble();
 
     if (!multiTagEnabled) distanceM -= 0.4;
@@ -120,11 +145,19 @@ public class TargetingSystem {
 
     Logger.recordOutput("Shooter/TargetingSystem/Angle", angle);
 
+    if (angle == null) {
+      if (distanceM < LAUNCH_MAP_OFFSET_M) {
+        angle = Rotation2d.fromDegrees(27);
+      } else if (distanceM > 3.5 + LAUNCH_MAP_OFFSET_M) {
+        angle = Rotation2d.fromDegrees(57);
+      }
+    }
+
     return angle;
   }
 
   /** Returns the optimal heading for shooting */
-  public static Rotation2d getOptimalLaunchHeading() {
+  public Rotation2d getOptimalLaunchHeading() {
     Pose2d robotPose;
     if (useVision) robotPose = robotDrive.getFilteredPose();
     else robotPose = robotDrive.getOdometryPose();
@@ -169,7 +202,7 @@ public class TargetingSystem {
   }
 
   /** Calculate the tangental distance from the speaker */
-  private static double calculateSpeakerDistanceM() {
+  private double calculateSpeakerDistanceM() {
     Pose2d robotPose;
     if (useVision) robotPose = robotDrive.getFilteredPose();
     else robotPose = robotDrive.getOdometryPose();
@@ -199,11 +232,11 @@ public class TargetingSystem {
     return distanceM;
   }
 
-  private static DoubleSupplier speakerDistanceM() {
+  private DoubleSupplier speakerDistanceM() {
     return () -> calculateSpeakerDistanceM();
   }
 
-  public static boolean isAtShootRange() {
+  public boolean isAtShootRange() {
     try {
       if (robotVision.getInputsLeft().hasSpeakerTarget
           || robotVision.getInputsRight().hasSpeakerTarget) {
@@ -215,12 +248,12 @@ public class TargetingSystem {
     }
   }
 
-  public static BooleanSupplier atShootRange() {
+  public BooleanSupplier atShootRange() {
     return () -> isAtShootRange();
   }
 
   /** Returns a command to visualize a note being shot from the robot */
-  public static Command shoot(Supplier<Rotation2d> anglerPosition) {
+  public Command shoot(Supplier<Rotation2d> anglerPosition) {
     return new ScheduleCommand(
         Commands.defer(
                 () -> {
@@ -268,23 +301,23 @@ public class TargetingSystem {
             .ignoringDisable(true));
   }
 
-  public static void toggleMultiTagEnabled() {
+  public void toggleMultiTagEnabled() {
     multiTagEnabled = !multiTagEnabled;
   }
 
-  public static void toggleUseVision() {
+  public void toggleUseVision() {
     useVision = !useVision;
   }
 
-  public static void logMultiTagEnabled() {
+  public void logMultiTagEnabled() {
     Logger.recordOutput("Shooter/TargetingSystem/MulitTagEnabled", multiTagEnabled);
   }
 
-  public static void logUseVision() {
+  public void logUseVision() {
     Logger.recordOutput("Shooter/TargetingSystem/UseVision", useVision);
   }
 
-  public static boolean getMultiTagEnabled() {
+  public boolean getMultiTagEnabled() {
     return multiTagEnabled;
   }
 }
