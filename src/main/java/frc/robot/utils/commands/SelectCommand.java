@@ -1,62 +1,102 @@
 package frc.robot.utils.commands;
 
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
+import static edu.wpi.first.util.ErrorMessages.requireNonNullParam;
+
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Subsystem;
-import java.util.HashMap;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
+import java.util.Map;
 import java.util.function.Supplier;
 
+/**
+ * A command composition that runs one of a selection of commands using a selector and a key to
+ * command mapping.
+ *
+ * <p>The rules for command compositions apply: command instances that are passed to it cannot be
+ * added to any other composition or scheduled individually, and the composition requires all
+ * subsystems its components require.
+ *
+ * <p>This class is provided by the NewCommands VendorDep
+ *
+ * @param <K> The type of key used to select the command
+ */
 public class SelectCommand<K> extends Command {
-  private HashMap<K, Command> commandMap;
-  private Supplier<K> stateSupplier;
-  private Command selectedCommand;
-  private Command defaultCommand;
+  private final Map<K, Command> m_commands;
+  private final Supplier<? extends K> m_selector;
+  private Command m_selectedCommand;
+  private boolean m_runsWhenDisabled = true;
+  private InterruptionBehavior m_interruptBehavior = InterruptionBehavior.kCancelIncoming;
 
-  public SelectCommand(
-      HashMap<K, Command> commandMap, Supplier<K> stateSupplier, Command defaultCommand) {
-    this.commandMap = commandMap;
-    this.stateSupplier = stateSupplier;
-    this.defaultCommand = defaultCommand;
+  private final Command m_defaultCommand =
+      new PrintCommand("SelectCommand selector value does not correspond to any command!");
 
-    for (Command command : commandMap.values()) {
-      addRequirements(command.getRequirements().toArray(Subsystem[]::new));
+  /**
+   * Creates a new SelectCommand.
+   *
+   * @param commands the map of commands to choose from
+   * @param selector the selector to determine which command to run
+   */
+  public SelectCommand(Map<K, Command> commands, Supplier<? extends K> selector) {
+    m_commands = requireNonNullParam(commands, "commands", "SelectCommand");
+    m_selector = requireNonNullParam(selector, "selector", "SelectCommand");
+
+    CommandScheduler.getInstance().registerComposedCommands(m_defaultCommand);
+    CommandScheduler.getInstance()
+        .registerComposedCommands(commands.values().toArray(new Command[] {}));
+
+    for (Command command : m_commands.values()) {
+      m_requirements.addAll(command.getRequirements());
+      m_runsWhenDisabled &= command.runsWhenDisabled();
+      if (command.getInterruptionBehavior() == InterruptionBehavior.kCancelSelf) {
+        m_interruptBehavior = InterruptionBehavior.kCancelSelf;
+      }
     }
   }
 
   @Override
   public void initialize() {
-    selectedCommand = commandMap.getOrDefault(stateSupplier.get(), defaultCommand);
-    if (selectedCommand == null) {
-      selectedCommand = defaultCommand;
-    }
-    selectedCommand.initialize();
+    m_selectedCommand = m_commands.getOrDefault(m_selector.get(), m_defaultCommand);
+    m_selectedCommand.initialize();
   }
 
   @Override
   public void execute() {
-    selectedCommand.execute();
+    m_selectedCommand.execute();
   }
 
   @Override
   public void end(boolean interrupted) {
-    selectedCommand.end(interrupted);
+    m_selectedCommand.end(interrupted);
   }
 
   @Override
   public boolean isFinished() {
-    return selectedCommand.isFinished();
+    return m_selectedCommand.isFinished();
   }
 
   @Override
   public boolean runsWhenDisabled() {
-    return selectedCommand.runsWhenDisabled();
+    return m_runsWhenDisabled;
   }
 
-  public void setDefaultCommand(Command defaultCommand) {
-    this.defaultCommand = defaultCommand;
+  @Override
+  public InterruptionBehavior getInterruptionBehavior() {
+    return m_interruptBehavior;
   }
 
-  // This function makes a copy of this command and returns it
-  // This is done to avoid command composition erros
+  @Override
+  public void initSendable(SendableBuilder builder) {
+    super.initSendable(builder);
+
+    builder.addStringProperty(
+        "selected", () -> m_selectedCommand == null ? "null" : m_selectedCommand.getName(), null);
+  }
+
   public Command copy() {
     return CommandUtils.copyCommand(this);
   }

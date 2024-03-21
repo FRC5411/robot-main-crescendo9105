@@ -226,7 +226,7 @@ public class Shooter extends SubsystemBase {
     }
 
     if (launcherSetpointMPS != null) {
-      System.out.println("HAHA");
+      // System.out.println("HAHA");
       launcherIO.setTopVelocity(
           topWheelProfile.calculateSetpoint(), topWheelProfile.getCurrentAcceleration());
       launcherIO.setBottomVelocity(

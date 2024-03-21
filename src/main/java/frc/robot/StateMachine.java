@@ -44,20 +44,16 @@ public class StateMachine {
     climbState = ClimbStates.OFF;
 
     shooterCommands =
-        new SelectCommand<ShooterStates>(
-            this.robotShooter.mapToCommand(), () -> shooterState, new InstantCommand());
+        new SelectCommand<ShooterStates>(this.robotShooter.mapToCommand(), () -> shooterState);
 
     intakeCommands =
-        new SelectCommand<IntakeStates>(
-            this.robotIntake.mapToCommand(), () -> intakeState, new InstantCommand());
+        new SelectCommand<IntakeStates>(this.robotIntake.mapToCommand(), () -> intakeState);
 
     indexerCommands =
-        new SelectCommand<IndexerStates>(
-            this.robotIndexer.mapToCommand(), () -> indexerState, new InstantCommand());
+        new SelectCommand<IndexerStates>(this.robotIndexer.mapToCommand(), () -> indexerState);
 
     climbCommands =
-        new SelectCommand<ClimbStates>(
-            this.robotClimb.mapToCommand(), () -> climbState, new InstantCommand());
+        new SelectCommand<ClimbStates>(this.robotClimb.mapToCommand(), () -> climbState);
   }
 
   public Command getShooterCommand(ShooterStates state) {
