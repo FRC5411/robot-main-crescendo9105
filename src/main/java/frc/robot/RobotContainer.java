@@ -8,7 +8,9 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -261,20 +263,32 @@ public class RobotContainer {
               () -> -pilotController.getLeftX(),
               () -> -pilotController.getRightX()));
 
-      pilotController
-          .a()
-          .whileTrue(
-              SwerveCommands.setHeading(
-                  robotDrive,
-                  () -> 0.0,
-                  () -> 0.0,
-                  () -> TargetingSystem.getInstance().getOptimalLaunchHeading()))
-          .onFalse(SwerveCommands.stopDrive(robotDrive));
+      //   pilotController
+      //       .a()
+      //       .whileTrue(
+      //           SwerveCommands.setHeading(
+      //               robotDrive,
+      //               () -> 0.0,
+      //               () -> 0.0,
+      //               () -> TargetingSystem.getInstance().getOptimalLaunchHeading()))
+      //       .onFalse(SwerveCommands.stopDrive(robotDrive));
+
+      pilotController.a().onTrue(SwerveCommands.resetGyro(robotDrive));
 
       pilotController
           .b()
           .whileTrue(robotStateMachine.getShooterCommand(ShooterStates.AIM))
           .onFalse(robotStateMachine.getShooterCommand(ShooterStates.IDLE));
+
+      pilotController
+          .x()
+          .onTrue(robotShooter.characterizeFlywheel())
+          .onFalse(robotStateMachine.getShooterCommand(ShooterStates.IDLE));
+
+      pilotController
+          .y()
+          .onTrue(robotDrive.characterizeDriveMotors())
+          .onFalse(SwerveCommands.stopDrive(robotDrive));
 
     } else {
       /* Pilot bindings */

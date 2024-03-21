@@ -90,6 +90,8 @@ public class Drive extends SubsystemBase {
 
   private Field2d field = new Field2d();
 
+  private boolean PProtationTargetOverride = false;
+
   /** Creates a new swerve Drive. */
   public Drive(
       ModuleIO moduleFL, ModuleIO moduleFR, ModuleIO moduleBL, ModuleIO moduleBR, GyroIO gyro) {
@@ -265,13 +267,6 @@ public class Drive extends SubsystemBase {
     gyroIO.resetGyro();
   }
 
-  /** Reset the swerve modules */
-  public void resetModules() {
-    for (int i = 0; i < 4; i++) {
-      modules[i].reset();
-    }
-  }
-
   /** Set the pose of the robot */
   public void setPose(Pose2d pose) {
     if (Constants.currentMode == Mode.SIM) {
@@ -330,12 +325,6 @@ public class Drive extends SubsystemBase {
   @AutoLogOutput(key = "Drive/Odometry/DrivePose")
   public Pose2d getOdometryPose() {
     return odometry.getPoseMeters();
-  }
-
-  /** Returns the filter pose of the robot */
-  @AutoLogOutput(key = "Drive/Odometry/FilteredPose")
-  public Pose2d getFilteredPose() {
-    return filteredPose;
   }
 
   /** Returns the rotation of the robot */
@@ -410,7 +399,7 @@ public class Drive extends SubsystemBase {
     }
   }
 
-  public Command runDriveVoltageSysIDTests() {
+  public Command characterizeDriveMotors() {
     return SysIDCharacterization.runDriveSysIDTests(
         (voltage) -> {
           for (var module : modules) {

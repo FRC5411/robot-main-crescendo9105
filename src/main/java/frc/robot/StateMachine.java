@@ -12,6 +12,7 @@ import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.utils.commands.SelectCommand;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class StateMachine {
@@ -25,6 +26,11 @@ public class StateMachine {
   private IndexerStates indexerState;
   private ClimbStates climbState;
 
+  private SelectCommand<ShooterStates> shooterCommands;
+  private SelectCommand<IntakeStates> intakeCommands;
+  private SelectCommand<IndexerStates> indexerCommands;
+  private SelectCommand<ClimbStates> climbCommands;
+
   public StateMachine(
       Shooter robotShooter, Intake robotIntake, Indexer robotIndexer, Climb robotClimb) {
     this.robotShooter = robotShooter;
@@ -36,45 +42,45 @@ public class StateMachine {
     intakeState = IntakeStates.OFF;
     indexerState = IndexerStates.OFF;
     climbState = ClimbStates.OFF;
+
+    shooterCommands =
+        new SelectCommand<ShooterStates>(
+            this.robotShooter.mapToCommand(), () -> shooterState, new InstantCommand());
+
+    intakeCommands =
+        new SelectCommand<IntakeStates>(
+            this.robotIntake.mapToCommand(), () -> intakeState, new InstantCommand());
+
+    indexerCommands =
+        new SelectCommand<IndexerStates>(
+            this.robotIndexer.mapToCommand(), () -> indexerState, new InstantCommand());
+
+    climbCommands =
+        new SelectCommand<ClimbStates>(
+            this.robotClimb.mapToCommand(), () -> climbState, new InstantCommand());
   }
 
   public Command getShooterCommand(ShooterStates state) {
     return new SequentialCommandGroup(
-            new InstantCommand(
-                () -> {
-                  shooterState = state;
-                  robotShooter.mapToCommand(shooterState).schedule();
-                }))
+            new InstantCommand(() -> shooterState = state), shooterCommands.copy())
         .withName("StateMachince/ShooterCommand/" + shooterState);
   }
 
   public Command getIntakeCommand(IntakeStates state) {
     return new SequentialCommandGroup(
-            new InstantCommand(
-                () -> {
-                  intakeState = state;
-                  robotIntake.mapToCommand(intakeState).schedule();
-                }))
+            new InstantCommand(() -> intakeState = state), intakeCommands.copy())
         .withName("StateMachince/IntakeCommand/" + intakeState);
   }
 
   public Command getIndexerCommand(IndexerStates state) {
     return new SequentialCommandGroup(
-            new InstantCommand(
-                () -> {
-                  indexerState = state;
-                  robotIndexer.mapToCommand(indexerState).schedule();
-                }))
+            new InstantCommand(() -> indexerState = state), indexerCommands.copy())
         .withName("StateMachince/IndexerCommand/" + indexerState);
   }
 
   public Command getClimbCommand(ClimbStates state) {
     return new SequentialCommandGroup(
-            new InstantCommand(
-                () -> {
-                  climbState = state;
-                  robotClimb.mapToCommand(climbState).schedule();
-                }))
+            new InstantCommand(() -> climbState = state), climbCommands.copy())
         .withName("StateMachince/ClimbCommand/" + climbState);
   }
 

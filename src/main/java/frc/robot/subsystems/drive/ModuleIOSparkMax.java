@@ -37,6 +37,7 @@ public class ModuleIOSparkMax implements ModuleIO {
   private SparkPIDController azimuthFeedback;
 
   private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.27 / 12.0);
+  private SimpleMotorFeedforward azimuthFeedforward = new SimpleMotorFeedforward(0.03, 0.0, 0.0);
 
   private LoggedTunableNumber driveFeedbackP =
       new LoggedTunableNumber("Drive/ModuleIO/Drive/Feedback/P", 0.0001);
@@ -51,6 +52,8 @@ public class ModuleIOSparkMax implements ModuleIO {
       new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/I", 0.0);
   private LoggedTunableNumber azimuthFeedbackD =
       new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/D", 0.0);
+
+  private Rotation2d azimuthAngle = new Rotation2d();
 
   /** Create a new hardware implementation of a swerve module */
   public ModuleIOSparkMax(int module) {
@@ -161,6 +164,8 @@ public class ModuleIOSparkMax implements ModuleIO {
             .minus(angleOffset);
     inputs.azimuthPosition =
         Rotation2d.fromRotations(azimuthEncoder.getPosition() / AZIMUTH_GEAR_RATIO);
+
+    azimuthAngle = inputs.azimuthPosition;
     inputs.azimuthVelocityRPS =
         Units.rotationsPerMinuteToRadiansPerSecond(azimuthEncoder.getVelocity())
             / AZIMUTH_GEAR_RATIO;
@@ -196,7 +201,9 @@ public class ModuleIOSparkMax implements ModuleIO {
 
   @Override
   public void setAzimuthPosition(Rotation2d position) {
-    double feedforwardOutput = 0.0;
+    double feedforwardOutput =
+        azimuthFeedforward.calculate(
+            Math.signum(position.getRotations() - azimuthAngle.getRotations()));
     azimuthFeedback.setReference(
         position.getRotations() * AZIMUTH_GEAR_RATIO, ControlType.kPosition, 0, feedforwardOutput);
   }

@@ -38,25 +38,25 @@ public class LauncherIOTalonFX implements LauncherIO {
       new LoggedTunableNumber("Shooter/LauncherTop/Feedback/D", 0.0);
 
   private LoggedTunableNumber bottomFeedbackP =
-      new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/P", 0.0032508);
+      new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/P", 0.032508);
   private LoggedTunableNumber bottomFeedbackI =
       new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/I", 0.0);
   private LoggedTunableNumber bottomFeedbackD =
       new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/D", 0.0);
 
   private LoggedTunableNumber topFeedforwardS =
-      new LoggedTunableNumber("Shooter/LauncherTop/Feedforward/S", 0.002384);
+      new LoggedTunableNumber("Shooter/LauncherTop/Feedforward/S", 0.0060808);
   private LoggedTunableNumber topFeedforwardV =
       new LoggedTunableNumber("Shooter/LauncherTop/Feedforward/V", 0.11127);
   private LoggedTunableNumber topFeedforwardA =
       new LoggedTunableNumber("Shooter/LauncherTop/Feedforward/A", 0.0);
 
   private LoggedTunableNumber bottomFeedforwardS =
-      new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/S", 0.01853);
+      new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/S", 0.060808);
   private LoggedTunableNumber bottomFeedforwardV =
-      new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/V", 0.11973 * (38.0 / 41.0));
+      new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/V", 0.10994);
   private LoggedTunableNumber bottomFeedforwardA =
-      new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/A", 0.0);
+      new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/A", 0.014977);
 
   private double topAppliedVolts = 0.0;
   private double bottomAppliedVolts = 0.0;
@@ -165,18 +165,16 @@ public class LauncherIOTalonFX implements LauncherIO {
 
   @Override
   public void setTopVelocity(double velocityMPS, double accelerationMPS) {
-    topMotor.setControl(
-        topVelocityVoltage
-            .withVelocity(topVelocityMPS / CIRCUMFRENCE_M)
-            .withAcceleration(accelerationMPS / CIRCUMFRENCE_M));
+    System.out.println("HHHAHAHA TOP" + velocityMPS + accelerationMPS);
+    topMotor.setControl(topVelocityVoltage.withVelocity(topVelocityMPS / CIRCUMFRENCE_M));
+    // .withAcceleration(accelerationMPS / CIRCUMFRENCE_M));
   }
 
   @Override
   public void setBottomVelocity(double velocityMPS, double accelerationMPS) {
-    bottomMotor.setControl(
-        bottomVelocityVoltage
-            .withVelocity(bottomVelocityMPS / CIRCUMFRENCE_M)
-            .withAcceleration(accelerationMPS / CIRCUMFRENCE_M));
+    System.out.println("HHHAHAHA BOTTOM" + velocityMPS + accelerationMPS);
+    bottomMotor.setControl(bottomVelocityVoltage.withVelocity(bottomVelocityMPS / CIRCUMFRENCE_M));
+    // .withAcceleration(accelerationMPS / CIRCUMFRENCE_M));
   }
 
   /** Update the tunable numbers if they've changed */

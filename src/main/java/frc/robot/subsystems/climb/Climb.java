@@ -17,6 +17,7 @@ import frc.robot.Constants.Robot;
 import frc.robot.RobotStates.ClimbStates;
 import frc.robot.subsystems.climb.ClimbVisualizer.ClimbSide;
 import frc.robot.utils.debugging.LoggedTunableNumber;
+import java.util.HashMap;
 import org.littletonrobotics.junction.Logger;
 
 /** Climb subsystem */
@@ -247,16 +248,17 @@ public class Climb extends SubsystemBase {
     }
   }
 
-  public Command mapToCommand(ClimbStates state) {
-    return switch (state) {
-      case IDLE -> setPositionSetpoint(ClimPosSetpoints.IDLE.getRotation());
-      case OFF -> setManualVolts(ClimbVoltSetpoints.OFF);
-      case MOVE_BOTH_UP -> setManualVolts(ClimbVoltSetpoints.BOTH_UP);
-      case MOVE_BOTH_DOWN -> setManualVolts(ClimbVoltSetpoints.BOTH_DOWN);
-      case INVERT -> Commands.runOnce(() -> climbDirection *= -1.0, this);
-      case AMP -> setPositionSetpoint(ClimPosSetpoints.AMP.getRotation());
-      default -> setManualVolts(ClimbVoltSetpoints.OFF);
-    };
+  public HashMap<ClimbStates, Command> mapToCommand() {
+    HashMap<ClimbStates, Command> commandMap = new HashMap<>();
+
+    commandMap.put(ClimbStates.IDLE, setPositionSetpoint(ClimPosSetpoints.IDLE.getRotation()));
+    commandMap.put(ClimbStates.OFF, setManualVolts(ClimbVoltSetpoints.OFF));
+    commandMap.put(ClimbStates.MOVE_BOTH_UP, setManualVolts(ClimbVoltSetpoints.BOTH_UP));
+    commandMap.put(ClimbStates.MOVE_BOTH_DOWN, setManualVolts(ClimbVoltSetpoints.BOTH_DOWN));
+    commandMap.put(ClimbStates.INVERT, Commands.runOnce(() -> climbDirection *= -1.0, this));
+    commandMap.put(ClimbStates.AMP, setPositionSetpoint(ClimPosSetpoints.AMP.getRotation()));
+
+    return commandMap;
   }
 
   public Command setPositionSetpoint(Rotation2d pos) {

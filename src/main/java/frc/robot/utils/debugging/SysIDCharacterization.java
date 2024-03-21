@@ -57,8 +57,8 @@ public class SysIDCharacterization {
         new SysIdRoutine(
             new SysIdRoutine.Config(
                 Units.Volts.of(1).per(Units.Seconds.of(1)),
-                Units.Volts.of(6),
-                Units.Seconds.of(10),
+                Units.Volts.of(3),
+                Units.Seconds.of(5),
                 (state) -> sysIDREVStateLogger(state.toString())),
             new SysIdRoutine.Mechanism(
                 (voltage) -> voltageSetter.accept(voltage.magnitude()), null, subsystem));

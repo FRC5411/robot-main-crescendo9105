@@ -22,8 +22,10 @@ import frc.robot.subsystems.shooter.angler.AnglerIOInputsAutoLogged;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.subsystems.shooter.launcher.LauncherIOInputsAutoLogged;
 import frc.robot.utils.debugging.LoggedTunableNumber;
+import frc.robot.utils.debugging.SysIDCharacterization;
 import frc.robot.utils.math.LinearProfile;
 import frc.robot.utils.math.ScrewArmFeedforward;
+import java.util.HashMap;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -224,6 +226,7 @@ public class Shooter extends SubsystemBase {
     }
 
     if (launcherSetpointMPS != null) {
+      System.out.println("HAHA");
       launcherIO.setTopVelocity(
           topWheelProfile.calculateSetpoint(), topWheelProfile.getCurrentAcceleration());
       launcherIO.setBottomVelocity(
@@ -256,29 +259,43 @@ public class Shooter extends SubsystemBase {
     }
   }
 
-  public Command mapToCommand(ShooterStates state) {
-    return switch (state) {
-      case OFF -> Commands.runOnce(() -> stopMotors(true, true), this);
-      case AIM -> setShooterStateInstant(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT);
-      case INTAKE -> setShooterState(AnglerSetpoints.INTAKE, LauncherSetpoints.OFF);
-      case CLIMB -> setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.OFF);
-      case EJECT -> setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.EJECT);
-      case UP -> setAnglerManual(5.0);
-      case DOWN -> setAnglerManual(-5.0);
-      case FIRE ->
-          Commands.runOnce(() -> setLauncherVelocityMPS(LauncherSetpoints.SPEAKER_SHOT), this);
-      case IDLE ->
-          Commands.runOnce(
-              () -> {
-                anglerPosition = currentAngle;
-                setMotors(null, LauncherSetpoints.OFF);
-                setAnglerVolts(0.0);
-              },
-              this);
-      case PODIUM -> setShooterState(AnglerSetpoints.PODIUM, LauncherSetpoints.SPEAKER_SHOT);
-      case SPEAKER -> setShooterState(AnglerSetpoints.SPEAKER, LauncherSetpoints.SPEAKER_SHOT);
-      case FEEDER -> setShooterState(AnglerSetpoints.FEEDER, LauncherSetpoints.FULL_SPEED);
-    };
+  public HashMap<ShooterStates, Command> mapToCommand() {
+    HashMap<ShooterStates, Command> shooterCommandMap = new HashMap<>();
+    shooterCommandMap.put(ShooterStates.OFF, Commands.runOnce(() -> stopMotors(true, true), this));
+    shooterCommandMap.put(
+        ShooterStates.AIM,
+        setShooterStateInstant(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT));
+    shooterCommandMap.put(
+        ShooterStates.INTAKE, setShooterState(AnglerSetpoints.INTAKE, LauncherSetpoints.OFF));
+    shooterCommandMap.put(
+        ShooterStates.CLIMB, setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.OFF));
+    shooterCommandMap.put(
+        ShooterStates.EJECT, setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.EJECT));
+    shooterCommandMap.put(ShooterStates.UP, setAnglerManual(5.0));
+    shooterCommandMap.put(ShooterStates.DOWN, setAnglerManual(-5.0));
+    shooterCommandMap.put(
+        ShooterStates.FIRE,
+        Commands.runOnce(() -> setLauncherVelocityMPS(LauncherSetpoints.SPEAKER_SHOT), this));
+    shooterCommandMap.put(
+        ShooterStates.IDLE,
+        Commands.runOnce(
+            () -> {
+              anglerPosition = currentAngle;
+              setMotors(null, LauncherSetpoints.OFF);
+              setAnglerVolts(0.0);
+            },
+            this));
+    shooterCommandMap.put(
+        ShooterStates.PODIUM,
+        setShooterState(AnglerSetpoints.PODIUM, LauncherSetpoints.SPEAKER_SHOT));
+    shooterCommandMap.put(
+        ShooterStates.SPEAKER,
+        setShooterState(AnglerSetpoints.SPEAKER, LauncherSetpoints.SPEAKER_SHOT));
+    shooterCommandMap.put(
+        ShooterStates.FEEDER,
+        setShooterState(AnglerSetpoints.FEEDER, LauncherSetpoints.FULL_SPEED));
+
+    return shooterCommandMap;
   }
 
   public Command setShooterState(AnglerSetpoints anglerState, LauncherSetpoints launcherState) {
@@ -409,5 +426,15 @@ public class Shooter extends SubsystemBase {
 
   public double getBottomLauncherError() {
     return launcherIOInputs.bottomFlywheelErrorMPS;
+  }
+
+  public Command characterizeFlywheel() {
+    return SysIDCharacterization.runShooterSysIDTests(
+        (volts) -> {
+          launcherSetpointMPS = null;
+          launcherIO.setTopVolts(volts);
+          launcherIO.setBottomVolts(volts);
+        },
+        this);
   }
 }

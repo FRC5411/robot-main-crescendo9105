@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotStates.IndexerStates;
+import java.util.HashMap;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -56,18 +57,13 @@ public class Indexer extends SubsystemBase {
     }
   }
 
-  public Command mapToCommand(IndexerStates desiredState) {
-    switch (desiredState) {
-      case INDEX:
-        return runIndexer(IndexerSetpoint.IN);
-      case OUTDEX:
-        return runIndexer(IndexerSetpoint.OUT);
-      case STOW:
-        return stowPiece();
-      case OFF:
-      default:
-        return runIndexer(IndexerSetpoint.OFF);
-    }
+  public HashMap<IndexerStates, Command> mapToCommand() {
+    HashMap<IndexerStates, Command> commandMap = new HashMap<>();
+    commandMap.put(IndexerStates.INDEX, runIndexer(IndexerSetpoint.IN));
+    commandMap.put(IndexerStates.OUTDEX, runIndexer(IndexerSetpoint.OUT));
+    commandMap.put(IndexerStates.STOW, stowPiece());
+    commandMap.put(IndexerStates.OFF, stopIndexer());
+    return commandMap;
   }
 
   public Command runIndexer(IndexerSetpoint setpoint) {
