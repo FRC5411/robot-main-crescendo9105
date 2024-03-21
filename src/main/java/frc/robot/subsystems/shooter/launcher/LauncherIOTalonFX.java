@@ -49,7 +49,7 @@ public class LauncherIOTalonFX implements LauncherIO {
   private LoggedTunableNumber topFeedforwardV =
       new LoggedTunableNumber("Shooter/LauncherTop/Feedforward/V", 0.11127);
   private LoggedTunableNumber topFeedforwardA =
-      new LoggedTunableNumber("Shooter/LauncherTop/Feedforward/A", 0.0);
+      new LoggedTunableNumber("Shooter/LauncherTop/Feedforward/A", 0.014977);
 
   private LoggedTunableNumber bottomFeedforwardS =
       new LoggedTunableNumber("Shooter/LauncherBottom/Feedforward/S", 0.060808);
@@ -115,9 +115,11 @@ public class LauncherIOTalonFX implements LauncherIO {
         topMotor.getVelocity(),
         topMotor.getMotorVoltage(),
         topMotor.getSupplyCurrent(),
+        topMotor.getDeviceTemp(),
         bottomMotor.getVelocity(),
         bottomMotor.getMotorVoltage(),
-        bottomMotor.getSupplyCurrent());
+        bottomMotor.getSupplyCurrent(),
+        bottomMotor.getDeviceTemp());
   }
 
   @Override
@@ -166,6 +168,7 @@ public class LauncherIOTalonFX implements LauncherIO {
   @Override
   public void setTopVelocity(double velocityMPS, double accelerationMPS) {
     System.out.println("HHHAHAHA TOP" + velocityMPS + accelerationMPS);
+    topVelocityMPS = velocityMPS;
     topMotor.setControl(topVelocityVoltage.withVelocity(topVelocityMPS / CIRCUMFRENCE_M));
     // .withAcceleration(accelerationMPS / CIRCUMFRENCE_M));
   }
@@ -173,6 +176,7 @@ public class LauncherIOTalonFX implements LauncherIO {
   @Override
   public void setBottomVelocity(double velocityMPS, double accelerationMPS) {
     System.out.println("HHHAHAHA BOTTOM" + velocityMPS + accelerationMPS);
+    bottomVelocityMPS = velocityMPS;
     bottomMotor.setControl(bottomVelocityVoltage.withVelocity(bottomVelocityMPS / CIRCUMFRENCE_M));
     // .withAcceleration(accelerationMPS / CIRCUMFRENCE_M));
   }
