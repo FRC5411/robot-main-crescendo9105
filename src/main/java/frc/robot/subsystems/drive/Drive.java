@@ -185,11 +185,7 @@ public class Drive extends SubsystemBase {
 
     currentPose = poseEstimator.getEstimatedPosition();
 
-    filteredPose =
-        new Pose2d(
-            xFilter.calculate(getPoseEstimate().getX()),
-            yFilter.calculate(getPoseEstimate().getY()),
-            getPoseEstimate().getRotation());
+    updateFilteredPose();
 
     field.setRobotPose(getFilteredPose());
   }
@@ -291,6 +287,23 @@ public class Drive extends SubsystemBase {
     poseEstimator.addVisionMeasurement(visionMeasurement, timestampS, stdDevs);
   }
 
+  /** Override the rotational target for PathPlanner to use our own heading controller */
+  public void setPProtationTargetOverride(boolean override) {
+    PProtationTargetOverride = override;
+  }
+
+  /** Returns the filtered pose */
+  @AutoLogOutput(key = "Drive/Odometry/FilteredPose")
+  public Pose2d updateFilteredPose() {
+    filteredPose =
+        new Pose2d(
+            xFilter.calculate(getPoseEstimate().getX()),
+            yFilter.calculate(getPoseEstimate().getY()),
+            getPoseEstimate().getRotation());
+
+    return filteredPose;
+  }
+
   /** Returns PathFinder constraints */
   public PathConstraints getPathConstraints() {
     return new PathConstraints(
@@ -384,22 +397,7 @@ public class Drive extends SubsystemBase {
     return PProtationTargetOverride;
   }
 
-  public void setPProtationTargetOverride(boolean override) {
-    PProtationTargetOverride = override;
-  }
-
-  /** Returns the filtered pose */
-  @AutoLogOutput(key = "Drive/Odometry/FilteredPose")
-  public Pose2d updateFilteredPose() {
-    filteredPose =
-        new Pose2d(
-            xFilter.calculate(getPoseEstimate().getX()),
-            yFilter.calculate(getPoseEstimate().getY()),
-            getPoseEstimate().getRotation());
-
-    return filteredPose;
-  }
-
+  /** Returns a command to run a SysID test on the chassis */
   public Command runDriveVoltageSysIDTests() {
     return SysIDCharacterization.runDriveSysIDTests(
         (voltage) -> {

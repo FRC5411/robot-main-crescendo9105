@@ -98,7 +98,7 @@ public class SwerveCommands {
           default -> new ProfiledPIDController(0.0, 0.0, 0.0, new Constraints(0.0, 0.0));
         };
 
-    thetaFeedback.setTolerance(0.2);
+    thetaFeedback.setTolerance(0.4);
     thetaFeedback.enableContinuousInput(0.0, 360.0);
 
     LoggedTunableNumber thetaFeedbackP =
@@ -177,34 +177,6 @@ public class SwerveCommands {
   public static boolean isAtYawGoal() {
     return isAtYawGoal;
   }
-
-  // private static double driveVoltage = 0.0;
-
-  // /** Returns a command to increment the voltage of the drivetrain */
-  // public static Command incrementDriveVoltage(Drive robotDrive, double voltage) {
-  //   return Commands.runOnce(
-  //       () -> {
-  //         driveVoltage += voltage;
-  //         Logger.recordOutput("Drive/IncredmentedOutput", driveVoltage);
-  //       },
-  //       robotDrive);
-  // }
-
-  // /** Returns a command to run the drivetrain based on the incremented voltage */
-  // public static Command runIncrementedDriveVoltage(Drive robotDrive) {
-  //   return Commands.run(
-  //       () -> {
-  //         // robotDrive.runSwerve(new ChassisSpeeds(null, null, null));
-  //         robotDrive.setDriveVolts(driveVoltage);
-  //       },
-  //       robotDrive);
-  // }
-
-  // /** Returns a command to set the setpoints to 0 */
-  // public static Command incrementOnFalseCondition(Drive robotDrive) {
-  //   return Commands.runOnce(
-  //       () -> robotDrive.runSwerve(new ChassisSpeeds(0.0, 0.0, 0.0)), robotDrive);
-  // }
 
   /** Returns a command to reset the gyro heading */
   public static Command resetGyro(Drive robotDrive) {
