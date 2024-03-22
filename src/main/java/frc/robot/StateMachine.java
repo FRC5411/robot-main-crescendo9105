@@ -3,6 +3,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotStates.ClimbStates;
 import frc.robot.RobotStates.IndexerStates;
@@ -12,7 +13,7 @@ import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.utils.commands.SelectCommand;
+import frc.robot.utils.commands.CommandUtils;
 import org.littletonrobotics.junction.AutoLogOutput;
 
 public class StateMachine {
@@ -58,25 +59,27 @@ public class StateMachine {
 
   public Command getShooterCommand(ShooterStates state) {
     return new SequentialCommandGroup(
-            new InstantCommand(() -> shooterState = state), shooterCommands.copy())
+            new InstantCommand(() -> shooterState = state),
+            CommandUtils.copyCommand(shooterCommands))
         .withName("StateMachince/ShooterCommand/" + shooterState);
   }
 
   public Command getIntakeCommand(IntakeStates state) {
     return new SequentialCommandGroup(
-            new InstantCommand(() -> intakeState = state), intakeCommands.copy())
+            new InstantCommand(() -> intakeState = state), CommandUtils.copyCommand(intakeCommands))
         .withName("StateMachince/IntakeCommand/" + intakeState);
   }
 
   public Command getIndexerCommand(IndexerStates state) {
     return new SequentialCommandGroup(
-            new InstantCommand(() -> indexerState = state), indexerCommands.copy())
+            new InstantCommand(() -> indexerState = state),
+            CommandUtils.copyCommand(indexerCommands))
         .withName("StateMachince/IndexerCommand/" + indexerState);
   }
 
   public Command getClimbCommand(ClimbStates state) {
     return new SequentialCommandGroup(
-            new InstantCommand(() -> climbState = state), climbCommands.copy())
+            new InstantCommand(() -> climbState = state), CommandUtils.copyCommand(climbCommands))
         .withName("StateMachince/ClimbCommand/" + climbState);
   }
 
@@ -89,34 +92,29 @@ public class StateMachine {
   }
 
   public Command podiumShot() {
-    return new ParallelCommandGroup(
-        getShooterCommand(ShooterStates.PODIUM), getClimbCommand(ClimbStates.IDLE));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.PODIUM));
   }
 
   public Command speakerShot() {
-    return new ParallelCommandGroup(
-        getShooterCommand(ShooterStates.SPEAKER), getClimbCommand(ClimbStates.IDLE));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.SPEAKER));
   }
 
   public Command feedShot() {
-    return new ParallelCommandGroup(
-        getShooterCommand(ShooterStates.FEEDER), getClimbCommand(ClimbStates.IDLE));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.FEEDER));
   }
 
   public Command outtakeNote() {
     return new ParallelCommandGroup(
         getIntakeCommand(IntakeStates.OUTTAKE),
         getIndexerCommand(IndexerStates.OUTDEX),
-        getShooterCommand(ShooterStates.INTAKE),
-        getClimbCommand(ClimbStates.IDLE));
+        getShooterCommand(ShooterStates.INTAKE));
   }
 
   public Command stopTakeNote() {
     return new ParallelCommandGroup(
         getIntakeCommand(IntakeStates.OFF),
         getIndexerCommand(IndexerStates.OFF),
-        getShooterCommand(ShooterStates.OFF),
-        getClimbCommand(ClimbStates.IDLE));
+        getShooterCommand(ShooterStates.OFF));
   }
 
   public Command climbToAmp() {
@@ -124,20 +122,16 @@ public class StateMachine {
   }
 
   public Command prepareNoteShot() {
-    return new ParallelCommandGroup(
-        getShooterCommand(ShooterStates.AIM), getClimbCommand(ClimbStates.IDLE));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.AIM));
   }
 
   public Command shootNote() {
     return new ParallelCommandGroup(
-        getIndexerCommand(IndexerStates.INDEX),
-        getShooterCommand(ShooterStates.FIRE),
-        getClimbCommand(ClimbStates.IDLE));
+        getIndexerCommand(IndexerStates.INDEX), getShooterCommand(ShooterStates.FIRE));
   }
 
   public Command revUp() {
-    return new ParallelCommandGroup(
-        getShooterCommand(ShooterStates.FIRE), getClimbCommand(ClimbStates.IDLE));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.FIRE));
   }
 
   public Command ejectSlow() {
@@ -150,24 +144,19 @@ public class StateMachine {
 
   public Command stopShooting() {
     return new ParallelCommandGroup(
-        getIndexerCommand(IndexerStates.OFF),
-        getShooterCommand(ShooterStates.IDLE),
-        getClimbCommand(ClimbStates.IDLE));
+        getIndexerCommand(IndexerStates.OFF), getShooterCommand(ShooterStates.IDLE));
   }
 
   public Command moveAnglerUpManual() {
-    return new ParallelCommandGroup(
-        getShooterCommand(ShooterStates.UP), getClimbCommand(ClimbStates.IDLE));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.UP));
   }
 
   public Command moveAnglerDownManual() {
-    return new ParallelCommandGroup(
-        getShooterCommand(ShooterStates.DOWN), getClimbCommand(ClimbStates.IDLE));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.DOWN));
   }
 
   public Command shooterToIdle() {
-    return new ParallelCommandGroup(
-        getShooterCommand(ShooterStates.IDLE), getClimbCommand(ClimbStates.IDLE));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.IDLE));
   }
 
   public Command climbDown() {
@@ -187,6 +176,14 @@ public class StateMachine {
 
   public Command eject() {
     return new ParallelCommandGroup(getShooterCommand(ShooterStates.EJECT));
+  }
+
+  public Command revAmp() {
+    return getShooterCommand(ShooterStates.AMP);
+  }
+
+  public Command scoreAmp() {
+    return getIndexerCommand(IndexerStates.AMP);
   }
 
   @AutoLogOutput(key = "StateMachine/ShooterState")

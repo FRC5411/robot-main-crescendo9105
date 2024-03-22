@@ -167,7 +167,6 @@ public class LauncherIOTalonFX implements LauncherIO {
 
   @Override
   public void setTopVelocity(double velocityMPS, double accelerationMPS) {
-    System.out.println("HHHAHAHA TOP" + velocityMPS + accelerationMPS);
     topVelocityMPS = velocityMPS;
     topMotor.setControl(topVelocityVoltage.withVelocity(topVelocityMPS / CIRCUMFRENCE_M));
     // .withAcceleration(accelerationMPS / CIRCUMFRENCE_M));
@@ -175,7 +174,6 @@ public class LauncherIOTalonFX implements LauncherIO {
 
   @Override
   public void setBottomVelocity(double velocityMPS, double accelerationMPS) {
-    System.out.println("HHHAHAHA BOTTOM" + velocityMPS + accelerationMPS);
     bottomVelocityMPS = velocityMPS;
     bottomMotor.setControl(bottomVelocityVoltage.withVelocity(bottomVelocityMPS / CIRCUMFRENCE_M));
     // .withAcceleration(accelerationMPS / CIRCUMFRENCE_M));

@@ -40,6 +40,7 @@ public class Shooter extends SubsystemBase {
     IDLE(() -> anglerPosition),
     PODIUM(() -> Rotation2d.fromDegrees(34.5)),
     SPEAKER(() -> Rotation2d.fromDegrees(57)),
+    AMP(() -> Rotation2d.fromDegrees(55.0)),
     FEEDER(() -> Rotation2d.fromDegrees(45));
 
     private Supplier<Rotation2d> angleSupplier;
@@ -54,20 +55,27 @@ public class Shooter extends SubsystemBase {
   }
 
   public static enum LauncherSetpoints {
-    EJECT(() -> 5.0),
-    IDLE(() -> 9.0),
-    SPEAKER_SHOT(() -> 38.0),
-    FULL_SPEED(() -> 42.0),
-    OFF(() -> 0.0);
+    EJECT(() -> 5.0, () -> 5.0),
+    IDLE(() -> 9.0, () -> 9.0),
+    SPEAKER_SHOT(() -> 38.0, () -> 38.0),
+    FULL_SPEED(() -> 42.0, () -> 42.0),
+    AMP(() -> -1.2, () -> 19.65),
+    OFF(() -> 0.0, () -> 0.0);
 
-    private DoubleSupplier speedSupplierMPS;
+    private DoubleSupplier topSpeedSupplierMPS;
+    private DoubleSupplier bottomSpeedSupplierMPS;
 
-    LauncherSetpoints(DoubleSupplier speedMPS) {
-      this.speedSupplierMPS = speedMPS;
+    LauncherSetpoints(DoubleSupplier topSpeedMPS, DoubleSupplier bottomSpeedMPS) {
+      this.topSpeedSupplierMPS = topSpeedMPS;
+      this.bottomSpeedSupplierMPS = bottomSpeedMPS;
     }
 
-    public DoubleSupplier getSpeedMPS() {
-      return speedSupplierMPS;
+    public DoubleSupplier getTopSpeedMPS() {
+      return topSpeedSupplierMPS;
+    }
+
+    public DoubleSupplier getBottomSpeedMPS() {
+      return bottomSpeedSupplierMPS;
     }
   }
 
@@ -294,6 +302,8 @@ public class Shooter extends SubsystemBase {
     shooterCommandMap.put(
         ShooterStates.FEEDER,
         setShooterState(AnglerSetpoints.FEEDER, LauncherSetpoints.FULL_SPEED));
+    shooterCommandMap.put(
+        ShooterStates.AMP, setShooterState(AnglerSetpoints.AMP, LauncherSetpoints.AMP));
 
     return shooterCommandMap;
   }
@@ -346,9 +356,9 @@ public class Shooter extends SubsystemBase {
 
   public void setLauncherVelocityMPS(LauncherSetpoints velocityMPS) {
     topWheelProfile.setGoal(
-        velocityMPS.getSpeedMPS().getAsDouble(), launcherIOInputs.topFlywheelVelocityMPS);
+        velocityMPS.getTopSpeedMPS().getAsDouble(), launcherIOInputs.topFlywheelVelocityMPS);
     bottomWheelProfile.setGoal(
-        velocityMPS.getSpeedMPS().getAsDouble(), launcherIOInputs.bottomFlywheelVelocityMPS);
+        velocityMPS.getBottomSpeedMPS().getAsDouble(), launcherIOInputs.bottomFlywheelVelocityMPS);
     launcherSetpointMPS = velocityMPS;
   }
 

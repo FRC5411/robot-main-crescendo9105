@@ -36,8 +36,9 @@ public class ModuleIOSparkMax implements ModuleIO {
   private SparkPIDController driveFeedback;
   private SparkPIDController azimuthFeedback;
 
-  private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.27 / 12.0);
-  private SimpleMotorFeedforward azimuthFeedforward = new SimpleMotorFeedforward(0.03, 0.0, 0.0);
+  private SimpleMotorFeedforward driveFeedforward =
+      new SimpleMotorFeedforward(0.0, 0.27 / 12.0, 0.05);
+  private SimpleMotorFeedforward azimuthFeedforward = new SimpleMotorFeedforward(0.032, 0.0, 0.0);
 
   private LoggedTunableNumber driveFeedbackP =
       new LoggedTunableNumber("Drive/ModuleIO/Drive/Feedback/P", 0.0001);
@@ -47,13 +48,14 @@ public class ModuleIOSparkMax implements ModuleIO {
       new LoggedTunableNumber("Drive/ModuleIO/Drive/Feedback/D", 0.0);
 
   private LoggedTunableNumber azimuthFeedbackP =
-      new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/P", 0.175);
+      new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/P", 0.195);
   private LoggedTunableNumber azimuthFeedbackI =
       new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/I", 0.0);
   private LoggedTunableNumber azimuthFeedbackD =
       new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/D", 0.0);
 
   private Rotation2d azimuthAngle = new Rotation2d();
+  private Rotation2d azimuthAngleSetpoint = new Rotation2d();
 
   /** Create a new hardware implementation of a swerve module */
   public ModuleIOSparkMax(int module) {
@@ -109,9 +111,9 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveMotor.setInverted(false);
     azimuthMotor.setInverted(true);
 
-    driveMotor.setSmartCurrentLimit(40);
+    driveMotor.setSmartCurrentLimit(60);
     driveMotor.enableVoltageCompensation(12.0);
-    azimuthMotor.setSmartCurrentLimit(30);
+    azimuthMotor.setSmartCurrentLimit(40);
     azimuthMotor.enableVoltageCompensation(12.0);
 
     driveEncoder.setPosition(0.0);
@@ -134,7 +136,7 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveFeedback.setD(0.0);
     driveFeedback.setFeedbackDevice(driveEncoder);
 
-    azimuthFeedback.setP(0.175);
+    azimuthFeedback.setP(0.4);
     azimuthFeedback.setI(0.0);
     azimuthFeedback.setD(0.0);
     azimuthFeedback.setFeedbackDevice(azimuthEncoder);
@@ -169,6 +171,8 @@ public class ModuleIOSparkMax implements ModuleIO {
     inputs.azimuthVelocityRPS =
         Units.rotationsPerMinuteToRadiansPerSecond(azimuthEncoder.getVelocity())
             / AZIMUTH_GEAR_RATIO;
+    inputs.azimuthError = azimuthAngleSetpoint.minus(azimuthAngle);
+    inputs.azimuthGoal = azimuthAngleSetpoint;
     inputs.azimuthAppliedVolts = azimuthMotor.getAppliedOutput() * azimuthMotor.getBusVoltage();
     inputs.azimuthCurrentAmps = new double[] {azimuthMotor.getOutputCurrent()};
     inputs.azimuthTemperatureCelsius = new double[] {azimuthMotor.getMotorTemperature()};
@@ -201,6 +205,7 @@ public class ModuleIOSparkMax implements ModuleIO {
 
   @Override
   public void setAzimuthPosition(Rotation2d position) {
+    azimuthAngleSetpoint = position;
     double feedforwardOutput =
         azimuthFeedforward.calculate(
             Math.signum(position.getRotations() - azimuthAngle.getRotations()));

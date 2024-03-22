@@ -364,6 +364,16 @@ public class RobotContainer {
           .whileFalse(robotStateMachine.stopShooting());
 
       copilotController
+          .a()
+          .whileTrue(robotStateMachine.revAmp())
+          .onFalse(robotStateMachine.stopShooting());
+
+      copilotController
+          .x()
+          .whileTrue(robotStateMachine.scoreAmp())
+          .onFalse(robotStateMachine.getIndexerCommand(IndexerStates.OFF));
+
+      copilotController
           .leftBumper()
           .whileTrue(robotStateMachine.shootNote())
           .onFalse(robotStateMachine.stopShooting());

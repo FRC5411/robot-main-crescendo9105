@@ -11,7 +11,8 @@ public class RobotStates {
     OFF,
     INDEX,
     OUTDEX,
-    STOW
+    STOW,
+    AMP
   }
 
   public static enum ClimbStates {
@@ -21,7 +22,6 @@ public class RobotStates {
     PULL,
     MOVE_BOTH_UP,
     MOVE_BOTH_DOWN,
-    INVERT,
     AMP
   }
 
@@ -37,6 +37,7 @@ public class RobotStates {
     IDLE,
     PODIUM,
     SPEAKER,
-    FEEDER
+    FEEDER,
+    AMP
   }
 }

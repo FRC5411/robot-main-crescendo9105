@@ -31,7 +31,7 @@ public class TargetingSystem {
 
   private final double LUANCH_MAP_OFFSET_DEG_AUTON_BLUE = -1.0;
 
-  private final double LUANCH_MAP_OFFSET_DEGREES_RED = 3.0 + 1.0; // 3.0;
+  private final double LUANCH_MAP_OFFSET_DEGREES_RED = 1.0; // 4.0; // 3.0;
 
   private final double LUANCH_MAP_OFFSET_DEG_AUTON_RED = -0.0;
 

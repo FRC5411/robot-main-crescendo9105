@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems.climb;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -181,29 +180,30 @@ public class Climb extends SubsystemBase {
       climbIO.setRightVolts(currentSetpoint.rightVolts);
     }
 
-    if (leftAngleSetpoint != null) {
-      double leftFeedbackOutput =
-          leftClimbFeedback.calculate(
-              climbIOInputs.leftPosition.getDegrees(),
-              MathUtil.clamp(
-                  leftAngleSetpoint.getDegrees(), minAngle.getDegrees(), maxAngle.getDegrees()));
+    // if (leftAngleSetpoint != null) {
+    //   double leftFeedbackOutput =
+    //       leftClimbFeedback.calculate(
+    //           climbIOInputs.leftPosition.getDegrees(),
+    //           MathUtil.clamp(
+    //               leftAngleSetpoint.getDegrees(), minAngle.getDegrees(), maxAngle.getDegrees()));
 
-      Logger.recordOutput("Climb/LeftArm/Feedback/Output", leftFeedbackOutput);
+    //   Logger.recordOutput("Climb/LeftArm/Feedback/Output", leftFeedbackOutput);
 
-      climbIO.setLeftVolts(leftFeedbackOutput);
-    }
+    //   climbIO.setLeftVolts(leftFeedbackOutput);
+    // }
 
-    if (rightAngleSetpoint != null) {
-      double rightFeedbackOutput =
-          rightClimbFeedback.calculate(
-              climbIOInputs.rightPosition.getDegrees(),
-              MathUtil.clamp(
-                  rightAngleSetpoint.getDegrees(), minAngle.getDegrees(), maxAngle.getDegrees()));
+    // if (rightAngleSetpoint != null) {
+    //   double rightFeedbackOutput =
+    //       rightClimbFeedback.calculate(
+    //           climbIOInputs.rightPosition.getDegrees(),
+    //           MathUtil.clamp(
+    //               rightAngleSetpoint.getDegrees(), minAngle.getDegrees(),
+    // maxAngle.getDegrees()));
 
-      Logger.recordOutput("Climb/RightArm/Feedback/Output", rightFeedbackOutput);
+    //   Logger.recordOutput("Climb/RightArm/Feedback/Output", rightFeedbackOutput);
 
-      climbIO.setRightVolts(rightFeedbackOutput);
-    }
+    //   climbIO.setRightVolts(rightFeedbackOutput);
+    // }
 
     if (currentSetpoint != null) {
       if (climbIOInputs.leftPosition.getDegrees() > 160.0 && currentSetpoint.leftVolts > 0.0) {
@@ -255,7 +255,6 @@ public class Climb extends SubsystemBase {
     commandMap.put(ClimbStates.OFF, setManualVolts(ClimbVoltSetpoints.OFF));
     commandMap.put(ClimbStates.MOVE_BOTH_UP, setManualVolts(ClimbVoltSetpoints.BOTH_UP));
     commandMap.put(ClimbStates.MOVE_BOTH_DOWN, setManualVolts(ClimbVoltSetpoints.BOTH_DOWN));
-    commandMap.put(ClimbStates.INVERT, Commands.runOnce(() -> climbDirection *= -1.0, this));
     commandMap.put(ClimbStates.AMP, setPositionSetpoint(ClimPosSetpoints.AMP.getRotation()));
 
     return commandMap;

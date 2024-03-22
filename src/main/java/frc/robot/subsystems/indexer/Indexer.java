@@ -19,7 +19,8 @@ public class Indexer extends SubsystemBase {
     IN(12.0),
     OUT(-12.0),
     OFF(0.0),
-    STOW(4.0);
+    STOW(2.0),
+    AMP(7.0);
 
     private double volts;
 
@@ -63,6 +64,7 @@ public class Indexer extends SubsystemBase {
     commandMap.put(IndexerStates.OUTDEX, runIndexer(IndexerSetpoint.OUT));
     commandMap.put(IndexerStates.STOW, stowPiece());
     commandMap.put(IndexerStates.OFF, stopIndexer());
+    commandMap.put(IndexerStates.AMP, runIndexer(IndexerSetpoint.AMP));
     return commandMap;
   }
 
