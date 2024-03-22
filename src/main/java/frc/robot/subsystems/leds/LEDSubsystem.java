@@ -18,8 +18,6 @@ public class LEDSubsystem extends SubsystemBase {
     led = new AddressableLED(Configs.PWM_PORT);
     ledBuffer = new AddressableLEDBuffer(Configs.LED_COUNT);
     led.setLength(ledBuffer.getLength());
-
-    setDefaultColor();
   }
 
   public void setReadyColor() {
@@ -32,6 +30,10 @@ public class LEDSubsystem extends SubsystemBase {
 
   public void setHasPiece() {
     setSolidColor(RGB.ORANGE[0], RGB.ORANGE[1], RGB.ORANGE[2]);
+  }
+
+  public void turnOffLEDs() {
+    setSolidColor(0, 0, 0);
   }
 
   public void setSolidColor(int r, int g, int b) {
