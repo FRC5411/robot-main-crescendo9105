@@ -6,7 +6,6 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.VecBuilder;
@@ -55,6 +54,10 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhoton;
 import frc.robot.subsystems.vision.VisionIOPhotonSim;
+import frc.robot.utils.commands.CommandUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -86,7 +89,7 @@ public class RobotContainer {
     // initializeSubsystems()
     try {
       autoChooser =
-          new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
+          new LoggedDashboardChooser<>("Autonomous Selector", CommandUtils.buildAutoChooser());
     } catch (Exception e) {
       autoChooser = new LoggedDashboardChooser<>("Autonomous Selector");
       autoChooser.addDefaultOption(
