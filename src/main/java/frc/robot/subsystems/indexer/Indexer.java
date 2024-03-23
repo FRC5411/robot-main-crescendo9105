@@ -87,7 +87,7 @@ public class Indexer extends SubsystemBase {
         this);
   }
 
-  private void setCurrentSetpoint(IndexerSetpoint setpoint) {
+  public void setCurrentSetpoint(IndexerSetpoint setpoint) {
     currentSetpoint = setpoint;
   }
 

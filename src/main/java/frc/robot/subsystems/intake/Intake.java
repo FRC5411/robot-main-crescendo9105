@@ -70,7 +70,7 @@ public class Intake extends SubsystemBase {
     return Commands.runOnce(() -> setCurrentSetpoint(IntakeSetpoint.OFF), this);
   }
 
-  private void setCurrentSetpoint(IntakeSetpoint setpoint) {
+  public void setCurrentSetpoint(IntakeSetpoint setpoint) {
     currentSetpoint = setpoint;
   }
 

@@ -10,9 +10,14 @@ import frc.robot.RobotStates.IndexerStates;
 import frc.robot.RobotStates.IntakeStates;
 import frc.robot.RobotStates.ShooterStates;
 import frc.robot.subsystems.climb.Climb;
+import frc.robot.subsystems.climb.Climb.ClimbVoltSetpoints;
 import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.Indexer.IndexerSetpoint;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.Intake.IntakeSetpoint;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.Shooter.AnglerSetpoints;
+import frc.robot.subsystems.shooter.Shooter.LauncherSetpoints;
 import frc.robot.utils.commands.CommandUtils;
 import org.littletonrobotics.junction.AutoLogOutput;
 
@@ -55,6 +60,11 @@ public class StateMachine {
 
     climbCommands =
         new SelectCommand<ClimbStates>(this.robotClimb.mapToCommand(), () -> climbState);
+
+    robotShooter.setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.IDLE);
+    robotIntake.setCurrentSetpoint(IntakeSetpoint.OFF);
+    robotIndexer.setCurrentSetpoint(IndexerSetpoint.OFF);
+    robotClimb.setManualVolts(ClimbVoltSetpoints.OFF);
   }
 
   public Command getShooterCommand(ShooterStates state) {

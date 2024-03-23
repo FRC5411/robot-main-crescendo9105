@@ -43,7 +43,7 @@ public class Drive extends SubsystemBase {
   public static final double TRACK_WIDTH_Y_M = Units.inchesToMeters(29.5);
   public static final double DRIVEBASE_RADIUS_M =
       Math.hypot(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0);
-  public static final double MAX_LINEAR_SPEED_MPS = 6;
+  public static final double MAX_LINEAR_SPEED_MPS = 4.8;
   public static final double MAX_ANGULAR_SPEED_MPS = MAX_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS_M;
   // Second argument is the max accel
   public static final ModuleLimits MODULE_LIMITS =
