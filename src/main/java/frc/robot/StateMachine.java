@@ -44,7 +44,7 @@ public class StateMachine {
     this.robotIndexer = robotIndexer;
     this.robotClimb = robotClimb;
 
-    shooterState = ShooterStates.OFF;
+    shooterState = ShooterStates.IDLE;
     intakeState = IntakeStates.OFF;
     indexerState = IndexerStates.OFF;
     climbState = ClimbStates.OFF;
