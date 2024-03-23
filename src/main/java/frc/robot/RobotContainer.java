@@ -8,7 +8,6 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -57,6 +56,7 @@ import frc.robot.subsystems.vision.VisionIOPhotonSim;
 import frc.robot.utils.commands.CommandUtils;
 import java.util.Optional;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import edu.wpi.first.math.geometry.Pose2d;
 
 public class RobotContainer {
   private Drive robotDrive;
@@ -125,20 +125,20 @@ public class RobotContainer {
                 new VisionIOPhoton(
                     "LLLeft",
                     new Transform3d(
-                        0.12,
-                        0.26,
+                        0.35,
+                        0.32,
                         0.0,
                         new Rotation3d(
-                            VecBuilder.fill(-0.36, Math.toRadians(0.0), Math.toRadians(0.0)))),
+                            Math.toRadians(0), Math.toRadians(0.0), Math.toRadians(-19.2))),
                     0.1),
                 new VisionIOPhoton(
                     "LLRight",
                     new Transform3d(
-                        0.0,
-                        -0.2,
+                        0.35,
+                        -0.32,
                         0.0,
                         new Rotation3d(
-                            VecBuilder.fill(0.36, Math.toRadians(0.0), Math.toRadians(0.0)))),
+                            Math.toRadians(0), Math.toRadians(0.0), Math.toRadians(14.7))),
                     0.1));
         break;
       case SIM:
@@ -159,7 +159,7 @@ public class RobotContainer {
                 new VisionIOPhotonSim(
                     "LLLeft",
                     new Transform3d(
-                        0.0,
+                        0.2,
                         0.0,
                         0.33,
                         new Rotation3d(
@@ -169,8 +169,8 @@ public class RobotContainer {
                 new VisionIOPhotonSim(
                     "LLRight",
                     new Transform3d(
-                        0.36 - 0.037 - 0.18 + 0.1,
-                        0.29 - 0.28,
+                        0.4,
+                        0.0,
                         0.33,
                         new Rotation3d(
                             Math.toRadians(13.2), Math.toRadians(0), Math.toRadians(25.5))),
@@ -325,11 +325,11 @@ public class RobotContainer {
                   () -> TargetingSystem.getInstance().getOptimalLaunchHeading()))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
-      //   pilotController
-      //       .b()
-      //       .onTrue(
-      //           new InstantCommand(
-      //               () -> robotDrive.setPose(new Pose2d(1.34, 5.54, new Rotation2d()))));
+        pilotController
+            .b()
+            .onTrue(
+                new InstantCommand(
+                    () -> robotDrive.setPose(new Pose2d(1.34, 5.54, new Rotation2d()))));
 
       /* Copilot bindings */
 

@@ -84,9 +84,9 @@ public class VisionFuser {
 
     Logger.recordOutput(
         "VisionFuse/LeftTransform",
-        robotVision.getInputsLeft().estimatedRobotPose.minus(robotDrive.getPoseEstimate()));
+        robotVision.getInputsLeft().estimatedRobotPose.minus(robotDrive.getOdometryPose()));
     Logger.recordOutput(
         "VisionFuse/RightTransform",
-        robotVision.getInputsRight().estimatedRobotPose.minus(robotDrive.getPoseEstimate()));
+        robotVision.getInputsRight().estimatedRobotPose.minus(robotDrive.getOdometryPose()));
   }
 }
