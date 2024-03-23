@@ -196,22 +196,22 @@ public class CommandDispatcher {
     return getIndexerCommand(IndexerStates.AMP);
   }
 
-  @AutoLogOutput(key = "StateMachine/ShooterState")
+  @AutoLogOutput(key = "CommandDispatcher/ShooterState")
   public ShooterStates getShooterState() {
     return shooterState;
   }
 
-  @AutoLogOutput(key = "StateMachine/IntakeState")
+  @AutoLogOutput(key = "CommandDispatcher/IntakeState")
   public IntakeStates getIntakeState() {
     return intakeState;
   }
 
-  @AutoLogOutput(key = "StateMachine/IndexerState")
+  @AutoLogOutput(key = "CommandDispatcher/IndexerState")
   public IndexerStates getIndexerState() {
     return indexerState;
   }
 
-  @AutoLogOutput(key = "StateMachine/ClimbState")
+  @AutoLogOutput(key = "CommandDispatcher/ClimbState")
   public ClimbStates getClimbState() {
     return climbState;
   }
