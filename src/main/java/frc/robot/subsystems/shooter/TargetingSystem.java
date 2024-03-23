@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /** Class that calculates projectile motion given certain parameters */
@@ -85,6 +87,12 @@ public class TargetingSystem {
             ShooterConstants.blueShotMap[i][1] + LAUNCH_MAP_OFFSET_DEGREES_BLUE);
         }
       }
+    } else {
+      for(int i = 0; i < ShooterConstants.blueShotMap.length; i++) {
+        launchMap.put(
+          ShooterConstants.blueShotMap[i][0] + LAUNCH_MAP_OFFSET_M, 
+          ShooterConstants.blueShotMap[i][1] + LAUNCH_MAP_OFFSET_DEGREES_BLUE);
+      }
     }
   }
 
@@ -93,7 +101,14 @@ public class TargetingSystem {
     double distanceM = speakerDistanceM().getAsDouble();
 
     if (!multiTagEnabled) distanceM -= 0.4;
-    Rotation2d angle = Rotation2d.fromDegrees(launchMap.get(distanceM));
+    double mapAngle = launchMap.get(distanceM);
+    if (launchMap == null) {
+      mapAngle = (distanceM < LAUNCH_MAP_OFFSET_M) 
+        ? 27
+        : 57;
+    }
+
+    Rotation2d angle = Rotation2d.fromDegrees(mapAngle);
     if (DriverStation.isAutonomous()) {
       angle = angle.plus(Rotation2d.fromDegrees(
         (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red) 
@@ -102,12 +117,6 @@ public class TargetingSystem {
     }
 
     Logger.recordOutput("Shooter/TargetingSystem/Angle", angle);
-
-    if (angle == null) {
-      angle = (distanceM < LAUNCH_MAP_OFFSET_M) 
-        ? Rotation2d.fromDegrees(27)
-        : Rotation2d.fromDegrees(57);
-    }
 
     return angle;
   }
@@ -158,6 +167,7 @@ public class TargetingSystem {
   }
 
   /** Calculate the tangental distance from the speaker */
+  @AutoLogOutput(key = "Shooter/TargetingSystem/Speakerdistance")
   private double calculateSpeakerDistanceM() {
     Pose2d robotPose;
     if (useVision) robotPose = robotDrive.getFilteredPose();
