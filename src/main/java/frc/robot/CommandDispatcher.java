@@ -71,26 +71,26 @@ public class CommandDispatcher {
     return new SequentialCommandGroup(
             new InstantCommand(() -> shooterState = state),
             CommandUtils.copyCommand(shooterCommands))
-        .withName("StateMachince/ShooterCommand/" + shooterState);
+        .withName("CommandDispatcher/ShooterCommand/" + shooterState);
   }
 
   public Command getIntakeCommand(IntakeStates state) {
     return new SequentialCommandGroup(
             new InstantCommand(() -> intakeState = state), CommandUtils.copyCommand(intakeCommands))
-        .withName("StateMachince/IntakeCommand/" + intakeState);
+        .withName("CommandDispatcher/IntakeCommand/" + intakeState);
   }
 
   public Command getIndexerCommand(IndexerStates state) {
     return new SequentialCommandGroup(
             new InstantCommand(() -> indexerState = state),
             CommandUtils.copyCommand(indexerCommands))
-        .withName("StateMachince/IndexerCommand/" + indexerState);
+        .withName("CommandDispatcher/IndexerCommand/" + indexerState);
   }
 
   public Command getClimbCommand(ClimbStates state) {
     return new SequentialCommandGroup(
             new InstantCommand(() -> climbState = state), CommandUtils.copyCommand(climbCommands))
-        .withName("StateMachince/ClimbCommand/" + climbState);
+        .withName("CommandDispatcher/ClimbCommand/" + climbState);
   }
 
   public Command intakeNote() {
