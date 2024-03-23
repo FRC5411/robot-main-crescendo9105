@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj.AddressableLED;
 import edu.wpi.first.wpilibj.AddressableLEDBuffer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.subsystems.leds.LEDConstants.Configs;
-import frc.robot.subsystems.leds.LEDConstants.Hues;
+import frc.robot.subsystems.leds.LEDConstants.RGB;
 
 public class LEDSubsystem extends SubsystemBase {
   private AddressableLED led;
@@ -18,66 +18,27 @@ public class LEDSubsystem extends SubsystemBase {
     led = new AddressableLED(Configs.PWM_PORT);
     ledBuffer = new AddressableLEDBuffer(Configs.LED_COUNT);
     led.setLength(ledBuffer.getLength());
-
-    setDefaultColor();
   }
 
   public void setReadyColor() {
-    setSolidColor(Hues.GREEN, 255, 255);
+    setSolidColor(RGB.GREEN[0], RGB.GREEN[1], RGB.GREEN[2]);
   }
 
   public void setDefaultColor() {
-    setSolidColor(Hues.DARK_BLUE, 255, 255);
+    setSolidColor(RGB.DARK_BLUE[0], RGB.DARK_BLUE[1], RGB.DARK_BLUE[2]);
   }
-
-  // public void setLeftArm(int h, int s, int v) {
-  //   for (int i = Configs.LEFT_ARM_LEDS[0]; i <= Configs.LEFT_ARM_LEDS[1]; i++) {
-  //     ledBuffer.setHSV(i, h, s, v);
-  //   }
-  // }
-
-  // public void setRightArm(int h, int s, int v) {
-  //   for (int i = Configs.RIGHT_ARM_LEDS[0]; i <= Configs.RIGHT_ARM_LEDS[1]; i++) {
-  //     ledBuffer.setHSV(i, h, s, v);
-  //   }
-  // }
-
-  // public void setAngler(int h, int s, int v) {
-  //   for (int i = Configs.SHOOTER_LEDS[0]; i <= Configs.SHOOTER_LEDS[1]; i++) {
-  //     ledBuffer.setHSV(i, h, s, v);
-  //   }
-  // }
-
-  // public void setArms(int h, int s, int v) {
-  //   setRightArm(h, s, v);
-  //   setLeftArm(h, s, v);
-  // }
-
-  // public void setShooterStatus(int shooterPercentage, int anglerPercentage) {
-  //   int shooterHue = getRedGreenHue(shooterPercentage);
-  //   int anglerHue = getRedGreenHue(anglerPercentage);
-
-  //   setArms(shooterHue, 255, 255);
-  //   setAngler(anglerHue, 255, 255);
-  //   setBuffer();
-  // }
 
   public void setHasPiece() {
-    setSolidColor(Hues.ORANGE, 255, 255);
+    setSolidColor(RGB.ORANGE[0], RGB.ORANGE[1], RGB.ORANGE[2]);
   }
 
-  /*
-   * This class is used to set the color of the LED strip to red, green, or anything in between
-   * @param percentage 0-100, 0 being red, 100 being green
-   */
-  // private int getRedGreenHue(int percentage) {
-  //   double percentDecimal = MathUtil.clamp(percentage, 0, 100) / 100.0;
-  //   return (int) ((Hues.GREEN - Hues.RED) * percentDecimal + Hues.RED);
-  // }
+  public void turnOffLEDs() {
+    setSolidColor(0, 0, 0);
+  }
 
-  public void setSolidColor(int h, int s, int v) {
+  public void setSolidColor(int r, int g, int b) {
     for (int i = 0; i < ledBuffer.getLength(); i++) {
-      ledBuffer.setHSV(i, h, s, v);
+      ledBuffer.setRGB(i, r, g, b);
     }
     setBuffer();
   }

@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /** Class that calculates projectile motion given certain parameters */
@@ -27,13 +29,13 @@ public class TargetingSystem {
   private Translation3d speakerOpeningRed = new Translation3d(16.26, 5.53, 1.045);
 
   private final double LAUNCH_MAP_OFFSET_M = 0.93 + 0.46 - 0.23 - 0.17;
-  private final double LUANCH_MAP_OFFSET_DEGREES_BLUE = 3.0 + 2.0; // 3.0;
+  private final double LAUNCH_MAP_OFFSET_DEGREES_BLUE = 3.0 + 2.0; // 3.0;
 
-  private final double LUANCH_MAP_OFFSET_DEG_AUTON_BLUE = -1.0;
+  private final double LAUNCH_MAP_OFFSET_DEG_AUTON_BLUE = -1.0;
 
-  private final double LUANCH_MAP_OFFSET_DEGREES_RED = 1.0; // 4.0; // 3.0;
+  private final double LAUNCH_MAP_OFFSET_DEGREES_RED = 1.0; // 4.0; // 3.0;
 
-  private final double LUANCH_MAP_OFFSET_DEG_AUTON_RED = -0.0;
+  private final double LAUNCH_MAP_OFFSET_DEG_AUTON_RED = -0.0;
 
   private Drive robotDrive;
   private Vision robotVision;
@@ -72,55 +74,25 @@ public class TargetingSystem {
   /** Initialize the launch map */
   public void initializeLaunchMap() {
     if (DriverStation.getAlliance().isPresent()) {
-      if (DriverStation.getAlliance().get() == Alliance.Blue) {
-        launchMap.put(0.0 + LAUNCH_MAP_OFFSET_M, 55.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-        launchMap.put(0.25 + LAUNCH_MAP_OFFSET_M, 52.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-        launchMap.put(0.50 + LAUNCH_MAP_OFFSET_M, 48.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-        launchMap.put(0.75 + LAUNCH_MAP_OFFSET_M, 45.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-        launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 42.5 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-        launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 40.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-        launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 38.5 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-        launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 37.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-        launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 35.6 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-        launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 34.5 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-        launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 33.5 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-        launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 32.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-        launchMap.put(3.0 + LAUNCH_MAP_OFFSET_M, 31.1 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-        launchMap.put(3.25 + LAUNCH_MAP_OFFSET_M, 30.3 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-        launchMap.put(3.5 + LAUNCH_MAP_OFFSET_M, 29.9 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-      } else if (DriverStation.getAlliance().get() == Alliance.Red) {
-        launchMap.put(0.0 + LAUNCH_MAP_OFFSET_M, 55.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
-        launchMap.put(0.25 + LAUNCH_MAP_OFFSET_M, 52.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
-        launchMap.put(0.50 + LAUNCH_MAP_OFFSET_M, 48.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
-        launchMap.put(0.75 + LAUNCH_MAP_OFFSET_M, 45.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
-        launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 42.5 + LUANCH_MAP_OFFSET_DEGREES_RED);
-        launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 40.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
-        launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 38.5 + LUANCH_MAP_OFFSET_DEGREES_RED);
-        launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 37.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
-        launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 35.6 + LUANCH_MAP_OFFSET_DEGREES_RED);
-        launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 34.5 + LUANCH_MAP_OFFSET_DEGREES_RED);
-        launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 33.5 + LUANCH_MAP_OFFSET_DEGREES_RED);
-        launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 32.0 + LUANCH_MAP_OFFSET_DEGREES_RED);
-        launchMap.put(3.0 + LAUNCH_MAP_OFFSET_M, 31.1 + LUANCH_MAP_OFFSET_DEGREES_RED);
-        launchMap.put(3.25 + LAUNCH_MAP_OFFSET_M, 30.3 + LUANCH_MAP_OFFSET_DEGREES_RED);
-        launchMap.put(3.5 + LAUNCH_MAP_OFFSET_M, 29.9 + LUANCH_MAP_OFFSET_DEGREES_RED);
+      if (DriverStation.getAlliance().get() == Alliance.Red) {
+        for(int i = 0; i < ShooterConstants.redShotMap.length; i++) {
+          launchMap.put(
+            ShooterConstants.redShotMap[i][0] + LAUNCH_MAP_OFFSET_M, 
+            ShooterConstants.redShotMap[i][1] + LAUNCH_MAP_OFFSET_DEGREES_RED);
+        }
+      } else {
+        for(int i = 0; i < ShooterConstants.blueShotMap.length; i++) {
+          launchMap.put(
+            ShooterConstants.blueShotMap[i][0] + LAUNCH_MAP_OFFSET_M, 
+            ShooterConstants.blueShotMap[i][1] + LAUNCH_MAP_OFFSET_DEGREES_BLUE);
+        }
       }
     } else {
-      launchMap.put(0.0 + LAUNCH_MAP_OFFSET_M, 55.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-      launchMap.put(0.25 + LAUNCH_MAP_OFFSET_M, 52.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-      launchMap.put(0.50 + LAUNCH_MAP_OFFSET_M, 48.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-      launchMap.put(0.75 + LAUNCH_MAP_OFFSET_M, 45.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-      launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 42.5 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-      launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 40.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-      launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 38.5 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-      launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 37.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-      launchMap.put(1.0 + LAUNCH_MAP_OFFSET_M, 35.6 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-      launchMap.put(1.25 + LAUNCH_MAP_OFFSET_M, 34.5 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-      launchMap.put(1.5 + LAUNCH_MAP_OFFSET_M, 33.5 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-      launchMap.put(1.75 + LAUNCH_MAP_OFFSET_M, 32.0 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-      launchMap.put(3.0 + LAUNCH_MAP_OFFSET_M, 31.1 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-      launchMap.put(3.25 + LAUNCH_MAP_OFFSET_M, 30.3 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
-      launchMap.put(3.5 + LAUNCH_MAP_OFFSET_M, 29.9 + LUANCH_MAP_OFFSET_DEGREES_BLUE);
+      for(int i = 0; i < ShooterConstants.blueShotMap.length; i++) {
+        launchMap.put(
+          ShooterConstants.blueShotMap[i][0] + LAUNCH_MAP_OFFSET_M, 
+          ShooterConstants.blueShotMap[i][1] + LAUNCH_MAP_OFFSET_DEGREES_BLUE);
+      }
     }
   }
 
@@ -129,29 +101,22 @@ public class TargetingSystem {
     double distanceM = speakerDistanceM().getAsDouble();
 
     if (!multiTagEnabled) distanceM -= 0.4;
-    Rotation2d angle = Rotation2d.fromDegrees(launchMap.get(distanceM));
+    double mapAngle = launchMap.get(distanceM);
+    if (launchMap == null) {
+      mapAngle = (distanceM < LAUNCH_MAP_OFFSET_M) 
+        ? 27
+        : 57;
+    }
+
+    Rotation2d angle = Rotation2d.fromDegrees(mapAngle);
     if (DriverStation.isAutonomous()) {
-      if (DriverStation.getAlliance().isPresent()
-          && DriverStation.getAlliance().get() == Alliance.Blue) {
-        System.out.print("Angle:" + angle.getDegrees());
-        angle = angle.plus(Rotation2d.fromDegrees(LUANCH_MAP_OFFSET_DEG_AUTON_BLUE));
-        System.out.print("Angle Off:" + angle.getDegrees());
-      } else {
-        System.out.print("Angle:" + angle.getDegrees());
-        angle = angle.plus(Rotation2d.fromDegrees(LUANCH_MAP_OFFSET_DEG_AUTON_RED));
-        System.out.print("Angle Off:" + angle.getDegrees());
-      }
+      angle = angle.plus(Rotation2d.fromDegrees(
+        (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red) 
+          ? LAUNCH_MAP_OFFSET_DEG_AUTON_RED 
+          : LAUNCH_MAP_OFFSET_DEG_AUTON_BLUE));
     }
 
     Logger.recordOutput("Shooter/TargetingSystem/Angle", angle);
-
-    if (angle == null) {
-      if (distanceM < LAUNCH_MAP_OFFSET_M) {
-        angle = Rotation2d.fromDegrees(27);
-      } else if (distanceM > 3.5 + LAUNCH_MAP_OFFSET_M) {
-        angle = Rotation2d.fromDegrees(57);
-      }
-    }
 
     return angle;
   }
@@ -202,6 +167,7 @@ public class TargetingSystem {
   }
 
   /** Calculate the tangental distance from the speaker */
+  @AutoLogOutput(key = "Shooter/TargetingSystem/Speakerdistance")
   private double calculateSpeakerDistanceM() {
     Pose2d robotPose;
     if (useVision) robotPose = robotDrive.getFilteredPose();

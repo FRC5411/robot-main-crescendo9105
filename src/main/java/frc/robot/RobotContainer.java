@@ -390,6 +390,14 @@ public class RobotContainer {
     }
   }
 
+  public void initLEDs() {
+    robotLEDs.setDefaultColor();
+  }
+
+  public void shutOffLEDs() {
+    robotLEDs.turnOffLEDs();
+  }
+
   public Command getAutonomousCommand() {
     return autoChooser.get();
   }
