@@ -21,7 +21,7 @@ import frc.robot.subsystems.shooter.Shooter.LauncherSetpoints;
 import frc.robot.utils.commands.CommandUtils;
 import org.littletonrobotics.junction.AutoLogOutput;
 
-public class StateMachine {
+public class CommandDispatcher {
   private Shooter robotShooter;
   private Intake robotIntake;
   private Indexer robotIndexer;
@@ -37,7 +37,7 @@ public class StateMachine {
   private SelectCommand<IndexerStates> indexerCommands;
   private SelectCommand<ClimbStates> climbCommands;
 
-  public StateMachine(
+  public CommandDispatcher(
       Shooter robotShooter, Intake robotIntake, Indexer robotIndexer, Climb robotClimb) {
     this.robotShooter = robotShooter;
     this.robotIntake = robotIntake;

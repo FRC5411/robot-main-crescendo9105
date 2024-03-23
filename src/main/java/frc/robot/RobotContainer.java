@@ -68,7 +68,7 @@ public class RobotContainer {
   private LEDSubsystem robotLEDs;
 
   private VisionFuser visionFuser;
-  private StateMachine robotStateMachine;
+  private CommandDispatcher robotStateMachine;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
   private CommandXboxController copilotController = new CommandXboxController(1);
@@ -78,7 +78,7 @@ public class RobotContainer {
   public RobotContainer() {
     initializeSubsystems();
 
-    robotStateMachine = new StateMachine(robotShooter, robotIntake, robotIndexer, robotClimb);
+    robotStateMachine = new CommandDispatcher(robotShooter, robotIntake, robotIndexer, robotClimb);
 
     configureAutonomous();
 
