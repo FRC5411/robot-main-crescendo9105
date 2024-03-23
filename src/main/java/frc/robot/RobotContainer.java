@@ -127,18 +127,18 @@ public class RobotContainer {
                     new Transform3d(
                         0.35,
                         0.32,
-                        0.0,
+                        0.33,
                         new Rotation3d(
-                            Math.toRadians(0), Math.toRadians(0.0), Math.toRadians(-19.2))),
+                            Math.toRadians(0), Math.toRadians(-25.5), Math.toRadians(-19.2))),
                     0.1),
                 new VisionIOPhoton(
                     "LLRight",
                     new Transform3d(
                         0.35,
                         -0.32,
-                        0.0,
+                        0.33,
                         new Rotation3d(
-                            Math.toRadians(0), Math.toRadians(0.0), Math.toRadians(14.7))),
+                            Math.toRadians(0), Math.toRadians(-25.5), Math.toRadians(14.7))),
                     0.1));
         break;
       case SIM:
