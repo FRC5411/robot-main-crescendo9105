@@ -17,6 +17,9 @@
     "photonvision@1": {
       "open": true
     },
+    "photonvision@4": {
+      "open": true
+    },
     "visible": true
   },
   "NetworkTables Settings": {

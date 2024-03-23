@@ -42,8 +42,8 @@ import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.leds.LEDSubsystem;
-import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.TargetingSystem;
+import frc.robot.subsystems.shooter.angler.Angler;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.angler.AnglerIOSim;
 import frc.robot.subsystems.shooter.angler.AnglerIOSparkMax;
@@ -61,7 +61,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   private Drive robotDrive;
   private Intake robotIntake;
-  private Shooter robotShooter;
+  private Angler robotShooter;
   private Climb robotClimb;
   private Indexer robotIndexer;
   private Vision robotVision;
@@ -69,6 +69,7 @@ public class RobotContainer {
 
   private VisionFuser visionFuser;
   private StateMachine robotStateMachine;
+  private DriverCommandFactory driverCommands;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
   private CommandXboxController copilotController = new CommandXboxController(1);
@@ -79,6 +80,7 @@ public class RobotContainer {
     initializeSubsystems();
 
     robotStateMachine = new StateMachine(robotShooter, robotIntake, robotIndexer, robotClimb);
+    driverCommands = new DriverCommandFactory(robotStateMachine);
 
     configureAutonomous();
 
@@ -92,10 +94,10 @@ public class RobotContainer {
       autoChooser.addDefaultOption(
           "ShootNoteException",
           new SequentialCommandGroup(
-              robotStateMachine.getShooterCommand(ShooterStates.AIM),
+              robotStateMachine.setShooterState(ShooterStates.AIM),
               new WaitCommand(1.0),
-              robotStateMachine.getIndexerCommand(IndexerStates.INDEX),
-              robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
+              robotStateMachine.setIndexerState(IndexerStates.INDEX),
+              robotStateMachine.setIntakeState(IntakeStates.OFF)));
     }
 
     configureTriggers();
@@ -116,7 +118,7 @@ public class RobotContainer {
                 new ModuleIOSparkMax(3),
                 new GyroIOPigeon2(false));
         robotIntake = new Intake(new IntakeIOSparkMax());
-        robotShooter = new Shooter(new AnglerIOSparkMax(), new LauncherIOTalonFX());
+        robotShooter = new Angler(new AnglerIOSparkMax(), new LauncherIOTalonFX());
         robotClimb = new Climb(new ClimbIOSparkMax());
         robotIndexer = new Indexer(new IndexerIOSparkMax());
         robotLEDs = new LEDSubsystem();
@@ -150,7 +152,7 @@ public class RobotContainer {
                 new ModuleIOSim(3),
                 new GyroIO() {});
         robotIntake = new Intake(new IntakeIOSim());
-        robotShooter = new Shooter(new AnglerIOSim(), new LauncherIOSim());
+        robotShooter = new Angler(new AnglerIOSim(), new LauncherIOSim());
         robotClimb = new Climb(new ClimbIOSim());
         robotIndexer = new Indexer(new IndexerIOSim());
         robotLEDs = new LEDSubsystem();
@@ -186,7 +188,7 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new GyroIO() {});
         robotIntake = new Intake(new IntakeIO() {});
-        robotShooter = new Shooter(new AnglerIO() {}, new LauncherIO() {});
+        robotShooter = new Angler(new AnglerIO() {}, new LauncherIO() {});
         robotClimb = new Climb(new ClimbIO() {});
         robotIndexer = new Indexer(new IndexerIO() {});
         robotLEDs = new LEDSubsystem();
@@ -206,32 +208,32 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "Intake",
         new ParallelCommandGroup(
-                robotStateMachine.getIndexerCommand(IndexerStates.STOW),
-                robotStateMachine.getIntakeCommand(IntakeStates.INTAKE),
-                robotStateMachine.getShooterCommand(ShooterStates.INTAKE))
+                robotStateMachine.setIndexerState(IndexerStates.STOW),
+                robotStateMachine.setIntakeState(IntakeStates.INTAKE),
+                robotStateMachine.setShooterState(ShooterStates.INTAKE))
             .withTimeout(2.0));
     NamedCommands.registerCommand(
         "Shoot",
         new SequentialCommandGroup(
-            robotStateMachine.getShooterCommand(ShooterStates.AIM),
+            robotStateMachine.setShooterState(ShooterStates.AIM),
             new WaitCommand(1.0),
-            robotStateMachine.getIndexerCommand(IndexerStates.INDEX),
-            robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
+            robotStateMachine.setIndexerState(IndexerStates.INDEX),
+            robotStateMachine.setIntakeState(IntakeStates.OFF)));
 
     NamedCommands.registerCommand(
         "Eject",
         new WaitCommand(2)
             .andThen(
                 new SequentialCommandGroup(
-                    robotStateMachine.getShooterCommand(ShooterStates.EJECT),
-                    robotStateMachine.getIndexerCommand(IndexerStates.INDEX),
-                    robotStateMachine.getIntakeCommand(IntakeStates.INTAKE))));
+                    robotStateMachine.setShooterState(ShooterStates.EJECT),
+                    robotStateMachine.setIndexerState(IndexerStates.INDEX),
+                    robotStateMachine.setIntakeState(IntakeStates.INTAKE))));
 
     NamedCommands.registerCommand(
-        "ShootIdle", robotStateMachine.getShooterCommand(ShooterStates.IDLE));
+        "ShootIdle", robotStateMachine.setShooterState(ShooterStates.IDLE));
 
     NamedCommands.registerCommand(
-        "IntakeOnly", robotStateMachine.getIntakeCommand(IntakeStates.INTAKE));
+        "IntakeOnly", robotStateMachine.setIntakeState(IntakeStates.INTAKE));
   }
 
   private void configureTriggers() {
@@ -277,13 +279,13 @@ public class RobotContainer {
 
       pilotController
           .b()
-          .whileTrue(robotStateMachine.getShooterCommand(ShooterStates.AIM))
-          .onFalse(robotStateMachine.getShooterCommand(ShooterStates.IDLE));
+          .whileTrue(robotStateMachine.setShooterState(ShooterStates.AIM))
+          .onFalse(robotStateMachine.setShooterState(ShooterStates.IDLE));
 
       pilotController
           .x()
           .onTrue(robotShooter.characterizeFlywheel())
-          .onFalse(robotStateMachine.getShooterCommand(ShooterStates.IDLE));
+          .onFalse(robotStateMachine.setShooterState(ShooterStates.IDLE));
 
       pilotController
           .y()
@@ -303,13 +305,13 @@ public class RobotContainer {
 
       pilotController
           .leftBumper()
-          .whileTrue(robotStateMachine.intakeNote())
-          .onFalse(robotStateMachine.stopTakeNote());
+          .whileTrue(driverCommands.intakeNote())
+          .onFalse(driverCommands.stopTakeNote());
 
       pilotController
           .rightBumper()
-          .whileTrue(robotStateMachine.outtakeNote())
-          .onFalse(robotStateMachine.stopTakeNote());
+          .whileTrue(driverCommands.outtakeNote())
+          .onFalse(driverCommands.stopTakeNote());
 
       /* Reset gyro */
       pilotController.y().whileTrue(SwerveCommands.resetGyro(robotDrive));
@@ -335,48 +337,48 @@ public class RobotContainer {
 
       copilotController
           .povUp()
-          .whileTrue(robotStateMachine.moveAnglerUpManual())
-          .onFalse(robotStateMachine.shooterToIdle());
+          .whileTrue(driverCommands.moveAnglerUpManual())
+          .onFalse(driverCommands.shooterToIdle());
 
       copilotController
           .povDown()
-          .whileTrue(robotStateMachine.moveAnglerDownManual())
-          .onFalse(robotStateMachine.shooterToIdle());
+          .whileTrue(driverCommands.moveAnglerDownManual())
+          .onFalse(driverCommands.shooterToIdle());
 
       copilotController
           .povLeft()
-          .whileTrue(robotStateMachine.climbUp())
-          .whileFalse(robotStateMachine.stopClimb());
+          .whileTrue(driverCommands.climbUp())
+          .whileFalse(driverCommands.stopClimb());
 
       copilotController
           .povRight()
-          .whileTrue(robotStateMachine.climbDown())
-          .whileFalse(robotStateMachine.stopClimb());
+          .whileTrue(driverCommands.climbDown())
+          .whileFalse(driverCommands.stopClimb());
 
       copilotController
           .y()
-          .whileTrue(robotStateMachine.prepareNoteShot())
-          .onFalse(robotStateMachine.stopShooting());
+          .whileTrue(driverCommands.prepareNoteShot())
+          .onFalse(driverCommands.stopShooting());
 
       copilotController
           .b()
-          .whileTrue(robotStateMachine.revUp())
-          .whileFalse(robotStateMachine.stopShooting());
+          .whileTrue(driverCommands.revUp())
+          .whileFalse(driverCommands.stopShooting());
 
       copilotController
           .a()
-          .whileTrue(robotStateMachine.revAmp())
-          .onFalse(robotStateMachine.stopShooting());
+          .whileTrue(driverCommands.revAmp())
+          .onFalse(driverCommands.stopShooting());
 
       copilotController
           .x()
-          .whileTrue(robotStateMachine.scoreAmp())
-          .onFalse(robotStateMachine.getIndexerCommand(IndexerStates.OFF));
+          .whileTrue(driverCommands.scoreAmp())
+          .onFalse(robotStateMachine.setIndexerState(IndexerStates.OFF));
 
       copilotController
           .leftBumper()
-          .whileTrue(robotStateMachine.shootNote())
-          .onFalse(robotStateMachine.stopShooting());
+          .whileTrue(driverCommands.shootNote())
+          .onFalse(driverCommands.stopShooting());
 
       //   copilotController
       //       .rightTrigger()
