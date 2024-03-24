@@ -15,8 +15,9 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIOInputsAutoLogged;
+
 import java.util.Set;
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
@@ -28,14 +29,15 @@ public class TargetingSystem {
   private Translation3d speakerOpeningBlue = new Translation3d(0.0, 5.53, 1.045);
   private Translation3d speakerOpeningRed = new Translation3d(16.26, 5.53, 1.045);
 
-  private final double LAUNCH_MAP_OFFSET_M = 0.93 + 0.46 - 0.23 - 0.17;
-  private final double LAUNCH_MAP_OFFSET_DEGREES_BLUE = 3.0 + 2.0; // 3.0;
+  private final double LAUNCH_MAP_OFFSET_M = 0.99;
 
+  private final double LAUNCH_MAP_OFFSET_DEGREES_BLUE = 5.0;
   private final double LAUNCH_MAP_OFFSET_DEG_AUTON_BLUE = -1.0;
 
-  private final double LAUNCH_MAP_OFFSET_DEGREES_RED = 1.0; // 4.0; // 3.0;
+  private final double LAUNCH_MAP_OFFSET_DEGREES_RED = 1.0;
+  private final double LAUNCH_MAP_OFFSET_DEG_AUTON_RED = 0.0;
 
-  private final double LAUNCH_MAP_OFFSET_DEG_AUTON_RED = -0.0;
+  private final int LINEAR_FILTER_DATASAMPLE = 10;
 
   private Drive robotDrive;
   private Vision robotVision;
@@ -45,8 +47,8 @@ public class TargetingSystem {
 
   private Rotation2d lastHeading = new Rotation2d();
 
-  private LinearFilter distanceFilter = LinearFilter.movingAverage(10);
-  private LinearFilter rotationFilter = LinearFilter.movingAverage(10);
+  private LinearFilter distanceFilter = LinearFilter.movingAverage(LINEAR_FILTER_DATASAMPLE);
+  private LinearFilter rotationFilter = LinearFilter.movingAverage(LINEAR_FILTER_DATASAMPLE);
 
   private boolean useVision = true;
 
@@ -71,28 +73,15 @@ public class TargetingSystem {
     robotVision = vision;
   }
 
-  /** Initialize the launch map */
   public void initializeLaunchMap() {
-    if (DriverStation.getAlliance().isPresent()) {
-      if (DriverStation.getAlliance().get() == Alliance.Red) {
-        for(int i = 0; i < ShooterConstants.redShotMap.length; i++) {
-          launchMap.put(
-            ShooterConstants.redShotMap[i][0] + LAUNCH_MAP_OFFSET_M, 
-            ShooterConstants.redShotMap[i][1] + LAUNCH_MAP_OFFSET_DEGREES_RED);
-        }
-      } else {
-        for(int i = 0; i < ShooterConstants.blueShotMap.length; i++) {
-          launchMap.put(
-            ShooterConstants.blueShotMap[i][0] + LAUNCH_MAP_OFFSET_M, 
-            ShooterConstants.blueShotMap[i][1] + LAUNCH_MAP_OFFSET_DEGREES_BLUE);
-        }
-      }
-    } else {
-      for(int i = 0; i < ShooterConstants.blueShotMap.length; i++) {
-        launchMap.put(
-          ShooterConstants.blueShotMap[i][0] + LAUNCH_MAP_OFFSET_M, 
-          ShooterConstants.blueShotMap[i][1] + LAUNCH_MAP_OFFSET_DEGREES_BLUE);
-      }
+    Alliance alliance = (DriverStation.getAlliance().isPresent()) ? DriverStation.getAlliance().get() : null;
+    double[][] shotMap = (alliance == Alliance.Red) ? ShooterConstants.redShotMap : ShooterConstants.blueShotMap;
+    double launchMapOffsetDegrees = (alliance == Alliance.Red) ? LAUNCH_MAP_OFFSET_DEGREES_RED : LAUNCH_MAP_OFFSET_DEGREES_BLUE;
+    
+    for(int i = 0; i < shotMap.length; i++) {
+      launchMap.put(
+        shotMap[i][0] + LAUNCH_MAP_OFFSET_M, 
+        shotMap[i][1] + launchMapOffsetDegrees);
     }
   }
 
@@ -112,8 +101,7 @@ public class TargetingSystem {
     if (DriverStation.isAutonomous()) {
       angle = angle.plus(Rotation2d.fromDegrees(
         (DriverStation.getAlliance().isPresent() && DriverStation.getAlliance().get() == Alliance.Red) 
-          ? LAUNCH_MAP_OFFSET_DEG_AUTON_RED 
-          : LAUNCH_MAP_OFFSET_DEG_AUTON_BLUE));
+          ? LAUNCH_MAP_OFFSET_DEG_AUTON_RED : LAUNCH_MAP_OFFSET_DEG_AUTON_BLUE));
     }
 
     Logger.recordOutput("Shooter/TargetingSystem/Angle", angle);
@@ -121,47 +109,42 @@ public class TargetingSystem {
     return angle;
   }
 
-  /** Returns the optimal heading for shooting */
   public Rotation2d getOptimalLaunchHeading() {
-    Pose2d robotPose;
-    if (useVision) robotPose = robotDrive.getFilteredPose();
-    else robotPose = robotDrive.getOdometryPose();
+    Pose2d robotPose = (useVision) ? robotDrive.getFilteredPose() : robotDrive.getOdometryPose();
+    Rotation2d heading = new Rotation2d();
 
-    Rotation2d heading;
     if (multiTagEnabled) {
       double xDelta =
+          (DriverStation.getAlliance().isPresent()) && 
           (DriverStation.getAlliance().get() == Alliance.Blue)
               ? speakerOpeningBlue.getX() - robotPose.getX()
               : speakerOpeningRed.getX() - robotPose.getX();
 
       double yDelta =
+          (DriverStation.getAlliance().isPresent()) && 
           (DriverStation.getAlliance().get() == Alliance.Blue)
               ? speakerOpeningBlue.getY() - robotPose.getY()
               : speakerOpeningRed.getY() - robotPose.getY();
 
       heading = new Rotation2d(xDelta, yDelta);
-    } else if (robotVision.getInputsLeft().hasSpeakerTarget) {
-      heading = robotVision.getInputsLeft().speakerTagTransform.getTranslation().getAngle();
-      lastHeading = heading;
-    } else if (robotVision.getInputsRight().hasSpeakerTarget) {
-      heading = robotVision.getInputsLeft().speakerTagTransform.getTranslation().getAngle();
-      lastHeading = heading;
     } else {
-      heading = lastHeading;
-    }
-    if (multiTagEnabled) {
+      VisionIOInputsAutoLogged inputs = 
+            (robotVision.getInputsLeft().hasSpeakerTarget) ? robotVision.getInputsLeft() :
+            (robotVision.getInputsRight().hasSpeakerTarget) ? robotVision.getInputsRight() :
+            null;
+      heading = (inputs != null) ? inputs.speakerTagTransform.getTranslation().getAngle() : lastHeading;
+      lastHeading = heading;
+    } 
+
+    if(multiTagEnabled || (DriverStation.getAlliance().get() == Alliance.Red)) {
       heading = heading.plus(Rotation2d.fromDegrees(180.0));
-    } else {
-      if (DriverStation.getAlliance().get() == Alliance.Red) {
-        heading = heading.plus(Rotation2d.fromDegrees(180.0));
-      }
     }
-
-    Logger.recordOutput("Shooter/TargetingSystem/Heading", heading);
-
+    
     if (!multiTagEnabled) {
       heading = Rotation2d.fromDegrees(rotationFilter.calculate(heading.getDegrees()));
     }
+
+    Logger.recordOutput("Shooter/TargetingSystem/Heading", heading);
 
     return heading;
   }
@@ -169,54 +152,49 @@ public class TargetingSystem {
   /** Calculate the tangental distance from the speaker */
   @AutoLogOutput(key = "Shooter/TargetingSystem/Speakerdistance")
   private double calculateSpeakerDistanceM() {
-    Pose2d robotPose;
-    if (useVision) robotPose = robotDrive.getFilteredPose();
-    else robotPose = robotDrive.getOdometryPose();
+    Pose2d robotPose = (useVision) ? robotDrive.getFilteredPose() : robotDrive.getOdometryPose();
+    double distanceM = 0;
 
-    double distanceM;
     if (multiTagEnabled) {
       distanceM =
-          (DriverStation.getAlliance().get() == Alliance.Blue)
+          ((DriverStation.getAlliance().isPresent()) && 
+           (DriverStation.getAlliance().get() == Alliance.Blue))
               ? Math.hypot(
                   speakerOpeningBlue.getX() - robotPose.getX(),
                   speakerOpeningBlue.getY() - robotPose.getY())
               : Math.hypot(
                   speakerOpeningRed.getX() - robotPose.getX(),
                   speakerOpeningRed.getY() - robotPose.getY());
-    } else if (robotVision.getInputsLeft().hasSpeakerTarget) {
-      distanceM = robotVision.getInputsLeft().speakerTagTransform.getTranslation().getNorm();
-    } else if (robotVision.getInputsRight().hasSpeakerTarget) {
-      distanceM = robotVision.getInputsRight().speakerTagTransform.getTranslation().getNorm();
     } else {
-      distanceM = -1;
+      VisionIOInputsAutoLogged inputs = 
+            (robotVision.getInputsLeft().hasSpeakerTarget) ? robotVision.getInputsLeft() :
+            (robotVision.getInputsRight().hasSpeakerTarget) ? robotVision.getInputsRight() :
+            null;
+      distanceM = (inputs != null) ? inputs.speakerTagTransform.getTranslation().getNorm() : -1;
     }
 
     Logger.recordOutput("Shooter/TargetingSystem/Distance", distanceM);
 
-    distanceM = distanceFilter.calculate(distanceM);
-
-    return distanceM;
+    return distanceFilter.calculate(distanceM);
   }
 
   private DoubleSupplier speakerDistanceM() {
     return () -> calculateSpeakerDistanceM();
   }
 
-  public boolean isAtShootRange() {
-    try {
-      if (robotVision.getInputsLeft().hasSpeakerTarget
-          || robotVision.getInputsRight().hasSpeakerTarget) {
-        return false;
-      }
-      return speakerDistanceM().getAsDouble() <= 3;
-    } catch (Exception e) {
-      return false;
-    }
-  }
+  // public boolean isAtShootRange() {
+  //   try {
+  //     return (robotVision.getInputsLeft().hasSpeakerTarget || robotVision.getInputsRight().hasSpeakerTarget) 
+  //               ? false 
+  //               : speakerDistanceM().getAsDouble() <= 3;
+  //   } catch (Exception e) {
+  //     return false;
+  //   }
+  // }
 
-  public BooleanSupplier atShootRange() {
-    return () -> isAtShootRange();
-  }
+  // public BooleanSupplier atShootRange() {
+  //   return () -> isAtShootRange();
+  // }
 
   /** Returns a command to visualize a note being shot from the robot */
   public Command shoot(Supplier<Rotation2d> anglerPosition) {
@@ -267,13 +245,13 @@ public class TargetingSystem {
             .ignoringDisable(true));
   }
 
-  public void toggleMultiTagEnabled() {
-    multiTagEnabled = !multiTagEnabled;
-  }
+  // public void toggleMultiTagEnabled() {
+  //   multiTagEnabled = !multiTagEnabled;
+  // }
 
-  public void toggleUseVision() {
-    useVision = !useVision;
-  }
+  // public void toggleUseVision() {
+  //   useVision = !useVision;
+  // }
 
   public void logMultiTagEnabled() {
     Logger.recordOutput("Shooter/TargetingSystem/MulitTagEnabled", multiTagEnabled);
@@ -283,7 +261,7 @@ public class TargetingSystem {
     Logger.recordOutput("Shooter/TargetingSystem/UseVision", useVision);
   }
 
-  public boolean getMultiTagEnabled() {
-    return multiTagEnabled;
-  }
+  // public boolean getMultiTagEnabled() {
+  //   return multiTagEnabled;
+  // }
 }
