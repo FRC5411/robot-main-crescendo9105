@@ -11,7 +11,9 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Robot;
@@ -64,8 +66,10 @@ public class Shooter extends SubsystemBase {
     FEEDER(() -> 30.0, () -> 30.0),
     // 12.5: 7 / 9
     // 12.65: 0
-    // 12.58: 9/12
-    AMP(() -> -0.1, () -> 12.54),
+    // 12.58: 9 / 12
+    // AMP(() -> -0.1, () -> 12.54),
+    // AMP(() -> -4.5, () -> 12.0): 5 / 8
+    AMP(() -> -4.5, () -> 12.0),
     OFF(() -> 0.0, () -> 0.0);
 
     private DoubleSupplier topSpeedSupplierMPS;
@@ -332,6 +336,54 @@ public class Shooter extends SubsystemBase {
           setAnglerVolts(volts);
         },
         this);
+  }
+
+// TODO Remove, this is for debugging only
+  public Command setAnglerCommandWithoutEnd(AnglerSetpoints setpoint) {
+    return new FunctionalCommand(
+      () -> {
+        anglerSetpoint = setpoint;
+
+        DoubleSupplier errorDegrees = () -> Math.abs(anglerSetpoint.getAngle().get().minus(currentAngle).getDegrees());
+
+        if (anglerSetpoint != null && errorDegrees.getAsDouble() > 2.0) {
+          resetAnglerFeedback();
+        }
+      }, 
+      () -> {
+        if(isAnglerAtGoal()) {
+          anglerIO.setVolts(0.0);
+        }
+      }, 
+      (interrupted) -> {
+        anglerSetpoint = null;
+      }, 
+      () -> false, 
+      this);
+  }
+
+  // TODO Remove, this is for debugging only
+  public Command setAnglerCommand(AnglerSetpoints setpoint) {
+    return new FunctionalCommand(
+      () -> {
+        anglerSetpoint = setpoint;
+
+        DoubleSupplier errorDegrees = () -> Math.abs(anglerSetpoint.getAngle().get().minus(currentAngle).getDegrees());
+
+        if (anglerSetpoint != null && errorDegrees.getAsDouble() > 2.0) {
+          resetAnglerFeedback();
+        }
+      }, 
+      () -> {
+        if(isAnglerAtGoal()) {
+          anglerIO.setVolts(0.0);
+        }
+      }, 
+      (interrupted) -> {
+        anglerSetpoint = null;
+      }, 
+      () -> isAnglerAtGoal(), 
+      this);
   }
 
   public void setMotors(AnglerSetpoints anglerGoal, LauncherSetpoints launcherGoal) {

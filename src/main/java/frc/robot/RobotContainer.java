@@ -45,7 +45,6 @@ import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.leds.LEDSubsystem;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.AnglerSetpoints;
-import frc.robot.subsystems.shooter.Shooter.LauncherSetpoints;
 import frc.robot.subsystems.shooter.TargetingSystem;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.angler.AnglerIOSim;
@@ -334,7 +333,9 @@ public class RobotContainer {
     //             new InstantCommand(
     //                 () -> robotDrive.setPose(new Pose2d(1.34, 5.54, new Rotation2d()))));
 
-      pilotController.y().whileTrue(robotShooter.setShooterState(AnglerSetpoints.DEBUGGING, LauncherSetpoints.SPEAKER_SHOT)).whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
+    //  pilotController.y().whileTrue(robotShooter.setShooterState(AnglerSetpoints.DEBUGGING, LauncherSetpoints.OFF)).whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
+
+      pilotController.y().whileTrue(robotShooter.setAnglerCommand(AnglerSetpoints.DEBUGGING)).whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
 
       pilotController.povLeft().whileTrue(robotIndexer.runIndexer(IndexerSetpoint.IN)).whileFalse(robotIndexer.runIndexer(IndexerSetpoint.OFF));
 
