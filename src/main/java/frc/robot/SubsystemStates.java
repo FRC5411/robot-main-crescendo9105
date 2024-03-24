@@ -1,6 +1,6 @@
 package frc.robot;
 
-public class RobotStates {
+public class SubsystemStates {
   public static enum IntakeStates {
     OFF,
     INTAKE,
