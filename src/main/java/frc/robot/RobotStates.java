@@ -38,6 +38,7 @@ public class RobotStates {
     PODIUM,
     SPEAKER,
     FEEDER,
-    AMP
+    REV_AMP,
+    SHOOT_AMP
   }
 }

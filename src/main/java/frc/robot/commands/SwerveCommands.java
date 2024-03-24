@@ -52,8 +52,8 @@ public class SwerveCommands {
           double theta = MathUtil.applyDeadband(thetaSupplier.getAsDouble(), DEADBAND);
 
           // Square inputs
-          linearMagnitude *= linearMagnitude;
-          theta = Math.copySign(theta * theta, theta);
+          // linearMagnitude *= linearMagnitude;
+          // theta = Math.copySign(theta * theta, theta);
 
           // Calculate velocity
           Translation2d linearVelocity =

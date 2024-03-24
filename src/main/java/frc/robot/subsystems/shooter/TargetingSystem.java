@@ -7,6 +7,7 @@ package frc.robot.subsystems.shooter;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
@@ -28,12 +29,13 @@ public class TargetingSystem {
   private Translation3d speakerOpeningBlue = new Translation3d(0.0, 5.53, 1.045);
   private Translation3d speakerOpeningRed = new Translation3d(16.26, 5.53, 1.045);
 
-  private final double LAUNCH_MAP_OFFSET_M = 0.93 + 0.46 - 0.23 - 0.17;
+  // Offset is robot drive width cut in half
+  private final double LAUNCH_MAP_OFFSET_M = - Units.inchesToMeters(36.0 / 2.0);
   private final double LAUNCH_MAP_OFFSET_DEGREES_BLUE = 3.0 + 2.0; // 3.0;
 
-  private final double LAUNCH_MAP_OFFSET_DEG_AUTON_BLUE = -1.0;
+  private final double LAUNCH_MAP_OFFSET_DEG_AUTON_BLUE = 0.0;
 
-  private final double LAUNCH_MAP_OFFSET_DEGREES_RED = 1.0; // 4.0; // 3.0;
+  private final double LAUNCH_MAP_OFFSET_DEGREES_RED = 0.0; // 4.0; // 3.0;
 
   private final double LAUNCH_MAP_OFFSET_DEG_AUTON_RED = -0.0;
 

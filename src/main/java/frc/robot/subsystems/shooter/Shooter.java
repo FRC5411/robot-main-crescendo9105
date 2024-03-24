@@ -11,7 +11,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -33,6 +32,8 @@ import org.littletonrobotics.junction.Logger;
 
 /** Shooter subsystem */
 public class Shooter extends SubsystemBase {
+  private static LoggedTunableNumber angleTunableNumber = new LoggedTunableNumber("Shooter/AngleDebuggingDegrees", 0.0);
+   
   public static enum AnglerSetpoints {
     AIM(() -> TargetingSystem.getInstance().getLaunchMapAngle()),
     CLIMB(() -> Rotation2d.fromDegrees(25.0)),
@@ -40,8 +41,9 @@ public class Shooter extends SubsystemBase {
     IDLE(() -> anglerPosition),
     PODIUM(() -> Rotation2d.fromDegrees(34.5)),
     SPEAKER(() -> Rotation2d.fromDegrees(57)),
-    AMP(() -> Rotation2d.fromDegrees(52.0)),
-    FEEDER(() -> Rotation2d.fromDegrees(45));
+    AMP(() -> Rotation2d.fromDegrees(54.0)),
+    FEEDER(() -> Rotation2d.fromDegrees(50.0)),
+    DEBUGGING(() -> Rotation2d.fromDegrees(angleTunableNumber.get()));
 
     private Supplier<Rotation2d> angleSupplier;
 
@@ -59,7 +61,11 @@ public class Shooter extends SubsystemBase {
     IDLE(() -> 9.0, () -> 9.0),
     SPEAKER_SHOT(() -> 38.0, () -> 38.0),
     FULL_SPEED(() -> 42.0, () -> 42.0),
-    AMP(() -> 0.0, () -> 12.6),
+    FEEDER(() -> 30.0, () -> 30.0),
+    // 12.5: 7 / 9
+    // 12.65: 0
+    // 12.58: 9/12
+    AMP(() -> -0.1, () -> 12.54),
     OFF(() -> 0.0, () -> 0.0);
 
     private DoubleSupplier topSpeedSupplierMPS;
@@ -272,7 +278,7 @@ public class Shooter extends SubsystemBase {
     shooterCommandMap.put(ShooterStates.OFF, Commands.runOnce(() -> stopMotors(true, true), this));
     shooterCommandMap.put(
         ShooterStates.AIM,
-        setShooterStateInstant(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT));
+        setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT));
     shooterCommandMap.put(
         ShooterStates.INTAKE, setShooterState(AnglerSetpoints.INTAKE, LauncherSetpoints.OFF));
     shooterCommandMap.put(
@@ -303,21 +309,18 @@ public class Shooter extends SubsystemBase {
         ShooterStates.FEEDER,
         setShooterState(AnglerSetpoints.FEEDER, LauncherSetpoints.FULL_SPEED));
     shooterCommandMap.put(
-        ShooterStates.AMP, setShooterState(AnglerSetpoints.AMP, LauncherSetpoints.AMP));
+        ShooterStates.REV_AMP, setShooterState(AnglerSetpoints.AMP, LauncherSetpoints.AMP));
+
+    shooterCommandMap.put(
+      ShooterStates.SHOOT_AMP, Commands.runOnce(() -> {
+        setMotors(anglerSetpoint, null);
+        launcherIO.setTopVolts(0);
+      }, this));
 
     return shooterCommandMap;
   }
 
-  public Command setShooterState(AnglerSetpoints anglerState, LauncherSetpoints launcherState) {
-    return new FunctionalCommand(
-        () -> setMotors(anglerState, launcherState),
-        () -> {},
-        (interrupted) -> {},
-        this::atAllSetpoint,
-        this);
-  }
-
-  public Command setShooterStateInstant(
+  public Command setShooterState(
       AnglerSetpoints anglerState, LauncherSetpoints launcherState) {
     return new InstantCommand(() -> setMotors(anglerState, launcherState), this);
   }
@@ -355,11 +358,11 @@ public class Shooter extends SubsystemBase {
   }
 
   public void setLauncherVelocityMPS(LauncherSetpoints velocityMPS) {
-    topWheelProfile.setGoal(
-        velocityMPS.getTopSpeedMPS().getAsDouble(), launcherIOInputs.topFlywheelVelocityMPS);
-    bottomWheelProfile.setGoal(
-        velocityMPS.getBottomSpeedMPS().getAsDouble(), launcherIOInputs.bottomFlywheelVelocityMPS);
     launcherSetpointMPS = velocityMPS;
+    if(launcherSetpointMPS != null) {
+      topWheelProfile.setGoal(launcherSetpointMPS.topSpeedSupplierMPS.getAsDouble(), launcherIOInputs.topFlywheelVelocityMPS);
+      bottomWheelProfile.setGoal(launcherSetpointMPS.bottomSpeedSupplierMPS.getAsDouble(), launcherIOInputs.bottomFlywheelVelocityMPS);
+    }
   }
 
   public void setAnglerVolts(double volts) {

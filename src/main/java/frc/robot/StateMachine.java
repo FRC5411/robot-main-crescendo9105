@@ -189,11 +189,11 @@ public class StateMachine {
   }
 
   public Command revAmp() {
-    return getShooterCommand(ShooterStates.AMP);
+    return getShooterCommand(ShooterStates.REV_AMP);
   }
 
   public Command scoreAmp() {
-    return getIndexerCommand(IndexerStates.AMP);
+    return getShooterCommand(ShooterStates.SHOOT_AMP).andThen(getIndexerCommand(IndexerStates.AMP));
   }
 
   @AutoLogOutput(key = "StateMachine/ShooterState")

@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -36,12 +37,15 @@ import frc.robot.subsystems.indexer.Indexer;
 import frc.robot.subsystems.indexer.IndexerIO;
 import frc.robot.subsystems.indexer.IndexerIOSim;
 import frc.robot.subsystems.indexer.IndexerIOSparkMax;
+import frc.robot.subsystems.indexer.Indexer.IndexerSetpoint;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.leds.LEDSubsystem;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.Shooter.AnglerSetpoints;
+import frc.robot.subsystems.shooter.Shooter.LauncherSetpoints;
 import frc.robot.subsystems.shooter.TargetingSystem;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.angler.AnglerIOSim;
@@ -56,7 +60,6 @@ import frc.robot.subsystems.vision.VisionIOPhotonSim;
 import frc.robot.utils.commands.CommandUtils;
 import java.util.Optional;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-import edu.wpi.first.math.geometry.Pose2d;
 
 public class RobotContainer {
   private Drive robotDrive;
@@ -312,7 +315,7 @@ public class RobotContainer {
           .onFalse(robotStateMachine.stopTakeNote());
 
       /* Reset gyro */
-      pilotController.y().whileTrue(SwerveCommands.resetGyro(robotDrive));
+      pilotController.b().whileTrue(SwerveCommands.resetGyro(robotDrive));
 
       /* Auto heading to speaker */
       pilotController
@@ -325,11 +328,19 @@ public class RobotContainer {
                   () -> TargetingSystem.getInstance().getOptimalLaunchHeading()))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
-        pilotController
-            .b()
-            .onTrue(
-                new InstantCommand(
-                    () -> robotDrive.setPose(new Pose2d(1.34, 5.54, new Rotation2d()))));
+    //     pilotController
+    //         .b()
+    //         .onTrue(
+    //             new InstantCommand(
+    //                 () -> robotDrive.setPose(new Pose2d(1.34, 5.54, new Rotation2d()))));
+
+      pilotController.y().whileTrue(robotShooter.setShooterState(AnglerSetpoints.DEBUGGING, LauncherSetpoints.SPEAKER_SHOT)).whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
+
+      pilotController.povLeft().whileTrue(robotIndexer.runIndexer(IndexerSetpoint.IN)).whileFalse(robotIndexer.runIndexer(IndexerSetpoint.OFF));
+
+      pilotController.povUp().whileTrue(SwerveCommands.swerveDrive(robotDrive, () -> 0.3, () -> 0.0, () -> 0.0)).onFalse(SwerveCommands.stopDrive(robotDrive));
+
+      pilotController.povDown().whileTrue(SwerveCommands.swerveDrive(robotDrive, () -> -0.3, () -> 0.0, () -> 0.0)).onFalse(SwerveCommands.stopDrive(robotDrive));
 
       /* Copilot bindings */
 
@@ -371,22 +382,23 @@ public class RobotContainer {
       copilotController
           .x()
           .whileTrue(robotStateMachine.scoreAmp())
-          .onFalse(robotStateMachine.getIndexerCommand(IndexerStates.OFF));
+          .onFalse(new ParallelCommandGroup(
+            robotStateMachine.stopShooting()));
 
       copilotController
           .leftBumper()
           .whileTrue(robotStateMachine.shootNote())
           .onFalse(robotStateMachine.stopShooting());
 
-      //   copilotController
-      //       .rightTrigger()
-      //       .whileTrue(robotStateMachine.feedShot())
-      //       .onFalse(robotStateMachine.stopShooting());
+        copilotController
+            .rightTrigger()
+            .whileTrue(robotStateMachine.feedShot())
+            .onFalse(robotStateMachine.stopShooting());
 
-      //   copilotController
-      //       .leftTrigger()
-      //       .whileTrue(robotStateMachine.podiumShot())
-      //       .onFalse(robotStateMachine.stopShooting());
+        copilotController
+            .leftTrigger()
+            .whileTrue(robotStateMachine.podiumShot())
+            .onFalse(robotStateMachine.stopShooting());
     }
   }
 
