@@ -102,7 +102,7 @@ public class Robot extends LoggedRobot {
 
     robotContainer.getVisionFuser().periodic();
     TargetingSystem.getInstance().logMultiTagEnabled();
-    TargetingSystem.getInstance().logUseVision();
+    TargetingSystem.getInstance().logVision();
   }
 
   /** This function is called once when autonomous is enabled. */

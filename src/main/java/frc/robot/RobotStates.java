@@ -39,6 +39,7 @@ public class RobotStates {
     SPEAKER,
     FEEDER,
     REV_AMP,
-    SHOOT_AMP
+    SHOOT_AMP,
+    AIM_AUTON
   }
 }
