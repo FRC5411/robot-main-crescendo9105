@@ -9,6 +9,7 @@ import frc.robot.RobotStates.ClimbStates;
 import frc.robot.RobotStates.IndexerStates;
 import frc.robot.RobotStates.IntakeStates;
 import frc.robot.RobotStates.ShooterStates;
+import frc.robot.RobotStates.YoshiStates;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.Climb.ClimbVoltSetpoints;
 import frc.robot.subsystems.indexer.Indexer;
@@ -18,6 +19,7 @@ import frc.robot.subsystems.intake.Intake.IntakeSetpoint;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.AnglerSetpoints;
 import frc.robot.subsystems.shooter.Shooter.LauncherSetpoints;
+import frc.robot.subsystems.yoshivator.Yoshivator;
 import frc.robot.utils.commands.CommandUtils;
 import org.littletonrobotics.junction.AutoLogOutput;
 
@@ -26,16 +28,19 @@ public class StateMachine {
   private Intake robotIntake;
   private Indexer robotIndexer;
   private Climb robotClimb;
+  private Yoshivator robotYoshi;
 
   private ShooterStates shooterState;
   private IntakeStates intakeState;
   private IndexerStates indexerState;
   private ClimbStates climbState;
+  private YoshiStates yoshiState;
 
   private SelectCommand<ShooterStates> shooterCommands;
   private SelectCommand<IntakeStates> intakeCommands;
   private SelectCommand<IndexerStates> indexerCommands;
   private SelectCommand<ClimbStates> climbCommands;
+  private SelectCommand<YoshiStates> yoshiCommand;
 
   public StateMachine(
       Shooter robotShooter, Intake robotIntake, Indexer robotIndexer, Climb robotClimb) {

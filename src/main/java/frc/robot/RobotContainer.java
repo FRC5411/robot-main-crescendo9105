@@ -57,6 +57,10 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhoton;
 import frc.robot.subsystems.vision.VisionIOPhotonSim;
+import frc.robot.subsystems.yoshivator.Yoshivator;
+import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
+import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSim;
+import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSparkMax;
 import frc.robot.utils.commands.CommandUtils;
 import java.util.Optional;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
@@ -69,6 +73,7 @@ public class RobotContainer {
   private Climb robotClimb;
   private Indexer robotIndexer;
   private Vision robotVision;
+  private Yoshivator robotYoshi;
   private LEDSubsystem robotLEDs;
 
   private VisionFuser visionFuser;
@@ -124,6 +129,7 @@ public class RobotContainer {
         robotClimb = new Climb(new ClimbIOSparkMax());
         robotIndexer = new Indexer(new IndexerIOSparkMax());
         robotLEDs = new LEDSubsystem();
+        robotYoshi = new Yoshivator(new ManipulatorIOSparkMax());
         robotVision =
             new Vision(
                 new VisionIOPhoton(
@@ -158,6 +164,7 @@ public class RobotContainer {
         robotClimb = new Climb(new ClimbIOSim());
         robotIndexer = new Indexer(new IndexerIOSim());
         robotLEDs = new LEDSubsystem();
+        robotYoshi = new Yoshivator(new ManipulatorIOSim());
         robotVision =
             new Vision(
                 new VisionIOPhotonSim(
@@ -195,6 +202,7 @@ public class RobotContainer {
         robotIndexer = new Indexer(new IndexerIO() {});
         robotLEDs = new LEDSubsystem();
         robotVision = new Vision(new VisionIO() {}, new VisionIO() {});
+        robotYoshi = new Yoshivator(new ManipulatorIO() {});
         break;
     }
 

@@ -39,8 +39,8 @@ import org.littletonrobotics.junction.Logger;
 
 /** Swerve drive */
 public class Drive extends SubsystemBase {
-  public static final double TRACK_WIDTH_X_M = Units.inchesToMeters(29.5);
-  public static final double TRACK_WIDTH_Y_M = Units.inchesToMeters(29.5);
+  public static final double TRACK_WIDTH_X_M = Units.inchesToMeters(24.25);
+  public static final double TRACK_WIDTH_Y_M = Units.inchesToMeters(24.25);
   public static final double DRIVEBASE_RADIUS_M =
       Math.hypot(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0);
   public static final double MAX_LINEAR_SPEED_MPS = 4.8;
