@@ -19,7 +19,7 @@ public class WheelRadiusCharacterization extends Command {
   @RequiredArgsConstructor
   public enum Direction {
     CLOCKWISE(-1),
-    COUNTER_CLOCKWISE(1);
+    COUNTER_CLOCKWISE(1); 
 
     private final int value;
   }
@@ -40,7 +40,7 @@ public class WheelRadiusCharacterization extends Command {
   public WheelRadiusCharacterization(Drive drive, Direction omegaDirection) {
     this.drive = drive;
     this.omegaDirection = omegaDirection;
-    gyroYawRadsSupplier = () -> drive.getRotation().getRadians();
+    gyroYawRadsSupplier = () -> drive.getOdometryPose().getRotation().getRadians();
     addRequirements(drive);
   }
 
@@ -57,16 +57,12 @@ public class WheelRadiusCharacterization extends Command {
 
   @Override
   public void execute() {
-    // Run drive at velocity
-    drive.runSwerve(
-        new ChassisSpeeds(
-            0.0,
-            0.0,
-            omegaDirection.value * (characterizationSpeed.get() * Drive.MAX_ANGULAR_SPEED_MPS)));
+    drive.runSwerveDebugging(new ChassisSpeeds(0, 0, omegaDirection.value * characterizationSpeed.get() * Drive.MAX_ANGULAR_SPEED_MPS));
 
     // Get yaw and wheel positions
     accumGyroYawRads += MathUtil.angleModulus(gyroYawRadsSupplier.getAsDouble() - lastGyroYawRads);
     lastGyroYawRads = gyroYawRadsSupplier.getAsDouble();
+
     double averageWheelPosition = 0.0;
     double[] wheelPositiions = getWheelPositions();
     for (int i = 0; i < 4; i++) {
@@ -75,10 +71,10 @@ public class WheelRadiusCharacterization extends Command {
     averageWheelPosition /= 4.0;
 
     currentEffectiveWheelRadius = (accumGyroYawRads * driveRadius) / averageWheelPosition;
-    Logger.recordOutput("Drive/RadiusCharacterization/DrivePosition", averageWheelPosition);
-    Logger.recordOutput("Drive/RadiusCharacterization/AccumGyroYawRads", accumGyroYawRads);
+    Logger.recordOutput("Drive/Radius/DrivePosition", averageWheelPosition);
+    Logger.recordOutput("Drive/Radius/AccumGyroYawRads", accumGyroYawRads);
     Logger.recordOutput(
-        "Drive/RadiusCharacterization/CurrentWheelRadiusInches",
+        "Drive/Radius/CurrentWheelRadiusInches",
         Units.metersToInches(currentEffectiveWheelRadius));
   }
 
@@ -99,7 +95,7 @@ public class WheelRadiusCharacterization extends Command {
     double[] doublePosition = new double[4];
 
     for (int i = 0; i < 4; i++) {
-      startWheelPositions[i] = positions[i].angle.getRadians();
+      doublePosition[i] = positions[i].distanceMeters;
     }
 
     return doublePosition;

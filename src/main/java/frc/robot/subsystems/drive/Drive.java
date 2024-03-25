@@ -39,8 +39,8 @@ import org.littletonrobotics.junction.Logger;
 
 /** Swerve drive */
 public class Drive extends SubsystemBase {
-  public static final double TRACK_WIDTH_X_M = Units.inchesToMeters(29.5);
-  public static final double TRACK_WIDTH_Y_M = Units.inchesToMeters(29.5);
+  public static final double TRACK_WIDTH_X_M = Units.inchesToMeters(24.25);
+  public static final double TRACK_WIDTH_Y_M = Units.inchesToMeters(24.25);
   public static final double DRIVEBASE_RADIUS_M =
       Math.hypot(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0);
   public static final double MAX_LINEAR_SPEED_MPS = 4.8;
@@ -237,6 +237,17 @@ public class Drive extends SubsystemBase {
 
     Logger.recordOutput("Drive/Swerve/Setpoints", setpointStates);
     Logger.recordOutput("Drive/Swerve/SetpointsOptimized", optimizedSetpointStates);
+  }
+
+  public void runSwerveDebugging(ChassisSpeeds speeds) {
+    SwerveModuleState[] setpointStates = KINEMATICS.toSwerveModuleStates(speeds);
+    SwerveDriveKinematics.desaturateWheelSpeeds(
+        setpointStates, MAX_LINEAR_SPEED_MPS); // Normalize speeds
+    for (int i = 0; i < 4; i++) {
+      setpointStates[i] =
+          modules[i].setDesiredState(
+              setpointStates[i]); // setDesiredState returns the optimized state
+    }
   }
 
   /** Custom method for discretizing swerve speeds */

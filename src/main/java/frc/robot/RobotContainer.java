@@ -57,6 +57,9 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhoton;
 import frc.robot.subsystems.vision.VisionIOPhotonSim;
 import frc.robot.utils.commands.CommandUtils;
+import frc.robot.utils.debugging.WheelRadiusCharacterization;
+import frc.robot.utils.debugging.WheelRadiusCharacterization.Direction;
+
 import java.util.Optional;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -284,12 +287,12 @@ public class RobotContainer {
 
       pilotController
           .x()
-          .onTrue(robotShooter.characterizeFlywheel())
-          .onFalse(robotStateMachine.getShooterCommand(ShooterStates.IDLE));
+          .onTrue(new WheelRadiusCharacterization(robotDrive, Direction.COUNTER_CLOCKWISE))
+          .onFalse(SwerveCommands.stopDrive(robotDrive));
 
       pilotController
           .y()
-          .onTrue(robotDrive.characterizeDriveMotors())
+          .onTrue(new WheelRadiusCharacterization(robotDrive, Direction.CLOCKWISE))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
     } else {
