@@ -25,6 +25,14 @@ public class RobotStates {
     AMP
   }
 
+  public static enum YoshiStates {
+    OFF,
+    IDLE,
+    GROUND_AMP,
+    GROUND_INTAKE,
+    AMP
+  }
+
   public static enum ShooterStates {
     OFF,
     AIM,
