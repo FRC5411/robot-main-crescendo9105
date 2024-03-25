@@ -20,6 +20,8 @@ import frc.robot.RobotStates.YoshiStates;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOInputsAutoLogged;
 import frc.robot.utils.debugging.LoggedTunableNumber;
+
+import java.util.HashMap;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -114,20 +116,16 @@ public class Yoshivator extends SubsystemBase {
     Logger.recordOutput("Limited", false);
   }
 
-  public Command mapToCommand(YoshiStates desiredState) {
-    switch (desiredState) {
-      case OFF:
-        return offYoshi();
-      case GROUND_AMP:
-        return runYoshi(YoshivatorSetpoints.GROUND_AMP);
-      case GROUND_INTAKE:
-        return runYoshi(YoshivatorSetpoints.GROUND_INTAKE);
-      case AMP:
-        return scoreAmp();
-      case IDLE:
-      default:
-        return runYoshi(YoshivatorSetpoints.IDLE);
-    }
+  public HashMap<YoshiStates, Command> mapToCommand(YoshiStates desiredState) {
+    HashMap<YoshiStates, Command> yoshiCommandMap = new HashMap<>();
+
+      yoshiCommandMap.put(YoshiStates.OFF, offYoshi());
+      yoshiCommandMap.put(YoshiStates.GROUND_AMP, runYoshi(YoshivatorSetpoints.GROUND_AMP));
+      yoshiCommandMap.put(YoshiStates.GROUND_INTAKE, runYoshi(YoshivatorSetpoints.GROUND_INTAKE));
+      yoshiCommandMap.put(YoshiStates.AMP, scoreAmp());
+      yoshiCommandMap.put(YoshiStates.IDLE, runYoshi(YoshivatorSetpoints.IDLE));
+
+      return yoshiCommandMap;
   }
 
   @Override

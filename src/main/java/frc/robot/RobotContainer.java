@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.RobotStates.IndexerStates;
 import frc.robot.RobotStates.IntakeStates;
 import frc.robot.RobotStates.ShooterStates;
+import frc.robot.RobotStates.YoshiStates;
 import frc.robot.commands.SwerveCommands;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
@@ -87,7 +88,7 @@ public class RobotContainer {
   public RobotContainer() {
     initializeSubsystems();
 
-    robotStateMachine = new StateMachine(robotShooter, robotIntake, robotIndexer, robotClimb);
+    robotStateMachine = new StateMachine(robotShooter, robotIntake, robotIndexer, robotClimb, robotYoshi);
 
     configureAutonomous();
 
@@ -249,6 +250,10 @@ public class RobotContainer {
     NamedCommands.registerCommand("SpeakerShot", new SequentialCommandGroup(
       robotStateMachine.getShooterCommand(ShooterStates.SPEAKER).withTimeout(1.0),
       robotStateMachine.getIndexerCommand(IndexerStates.INDEX)));
+
+    NamedCommands.registerCommand("DeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.GROUND_INTAKE));
+
+    NamedCommands.registerCommand("UnDeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.IDLE));
   }
 
   private void configureTriggers() {
@@ -292,20 +297,25 @@ public class RobotContainer {
 
       pilotController.a().onTrue(SwerveCommands.resetGyro(robotDrive));
 
-      pilotController
-          .b()
-          .whileTrue(robotStateMachine.getShooterCommand(ShooterStates.AIM))
-          .onFalse(robotStateMachine.getShooterCommand(ShooterStates.IDLE));
+      // pilotController
+      //     .b()
+      //     .whileTrue(robotStateMachine.getShooterCommand(ShooterStates.AIM))
+      //     .onFalse(robotStateMachine.getShooterCommand(ShooterStates.IDLE));
 
-      pilotController
-          .x()
-          .onTrue(robotShooter.characterizeFlywheel())
-          .onFalse(robotStateMachine.getShooterCommand(ShooterStates.IDLE));
+      // pilotController
+      //     .x()
+      //     .onTrue(robotShooter.characterizeFlywheel())
+      //     .onFalse(robotStateMachine.getShooterCommand(ShooterStates.IDLE));
 
-      pilotController
-          .y()
-          .onTrue(robotDrive.characterizeDriveMotors())
-          .onFalse(SwerveCommands.stopDrive(robotDrive));
+      // pilotController
+      //     .y()
+      //     .onTrue(robotDrive.characterizeDriveMotors())
+      //     .onFalse(SwerveCommands.stopDrive(robotDrive));
+
+      pilotController.b()
+        .onTrue(robotStateMachine.getYoshiCommand(YoshiStates.GROUND_INTAKE))
+        .onFalse(robotStateMachine.getYoshiCommand(YoshiStates.IDLE));
+    
 
     } else {
       /* Pilot bindings */

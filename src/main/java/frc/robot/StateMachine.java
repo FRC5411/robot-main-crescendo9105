@@ -20,6 +20,7 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.AnglerSetpoints;
 import frc.robot.subsystems.shooter.Shooter.LauncherSetpoints;
 import frc.robot.subsystems.yoshivator.Yoshivator;
+import frc.robot.subsystems.yoshivator.Yoshivator.YoshivatorSetpoints;
 import frc.robot.utils.commands.CommandUtils;
 import org.littletonrobotics.junction.AutoLogOutput;
 
@@ -40,10 +41,10 @@ public class StateMachine {
   private SelectCommand<IntakeStates> intakeCommands;
   private SelectCommand<IndexerStates> indexerCommands;
   private SelectCommand<ClimbStates> climbCommands;
-  private SelectCommand<YoshiStates> yoshiCommand;
+  private SelectCommand<YoshiStates> yoshiCommands;
 
   public StateMachine(
-      Shooter robotShooter, Intake robotIntake, Indexer robotIndexer, Climb robotClimb) {
+      Shooter robotShooter, Intake robotIntake, Indexer robotIndexer, Climb robotClimb, Yoshivator robotYoshi) {
     this.robotShooter = robotShooter;
     this.robotIntake = robotIntake;
     this.robotIndexer = robotIndexer;
@@ -66,10 +67,14 @@ public class StateMachine {
     climbCommands =
         new SelectCommand<ClimbStates>(this.robotClimb.mapToCommand(), () -> climbState);
 
+    yoshiCommands =
+        new SelectCommand<YoshiStates>(this.robotYoshi.mapToCommand(yoshiState), () -> yoshiState);
+
     robotShooter.setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.IDLE);
     robotIntake.setCurrentSetpoint(IntakeSetpoint.OFF);
     robotIndexer.setCurrentSetpoint(IndexerSetpoint.OFF);
     robotClimb.setManualVolts(ClimbVoltSetpoints.OFF);
+    robotYoshi.setYoshiSetpoint(YoshivatorSetpoints.IDLE);
   }
 
   public Command getShooterCommand(ShooterStates state) {
@@ -96,6 +101,12 @@ public class StateMachine {
     return new SequentialCommandGroup(
             new InstantCommand(() -> climbState = state), CommandUtils.copyCommand(climbCommands))
         .withName("StateMachince/ClimbCommand/" + climbState);
+  }
+
+  public Command getYoshiCommand(YoshiStates state) {
+    return new SequentialCommandGroup(
+            new InstantCommand(() -> yoshiState = state), CommandUtils.copyCommand(yoshiCommands))
+        .withName("StateMachince/YoshiCommand/" + yoshiState);
   }
 
   public Command intakeNote() {
