@@ -9,10 +9,10 @@ import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Pigeon2Configuration;
 import com.ctre.phoenix6.hardware.Pigeon2;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import frc.robot.Constants;
 
 /** Class to interact with the physical gyroscope */
 public class GyroIOPigeon2 implements GyroIO {
@@ -42,14 +42,7 @@ public class GyroIOPigeon2 implements GyroIO {
 
   @Override
   public void resetGyro() {
-    if (DriverStation.getAlliance().isPresent()) {
-      if (DriverStation.getAlliance().get() == Alliance.Blue) {
-        gyro.setYaw(0.0);
-      } else if (DriverStation.getAlliance().get() == Alliance.Red) {
-        gyro.setYaw(180.0);
-      }
-    } else {
-      gyro.setYaw(0.0);
-    }
+    if(!Constants.isRedAlliance) gyro.setYaw(180.0);
+    else gyro.setYaw(0.0);
   }
 }

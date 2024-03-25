@@ -25,21 +25,48 @@ public class RobotStates {
     AMP
   }
 
-  public static enum ShooterStates {
+  // public static enum ShooterStates {
+  //   OFF,
+  //   AIM,
+  //   INTAKE,
+  //   CLIMB,
+  //   EJECT,
+  //   UP,
+  //   DOWN,
+  //   FIRE,
+  //   IDLE,
+  //   PODIUM,
+  //   SPEAKER,
+  //   FEEDER,
+  //   REV_AMP,
+  //   SHOOT_AMP,
+  //   AIM_AUTON
+  // }
+
+  public static enum LauncherStates {
     OFF,
-    AIM,
-    INTAKE,
-    CLIMB,
-    EJECT,
-    UP,
-    DOWN,
-    FIRE,
     IDLE,
+    REV_AMP,
+    SCORE_AMP,
+    EJECT,
+    FEEDER,
+    SHOOT,
+    FULL_SPEED,
+  }
+
+  public static enum AnglerStates {
+    OFF,
+    IDLE,
+    AIM_IDLE,
+    AIM,
     PODIUM,
     SPEAKER,
+    AMP,
+    UP,
+    DOWN,
     FEEDER,
-    REV_AMP,
-    SHOOT_AMP,
-    AIM_AUTON
+    EJECT,
+    INTAKE,
+    CLIMB
   }
 }
