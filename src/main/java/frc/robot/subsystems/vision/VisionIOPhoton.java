@@ -28,13 +28,14 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class VisionIOPhoton implements VisionIO {
+  
   private PhotonCamera limelightCam;
   private PhotonPoseEstimator poseEstimator;
   private Transform3d cameraTransform;
   private Matrix<N3, N1> singleTagStdDevs;
   private Matrix<N3, N1> multiTagStdDevs;
   private Debouncer debouncer;
-
+  
   private int speakerTagID =
       (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue)
               == DriverStation.Alliance.Red)
@@ -42,6 +43,8 @@ public class VisionIOPhoton implements VisionIO {
           : 7;
 
   public VisionIOPhoton(String name, Transform3d cameraTransform, double debouncerTime) {
+
+    
     singleTagStdDevs = VecBuilder.fill(0.07, 0.07, Double.MAX_VALUE);
     multiTagStdDevs = VecBuilder.fill(0.04, 0.04, Double.MAX_VALUE);
     limelightCam = new PhotonCamera(name);

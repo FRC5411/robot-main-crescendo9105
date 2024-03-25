@@ -142,13 +142,21 @@ public class TargetingSystem {
               : speakerOpeningRed.getY() - robotPose.getY();
 
       heading = new Rotation2d(xDelta, yDelta);
-    } else if (robotVision.getInputsLeft().hasSpeakerTarget) {
-      heading = robotVision.getInputsLeft().speakerTagTransform.getTranslation().getAngle();
+    } else if (robotVision.getInputsFrontLeft().hasSpeakerTarget) {
+      heading = robotVision.getInputsFrontLeft().speakerTagTransform.getTranslation().getAngle();
       lastHeading = heading;
-    } else if (robotVision.getInputsRight().hasSpeakerTarget) {
-      heading = robotVision.getInputsLeft().speakerTagTransform.getTranslation().getAngle();
+    } else if (robotVision.getInputsFrontRight().hasSpeakerTarget) {
+      heading = robotVision.getInputsFrontRight().speakerTagTransform.getTranslation().getAngle();
       lastHeading = heading;
-    } else {
+    } else if (robotVision.getInputsSideLeft().hasSpeakerTarget) {
+      heading = robotVision.getInputsSideLeft().speakerTagTransform.getTranslation().getAngle();
+      lastHeading = heading;
+    } else if (robotVision.getInputsSideRight().hasSpeakerTarget) {
+      heading = robotVision.getInputsSideRight().speakerTagTransform.getTranslation().getAngle();
+      lastHeading = heading;
+    }
+    
+    else {
       heading = lastHeading;
     }
     if (multiTagEnabled) {
@@ -185,11 +193,17 @@ public class TargetingSystem {
               : Math.hypot(
                   speakerOpeningRed.getX() - robotPose.getX(),
                   speakerOpeningRed.getY() - robotPose.getY());
-    } else if (robotVision.getInputsLeft().hasSpeakerTarget) {
-      distanceM = robotVision.getInputsLeft().speakerTagTransform.getTranslation().getNorm();
-    } else if (robotVision.getInputsRight().hasSpeakerTarget) {
-      distanceM = robotVision.getInputsRight().speakerTagTransform.getTranslation().getNorm();
-    } else {
+    } else if (robotVision.getInputsFrontLeft().hasSpeakerTarget) {
+      distanceM = robotVision.getInputsFrontLeft().speakerTagTransform.getTranslation().getNorm();
+    } else if (robotVision.getInputsFrontRight().hasSpeakerTarget) {
+      distanceM = robotVision.getInputsFrontRight().speakerTagTransform.getTranslation().getNorm();
+    } else if (robotVision.getInputsSideLeft().hasSpeakerTarget) {
+      distanceM = robotVision.getInputsSideLeft().speakerTagTransform.getTranslation().getNorm();
+    } else if (robotVision.getInputsSideRight().hasSpeakerTarget) {
+      distanceM = robotVision.getInputsSideRight().speakerTagTransform.getTranslation().getNorm();
+    } 
+    
+    else {
       distanceM = -1;
     }
 
@@ -206,8 +220,10 @@ public class TargetingSystem {
 
   public boolean isAtShootRange() {
     try {
-      if (robotVision.getInputsLeft().hasSpeakerTarget
-          || robotVision.getInputsRight().hasSpeakerTarget) {
+      if (robotVision.getInputsFrontLeft().hasSpeakerTarget  ||
+          robotVision.getInputsFrontRight().hasSpeakerTarget || 
+          robotVision.getInputsFrontLeft().hasSpeakerTarget  || 
+          robotVision.getInputsFrontRight().hasSpeakerTarget) {
         return false;
       }
       return speakerDistanceM().getAsDouble() <= 3;

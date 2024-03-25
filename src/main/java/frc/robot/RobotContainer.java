@@ -125,7 +125,7 @@ public class RobotContainer {
         robotVision =
             new Vision(
                 new VisionIOPhoton(
-                    "LLLeft",
+                    "LLFrontLeft",
                     new Transform3d(
                         0.35,
                         0.32,
@@ -134,14 +134,33 @@ public class RobotContainer {
                             Math.toRadians(0), Math.toRadians(-25.5), Math.toRadians(-19.2))),
                     0.1),
                 new VisionIOPhoton(
-                    "LLRight",
+                    "LLFrontRight",
                     new Transform3d(
                         0.35,
                         -0.32,
                         0.33,
                         new Rotation3d(
                             Math.toRadians(0), Math.toRadians(-25.5), Math.toRadians(14.7))),
-                    0.1));
+                    0.1),
+                new VisionIOPhoton(
+                    "LLSideLeft",
+                    new Transform3d(
+                        0.35,
+                        0.32,
+                        0.33,
+                        new Rotation3d(
+                            Math.toRadians(0), Math.toRadians(-25.5), Math.toRadians(-19.2))),
+                    0.1),
+                new VisionIOPhoton(
+                    "LLSideRight",
+                    new Transform3d(
+                        0.35,
+                        -0.32,
+                        0.33,
+                        new Rotation3d(
+                            Math.toRadians(0), Math.toRadians(-25.5), Math.toRadians(14.7))),
+                    0.1)
+                );
         break;
       case SIM:
         robotDrive =
@@ -159,7 +178,7 @@ public class RobotContainer {
         robotVision =
             new Vision(
                 new VisionIOPhotonSim(
-                    "LLLeft",
+                    "LLFrontLeft",
                     new Transform3d(
                         0.2,
                         0.0,
@@ -169,7 +188,7 @@ public class RobotContainer {
                     0.1,
                     () -> robotDrive.getOdometryPose()),
                 new VisionIOPhotonSim(
-                    "LLRight",
+                    "LLFrontRight",
                     new Transform3d(
                         0.4,
                         0.0,
@@ -177,7 +196,28 @@ public class RobotContainer {
                         new Rotation3d(
                             Math.toRadians(13.2), Math.toRadians(0), Math.toRadians(25.5))),
                     0.1,
-                    () -> robotDrive.getOdometryPose()));
+                    () -> robotDrive.getOdometryPose()),
+                new VisionIOPhotonSim(
+                    "LLSideLeft",
+                    new Transform3d(
+                        0.2,
+                        0.0,
+                        0.33,
+                        new Rotation3d(
+                            Math.toRadians(13.2), Math.toRadians(0), Math.toRadians(25.2))),
+                    0.1,
+                    () -> robotDrive.getOdometryPose()),
+                new VisionIOPhotonSim(
+                    "LLSideRight",
+                    new Transform3d(
+                        0.4,
+                        0.0,
+                        0.33,
+                        new Rotation3d(
+                            Math.toRadians(13.2), Math.toRadians(0), Math.toRadians(25.5))),
+                    0.1,
+                    () -> robotDrive.getOdometryPose())
+                );
         break;
       default:
         robotDrive =
@@ -192,7 +232,7 @@ public class RobotContainer {
         robotClimb = new Climb(new ClimbIO() {});
         robotIndexer = new Indexer(new IndexerIO() {});
         robotLEDs = new LEDSubsystem();
-        robotVision = new Vision(new VisionIO() {}, new VisionIO() {});
+        robotVision = new Vision(new VisionIO() {}, new VisionIO() {}, new VisionIO(){}, new VisionIO(){});
         break;
     }
 

@@ -3,6 +3,7 @@ package frc.robot;
 import edu.wpi.first.math.VecBuilder;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.Vision;
+import frc.robot.subsystems.vision.VisionIOInputsAutoLogged;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 import org.littletonrobotics.junction.Logger;
 
@@ -59,34 +60,62 @@ public class VisionFuser {
           visionSingleStdDevX.get(), visionSingleStdDevY.get(), visionSingleStdDevTheta.get());
     }
 
-    final var inputsLeft = robotVision.getInputsLeft();
-    final var inputsRight = robotVision.getInputsRight();
+    final VisionIOInputsAutoLogged inputsFrontLeft = robotVision.getInputsFrontLeft();
+    final VisionIOInputsAutoLogged inputsFrontRight = robotVision.getInputsFrontRight();
+    final VisionIOInputsAutoLogged inputsSideLeft = robotVision.getInputsSideLeft();
+    final VisionIOInputsAutoLogged inputsSideRight = robotVision.getInputsSideRight();
 
-    if (inputsLeft.hasTarget) {
+    if (inputsFrontLeft.hasTarget) {
       robotDrive.addVisionMeasurement(
-          inputsLeft.estimatedRobotPose,
-          inputsLeft.latestTimestamp,
+          inputsFrontLeft.estimatedRobotPose,
+          inputsFrontLeft.latestTimestamp,
           VecBuilder.fill(
-              inputsLeft.xStandardDeviation,
-              inputsLeft.yStandardDeviation,
-              inputsLeft.thetaStandardDeviation));
+              inputsFrontLeft.xStandardDeviation,
+              inputsFrontLeft.yStandardDeviation,
+              inputsFrontLeft.thetaStandardDeviation));
     }
 
-    if (inputsRight.hasTarget) {
+    if (inputsFrontRight.hasTarget) {
       robotDrive.addVisionMeasurement(
-          inputsRight.estimatedRobotPose,
-          inputsRight.latestTimestamp,
+          inputsFrontRight.estimatedRobotPose,
+          inputsFrontRight.latestTimestamp,
           VecBuilder.fill(
-              inputsRight.xStandardDeviation,
-              inputsRight.yStandardDeviation,
-              inputsRight.thetaStandardDeviation));
+              inputsFrontRight.xStandardDeviation,
+              inputsFrontRight.yStandardDeviation,
+              inputsFrontRight.thetaStandardDeviation));
+    }
+
+    if (inputsSideLeft.hasTarget) {
+      robotDrive.addVisionMeasurement(
+          inputsSideLeft.estimatedRobotPose,
+          inputsSideLeft.latestTimestamp,
+          VecBuilder.fill(
+              inputsSideLeft.xStandardDeviation,
+              inputsSideLeft.yStandardDeviation,
+              inputsSideLeft.thetaStandardDeviation));
+    }
+
+    if (inputsSideRight.hasTarget) {
+      robotDrive.addVisionMeasurement(
+          inputsSideRight.estimatedRobotPose,
+          inputsSideRight.latestTimestamp,
+          VecBuilder.fill(
+              inputsSideRight.xStandardDeviation,
+              inputsSideRight.yStandardDeviation,
+              inputsSideRight.thetaStandardDeviation));
     }
 
     Logger.recordOutput(
-        "VisionFuse/LeftTransform",
-        robotVision.getInputsLeft().estimatedRobotPose.minus(robotDrive.getOdometryPose()));
+        "VisionFuse/FrontLeftTransform",
+        robotVision.getInputsFrontLeft().estimatedRobotPose.minus(robotDrive.getOdometryPose()));
     Logger.recordOutput(
-        "VisionFuse/RightTransform",
-        robotVision.getInputsRight().estimatedRobotPose.minus(robotDrive.getOdometryPose()));
+        "VisionFuse/FrontRightTransform",
+        robotVision.getInputsFrontRight().estimatedRobotPose.minus(robotDrive.getOdometryPose()));
+    Logger.recordOutput(
+        "VisionFuse/SideLeftTransform",
+        robotVision.getInputsSideLeft().estimatedRobotPose.minus(robotDrive.getOdometryPose()));
+    Logger.recordOutput(
+        "VisionFuse/SideRightTransform",
+        robotVision.getInputsSideRight().estimatedRobotPose.minus(robotDrive.getOdometryPose()));
   }
 }

@@ -16,6 +16,11 @@ import org.littletonrobotics.junction.AutoLog;
 public interface VisionIO {
   @AutoLog
   public static class VisionIOInputs {
+    public double[] timestamps = new double[] {};
+    public double[][] frames = new double[][] {};
+    public double[] demoFrame = new double[] {};
+    public long fps = 0;
+
     public boolean isConnected = false;
     public double yaw = 0.0;
     public double pitch = 0.0;
@@ -47,6 +52,8 @@ public interface VisionIO {
     public double speakerXStdDev = 0.0;
     public double speakerYStdDev = 0.0;
     public double speakerThetaDev = 0.0;
+
+
   }
 
   public default void updateInputs(VisionIOInputs inputs) {}
