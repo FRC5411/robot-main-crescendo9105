@@ -7,7 +7,6 @@ package frc.robot.subsystems.shooter;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
@@ -21,7 +20,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 /** Class that calculates projectile motion given certain parameters */
@@ -30,19 +28,20 @@ public class TargetingSystem {
   private Translation3d speakerOpeningRed = new Translation3d(16.26, 5.53, 1.045);
 
   // Offset is robot drive width cut in half
-  private final double LAUNCH_MAP_OFFSET_M = - Units.inchesToMeters(36.0 / 2.0);
-  private final double LAUNCH_MAP_OFFSET_DEGREES_BLUE = 3.0 + 2.0; // 3.0;
+  private final double LAUNCH_MAP_OFFSET_M = 0.0; //- Units.inchesToMeters(36.0 / 2.0);
+  private final double LAUNCH_MAP_OFFSET_DEGREES_BLUE = 1.5; // 3.0;
 
   private final double LAUNCH_MAP_OFFSET_DEG_AUTON_BLUE = 0.0;
 
-  private final double LAUNCH_MAP_OFFSET_DEGREES_RED = 0.0; // 4.0; // 3.0;
+  private final double LAUNCH_MAP_OFFSET_DEGREES_RED = 1.5; // 4.0; // 3.0;
 
-  private final double LAUNCH_MAP_OFFSET_DEG_AUTON_RED = -0.0;
+  private final double LAUNCH_MAP_OFFSET_DEG_AUTON_RED = 0.0;
 
   private Drive robotDrive;
   private Vision robotVision;
 
   // @AutoLogOutput(key = "Shooter/TargetingSystem/MultiTagEnabled")
+  // TODO: MAKE SURE IS TRUE BEFORE MATCHES
   private boolean multiTagEnabled = true;
 
   private Rotation2d lastHeading = new Rotation2d();
@@ -50,6 +49,7 @@ public class TargetingSystem {
   private LinearFilter distanceFilter = LinearFilter.movingAverage(10);
   private LinearFilter rotationFilter = LinearFilter.movingAverage(10);
 
+  // TODO: MAKE SURE IS TRUE BEFORE MATCHES
   private boolean useVision = true;
 
   private static TargetingSystem instance;
@@ -146,7 +146,7 @@ public class TargetingSystem {
       heading = robotVision.getInputsLeft().speakerTagTransform.getTranslation().getAngle();
       lastHeading = heading;
     } else if (robotVision.getInputsRight().hasSpeakerTarget) {
-      heading = robotVision.getInputsLeft().speakerTagTransform.getTranslation().getAngle();
+      heading = robotVision.getInputsRight().speakerTagTransform.getTranslation().getAngle();
       lastHeading = heading;
     } else {
       heading = lastHeading;
@@ -169,8 +169,8 @@ public class TargetingSystem {
   }
 
   /** Calculate the tangental distance from the speaker */
-  @AutoLogOutput(key = "Shooter/TargetingSystem/Speakerdistance")
-  private double calculateSpeakerDistanceM() {
+  // @AutoLogOutput(key = "Shooter/TargetingSystem/Speakerdistance")
+  public double calculateSpeakerDistanceM() {
     Pose2d robotPose;
     if (useVision) robotPose = robotDrive.getFilteredPose();
     else robotPose = robotDrive.getOdometryPose();
@@ -281,8 +281,9 @@ public class TargetingSystem {
     Logger.recordOutput("Shooter/TargetingSystem/MulitTagEnabled", multiTagEnabled);
   }
 
-  public void logUseVision() {
+  public void logVision() {
     Logger.recordOutput("Shooter/TargetingSystem/UseVision", useVision);
+    Logger.recordOutput("Shooter/TargetingSystem/SpeakerDistance", calculateSpeakerDistanceM());
   }
 
   public boolean getMultiTagEnabled() {

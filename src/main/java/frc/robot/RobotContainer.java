@@ -42,6 +42,7 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
+import frc.robot.subsystems.intake.Intake.IntakeSetpoint;
 import frc.robot.subsystems.leds.LEDSubsystem;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.Shooter.AnglerSetpoints;
@@ -59,6 +60,7 @@ import frc.robot.subsystems.vision.VisionIOPhotonSim;
 import frc.robot.utils.commands.CommandUtils;
 import java.util.Optional;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import edu.wpi.first.math.geometry.Pose2d;
 
 public class RobotContainer {
   private Drive robotDrive;
@@ -212,19 +214,20 @@ public class RobotContainer {
                 robotStateMachine.getIntakeCommand(IntakeStates.INTAKE),
                 robotStateMachine.getShooterCommand(ShooterStates.INTAKE))
             .withTimeout(2.0));
+    
+    // Add intake off if yo
     NamedCommands.registerCommand(
         "Shoot",
         new SequentialCommandGroup(
-            robotStateMachine.getShooterCommand(ShooterStates.AIM),
-            new WaitCommand(1.0),
-            robotStateMachine.getIndexerCommand(IndexerStates.INDEX),
-            robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
+            robotStateMachine.getShooterCommand(ShooterStates.AIM_AUTON).withTimeout(1.0),
+            robotStateMachine.getIndexerCommand(IndexerStates.INDEX)));
+            // robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
 
     NamedCommands.registerCommand(
         "Eject",
         new WaitCommand(2)
             .andThen(
-                new SequentialCommandGroup(
+                new SequentialCommandGroup( 
                     robotStateMachine.getShooterCommand(ShooterStates.EJECT),
                     robotStateMachine.getIndexerCommand(IndexerStates.INDEX),
                     robotStateMachine.getIntakeCommand(IntakeStates.INTAKE))));
@@ -234,13 +237,17 @@ public class RobotContainer {
 
     NamedCommands.registerCommand(
         "IntakeOnly", robotStateMachine.getIntakeCommand(IntakeStates.INTAKE));
+
+    NamedCommands.registerCommand("SpeakerShot", new SequentialCommandGroup(
+      robotStateMachine.getShooterCommand(ShooterStates.SPEAKER).withTimeout(1.0),
+      robotStateMachine.getIndexerCommand(IndexerStates.INDEX)));
   }
 
   private void configureTriggers() {
     // For LEDS
     new Trigger(
             () ->
-                robotShooter.atAllSetpoint()
+                robotShooter.atAllSetpoints()
                     && robotStateMachine.getShooterState() == ShooterStates.AIM)
         .onTrue(new InstantCommand(() -> robotLEDs.setReadyColor()))
         .onFalse(
@@ -327,15 +334,17 @@ public class RobotContainer {
                   () -> TargetingSystem.getInstance().getOptimalLaunchHeading()))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
-    //     pilotController
-    //         .b()
-    //         .onTrue(
-    //             new InstantCommand(
-    //                 () -> robotDrive.setPose(new Pose2d(1.34, 5.54, new Rotation2d()))));
+        pilotController
+            .b()
+            .onTrue(
+                new InstantCommand(
+                    () -> robotDrive.setPose(new Pose2d(1.34, 5.54, new Rotation2d()))));
 
     //  pilotController.y().whileTrue(robotShooter.setShooterState(AnglerSetpoints.DEBUGGING, LauncherSetpoints.OFF)).whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
 
-      pilotController.y().whileTrue(robotShooter.setAnglerCommand(AnglerSetpoints.DEBUGGING)).whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
+      pilotController.y().whileTrue(robotShooter.getAngler().setAnglerCommand(AnglerSetpoints.DEBUGGING)).whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
+
+      pilotController.x().whileTrue(robotIndexer.runIndexer(IndexerSetpoint.IN).alongWith(robotIntake.runIntake(IntakeSetpoint.IN))).whileFalse(robotIndexer.runIndexer(IndexerSetpoint.OFF).alongWith(robotIntake.runIntake(IntakeSetpoint.OFF)));
 
       pilotController.povLeft().whileTrue(robotIndexer.runIndexer(IndexerSetpoint.IN)).whileFalse(robotIndexer.runIndexer(IndexerSetpoint.OFF));
 

@@ -47,7 +47,7 @@ public class Drive extends SubsystemBase {
   public static final double MAX_ANGULAR_SPEED_MPS = MAX_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS_M;
   // Second argument is the max accel
   public static final ModuleLimits MODULE_LIMITS =
-      new ModuleLimits(MAX_LINEAR_SPEED_MPS, MAX_LINEAR_SPEED_MPS * 5, Math.toRadians(600.0));
+      new ModuleLimits(MAX_LINEAR_SPEED_MPS, MAX_LINEAR_SPEED_MPS * 5, 7 * 2 * Math.PI);
 
   private final Translation2d[] MODULE_TRANSLATIONS = getModuleTranslations();
   private final SwerveDriveKinematics KINEMATICS = getKinematics();
@@ -110,7 +110,7 @@ public class Drive extends SubsystemBase {
 
     // Configure PathPlanner
     AutoBuilder.configureHolonomic(
-        () -> odometry.getPoseMeters(),
+        () -> getPoseEstimate(),
         this::setPose,
         () -> KINEMATICS.toChassisSpeeds(getModuleStates()),
         this::runSwerve,

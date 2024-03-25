@@ -31,14 +31,14 @@ public class LauncherIOTalonFX implements LauncherIO {
   private VelocityVoltage bottomVelocityVoltage = new VelocityVoltage(0.0);
 
   private LoggedTunableNumber topFeedbackP =
-      new LoggedTunableNumber("Shooter/LauncherTop/Feedback/P", 0.026579);
+      new LoggedTunableNumber("Shooter/LauncherTop/Feedback/P", 0.03);
   private LoggedTunableNumber topFeedbackI =
       new LoggedTunableNumber("Shooter/LauncherTop/Feedback/I", 0.0);
   private LoggedTunableNumber topFeedbackD =
       new LoggedTunableNumber("Shooter/LauncherTop/Feedback/D", 0.0);
 
   private LoggedTunableNumber bottomFeedbackP =
-      new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/P", 0.032508);
+      new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/P", 0.03257);
   private LoggedTunableNumber bottomFeedbackI =
       new LoggedTunableNumber("Shooter/LauncherBottom/Feedback/I", 0.0);
   private LoggedTunableNumber bottomFeedbackD =
@@ -47,7 +47,7 @@ public class LauncherIOTalonFX implements LauncherIO {
   private LoggedTunableNumber topFeedforwardS =
       new LoggedTunableNumber("Shooter/LauncherTop/Feedforward/S", 0.0060808);
   private LoggedTunableNumber topFeedforwardV =
-      new LoggedTunableNumber("Shooter/LauncherTop/Feedforward/V", 0.11127);
+      new LoggedTunableNumber("Shooter/LauncherTop/Feedforward/V", 0.1105);
   private LoggedTunableNumber topFeedforwardA =
       new LoggedTunableNumber("Shooter/LauncherTop/Feedforward/A", 0.014977);
 
@@ -120,6 +120,9 @@ public class LauncherIOTalonFX implements LauncherIO {
         bottomMotor.getMotorVoltage(),
         bottomMotor.getSupplyCurrent(),
         bottomMotor.getDeviceTemp());
+
+    topMotor.optimizeBusUtilization();
+    bottomMotor.optimizeBusUtilization();
   }
 
   @Override

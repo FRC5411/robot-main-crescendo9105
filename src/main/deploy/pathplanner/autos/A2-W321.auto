@@ -14,13 +14,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Shoot"
+            "name": "SpeakerShot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "DeployYoshi"
+            "name": "IntakeOnly"
           }
         },
         {
