@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
-import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.Vision;
 import java.util.Set;
@@ -179,7 +178,7 @@ public class TargetingSystem {
     double distanceM;
     if (multiTagEnabled) {
       distanceM =
-          (!Constants.isRedAlliance)
+          (DriverStation.getAlliance().get() == Alliance.Blue)
               ? Math.hypot(
                   speakerOpeningBlue.getX() - robotPose.getX(),
                   speakerOpeningBlue.getY() - robotPose.getY())

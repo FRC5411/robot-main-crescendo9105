@@ -52,6 +52,8 @@ public class Climb extends SubsystemBase {
     }
   }
 
+  private double climbDirection = 1.0;
+
   private ClimbIO climbIO;
   private ClimbIOInputsAutoLogged climbIOInputs = new ClimbIOInputsAutoLogged();
 
@@ -78,8 +80,8 @@ public class Climb extends SubsystemBase {
   // private LoggedTunableNumber rightFeedbackA;
   // private LoggedTunableNumber rightFeedbackV;
 
-  // private Rotation2d leftAngleSetpoint = null;
-  // private Rotation2d rightAngleSetpoint = null;
+  private Rotation2d leftAngleSetpoint = null;
+  private Rotation2d rightAngleSetpoint = null;
 
   private ClimbVoltSetpoints currentSetpoint = null;
 
@@ -87,7 +89,7 @@ public class Climb extends SubsystemBase {
   private ClimbVisualizer rightVisualizer = new ClimbVisualizer(ClimbSide.RIGHT);
 
   private Rotation2d minAngle = Rotation2d.fromDegrees(-30.0);
-  private Rotation2d maxAngle = Rotation2d.fromDegrees(160.0);
+  private Rotation2d maxAngle = Rotation2d.fromDegrees(150.0);
 
   /** Creates a new Climb. */
   public Climb(ClimbIO io) {
@@ -204,16 +206,16 @@ public class Climb extends SubsystemBase {
     // }
 
     if (currentSetpoint != null) {
-      if (climbIOInputs.leftPosition.getDegrees() > maxAngle.getDegrees() && currentSetpoint.leftVolts > 0.0) {
+      if (climbIOInputs.leftPosition.getDegrees() > 160.0 && currentSetpoint.leftVolts > 0.0) {
         climbIO.setLeftVolts(0.0);
-      } else if (climbIOInputs.leftPosition.getDegrees() < minAngle.getDegrees()
+      } else if (climbIOInputs.leftPosition.getDegrees() < -30.0
           && currentSetpoint.leftVolts < 0.0) {
         climbIO.setLeftVolts(0.0);
       }
 
-      if (climbIOInputs.rightPosition.getDegrees() > maxAngle.getDegrees() && currentSetpoint.rightVolts > 0.0) {
+      if (climbIOInputs.rightPosition.getDegrees() > 160.0 && currentSetpoint.rightVolts > 0.0) {
         climbIO.setRightVolts(0.0);
-      } else if (climbIOInputs.rightPosition.getDegrees() < minAngle.getDegrees()
+      } else if (climbIOInputs.rightPosition.getDegrees() < -30.0
           && currentSetpoint.rightVolts < 0.0) {
         climbIO.setRightVolts(0.0);
       }
@@ -262,8 +264,8 @@ public class Climb extends SubsystemBase {
     return new InstantCommand(
         () -> {
           currentSetpoint = null;
-          // leftAngleSetpoint = pos;
-          // rightAngleSetpoint = pos;
+          leftAngleSetpoint = pos;
+          rightAngleSetpoint = pos;
         },
         this);
   }
@@ -271,8 +273,8 @@ public class Climb extends SubsystemBase {
   public Command setManualVolts(ClimbVoltSetpoints setpoint) {
     return Commands.runOnce(
         () -> {
-          // leftAngleSetpoint = null;
-          // rightAngleSetpoint = null;
+          leftAngleSetpoint = null;
+          rightAngleSetpoint = null;
           currentSetpoint = setpoint;
         },
         this);

@@ -11,7 +11,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -113,7 +112,7 @@ public class Angler extends SubsystemBase{
     Logger.processInputs("Shooter/Angler/Inputs", anglerIOInputs);
 
     if (DriverStation.isDisabled()) {
-      stopMotor();
+      stopMotors();
     }
 
     if (!angleEncoderCalibrated) {
@@ -207,6 +206,7 @@ public class Angler extends SubsystemBase{
         }
     }
 
+    // TODO Remove, this is for debugging only
   public Command setAnglerCommandWithoutEnd(AnglerSetpoints setpoint) {
     return new FunctionalCommand(
       () -> {
@@ -230,7 +230,8 @@ public class Angler extends SubsystemBase{
       this);
   }
 
-  public Command setAnglerCommandWithEnd(AnglerSetpoints setpoint) {
+  // TODO Remove, this is for debugging only
+  public Command setAnglerCommand(AnglerSetpoints setpoint) {
     return new FunctionalCommand(
       () -> {
         anglerSetpoint = setpoint;
@@ -249,15 +250,6 @@ public class Angler extends SubsystemBase{
       this);
   }
 
-  public Command setAnglerManual(double volts) {
-    return Commands.runOnce(
-        () -> {
-          setAnglerPosition(null);
-          setAnglerVolts(volts);
-        },
-        this);
-  }
-
   public void resetAnglerFeedback() {
     anglerFeedback.reset(currentAngle.getDegrees(), 0.0);
   }
@@ -266,7 +258,7 @@ public class Angler extends SubsystemBase{
     anglerIO.setVolts(volts);
   }
 
-  public void stopMotor() {
+  public void stopMotors() {
       anglerSetpoint = null;
       anglerIO.setVolts(0.0);
   }

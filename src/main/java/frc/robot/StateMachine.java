@@ -5,11 +5,10 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.RobotStates.AnglerStates;
 import frc.robot.RobotStates.ClimbStates;
 import frc.robot.RobotStates.IndexerStates;
 import frc.robot.RobotStates.IntakeStates;
-import frc.robot.RobotStates.LauncherStates;
+import frc.robot.RobotStates.ShooterStates;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.Climb.ClimbVoltSetpoints;
 import frc.robot.subsystems.indexer.Indexer;
@@ -28,14 +27,12 @@ public class StateMachine {
   private Indexer robotIndexer;
   private Climb robotClimb;
 
-  private LauncherStates launcherState;
-  private AnglerStates anglerState;
+  private ShooterStates shooterState;
   private IntakeStates intakeState;
   private IndexerStates indexerState;
   private ClimbStates climbState;
 
-  private SelectCommand<LauncherStates> launcherCommands;
-  private SelectCommand<AnglerStates> anglerCommands;
+  private SelectCommand<ShooterStates> shooterCommands;
   private SelectCommand<IntakeStates> intakeCommands;
   private SelectCommand<IndexerStates> indexerCommands;
   private SelectCommand<ClimbStates> climbCommands;
@@ -47,17 +44,13 @@ public class StateMachine {
     this.robotIndexer = robotIndexer;
     this.robotClimb = robotClimb;
 
-    launcherState = LauncherStates.IDLE;
-    anglerState = AnglerStates.IDLE;
+    shooterState = ShooterStates.IDLE;
     intakeState = IntakeStates.OFF;
     indexerState = IndexerStates.OFF;
     climbState = ClimbStates.OFF;
 
-    launcherCommands =
-        new SelectCommand<LauncherStates>(this.robotShooter.mapToLauncherCommand(), () -> launcherState);
-
-    anglerCommands = 
-        new SelectCommand<AnglerStates>(this.robotShooter.mapToAnglerCommand(), () -> anglerState);
+    shooterCommands =
+        new SelectCommand<ShooterStates>(this.robotShooter.mapToCommand(), () -> shooterState);
 
     intakeCommands =
         new SelectCommand<IntakeStates>(this.robotIntake.mapToCommand(), () -> intakeState);
@@ -74,25 +67,11 @@ public class StateMachine {
     robotClimb.setManualVolts(ClimbVoltSetpoints.OFF);
   }
 
-  public Command getShooterCommand(LauncherStates launchState, AnglerStates anglerState) {
-    return new ParallelCommandGroup(
-      getLauncherCommand(launchState),
-      getAnglerCommand(anglerState)
-    );
-  }
-
-  public Command getLauncherCommand(LauncherStates state) {
+  public Command getShooterCommand(ShooterStates state) {
     return new SequentialCommandGroup(
-            new InstantCommand(() -> launcherState = state),
-            CommandUtils.copyCommand(launcherCommands))
-        .withName("StateMachince/ShooterCommand/" + launcherState);
-  }
-
-  public Command getAnglerCommand(AnglerStates state) {
-    return new SequentialCommandGroup(
-            new InstantCommand(() -> anglerState = state),
-            CommandUtils.copyCommand(anglerCommands))
-        .withName("StateMachince/ShooterCommand/" + anglerState);
+            new InstantCommand(() -> shooterState = state),
+            CommandUtils.copyCommand(shooterCommands))
+        .withName("StateMachince/ShooterCommand/" + shooterState);
   }
 
   public Command getIntakeCommand(IntakeStates state) {
@@ -116,36 +95,36 @@ public class StateMachine {
 
   public Command intakeNote() {
     return new ParallelCommandGroup(
-        getAnglerCommand(AnglerStates.INTAKE),
+        getShooterCommand(ShooterStates.INTAKE),
         getIntakeCommand(IntakeStates.INTAKE),
         getIndexerCommand(IndexerStates.STOW),
         getClimbCommand(ClimbStates.IDLE));
   }
 
   public Command podiumShot() {
-    return new ParallelCommandGroup(getShooterCommand(LauncherStates.SHOOT, AnglerStates.PODIUM));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.PODIUM));
   }
 
   public Command speakerShot() {
-    return new ParallelCommandGroup(getShooterCommand(LauncherStates.SHOOT, AnglerStates.SPEAKER));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.SPEAKER));
   }
 
   public Command feedShot() {
-    return new ParallelCommandGroup(getShooterCommand(LauncherStates.SHOOT, AnglerStates.FEEDER));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.FEEDER));
   }
 
   public Command outtakeNote() {
     return new ParallelCommandGroup(
         getIntakeCommand(IntakeStates.OUTTAKE),
         getIndexerCommand(IndexerStates.OUTDEX),
-        getAnglerCommand(AnglerStates.INTAKE));
+        getShooterCommand(ShooterStates.INTAKE));
   }
 
   public Command stopTakeNote() {
     return new ParallelCommandGroup(
         getIntakeCommand(IntakeStates.OFF),
         getIndexerCommand(IndexerStates.OFF),
-        getShooterCommand(LauncherStates.OFF, AnglerStates.OFF));
+        getShooterCommand(ShooterStates.OFF));
   }
 
   public Command climbToAmp() {
@@ -153,20 +132,20 @@ public class StateMachine {
   }
 
   public Command prepareNoteShot() {
-    return new ParallelCommandGroup(getShooterCommand(LauncherStates.SHOOT, AnglerStates.AIM));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.AIM));
   }
 
   public Command shootNote() {
     return new ParallelCommandGroup(
-        getIndexerCommand(IndexerStates.INDEX), getLauncherCommand(LauncherStates.SHOOT));
+        getIndexerCommand(IndexerStates.INDEX), getShooterCommand(ShooterStates.FIRE));
   }
 
   public Command revUp() {
-    return new ParallelCommandGroup(getLauncherCommand(LauncherStates.SHOOT));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.FIRE));
   }
 
   public Command ejectSlow() {
-    return getShooterCommand(LauncherStates.EJECT, AnglerStates.EJECT);
+    return getShooterCommand(ShooterStates.EJECT);
   }
 
   public Command runIndexer() {
@@ -175,56 +154,51 @@ public class StateMachine {
 
   public Command stopShooting() {
     return new ParallelCommandGroup(
-        getIndexerCommand(IndexerStates.OFF), getLauncherCommand(LauncherStates.IDLE));
+        getIndexerCommand(IndexerStates.OFF), getShooterCommand(ShooterStates.IDLE));
   }
 
   public Command moveAnglerUpManual() {
-    return new ParallelCommandGroup(getAnglerCommand(AnglerStates.UP));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.UP));
   }
 
   public Command moveAnglerDownManual() {
-    return new ParallelCommandGroup(getAnglerCommand(AnglerStates.DOWN));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.DOWN));
   }
 
   public Command shooterToIdle() {
-    return new ParallelCommandGroup(getShooterCommand(LauncherStates.IDLE, AnglerStates.IDLE));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.IDLE));
   }
 
   public Command climbDown() {
     return new ParallelCommandGroup(
-        getClimbCommand(ClimbStates.MOVE_BOTH_UP), getAnglerCommand(AnglerStates.CLIMB));
+        getClimbCommand(ClimbStates.MOVE_BOTH_UP), getShooterCommand(ShooterStates.CLIMB));
   }
 
   public Command climbUp() {
     return new ParallelCommandGroup(
-        getClimbCommand(ClimbStates.MOVE_BOTH_DOWN), getAnglerCommand(AnglerStates.CLIMB));
+        getClimbCommand(ClimbStates.MOVE_BOTH_DOWN), getShooterCommand(ShooterStates.CLIMB));
   }
 
   public Command stopClimb() {
     return new ParallelCommandGroup(
-        getClimbCommand(ClimbStates.OFF), getAnglerCommand(AnglerStates.CLIMB));
+        getClimbCommand(ClimbStates.OFF), getShooterCommand(ShooterStates.CLIMB));
   }
 
   public Command eject() {
-    return new ParallelCommandGroup(getShooterCommand(LauncherStates.EJECT, AnglerStates.EJECT));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.EJECT));
   }
 
   public Command revAmp() {
-    return getShooterCommand(LauncherStates.REV_AMP, AnglerStates.AMP);
+    return getShooterCommand(ShooterStates.REV_AMP);
   }
 
   public Command scoreAmp() {
-    return getLauncherCommand(LauncherStates.SCORE_AMP).andThen(getIndexerCommand(IndexerStates.AMP));
+    return getShooterCommand(ShooterStates.SHOOT_AMP).andThen(getIndexerCommand(IndexerStates.AMP));
   }
 
-  @AutoLogOutput(key = "StateMachine/LauncherState")
-  public LauncherStates getLauncherState() {
-    return launcherState;
-  }
-
-  @AutoLogOutput(key = "StateMachine/AnglerState")
-  public AnglerStates getAnglerState() {
-    return anglerState;
+  @AutoLogOutput(key = "StateMachine/ShooterState")
+  public ShooterStates getShooterState() {
+    return shooterState;
   }
 
   @AutoLogOutput(key = "StateMachine/IntakeState")
