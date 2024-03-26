@@ -115,7 +115,7 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveMotor.setInverted(false);
     azimuthMotor.setInverted(true);
 
-    driveMotor.setSmartCurrentLimit(50);
+    driveMotor.setSmartCurrentLimit(40);
     driveMotor.enableVoltageCompensation(12.0);
     azimuthMotor.setSmartCurrentLimit(30);
     azimuthMotor.enableVoltageCompensation(12.0);

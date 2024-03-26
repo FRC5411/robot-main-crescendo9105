@@ -20,7 +20,14 @@ public class ManipulatorIOSim implements ManipulatorIO {
 
   private SingleJointedArmSim pivotMotor =
       new SingleJointedArmSim(
-          DCMotor.getNEO(1), PIVOT_GEARING, 0.002, 0.5, -15.0, 120.0, true, 0.0);
+          DCMotor.getNEO(1), 
+          PIVOT_GEARING, 
+          0.002, 
+          0.5, 
+          -15.0, 
+          120.0, 
+          true, 
+          0.0);
   private FlywheelSim flywheelMotor =
       new FlywheelSim(DCMotor.getNeo550(1), FLYWHEEL_GEARING, 0.002);
 
