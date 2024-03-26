@@ -11,6 +11,7 @@ public interface LauncherIO {
   /** Shooter subsystem launcher sensor data */
   @AutoLog
   public static class LauncherIOInputs {
+    public boolean topFlywheelConnected = false;
     public double topFlywheelVelocityMPS = 0.0;
     public double topFlywheelAppliedVolts = 0.0;
     public double topFlywheelInternalVolts = 0.0;
@@ -19,6 +20,7 @@ public interface LauncherIO {
     public double topFlywheelSetpointMPS = 0.0;
     public double topFlywheelErrorMPS = 0.0;
 
+    public boolean bottomFlywheelConnected = false;
     public double bottomFlywheelVelocityMPS = 0.0;
     public double bottomFlywheelAppliedVolts = 0.0;
     public double bottomFlywheelInternalVolts = 0.0;
