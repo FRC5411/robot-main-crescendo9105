@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.yoshivator;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.LinearFilter;
@@ -33,7 +34,8 @@ public class Yoshivator extends SubsystemBase {
     GROUND_INTAKE(() -> Rotation2d.fromDegrees(-46.0), () -> -12.0),
     AMP_IDLE(() -> Rotation2d.fromDegrees(78.5), () -> 0.0),
     AMP_SCORE(() -> Rotation2d.fromDegrees(78.5), () -> -5.0),
-    HOLD(() -> Yoshivator.pivotPosition, () -> 0.0);
+    HOLD(() -> Yoshivator.pivotPosition, () -> 0.0),
+    DEBUGGING(() -> Rotation2d.fromDegrees(new LoggedTunableNumber("e", 0.0).get()), () -> 0.0);
 
     private Supplier<Rotation2d> pivotSetpointRotation;
     private Supplier<Double> rollerSetpointVolts;
@@ -62,7 +64,7 @@ public class Yoshivator extends SubsystemBase {
   private ManipulatorIOInputsAutoLogged manipulatorIOInputs = new ManipulatorIOInputsAutoLogged();
 
   private ProfiledPIDController pivotFeedback =
-      new ProfiledPIDController(0.2, 0.0, 0.0, new TrapezoidProfile.Constraints(1600.0, 800.0));
+      new ProfiledPIDController(0.02, 0.0, 0.0, new TrapezoidProfile.Constraints(200.0, 100.0));
   private ArmFeedforward pivotFeedforward = new ArmFeedforward(0.0, 0.4, 0.0);
 
   private LoggedTunableNumber pivotFeedbackP;
@@ -81,7 +83,7 @@ public class Yoshivator extends SubsystemBase {
     if (Constants.currentRobot == Robot.SYNTH) {
       switch (Constants.currentMode) {
         case REAL:
-          pivotFeedback.setP(0.2);
+          pivotFeedback.setP(0.1);
           pivotFeedback.setI(0.0);
           pivotFeedback.setD(0.0);
           pivotFeedback.setConstraints(new TrapezoidProfile.Constraints(1600.0, 800.0));
@@ -112,8 +114,6 @@ public class Yoshivator extends SubsystemBase {
     pivotFeedbackA =
         new LoggedTunableNumber(
             "Yoshivator/Pivot/Feedback/A", pivotFeedback.getConstraints().maxAcceleration);
-
-    Logger.recordOutput("Limited", false);
   }
 
   public HashMap<YoshiStates, Command> mapToCommand(YoshiStates desiredState) {
@@ -147,16 +147,20 @@ public class Yoshivator extends SubsystemBase {
     }
 
     if (currentSetpoint != null) {
+      Rotation2d goal = Rotation2d.fromDegrees(MathUtil.clamp(
+        currentSetpoint.getPivotRotation().get().getDegrees(),
+        -30, 90));
+
       double pivotFeedbackOutput =
           pivotFeedback.calculate(
               manipulatorIOInputs.pivotPosition.getDegrees(),
-              currentSetpoint.getPivotRotation().get().getDegrees());
+              goal.getDegrees());
       double pivotFeedforwardOutput =
           pivotFeedforward.calculate(
               Math.toRadians(pivotFeedback.getSetpoint().position),
               pivotFeedback.getSetpoint().velocity);
 
-      double pivotCombinedOutput = pivotFeedbackOutput + pivotFeedforwardOutput;
+      double pivotCombinedOutput = (pivotFeedbackOutput + pivotFeedforwardOutput) * -1.0;
 
       setPivotVolts(pivotCombinedOutput);
 
@@ -165,6 +169,7 @@ public class Yoshivator extends SubsystemBase {
       Logger.recordOutput("Yoshivator/Pivot/Feedback/Output", pivotFeedbackOutput);
       Logger.recordOutput("Yoshivator/Pivot/Feedforward/Output", pivotFeedforwardOutput);
       Logger.recordOutput("Yoshivator/Pivot/Feedback/CombinedOutput", pivotCombinedOutput);
+      Logger.recordOutput("Yoshivator/Pivot/Feedback/PositionError", pivotFeedback.getPositionError());
     }
 
     pivotPosition = manipulatorIOInputs.pivotPosition;

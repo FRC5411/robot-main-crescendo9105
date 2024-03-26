@@ -29,11 +29,11 @@ public class TargetingSystem {
 
   // Offset is robot drive width cut in half
   private final double LAUNCH_MAP_OFFSET_M = 0.0; //- Units.inchesToMeters(36.0 / 2.0);
-  private final double LAUNCH_MAP_OFFSET_DEGREES_BLUE = 1.5; // 3.0;
+  private final double LAUNCH_MAP_OFFSET_DEGREES_BLUE = 0.0;// 1.5; // 3.0;
 
   private final double LAUNCH_MAP_OFFSET_DEG_AUTON_BLUE = 0.0;
 
-  private final double LAUNCH_MAP_OFFSET_DEGREES_RED = 1.5; // 4.0; // 3.0;
+  private final double LAUNCH_MAP_OFFSET_DEGREES_RED = 0.0; //1.5; // 4.0; // 3.0;
 
   private final double LAUNCH_MAP_OFFSET_DEG_AUTON_RED = 0.0;
 

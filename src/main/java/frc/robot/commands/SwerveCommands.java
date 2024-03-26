@@ -25,7 +25,7 @@ import org.littletonrobotics.junction.Logger;
 
 /** Class to hold all of the commands for the Drive */
 public class SwerveCommands {
-  private static final double DEADBAND = 0.1;
+  private static final double DEADBAND = 0.2;
   private static final boolean IS_FIELD = true;
 
   private static Command currentCommand = null;
@@ -49,7 +49,7 @@ public class SwerveCommands {
           Rotation2d linearDirection =
               new Rotation2d(xSupplier.getAsDouble(), ySupplier.getAsDouble());
           // Rotation
-          double theta = MathUtil.applyDeadband(thetaSupplier.getAsDouble(), DEADBAND);
+          double theta = MathUtil.applyDeadband (thetaSupplier.getAsDouble(), DEADBAND);
 
           // Square inputs
           // linearMagnitude *= linearMagnitude;
@@ -149,7 +149,7 @@ public class SwerveCommands {
               double thetaDesiredDegrees =
                   thetaFeedback.calculate(
                       robotDrive.getPoseEstimate().getRotation().getDegrees(),
-                      headingGoalSupplier.get().getDegrees() - 2.5);
+                      headingGoalSupplier.get().getDegrees());
 
               robotDrive.runSwerve(
                   new ChassisSpeeds(

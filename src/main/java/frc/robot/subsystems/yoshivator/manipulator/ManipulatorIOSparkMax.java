@@ -27,7 +27,7 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
   private CANSparkMax flywheelMotor = new CANSparkMax(53, MotorType.kBrushless);
   private RelativeEncoder flywheelEncoder = flywheelMotor.getEncoder();
 
-  private Rotation2d pivotAbsoluteOffset = Rotation2d.fromDegrees(114.0 - 80);
+  private Rotation2d pivotAbsoluteOffset = Rotation2d.fromDegrees(114.0 - 80 + 9 + 30);
 
   private double pivotAppliedVolts = 0.0;
   private double flywheelAppliedVolts = 0.0;
