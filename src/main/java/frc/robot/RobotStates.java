@@ -48,6 +48,7 @@ public class RobotStates {
     FEEDER,
     REV_AMP,
     SHOOT_AMP,
-    AIM_AUTON
+    AIM_AUTON,
+    INTAKE_AUTON
   }
 }

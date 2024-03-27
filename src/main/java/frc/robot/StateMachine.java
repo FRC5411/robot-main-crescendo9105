@@ -115,8 +115,8 @@ public class StateMachine {
         getShooterCommand(ShooterStates.INTAKE),
         getIntakeCommand(IntakeStates.INTAKE),
         getIndexerCommand(IndexerStates.STOW),
-        getClimbCommand(ClimbStates.IDLE),
-        getYoshiCommand(YoshiStates.GROUND_INTAKE));
+        getClimbCommand(ClimbStates.IDLE));
+        // getYoshiCommand(YoshiStates.GROUND_INTAKE));
   }
 
   public Command podiumShot() {
@@ -142,7 +142,8 @@ public class StateMachine {
     return new ParallelCommandGroup(
         getIntakeCommand(IntakeStates.OFF),
         getIndexerCommand(IndexerStates.OFF),
-        getShooterCommand(ShooterStates.OFF));
+        getShooterCommand(ShooterStates.OFF),
+        getYoshiCommand(YoshiStates.IDLE));
   }
 
   public Command climbToAmp() {

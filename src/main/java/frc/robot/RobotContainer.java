@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -42,6 +43,8 @@ import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.leds.LEDSubsystem;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.Shooter.AnglerSetpoints;
+import frc.robot.subsystems.shooter.Shooter.LauncherSetpoints;
 import frc.robot.subsystems.shooter.TargetingSystem;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.angler.AnglerIOSim;
@@ -60,6 +63,7 @@ import frc.robot.subsystems.yoshivator.Yoshivator;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSim;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSparkMax;
+import frc.robot.RobotStates.YoshiStates;
 
 public class RobotContainer {
   private Drive robotDrive;
@@ -215,14 +219,15 @@ public class RobotContainer {
         new ParallelCommandGroup(
                 robotStateMachine.getIndexerCommand(IndexerStates.STOW),
                 robotStateMachine.getIntakeCommand(IntakeStates.INTAKE),
-                robotStateMachine.getShooterCommand(ShooterStates.INTAKE))
+                robotStateMachine.getShooterCommand(ShooterStates.INTAKE_AUTON))
             .withTimeout(2.0));
     
     // Add intake off if yo
     NamedCommands.registerCommand(
         "Shoot",
         new SequentialCommandGroup(
-            robotStateMachine.getShooterCommand(ShooterStates.AIM).withTimeout(1.0),
+            robotStateMachine.getShooterCommand(ShooterStates.AIM_AUTON),
+            new WaitCommand(1.3),
             robotStateMachine.getIndexerCommand(IndexerStates.INDEX)));
 
     NamedCommands.registerCommand(
@@ -244,9 +249,9 @@ public class RobotContainer {
       robotStateMachine.getShooterCommand(ShooterStates.SPEAKER).withTimeout(1.0),
       robotStateMachine.getIndexerCommand(IndexerStates.INDEX)));
 
-    // NamedCommands.registerCommand("DeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.GROUND_INTAKE));
+    NamedCommands.registerCommand("DeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.GROUND_INTAKE));
 
-    // NamedCommands.registerCommand("UnDeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.IDLE));
+    NamedCommands.registerCommand("UnDeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.IDLE));
   }
 
   private void configureTriggers() {
@@ -351,7 +356,7 @@ public class RobotContainer {
         //         new InstantCommand(
         //             () -> robotDrive.setPose(new Pose2d(1.34, 5.54, new Rotation2d()))));
 
-    //  pilotController.y().whileTrue(robotShooter.setShooterState(AnglerSetpoints.DEBUGGING, LauncherSetpoints.OFF)).whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
+     pilotController.leftTrigger().whileTrue(robotShooter.setShooterState(AnglerSetpoints.DEBUGGING, LauncherSetpoints.OFF)).whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
 
       // pilotController.y().whileTrue(robotShooter.getAngler().setAnglerCommand(AnglerSetpoints.DEBUGGING)).whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
 

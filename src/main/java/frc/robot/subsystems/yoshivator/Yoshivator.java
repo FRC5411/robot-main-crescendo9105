@@ -31,7 +31,7 @@ public class Yoshivator extends SubsystemBase {
   public static enum YoshivatorSetpoints {
     IDLE(() -> Rotation2d.fromDegrees(90.0), () -> 0.0),
     GROUND_AMP(() -> Rotation2d.fromDegrees(-49.0), () -> 12.0),
-    GROUND_INTAKE(() -> Rotation2d.fromDegrees(-46.0), () -> -12.0),
+    GROUND_INTAKE(() -> Rotation2d.fromDegrees(-48.0), () -> -12.0),
     AMP_IDLE(() -> Rotation2d.fromDegrees(78.5), () -> 0.0),
     AMP_SCORE(() -> Rotation2d.fromDegrees(78.5), () -> -5.0),
     HOLD(() -> Yoshivator.pivotPosition, () -> 0.0),

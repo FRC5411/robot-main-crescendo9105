@@ -12,6 +12,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Robot;
@@ -20,8 +21,14 @@ import frc.robot.subsystems.shooter.ShooterVisualizer;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 import frc.robot.utils.math.ScrewArmFeedforward;
 
-public class Angler extends SubsystemBase{
-      private AnglerIO anglerIO;
+public class Angler extends SubsystemBase {
+  private static Rotation2d anglerPosition = null;
+
+  public static Rotation2d getLastAnglerPosition() {
+    return anglerPosition;
+  }
+
+  private AnglerIO anglerIO;
   private AnglerIOInputsAutoLogged anglerIOInputs = new AnglerIOInputsAutoLogged();
 
   private final Rotation2d minAngle = Rotation2d.fromDegrees(26.5);
@@ -101,7 +108,7 @@ public class Angler extends SubsystemBase{
         new LoggedTunableNumber("Shooter/Angler/Feedforward/L", anglerFeedforward.getL());
 
     resetAnglerFeedback();
-    anglerFeedback.setTolerance(0.25);
+    anglerFeedback.setTolerance(0.1);
     anglerFeedback.setIZone(20.0);
     anglerFeedback.setIntegratorRange(-0.5, 0.5);
   }
@@ -193,6 +200,7 @@ public class Angler extends SubsystemBase{
   }
 
     public void setAnglerPosition(AnglerSetpoints position) {
+        anglerPosition = currentAngle;
         anglerSetpoint = position;
 
         if (anglerSetpoint != null) {
@@ -200,17 +208,17 @@ public class Angler extends SubsystemBase{
             () -> Math.abs(anglerSetpoint.getAngle().get().minus(currentAngle).getDegrees());
         Logger.recordOutput("Shooter/ErrorDegrees", errorDegrees.getAsDouble());
 
-        if (anglerSetpoint != null && errorDegrees.getAsDouble() > 2.0) {
+        if ((anglerSetpoint != null && anglerSetpoint != AnglerSetpoints.IDLE) && errorDegrees.getAsDouble() > 2.0) {
             resetAnglerFeedback();
         }
-        }
+      }
     }
 
     // TODO Remove, this is for debugging only
   public Command setAnglerCommandWithoutEnd(AnglerSetpoints setpoint) {
     return new FunctionalCommand(
       () -> {
-        anglerSetpoint = setpoint;
+        setAnglerPosition(setpoint);
 
         DoubleSupplier errorDegrees = () -> Math.abs(anglerSetpoint.getAngle().get().minus(currentAngle).getDegrees());
 
@@ -225,7 +233,7 @@ public class Angler extends SubsystemBase{
       }, 
       (interrupted) -> {
         anglerSetpoint = null;
-      }, 
+      },
       () -> false, 
       this);
   }
@@ -248,6 +256,12 @@ public class Angler extends SubsystemBase{
       }, 
       () -> isAnglerAtGoal(), 
       this);
+  }
+
+  public Command setAnglerCommandInstant(AnglerSetpoints setpoint) {
+    return new InstantCommand(() -> {
+      setAnglerPosition(setpoint);
+    }, this);
   }
 
   public void resetAnglerFeedback() {

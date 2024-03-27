@@ -17,6 +17,7 @@ public class Intake extends SubsystemBase {
   public static enum IntakeSetpoint {
     IN(12.0),
     OUT(-12.0),
+    STOP(6.0),
     OFF(0.0);
 
     private double volts;

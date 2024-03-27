@@ -26,7 +26,7 @@ public class Shooter extends SubsystemBase {
     AIM(() -> TargetingSystem.getInstance().getLaunchMapAngle()),
     CLIMB(() -> Rotation2d.fromDegrees(25.0)),
     INTAKE(() -> Rotation2d.fromDegrees(45.0)),
-    IDLE(() -> anglerPosition),
+    IDLE(() -> Angler.getLastAnglerPosition()),
     PODIUM(() -> Rotation2d.fromDegrees(34.5)),
     SPEAKER(() -> Rotation2d.fromDegrees(57)),
     AMP(() -> Rotation2d.fromDegrees(54.0)),
@@ -106,7 +106,7 @@ public class Shooter extends SubsystemBase {
     shooterCommandMap.put(ShooterStates.DOWN, setAnglerManual(-5.0));
     shooterCommandMap.put(
         ShooterStates.FIRE,
-        Commands.runOnce(() -> launcher.setLauncherVelocityMPS(LauncherSetpoints.SPEAKER_SHOT), this));
+        setShooterState(AnglerSetpoints.IDLE, LauncherSetpoints.SPEAKER_SHOT));
     shooterCommandMap.put(
         ShooterStates.IDLE,
         Commands.runOnce(
@@ -133,7 +133,9 @@ public class Shooter extends SubsystemBase {
         launcher.setTopLauncherVolts(0);
       }, this));
     
-    shooterCommandMap.put(ShooterStates.AIM_AUTON, setShooterStateWithend(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT));
+    shooterCommandMap.put(ShooterStates.AIM_AUTON, setShooterStateInstant(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT));
+
+    shooterCommandMap.put(ShooterStates.INTAKE_AUTON, setShooterStateInstant(AnglerSetpoints.INTAKE, LauncherSetpoints.OFF));
 
     return shooterCommandMap;
   }
@@ -141,6 +143,11 @@ public class Shooter extends SubsystemBase {
   public Command setShooterStateWithend(
       AnglerSetpoints anglerState, LauncherSetpoints launcherState) {
     return angler.setAnglerCommand(anglerState).alongWith(launcher.setVelocityMPS(launcherState));
+  }
+
+  public Command setShooterStateInstant(
+      AnglerSetpoints anglerState, LauncherSetpoints launcherState) {
+    return angler.setAnglerCommandInstant(anglerState).alongWith(launcher.setVelocityMPS(launcherState));
   }
 
   public Command setShooterState(
