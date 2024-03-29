@@ -110,7 +110,13 @@ public class Drive extends SubsystemBase {
 
     // Configure PathPlanner
     AutoBuilder.configureHolonomic(
-        () -> getPoseEstimate(),
+        () -> {
+          if(Constants.currentMode == Mode.REAL) {
+            return getPoseEstimate();
+          } else {
+            return getOdometryPose();
+          }
+        },
         this::setPose,
         () -> KINEMATICS.toChassisSpeeds(getModuleStates()),
         this::runSwerve,
@@ -265,7 +271,9 @@ public class Drive extends SubsystemBase {
   /** Reset the gyro heading */
   public void resetGyro() {
     gyroIO.resetGyro();
-    setPose(new Pose2d(currentPose.getTranslation(), getRotation()));
+    setPoses(
+      new Pose2d(currentPose.getTranslation(), getRotation()),
+      new Pose2d(odometry.getPoseMeters().getTranslation(), getRotation()));
   }
 
   /** Set the pose of the robot */
@@ -276,6 +284,18 @@ public class Drive extends SubsystemBase {
     } else {
       poseEstimator.resetPosition(getRotation(), getModulePositions(), pose);
       odometry.resetPosition(getRotation(), getModulePositions(), pose);
+    }
+
+    currentPose = poseEstimator.getEstimatedPosition();
+  }
+
+  public void setPoses(Pose2d visionPose, Pose2d odometryPose) {
+    if (Constants.currentMode == Mode.SIM) {
+      poseEstimator.resetPosition(visionPose.getRotation(), getModulePositions(), visionPose);
+      odometry.resetPosition(odometryPose.getRotation(), getModulePositions(), odometryPose);
+    } else {
+      poseEstimator.resetPosition(getRotation(), getModulePositions(), visionPose);
+      odometry.resetPosition(getRotation(), getModulePositions(), odometryPose);
     }
 
     currentPose = poseEstimator.getEstimatedPosition();

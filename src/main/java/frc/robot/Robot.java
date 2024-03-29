@@ -101,8 +101,7 @@ public class Robot extends LoggedRobot {
     CommandScheduler.getInstance().run();
 
     robotContainer.getVisionFuser().periodic();
-    TargetingSystem.getInstance().logMultiTagEnabled();
-    TargetingSystem.getInstance().logVision();
+    TargetingSystem.getInstance().logAllData();
   }
 
   /** This function is called once when autonomous is enabled. */

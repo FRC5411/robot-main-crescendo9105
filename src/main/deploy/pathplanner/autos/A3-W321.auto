@@ -42,6 +42,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "DeployYoshi"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "W32"
@@ -51,6 +57,12 @@
           "type": "named",
           "data": {
             "name": "StowPiece"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "DeployYoshi"
           }
         },
         {

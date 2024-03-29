@@ -13,6 +13,8 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
@@ -61,6 +63,14 @@ public class SwerveCommands {
                   .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
                   .getTranslation();
 
+          Rotation2d robotRotation = robotDrive.getRotation();
+
+          if(DriverStation.getAlliance().isPresent()) {
+            if(DriverStation.getAlliance().get() == Alliance.Red) {
+              robotRotation = robotRotation.plus(Rotation2d.fromDegrees(180));
+            }
+          }
+
           if (IS_FIELD) {
             robotDrive.runSwerve(
                 ChassisSpeeds.fromFieldRelativeSpeeds(
@@ -68,7 +78,7 @@ public class SwerveCommands {
                     linearVelocity.getX() * robotDrive.getMaxLinearSpeedMPS(),
                     linearVelocity.getY() * robotDrive.getMaxLinearSpeedMPS(),
                     theta * robotDrive.getMaxAngularSpeedMPS(),
-                    robotDrive.getRotation()));
+                    robotRotation));
           } else {
             robotDrive.runSwerve(
                 ChassisSpeeds.fromRobotRelativeSpeeds(

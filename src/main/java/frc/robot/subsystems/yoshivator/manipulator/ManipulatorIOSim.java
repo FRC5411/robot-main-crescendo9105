@@ -24,8 +24,8 @@ public class ManipulatorIOSim implements ManipulatorIO {
           PIVOT_GEARING, 
           0.002, 
           0.5, 
-          -15.0, 
-          120.0, 
+          Math.toRadians(-15.0), 
+          Math.toRadians(120.0), 
           true, 
           0.0);
   private FlywheelSim flywheelMotor =

@@ -29,22 +29,27 @@ public class TargetingSystem {
 
   // Offset is robot drive width cut in half
   private final double LAUNCH_MAP_OFFSET_M = 0.0; //- Units.inchesToMeters(36.0 / 2.0);
-  private final double LAUNCH_MAP_OFFSET_DEGREES_BLUE = 1.0;// 1.5; // 3.0;
+  private final double LAUNCH_MAP_OFFSET_DEGREES_BLUE = 1.5;// 1.5; // 3.0;
 
-  private final double LAUNCH_MAP_OFFSET_DEG_AUTON_BLUE = 0.0;
+  private final double LAUNCH_MAP_OFFSET_DEG_AUTON_BLUE = -0.25;
 
-  private final double LAUNCH_MAP_OFFSET_DEGREES_RED = 1.0; //1.5; // 4.0; // 3.0;
+  private final double LAUNCH_MAP_OFFSET_DEGREES_RED = 1.5; //1.5; // 4.0; // 3.0;
 
-  private final double LAUNCH_MAP_OFFSET_DEG_AUTON_RED = 0.0;
+  private final double LAUNCH_MAP_OFFSET_DEG_AUTON_RED = -0.5;
+
+  private double manualOffsetRotation = 0.0;
 
   private Drive robotDrive;
   private Vision robotVision;
+  private Shooter robotShooter;
 
   // @AutoLogOutput(key = "Shooter/TargetingSystem/MultiTagEnabled")
   // TODO: MAKE SURE IS TRUE BEFORE MATCHES
   private boolean multiTagEnabled = true;
 
   private Rotation2d lastHeading = new Rotation2d();
+  private Rotation2d lastLaunchMapAngle = new Rotation2d();
+  private Rotation2d lastPivotAngle = new Rotation2d();
 
   private LinearFilter distanceFilter = LinearFilter.movingAverage(10);
   private LinearFilter rotationFilter = LinearFilter.movingAverage(10);
@@ -68,9 +73,10 @@ public class TargetingSystem {
     return instance;
   }
 
-  public void setSubsystems(Drive drive, Vision vision) {
+  public void setSubsystems(Drive drive, Vision vision, Shooter shooter) {
     robotDrive = drive;
     robotVision = vision;
+    robotShooter = shooter;
   }
 
   /** Initialize the launch map */
@@ -118,7 +124,11 @@ public class TargetingSystem {
           : LAUNCH_MAP_OFFSET_DEG_AUTON_BLUE));
     }
 
+    Logger.recordOutput("Shooter/TargetingSystem/AnglePreOffset", angle);
+    angle = angle.plus(Rotation2d.fromDegrees(getManualOffset()));
     Logger.recordOutput("Shooter/TargetingSystem/Angle", angle);
+    lastLaunchMapAngle = angle;
+    lastPivotAngle = robotShooter.getAngler().getAnglerPosition();
 
     return angle;
   }
@@ -188,7 +198,7 @@ public class TargetingSystem {
                 speakerOpeningRed.getY() - robotPose.getY());
       }
       else {
-        distanceM =  Math.hypot(speakerOpeningBlue.getX() - robotPose.getX(), speakerOpeningBlue.getY() - robotPose.getY());
+        distanceM = Math.hypot(speakerOpeningBlue.getX() - robotPose.getX(), speakerOpeningBlue.getY() - robotPose.getY());
       }
     } else if (robotVision.getInputsLeft().hasSpeakerTarget) {
       distanceM = robotVision.getInputsLeft().speakerTagTransform.getTranslation().getNorm();
@@ -274,6 +284,26 @@ public class TargetingSystem {
             .ignoringDisable(true));
   }
 
+  // public Command changeOffset(Supplier<Rotation2d> pivotPosSupplier) {
+  //   return Commands.runOnce(() -> {
+  //     if(robotShooter.getAngler().getAnglerPosition() != null) {
+  //       manualOffsetRotation = lastPivotAngle.minus(lastLaunchMapAngle);
+  //     }
+  //   });
+  // }
+
+  public Command incrementOffset() {
+    return Commands.runOnce(() -> {
+      manualOffsetRotation += 0.5;
+    });
+  }
+
+  public Command decrementOffset() {
+    return Commands.runOnce(() -> {
+      manualOffsetRotation -= 0.5;
+    });
+  }
+
   public void toggleMultiTagEnabled() {
     multiTagEnabled = !multiTagEnabled;
   }
@@ -282,16 +312,20 @@ public class TargetingSystem {
     useVision = !useVision;
   }
 
-  public void logMultiTagEnabled() {
+  public void logAllData() {
     Logger.recordOutput("Shooter/TargetingSystem/MulitTagEnabled", multiTagEnabled);
-  }
-
-  public void logVision() {
     Logger.recordOutput("Shooter/TargetingSystem/UseVision", useVision);
     Logger.recordOutput("Shooter/TargetingSystem/SpeakerDistance", calculateSpeakerDistanceM());
+    Logger.recordOutput("Shooter/TargetingSystem/ManualOffsetDegrees", getManualOffset());
+    Logger.recordOutput("Shooter/TargetingSystem/LastLaunchAngle", lastLaunchMapAngle);
+    Logger.recordOutput("Shooter/TargetingSystem/LastPivotAngle", lastPivotAngle);
   }
 
   public boolean getMultiTagEnabled() {
     return multiTagEnabled;
+  }
+
+  public double getManualOffset() {
+    return manualOffsetRotation;
   }
 }

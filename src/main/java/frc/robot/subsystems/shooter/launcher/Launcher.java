@@ -13,8 +13,8 @@ public class Launcher extends SubsystemBase{
     private LauncherIO launcherIO;
     private LauncherIOInputsAutoLogged launcherIOInputs = new LauncherIOInputsAutoLogged();
 
-    private LinearProfile topWheelProfile = new LinearProfile(40, 0.02);
-    private LinearProfile bottomWheelProfile = new LinearProfile(40, 0.02);
+    private LinearProfile topWheelProfile = new LinearProfile(50, 0.02);
+    private LinearProfile bottomWheelProfile = new LinearProfile(50, 0.02);
 
     private LauncherSetpoints launcherSetpointMPS = null;
 

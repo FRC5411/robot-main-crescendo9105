@@ -14,13 +14,19 @@
         {
           "type": "named",
           "data": {
-            "name": "Shoot"
+            "name": "SpeakerShoot"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "IntakeOnly"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "DeployYoshi"
           }
         },
         {
@@ -80,6 +86,6 @@
       ]
     }
   },
-  "folder": "CenterAutos",
+  "folder": "BottomAutos",
   "choreoAuto": false
 }

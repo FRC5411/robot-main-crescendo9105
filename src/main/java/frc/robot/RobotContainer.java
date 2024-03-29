@@ -12,7 +12,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -43,8 +42,6 @@ import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.leds.LEDSubsystem;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.Shooter.AnglerSetpoints;
-import frc.robot.subsystems.shooter.Shooter.LauncherSetpoints;
 import frc.robot.subsystems.shooter.TargetingSystem;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.angler.AnglerIOSim;
@@ -209,7 +206,7 @@ public class RobotContainer {
 
     PPHolonomicDriveController.setRotationTargetOverride(this::getRotationTargetOverride);
 
-    TargetingSystem.getInstance().setSubsystems(robotDrive, robotVision);
+    TargetingSystem.getInstance().setSubsystems(robotDrive, robotVision, robotShooter);
   }
 
   /** Register commands with PathPlanner and add default autos to chooser */
@@ -336,8 +333,13 @@ public class RobotContainer {
           .whileTrue(robotStateMachine.outtakeNote())
           .onFalse(robotStateMachine.stopTakeNote());
 
+      pilotController
+          .leftTrigger()
+          .whileTrue(robotStateMachine.yoshiIntakeNote())
+          .onFalse(robotStateMachine.stopTakeNote());
+
       /* Reset gyro */
-      pilotController.y().whileTrue(SwerveCommands.resetGyro(robotDrive));
+      pilotController.y().onTrue(SwerveCommands.resetGyro(robotDrive));
 
       /* Auto heading to speaker */
       pilotController
@@ -356,7 +358,7 @@ public class RobotContainer {
         //         new InstantCommand(
         //             () -> robotDrive.setPose(new Pose2d(1.34, 5.54, new Rotation2d()))));
 
-     pilotController.leftTrigger().whileTrue(robotShooter.setShooterState(AnglerSetpoints.DEBUGGING, LauncherSetpoints.OFF)).whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
+    //  pilotController.leftTrigger().whileTrue(robotShooter.setShooterState(AnglerSetpoints.DEBUGGING, LauncherSetpoints.OFF)).whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
 
       // pilotController.y().whileTrue(robotShooter.getAngler().setAnglerCommand(AnglerSetpoints.DEBUGGING)).whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
 
@@ -402,7 +404,7 @@ public class RobotContainer {
 
       copilotController
           .a()
-          .whileTrue(robotStateMachine.revAmp())
+          .whileTrue(robotStateMachine.revAmp())  
           .onFalse(robotStateMachine.stopShooting());
 
       copilotController
@@ -416,15 +418,18 @@ public class RobotContainer {
           .whileTrue(robotStateMachine.shootNote())
           .onFalse(robotStateMachine.stopShooting());
 
-        copilotController
-            .rightTrigger()
-            .whileTrue(robotStateMachine.feedShot())
-            .onFalse(robotStateMachine.stopShooting());
+      copilotController
+          .rightBumper()
+          .whileTrue(robotStateMachine.feedShot())
+          .onFalse(robotStateMachine.stopShooting());
 
-        copilotController
-            .leftTrigger()
-            .whileTrue(robotStateMachine.podiumShot())
-            .onFalse(robotStateMachine.stopShooting());
+      copilotController
+        .leftTrigger()
+        .onTrue(TargetingSystem.getInstance().incrementOffset());
+
+      copilotController
+        .rightTrigger()
+        .onTrue(TargetingSystem.getInstance().decrementOffset());
     }
   }
 

@@ -30,7 +30,7 @@ public class Shooter extends SubsystemBase {
     PODIUM(() -> Rotation2d.fromDegrees(34.5)),
     SPEAKER(() -> Rotation2d.fromDegrees(57)),
     AMP(() -> Rotation2d.fromDegrees(54.0)),
-    FEEDER(() -> Rotation2d.fromDegrees(50.0)),
+    FEEDER(() -> Rotation2d.fromDegrees(45.0)),
     DEBUGGING(() -> Rotation2d.fromDegrees(angleTunableNumber.get()));
 
     private Supplier<Rotation2d> angleSupplier;

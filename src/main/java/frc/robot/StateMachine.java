@@ -55,6 +55,7 @@ public class StateMachine {
     intakeState = IntakeStates.OFF;
     indexerState = IndexerStates.OFF;
     climbState = ClimbStates.OFF;
+    yoshiState = YoshiStates.IDLE;
 
     shooterCommands =
         new SelectCommand<ShooterStates>(this.robotShooter.mapToCommand(), () -> shooterState);
@@ -119,16 +120,13 @@ public class StateMachine {
         // getYoshiCommand(YoshiStates.GROUND_INTAKE));
   }
 
-  public Command podiumShot() {
-    return new ParallelCommandGroup(getShooterCommand(ShooterStates.PODIUM));
-  }
-
-  public Command speakerShot() {
-    return new ParallelCommandGroup(getShooterCommand(ShooterStates.SPEAKER));
-  }
-
-  public Command feedShot() {
-    return new ParallelCommandGroup(getShooterCommand(ShooterStates.FEEDER));
+  public Command yoshiIntakeNote() {
+    return new ParallelCommandGroup(
+        getShooterCommand(ShooterStates.INTAKE),
+        getIntakeCommand(IntakeStates.INTAKE),
+        getIndexerCommand(IndexerStates.STOW),
+        getClimbCommand(ClimbStates.IDLE),
+        getYoshiCommand(YoshiStates.GROUND_INTAKE));
   }
 
   public Command outtakeNote() {
@@ -144,6 +142,18 @@ public class StateMachine {
         getIndexerCommand(IndexerStates.OFF),
         getShooterCommand(ShooterStates.OFF),
         getYoshiCommand(YoshiStates.IDLE));
+  }
+
+  public Command podiumShot() {
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.PODIUM));
+  }
+
+  public Command speakerShot() {
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.SPEAKER));
+  }
+
+  public Command feedShot() {
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.FEEDER));
   }
 
   public Command climbToAmp() {
@@ -233,5 +243,10 @@ public class StateMachine {
   @AutoLogOutput(key = "StateMachine/ClimbState")
   public ClimbStates getClimbState() {
     return climbState;
+  }
+
+  @AutoLogOutput(key = "StateMachine/YoshiState")
+  public YoshiStates getYoshiState() {
+    return yoshiState;
   }
 }
