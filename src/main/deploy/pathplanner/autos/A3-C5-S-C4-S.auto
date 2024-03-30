@@ -14,13 +14,7 @@
         {
           "type": "named",
           "data": {
-            "name": "SpeakerShoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "IntakeOnly"
+            "name": "SpeakerShot"
           }
         },
         {
@@ -38,7 +32,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake"
+            "name": "StowPiece"
           }
         },
         {
@@ -54,12 +48,6 @@
           }
         },
         {
-          "type": "named",
-          "data": {
-            "name": "IntakeOnly"
-          }
-        },
-        {
           "type": "path",
           "data": {
             "pathName": "TS-C4"
@@ -68,7 +56,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake"
+            "name": "StowPiece"
           }
         },
         {

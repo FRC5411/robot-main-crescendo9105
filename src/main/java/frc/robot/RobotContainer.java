@@ -58,8 +58,6 @@ import java.util.Optional;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import frc.robot.subsystems.yoshivator.Yoshivator;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
-import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSim;
-import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSparkMax;
 import frc.robot.RobotStates.YoshiStates;
 
 public class RobotContainer {
@@ -125,7 +123,7 @@ public class RobotContainer {
         robotClimb = new Climb(new ClimbIOSparkMax());
         robotIndexer = new Indexer(new IndexerIOSparkMax());
         robotLEDs = new LEDSubsystem();
-        robotYoshi = new Yoshivator(new ManipulatorIOSparkMax() {});
+        robotYoshi = new Yoshivator(new ManipulatorIO() {});
         robotVision =
             new Vision(
                 new VisionIOPhoton(
@@ -160,7 +158,7 @@ public class RobotContainer {
         robotClimb = new Climb(new ClimbIOSim());
         robotIndexer = new Indexer(new IndexerIOSim());
         robotLEDs = new LEDSubsystem();
-        robotYoshi = new Yoshivator(new ManipulatorIOSim() {});
+        robotYoshi = new Yoshivator(new ManipulatorIO() {});
         robotVision =
             new Vision(
                 new VisionIOPhotonSim(
@@ -218,7 +216,7 @@ public class RobotContainer {
                 robotStateMachine.getIntakeCommand(IntakeStates.INTAKE),
                 robotStateMachine.getShooterCommand(ShooterStates.INTAKE_AUTON))
             .withTimeout(2.0));
-    
+
     // Add intake off if yo
     NamedCommands.registerCommand(
         "Shoot",

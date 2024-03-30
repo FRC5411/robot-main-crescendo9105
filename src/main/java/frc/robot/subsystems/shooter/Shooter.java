@@ -49,9 +49,9 @@ public class Shooter extends SubsystemBase {
     IDLE(() -> 9.0, () -> 9.0),
     SPEAKER_SHOT(() -> 38.0, () -> 38.0),
     FULL_SPEED(() -> 42.0, () -> 42.0),
-    FEEDER(() -> 30.0, () -> 30.0),
+    FEEDER(() -> 33.6, () -> 33.6),
     // 12.5: 7 / 9
-    // 12.65: 0
+    // 12.65: 08
     // 12.58: 9 / 12
     // AMP(() -> -0.1, () -> 12.54),
     // AMP(() -> -4.5, () -> 12.0): 5 / 8
@@ -123,7 +123,7 @@ public class Shooter extends SubsystemBase {
         setShooterStateWithend(AnglerSetpoints.SPEAKER, LauncherSetpoints.SPEAKER_SHOT));
     shooterCommandMap.put(
         ShooterStates.FEEDER,
-        setShooterStateWithend(AnglerSetpoints.FEEDER, LauncherSetpoints.FULL_SPEED));
+        setShooterStateWithend(AnglerSetpoints.FEEDER, LauncherSetpoints.FEEDER));
     shooterCommandMap.put(
         ShooterStates.REV_AMP, setShooterState(AnglerSetpoints.AMP, LauncherSetpoints.AMP));
 
