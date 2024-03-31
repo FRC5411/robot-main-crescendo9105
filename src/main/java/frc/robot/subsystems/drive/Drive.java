@@ -90,8 +90,6 @@ public class Drive extends SubsystemBase {
 
   private Field2d field = new Field2d();
 
-  private boolean PProtationTargetOverride = false;
-
   /** Creates a new swerve Drive. */
   public Drive(
       ModuleIO moduleFL, ModuleIO moduleFR, ModuleIO moduleBL, ModuleIO moduleBR, GyroIO gyro) {
