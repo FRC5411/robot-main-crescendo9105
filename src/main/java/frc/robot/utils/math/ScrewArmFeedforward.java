@@ -34,10 +34,10 @@ public class ScrewArmFeedforward {
     double output = 0.0;
 
     double angleSignum = Math.signum(currentPosition.minus(positionGoal).getDegrees());
-    if (angleSignum < 0.0) {
-      output = L * angleSignum;
-    } else if (angleSignum > 0.0) {
-      output = U * angleSignum;
+    if (angleSignum > 0.0) {
+      output = -L * angleSignum;
+    } else if (angleSignum < 0.0) {
+      output = -U * angleSignum;
     }
 
     return output;

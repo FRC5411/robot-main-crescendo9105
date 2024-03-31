@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems.drive;
 
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -18,7 +20,7 @@ import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 
-/** Class to interact with the physical swerve module structure, SDS L2+ */
+/** Class to interact with the physical swerve module structure, SDS L2 */
 public class ModuleIOSparkMax implements ModuleIO {
   private final double DRIVE_GEAR_RATIO = 6.75 / 1.0;
   private final double AZIMUTH_GEAR_RATIO = 150.0 / 7.0;
@@ -36,7 +38,9 @@ public class ModuleIOSparkMax implements ModuleIO {
   private SparkPIDController driveFeedback;
   private SparkPIDController azimuthFeedback;
 
-  private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.0, 0.27 / 12.0);
+  private SimpleMotorFeedforward driveFeedforward =
+      new SimpleMotorFeedforward(0.0, 0.27 / 12.0, 0.05);
+  private SimpleMotorFeedforward azimuthFeedforward = new SimpleMotorFeedforward(0.032, 0.0, 0.0);
 
   private LoggedTunableNumber driveFeedbackP =
       new LoggedTunableNumber("Drive/ModuleIO/Drive/Feedback/P", 0.0001);
@@ -46,11 +50,16 @@ public class ModuleIOSparkMax implements ModuleIO {
       new LoggedTunableNumber("Drive/ModuleIO/Drive/Feedback/D", 0.0);
 
   private LoggedTunableNumber azimuthFeedbackP =
-      new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/P", 0.175);
+      new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/P", 0.195);
   private LoggedTunableNumber azimuthFeedbackI =
       new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/I", 0.0);
   private LoggedTunableNumber azimuthFeedbackD =
       new LoggedTunableNumber("Drive/ModuleIO/Azimuth/Feedback/D", 0.0);
+
+  private Rotation2d azimuthAngle = new Rotation2d();
+  private Rotation2d azimuthAngleSetpoint = new Rotation2d();
+
+  private StatusSignal<Double> absolutePositionSignal;
 
   /** Create a new hardware implementation of a swerve module */
   public ModuleIOSparkMax(int module) {
@@ -131,7 +140,7 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveFeedback.setD(0.0);
     driveFeedback.setFeedbackDevice(driveEncoder);
 
-    azimuthFeedback.setP(0.175);
+    azimuthFeedback.setP(0.4);
     azimuthFeedback.setI(0.0);
     azimuthFeedback.setD(0.0);
     azimuthFeedback.setFeedbackDevice(azimuthEncoder);
@@ -145,6 +154,12 @@ public class ModuleIOSparkMax implements ModuleIO {
 
     driveMotor.burnFlash();
     azimuthMotor.burnFlash();
+
+    absolutePositionSignal = angleEncoder.getAbsolutePosition();
+
+    BaseStatusSignal.setUpdateFrequencyForAll(50.0, absolutePositionSignal);
+
+    angleEncoder.optimizeBusUtilization();
   }
 
   @Override
@@ -157,13 +172,17 @@ public class ModuleIOSparkMax implements ModuleIO {
     inputs.driveTemperatureCelsius = new double[] {driveMotor.getMotorTemperature()};
 
     inputs.azimuthAbsolutePosition =
-        Rotation2d.fromRotations(angleEncoder.getAbsolutePosition().getValueAsDouble())
+        Rotation2d.fromRotations(absolutePositionSignal.getValueAsDouble())
             .minus(angleOffset);
     inputs.azimuthPosition =
         Rotation2d.fromRotations(azimuthEncoder.getPosition() / AZIMUTH_GEAR_RATIO);
+
+    azimuthAngle = inputs.azimuthPosition;
     inputs.azimuthVelocityRPS =
         Units.rotationsPerMinuteToRadiansPerSecond(azimuthEncoder.getVelocity())
             / AZIMUTH_GEAR_RATIO;
+    inputs.azimuthError = azimuthAngleSetpoint.minus(azimuthAngle);
+    inputs.azimuthGoal = azimuthAngleSetpoint;
     inputs.azimuthAppliedVolts = azimuthMotor.getAppliedOutput() * azimuthMotor.getBusVoltage();
     inputs.azimuthCurrentAmps = new double[] {azimuthMotor.getOutputCurrent()};
     inputs.azimuthTemperatureCelsius = new double[] {azimuthMotor.getMotorTemperature()};
@@ -196,7 +215,10 @@ public class ModuleIOSparkMax implements ModuleIO {
 
   @Override
   public void setAzimuthPosition(Rotation2d position) {
-    double feedforwardOutput = 0.0;
+    azimuthAngleSetpoint = position;
+    double feedforwardOutput =
+        azimuthFeedforward.calculate(
+            Math.signum(position.getRotations() - azimuthAngle.getRotations()));
     azimuthFeedback.setReference(
         position.getRotations() * AZIMUTH_GEAR_RATIO, ControlType.kPosition, 0, feedforwardOutput);
   }

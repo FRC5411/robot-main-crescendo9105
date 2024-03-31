@@ -39,15 +39,15 @@ import org.littletonrobotics.junction.Logger;
 
 /** Swerve drive */
 public class Drive extends SubsystemBase {
-  public static final double TRACK_WIDTH_X_M = Units.inchesToMeters(29.5);
-  public static final double TRACK_WIDTH_Y_M = Units.inchesToMeters(29.5);
+  public static final double TRACK_WIDTH_X_M = Units.inchesToMeters(24.25);
+  public static final double TRACK_WIDTH_Y_M = Units.inchesToMeters(24.25);
   public static final double DRIVEBASE_RADIUS_M =
       Math.hypot(TRACK_WIDTH_X_M / 2.0, TRACK_WIDTH_Y_M / 2.0);
-  public static final double MAX_LINEAR_SPEED_MPS = Units.feetToMeters(14.0);
+  public static final double MAX_LINEAR_SPEED_MPS = 4.8;
   public static final double MAX_ANGULAR_SPEED_MPS = MAX_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS_M;
   // Second argument is the max accel
   public static final ModuleLimits MODULE_LIMITS =
-      new ModuleLimits(MAX_LINEAR_SPEED_MPS, MAX_LINEAR_SPEED_MPS * 5, MAX_ANGULAR_SPEED_MPS);
+      new ModuleLimits(MAX_LINEAR_SPEED_MPS, MAX_LINEAR_SPEED_MPS * 5, 12 * 2 * Math.PI);
 
   private final Translation2d[] MODULE_TRANSLATIONS = getModuleTranslations();
   private final SwerveDriveKinematics KINEMATICS = getKinematics();
@@ -90,6 +90,8 @@ public class Drive extends SubsystemBase {
 
   private Field2d field = new Field2d();
 
+  private boolean PProtationTargetOverride = false;
+
   /** Creates a new swerve Drive. */
   public Drive(
       ModuleIO moduleFL, ModuleIO moduleFR, ModuleIO moduleBL, ModuleIO moduleBR, GyroIO gyro) {
@@ -108,7 +110,13 @@ public class Drive extends SubsystemBase {
 
     // Configure PathPlanner
     AutoBuilder.configureHolonomic(
-        () -> odometry.getPoseMeters(),
+        () -> {
+          if(Constants.currentMode == Mode.REAL) {
+            return getPoseEstimate();
+          } else {
+            return getOdometryPose();
+          }
+        },
         this::setPose,
         () -> KINEMATICS.toChassisSpeeds(getModuleStates()),
         this::runSwerve,
@@ -263,13 +271,9 @@ public class Drive extends SubsystemBase {
   /** Reset the gyro heading */
   public void resetGyro() {
     gyroIO.resetGyro();
-  }
-
-  /** Reset the swerve modules */
-  public void resetModules() {
-    for (int i = 0; i < 4; i++) {
-      modules[i].reset();
-    }
+    setPoses(
+      new Pose2d(currentPose.getTranslation(), getRotation()),
+      new Pose2d(odometry.getPoseMeters().getTranslation(), getRotation()));
   }
 
   /** Set the pose of the robot */
@@ -280,6 +284,18 @@ public class Drive extends SubsystemBase {
     } else {
       poseEstimator.resetPosition(getRotation(), getModulePositions(), pose);
       odometry.resetPosition(getRotation(), getModulePositions(), pose);
+    }
+
+    currentPose = poseEstimator.getEstimatedPosition();
+  }
+
+  public void setPoses(Pose2d visionPose, Pose2d odometryPose) {
+    if (Constants.currentMode == Mode.SIM) {
+      poseEstimator.resetPosition(visionPose.getRotation(), getModulePositions(), visionPose);
+      odometry.resetPosition(odometryPose.getRotation(), getModulePositions(), odometryPose);
+    } else {
+      poseEstimator.resetPosition(getRotation(), getModulePositions(), visionPose);
+      odometry.resetPosition(getRotation(), getModulePositions(), odometryPose);
     }
 
     currentPose = poseEstimator.getEstimatedPosition();
@@ -330,12 +346,6 @@ public class Drive extends SubsystemBase {
   @AutoLogOutput(key = "Drive/Odometry/DrivePose")
   public Pose2d getOdometryPose() {
     return odometry.getPoseMeters();
-  }
-
-  /** Returns the filter pose of the robot */
-  @AutoLogOutput(key = "Drive/Odometry/FilteredPose")
-  public Pose2d getFilteredPose() {
-    return filteredPose;
   }
 
   /** Returns the rotation of the robot */
@@ -400,7 +410,17 @@ public class Drive extends SubsystemBase {
     return filteredPose;
   }
 
-  public Command runDriveVoltageSysIDTests() {
+  public Pose2d getFilteredPose() {
+    return filteredPose;
+  }
+
+  public void resetModules() {
+    for (int i = 0; i < 4; i++) {
+      modules[i].reset();
+    }
+  }
+
+  public Command characterizeDriveMotors() {
     return SysIDCharacterization.runDriveSysIDTests(
         (voltage) -> {
           for (var module : modules) {

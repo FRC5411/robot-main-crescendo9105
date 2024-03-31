@@ -11,7 +11,8 @@ public class RobotStates {
     OFF,
     INDEX,
     OUTDEX,
-    STOW
+    STOW,
+    AMP
   }
 
   public static enum ClimbStates {
@@ -21,7 +22,14 @@ public class RobotStates {
     PULL,
     MOVE_BOTH_UP,
     MOVE_BOTH_DOWN,
-    INVERT,
+    AMP
+  }
+
+  public static enum YoshiStates {
+    OFF,
+    IDLE,
+    GROUND_AMP,
+    GROUND_INTAKE,
     AMP
   }
 
@@ -37,6 +45,10 @@ public class RobotStates {
     IDLE,
     PODIUM,
     SPEAKER,
-    FEEDER
+    FEEDER,
+    REV_AMP,
+    SHOOT_AMP,
+    AIM_AUTON,
+    INTAKE_AUTON
   }
 }

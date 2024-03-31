@@ -20,6 +20,8 @@ public interface ModuleIO {
 
     public Rotation2d azimuthAbsolutePosition = new Rotation2d();
     public Rotation2d azimuthPosition = new Rotation2d();
+    public Rotation2d azimuthError = new Rotation2d();
+    public Rotation2d azimuthGoal = new Rotation2d();
     public double azimuthVelocityRPS = 0.0;
     public double azimuthAppliedVolts = 0.0;
     public double[] azimuthCurrentAmps = new double[] {};

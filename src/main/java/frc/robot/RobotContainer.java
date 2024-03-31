@@ -6,7 +6,6 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.math.VecBuilder;
@@ -55,8 +54,14 @@ import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhoton;
 import frc.robot.subsystems.vision.VisionIOPhotonSim;
+import frc.robot.utils.commands.CommandUtils;
 import java.util.Optional;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import frc.robot.subsystems.yoshivator.Yoshivator;
+import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
+import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSim;
+import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSparkMax;
+import frc.robot.RobotStates.YoshiStates;
 
 public class RobotContainer {
   private Drive robotDrive;
@@ -65,6 +70,7 @@ public class RobotContainer {
   private Climb robotClimb;
   private Indexer robotIndexer;
   private Vision robotVision;
+  private Yoshivator robotYoshi;
   private LEDSubsystem robotLEDs;
 
   private VisionFuser visionFuser;
@@ -78,7 +84,7 @@ public class RobotContainer {
   public RobotContainer() {
     initializeSubsystems();
 
-    robotStateMachine = new StateMachine(robotShooter, robotIntake, robotIndexer, robotClimb);
+    robotStateMachine = new StateMachine(robotShooter, robotIntake, robotIndexer, robotClimb, robotYoshi);
 
     configureAutonomous();
 
@@ -86,7 +92,7 @@ public class RobotContainer {
     // initializeSubsystems()
     try {
       autoChooser =
-          new LoggedDashboardChooser<>("Autonomous Selector", AutoBuilder.buildAutoChooser());
+          new LoggedDashboardChooser<>("Autonomous Selector", CommandUtils.buildAutoChooser());
     } catch (Exception e) {
       autoChooser = new LoggedDashboardChooser<>("Autonomous Selector");
       autoChooser.addDefaultOption(
@@ -120,25 +126,26 @@ public class RobotContainer {
         robotClimb = new Climb(new ClimbIOSparkMax());
         robotIndexer = new Indexer(new IndexerIOSparkMax());
         robotLEDs = new LEDSubsystem();
+        robotYoshi = new Yoshivator(new ManipulatorIOSparkMax() {});
         robotVision =
             new Vision(
                 new VisionIOPhoton(
                     "LLLeft",
                     new Transform3d(
-                        0.12,
-                        0.26,
-                        0.0,
+                        0.35,
+                        0.32,
+                        0.33,
                         new Rotation3d(
-                            VecBuilder.fill(-0.36, Math.toRadians(0.0), Math.toRadians(0.0)))),
+                            Math.toRadians(0), Math.toRadians(-25.5), Math.toRadians(-19.2))),
                     0.1),
                 new VisionIOPhoton(
                     "LLRight",
                     new Transform3d(
-                        0.0,
-                        -0.2,
-                        0.0,
+                        0.35,
+                        -0.32,
+                        0.33,
                         new Rotation3d(
-                            VecBuilder.fill(0.36, Math.toRadians(0.0), Math.toRadians(0.0)))),
+                            Math.toRadians(0), Math.toRadians(-25.5), Math.toRadians(14.7))),
                     0.1));
         break;
       case SIM:
@@ -154,12 +161,13 @@ public class RobotContainer {
         robotClimb = new Climb(new ClimbIOSim());
         robotIndexer = new Indexer(new IndexerIOSim());
         robotLEDs = new LEDSubsystem();
+        robotYoshi = new Yoshivator(new ManipulatorIOSim() {});
         robotVision =
             new Vision(
                 new VisionIOPhotonSim(
                     "LLLeft",
                     new Transform3d(
-                        0.0,
+                        0.2,
                         0.0,
                         0.33,
                         new Rotation3d(
@@ -169,8 +177,8 @@ public class RobotContainer {
                 new VisionIOPhotonSim(
                     "LLRight",
                     new Transform3d(
-                        0.36 - 0.037 - 0.18 + 0.1,
-                        0.29 - 0.28,
+                        0.4,
+                        0.0,
                         0.33,
                         new Rotation3d(
                             Math.toRadians(13.2), Math.toRadians(0), Math.toRadians(25.5))),
@@ -191,6 +199,7 @@ public class RobotContainer {
         robotIndexer = new Indexer(new IndexerIO() {});
         robotLEDs = new LEDSubsystem();
         robotVision = new Vision(new VisionIO() {}, new VisionIO() {});
+        robotYoshi = new Yoshivator(new ManipulatorIO() {});
         break;
     }
 
@@ -198,31 +207,32 @@ public class RobotContainer {
 
     PPHolonomicDriveController.setRotationTargetOverride(this::getRotationTargetOverride);
 
-    TargetingSystem.getInstance().setSubsystems(robotDrive, robotVision);
+    TargetingSystem.getInstance().setSubsystems(robotDrive, robotVision, robotShooter);
   }
 
   /** Register commands with PathPlanner and add default autos to chooser */
   private void configureAutonomous() {
     NamedCommands.registerCommand(
-        "Intake",
+        "StowPiece",
         new ParallelCommandGroup(
                 robotStateMachine.getIndexerCommand(IndexerStates.STOW),
                 robotStateMachine.getIntakeCommand(IntakeStates.INTAKE),
-                robotStateMachine.getShooterCommand(ShooterStates.INTAKE))
+                robotStateMachine.getShooterCommand(ShooterStates.INTAKE_AUTON))
             .withTimeout(2.0));
+
+    // Add intake off if yo
     NamedCommands.registerCommand(
         "Shoot",
         new SequentialCommandGroup(
-            robotStateMachine.getShooterCommand(ShooterStates.AIM),
-            new WaitCommand(1.0),
-            robotStateMachine.getIndexerCommand(IndexerStates.INDEX),
-            robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
+            robotStateMachine.getShooterCommand(ShooterStates.AIM_AUTON),
+            new WaitCommand(1.3),
+            robotStateMachine.getIndexerCommand(IndexerStates.INDEX)));
 
     NamedCommands.registerCommand(
         "Eject",
         new WaitCommand(2)
             .andThen(
-                new SequentialCommandGroup(
+                new SequentialCommandGroup( 
                     robotStateMachine.getShooterCommand(ShooterStates.EJECT),
                     robotStateMachine.getIndexerCommand(IndexerStates.INDEX),
                     robotStateMachine.getIntakeCommand(IntakeStates.INTAKE))));
@@ -231,14 +241,22 @@ public class RobotContainer {
         "ShootIdle", robotStateMachine.getShooterCommand(ShooterStates.IDLE));
 
     NamedCommands.registerCommand(
-        "IntakeOnly", robotStateMachine.getIntakeCommand(IntakeStates.INTAKE));
+        "IntakeOn", robotStateMachine.getIntakeCommand(IntakeStates.INTAKE));
+
+    NamedCommands.registerCommand("SpeakerShot", new SequentialCommandGroup(
+      robotStateMachine.getShooterCommand(ShooterStates.SPEAKER).withTimeout(1.0),
+      robotStateMachine.getIndexerCommand(IndexerStates.INDEX)));
+
+    NamedCommands.registerCommand("DeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.GROUND_INTAKE));
+
+    NamedCommands.registerCommand("UnDeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.IDLE));
   }
 
   private void configureTriggers() {
     // For LEDS
     new Trigger(
             () ->
-                robotShooter.atAllSetpoint()
+                robotShooter.atAllSetpoints()
                     && robotStateMachine.getShooterState() == ShooterStates.AIM)
         .onTrue(new InstantCommand(() -> robotLEDs.setReadyColor()))
         .onFalse(
@@ -263,20 +281,37 @@ public class RobotContainer {
               () -> -pilotController.getLeftX(),
               () -> -pilotController.getRightX()));
 
-      pilotController
-          .a()
-          .whileTrue(
-              SwerveCommands.setHeading(
-                  robotDrive,
-                  () -> 0.0,
-                  () -> 0.0,
-                  () -> TargetingSystem.getInstance().getOptimalLaunchHeading()))
-          .onFalse(SwerveCommands.stopDrive(robotDrive));
+      //   pilotController
+      //       .a()
+      //       .whileTrue(
+      //           SwerveCommands.setHeading(
+      //               robotDrive,
+      //               () -> 0.0,
+      //               () -> 0.0,
+      //               () -> TargetingSystem.getInstance().getOptimalLaunchHeading()))
+      //       .onFalse(SwerveCommands.stopDrive(robotDrive));
 
-      pilotController
-          .b()
-          .whileTrue(robotStateMachine.getShooterCommand(ShooterStates.AIM))
-          .onFalse(robotStateMachine.getShooterCommand(ShooterStates.IDLE));
+      pilotController.a().onTrue(SwerveCommands.resetGyro(robotDrive));
+
+      // pilotController
+      //     .b()
+      //     .whileTrue(robotStateMachine.getShooterCommand(ShooterStates.AIM))
+      //     .onFalse(robotStateMachine.getShooterCommand(ShooterStates.IDLE));
+
+      // pilotController
+      //     .x()
+      //     .onTrue(robotShooter.characterizeFlywheel())
+      //     .onFalse(robotStateMachine.getShooterCommand(ShooterStates.IDLE));
+
+      // pilotController
+      //     .y()
+      //     .onTrue(robotDrive.characterizeDriveMotors())
+      //     .onFalse(SwerveCommands.stopDrive(robotDrive));
+
+      // pilotController.b()
+      //   .onTrue(robotStateMachine.getYoshiCommand(YoshiStates.GROUND_INTAKE))
+      //   .onFalse(robotStateMachine.getYoshiCommand(YoshiStates.IDLE));
+    
 
     } else {
       /* Pilot bindings */
@@ -299,8 +334,13 @@ public class RobotContainer {
           .whileTrue(robotStateMachine.outtakeNote())
           .onFalse(robotStateMachine.stopTakeNote());
 
+      pilotController
+          .leftTrigger()
+          .whileTrue(robotStateMachine.yoshiIntakeNote())
+          .onFalse(robotStateMachine.stopTakeNote());
+
       /* Reset gyro */
-      pilotController.y().whileTrue(SwerveCommands.resetGyro(robotDrive));
+      pilotController.y().onTrue(SwerveCommands.resetGyro(robotDrive));
 
       /* Auto heading to speaker */
       pilotController
@@ -313,11 +353,23 @@ public class RobotContainer {
                   () -> TargetingSystem.getInstance().getOptimalLaunchHeading()))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
 
-      //   pilotController
-      //       .b()
-      //       .onTrue(
-      //           new InstantCommand(
-      //               () -> robotDrive.setPose(new Pose2d(1.34, 5.54, new Rotation2d()))));
+        // pilotController
+        //     .b()
+        //     .onTrue(
+        //         new InstantCommand(
+        //             () -> robotDrive.setPose(new Pose2d(1.34, 5.54, new Rotation2d()))));
+
+    //  pilotController.leftTrigger().whileTrue(robotShooter.setShooterState(AnglerSetpoints.DEBUGGING, LauncherSetpoints.OFF)).whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
+
+      // pilotController.y().whileTrue(robotShooter.getAngler().setAnglerCommand(AnglerSetpoints.DEBUGGING)).whileFalse(Commands.runOnce(() -> robotShooter.stopMotors(true, true), robotShooter));
+
+      // pilotController.x().whileTrue(robotIndexer.runIndexer(IndexerSetpoint.IN).alongWith(robotIntake.runIntake(IntakeSetpoint.IN))).whileFalse(robotIndexer.runIndexer(IndexerSetpoint.OFF).alongWith(robotIntake.runIntake(IntakeSetpoint.OFF)));
+
+      // pilotController.povLeft().whileTrue(robotIndexer.runIndexer(IndexerSetpoint.IN)).whileFalse(robotIndexer.runIndexer(IndexerSetpoint.OFF));
+
+      // pilotController.povUp().whileTrue(SwerveCommands.swerveDrive(robotDrive, () -> 0.3, () -> 0.0, () -> 0.0)).onFalse(SwerveCommands.stopDrive(robotDrive));
+
+      // pilotController.povDown().whileTrue(SwerveCommands.swerveDrive(robotDrive, () -> -0.3, () -> 0.0, () -> 0.0)).onFalse(SwerveCommands.stopDrive(robotDrive));
 
       /* Copilot bindings */
 
@@ -352,20 +404,42 @@ public class RobotContainer {
           .whileFalse(robotStateMachine.stopShooting());
 
       copilotController
+          .a()
+          .whileTrue(robotStateMachine.revAmp())  
+          .onFalse(robotStateMachine.stopShooting());
+
+      copilotController
+          .x()
+          .whileTrue(robotStateMachine.scoreAmp())
+          .onFalse(new ParallelCommandGroup(
+            robotStateMachine.stopShooting()));
+
+      copilotController
           .leftBumper()
           .whileTrue(robotStateMachine.shootNote())
           .onFalse(robotStateMachine.stopShooting());
 
-      //   copilotController
-      //       .rightTrigger()
-      //       .whileTrue(robotStateMachine.feedShot())
-      //       .onFalse(robotStateMachine.stopShooting());
+      copilotController
+          .rightBumper()
+          .whileTrue(robotStateMachine.feedShot())
+          .onFalse(robotStateMachine.stopShooting());
 
-      //   copilotController
-      //       .leftTrigger()
-      //       .whileTrue(robotStateMachine.podiumShot())
-      //       .onFalse(robotStateMachine.stopShooting());
+      copilotController
+        .leftTrigger()
+        .onTrue(TargetingSystem.getInstance().incrementOffset());
+
+      copilotController
+        .rightTrigger()
+        .onTrue(TargetingSystem.getInstance().decrementOffset());
     }
+  }
+
+  public void initLEDs() {
+    robotLEDs.setDefaultColor();
+  }
+
+  public void shutOffLEDs() {
+    robotLEDs.turnOffLEDs();
   }
 
   public Command getAutonomousCommand() {

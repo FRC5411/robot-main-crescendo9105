@@ -5,12 +5,10 @@
 package frc.robot.subsystems.leds;
 
 public class LEDConstants {
-  public class Hues {
-    public static final int LIGHT_BLUE = 200 / 2;
-    public static final int DARK_BLUE = 240 / 2;
-    public static final int GREEN = 130 / 2;
-    public static final int RED = 0;
-    public static final int ORANGE = 24 / 2;
+  public class RGB {
+    public static final int[] DARK_BLUE = {0, 8, 255};
+    public static final int[] GREEN = {32, 240, 0};
+    public static final int[] ORANGE = {255, 85, 0};
   }
 
   public class Configs {

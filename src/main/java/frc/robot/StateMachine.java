@@ -3,79 +3,112 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.RobotStates.ClimbStates;
 import frc.robot.RobotStates.IndexerStates;
 import frc.robot.RobotStates.IntakeStates;
 import frc.robot.RobotStates.ShooterStates;
 import frc.robot.subsystems.climb.Climb;
+import frc.robot.subsystems.climb.Climb.ClimbVoltSetpoints;
 import frc.robot.subsystems.indexer.Indexer;
+import frc.robot.subsystems.indexer.Indexer.IndexerSetpoint;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.Intake.IntakeSetpoint;
 import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.Shooter.AnglerSetpoints;
+import frc.robot.subsystems.shooter.Shooter.LauncherSetpoints;
+import frc.robot.utils.commands.CommandUtils;
 import org.littletonrobotics.junction.AutoLogOutput;
+import frc.robot.subsystems.yoshivator.Yoshivator;
+import frc.robot.RobotStates.YoshiStates;
+import frc.robot.subsystems.yoshivator.Yoshivator.YoshivatorSetpoints;
 
 public class StateMachine {
   private Shooter robotShooter;
   private Intake robotIntake;
   private Indexer robotIndexer;
   private Climb robotClimb;
+  private Yoshivator robotYoshi;
 
   private ShooterStates shooterState;
   private IntakeStates intakeState;
   private IndexerStates indexerState;
   private ClimbStates climbState;
+  private YoshiStates yoshiState;
+
+  private SelectCommand<ShooterStates> shooterCommands;
+  private SelectCommand<IntakeStates> intakeCommands;
+  private SelectCommand<IndexerStates> indexerCommands;
+  private SelectCommand<ClimbStates> climbCommands;
+  private SelectCommand<YoshiStates> yoshiCommands;
 
   public StateMachine(
-      Shooter robotShooter, Intake robotIntake, Indexer robotIndexer, Climb robotClimb) {
+      Shooter robotShooter, Intake robotIntake, Indexer robotIndexer, Climb robotClimb, Yoshivator robotYoshi) {
     this.robotShooter = robotShooter;
     this.robotIntake = robotIntake;
     this.robotIndexer = robotIndexer;
     this.robotClimb = robotClimb;
+    this.robotYoshi = robotYoshi;
 
-    shooterState = ShooterStates.OFF;
+    shooterState = ShooterStates.IDLE;
     intakeState = IntakeStates.OFF;
     indexerState = IndexerStates.OFF;
     climbState = ClimbStates.OFF;
+    yoshiState = YoshiStates.IDLE;
+
+    shooterCommands =
+        new SelectCommand<ShooterStates>(this.robotShooter.mapToCommand(), () -> shooterState);
+
+    intakeCommands =
+        new SelectCommand<IntakeStates>(this.robotIntake.mapToCommand(), () -> intakeState);
+
+    indexerCommands =
+        new SelectCommand<IndexerStates>(this.robotIndexer.mapToCommand(), () -> indexerState);
+
+    climbCommands =
+        new SelectCommand<ClimbStates>(this.robotClimb.mapToCommand(), () -> climbState);
+
+    yoshiCommands =
+        new SelectCommand<YoshiStates>(this.robotYoshi.mapToCommand(yoshiState), () -> yoshiState);
+
+    robotShooter.setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.IDLE);
+    robotIntake.setCurrentSetpoint(IntakeSetpoint.OFF);
+    robotIndexer.setCurrentSetpoint(IndexerSetpoint.OFF);
+    robotClimb.setManualVolts(ClimbVoltSetpoints.OFF);
+    robotYoshi.setYoshiSetpoint(YoshivatorSetpoints.IDLE);
   }
 
   public Command getShooterCommand(ShooterStates state) {
     return new SequentialCommandGroup(
-            new InstantCommand(
-                () -> {
-                  shooterState = state;
-                  robotShooter.mapToCommand(shooterState).schedule();
-                }))
+            new InstantCommand(() -> shooterState = state),
+            CommandUtils.copyCommand(shooterCommands))
         .withName("StateMachince/ShooterCommand/" + shooterState);
   }
 
   public Command getIntakeCommand(IntakeStates state) {
     return new SequentialCommandGroup(
-            new InstantCommand(
-                () -> {
-                  intakeState = state;
-                  robotIntake.mapToCommand(intakeState).schedule();
-                }))
+            new InstantCommand(() -> intakeState = state), CommandUtils.copyCommand(intakeCommands))
         .withName("StateMachince/IntakeCommand/" + intakeState);
   }
 
   public Command getIndexerCommand(IndexerStates state) {
     return new SequentialCommandGroup(
-            new InstantCommand(
-                () -> {
-                  indexerState = state;
-                  robotIndexer.mapToCommand(indexerState).schedule();
-                }))
+            new InstantCommand(() -> indexerState = state),
+            CommandUtils.copyCommand(indexerCommands))
         .withName("StateMachince/IndexerCommand/" + indexerState);
   }
 
   public Command getClimbCommand(ClimbStates state) {
     return new SequentialCommandGroup(
-            new InstantCommand(
-                () -> {
-                  climbState = state;
-                  robotClimb.mapToCommand(climbState).schedule();
-                }))
+            new InstantCommand(() -> climbState = state), CommandUtils.copyCommand(climbCommands))
         .withName("StateMachince/ClimbCommand/" + climbState);
+  }
+
+  public Command getYoshiCommand(YoshiStates state) {
+    return new SequentialCommandGroup(
+            new InstantCommand(() -> yoshiState = state), CommandUtils.copyCommand(yoshiCommands))
+        .withName("StateMachince/YoshiCommand/" + yoshiState);
   }
 
   public Command intakeNote() {
@@ -84,29 +117,23 @@ public class StateMachine {
         getIntakeCommand(IntakeStates.INTAKE),
         getIndexerCommand(IndexerStates.STOW),
         getClimbCommand(ClimbStates.IDLE));
+        // getYoshiCommand(YoshiStates.GROUND_INTAKE));
   }
 
-  public Command podiumShot() {
+  public Command yoshiIntakeNote() {
     return new ParallelCommandGroup(
-        getShooterCommand(ShooterStates.PODIUM), getClimbCommand(ClimbStates.IDLE));
-  }
-
-  public Command speakerShot() {
-    return new ParallelCommandGroup(
-        getShooterCommand(ShooterStates.SPEAKER), getClimbCommand(ClimbStates.IDLE));
-  }
-
-  public Command feedShot() {
-    return new ParallelCommandGroup(
-        getShooterCommand(ShooterStates.FEEDER), getClimbCommand(ClimbStates.IDLE));
+        getShooterCommand(ShooterStates.INTAKE),
+        getIntakeCommand(IntakeStates.INTAKE),
+        getIndexerCommand(IndexerStates.STOW),
+        getClimbCommand(ClimbStates.IDLE),
+        getYoshiCommand(YoshiStates.GROUND_INTAKE));
   }
 
   public Command outtakeNote() {
     return new ParallelCommandGroup(
         getIntakeCommand(IntakeStates.OUTTAKE),
         getIndexerCommand(IndexerStates.OUTDEX),
-        getShooterCommand(ShooterStates.INTAKE),
-        getClimbCommand(ClimbStates.IDLE));
+        getShooterCommand(ShooterStates.INTAKE));
   }
 
   public Command stopTakeNote() {
@@ -114,7 +141,19 @@ public class StateMachine {
         getIntakeCommand(IntakeStates.OFF),
         getIndexerCommand(IndexerStates.OFF),
         getShooterCommand(ShooterStates.OFF),
-        getClimbCommand(ClimbStates.IDLE));
+        getYoshiCommand(YoshiStates.IDLE));
+  }
+
+  public Command podiumShot() {
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.PODIUM));
+  }
+
+  public Command speakerShot() {
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.SPEAKER));
+  }
+
+  public Command feedShot() {
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.FEEDER));
   }
 
   public Command climbToAmp() {
@@ -122,20 +161,16 @@ public class StateMachine {
   }
 
   public Command prepareNoteShot() {
-    return new ParallelCommandGroup(
-        getShooterCommand(ShooterStates.AIM), getClimbCommand(ClimbStates.IDLE));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.AIM));
   }
 
   public Command shootNote() {
     return new ParallelCommandGroup(
-        getIndexerCommand(IndexerStates.INDEX),
-        getShooterCommand(ShooterStates.FIRE),
-        getClimbCommand(ClimbStates.IDLE));
+        getIndexerCommand(IndexerStates.INDEX), getShooterCommand(ShooterStates.FIRE));
   }
 
   public Command revUp() {
-    return new ParallelCommandGroup(
-        getShooterCommand(ShooterStates.FIRE), getClimbCommand(ClimbStates.IDLE));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.FIRE));
   }
 
   public Command ejectSlow() {
@@ -148,24 +183,19 @@ public class StateMachine {
 
   public Command stopShooting() {
     return new ParallelCommandGroup(
-        getIndexerCommand(IndexerStates.OFF),
-        getShooterCommand(ShooterStates.IDLE),
-        getClimbCommand(ClimbStates.IDLE));
+        getIndexerCommand(IndexerStates.OFF), getShooterCommand(ShooterStates.IDLE));
   }
 
   public Command moveAnglerUpManual() {
-    return new ParallelCommandGroup(
-        getShooterCommand(ShooterStates.UP), getClimbCommand(ClimbStates.IDLE));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.UP));
   }
 
   public Command moveAnglerDownManual() {
-    return new ParallelCommandGroup(
-        getShooterCommand(ShooterStates.DOWN), getClimbCommand(ClimbStates.IDLE));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.DOWN));
   }
 
   public Command shooterToIdle() {
-    return new ParallelCommandGroup(
-        getShooterCommand(ShooterStates.IDLE), getClimbCommand(ClimbStates.IDLE));
+    return new ParallelCommandGroup(getShooterCommand(ShooterStates.IDLE));
   }
 
   public Command climbDown() {
@@ -187,6 +217,14 @@ public class StateMachine {
     return new ParallelCommandGroup(getShooterCommand(ShooterStates.EJECT));
   }
 
+  public Command revAmp() {
+    return getShooterCommand(ShooterStates.REV_AMP);
+  }
+
+  public Command scoreAmp() {
+    return getShooterCommand(ShooterStates.SHOOT_AMP).andThen(getIndexerCommand(IndexerStates.AMP));
+  }
+
   @AutoLogOutput(key = "StateMachine/ShooterState")
   public ShooterStates getShooterState() {
     return shooterState;
@@ -205,5 +243,10 @@ public class StateMachine {
   @AutoLogOutput(key = "StateMachine/ClimbState")
   public ClimbStates getClimbState() {
     return climbState;
+  }
+
+  @AutoLogOutput(key = "StateMachine/YoshiState")
+  public YoshiStates getYoshiState() {
+    return yoshiState;
   }
 }

@@ -101,8 +101,7 @@ public class Robot extends LoggedRobot {
     CommandScheduler.getInstance().run();
 
     robotContainer.getVisionFuser().periodic();
-    TargetingSystem.getInstance().logMultiTagEnabled();
-    TargetingSystem.getInstance().logUseVision();
+    TargetingSystem.getInstance().logAllData();
   }
 
   /** This function is called once when autonomous is enabled. */
@@ -124,6 +123,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void teleopInit() {
     robotContainer.reset();
+    robotContainer.initLEDs();
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
     }
@@ -135,7 +135,9 @@ public class Robot extends LoggedRobot {
 
   /** This function is called once when the robot is disabled. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    robotContainer.shutOffLEDs();
+  }
 
   /** This function is called periodically when disabled. */
   @Override

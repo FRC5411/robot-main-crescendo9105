@@ -13,6 +13,8 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
@@ -25,7 +27,7 @@ import org.littletonrobotics.junction.Logger;
 
 /** Class to hold all of the commands for the Drive */
 public class SwerveCommands {
-  private static final double DEADBAND = 0.1;
+  private static final double DEADBAND = 0.2;
   private static final boolean IS_FIELD = true;
 
   private static Command currentCommand = null;
@@ -49,17 +51,25 @@ public class SwerveCommands {
           Rotation2d linearDirection =
               new Rotation2d(xSupplier.getAsDouble(), ySupplier.getAsDouble());
           // Rotation
-          double theta = MathUtil.applyDeadband(thetaSupplier.getAsDouble(), DEADBAND);
+          double theta = MathUtil.applyDeadband (thetaSupplier.getAsDouble(), DEADBAND);
 
           // Square inputs
-          linearMagnitude *= linearMagnitude;
-          theta = Math.copySign(theta * theta, theta);
+          // linearMagnitude *= linearMagnitude;
+          // theta = Math.copySign(theta * theta, theta);
 
           // Calculate velocity
           Translation2d linearVelocity =
               new Pose2d(new Translation2d(), linearDirection)
                   .transformBy(new Transform2d(linearMagnitude, 0.0, new Rotation2d()))
                   .getTranslation();
+
+          Rotation2d robotRotation = robotDrive.getRotation();
+
+          if(DriverStation.getAlliance().isPresent()) {
+            if(DriverStation.getAlliance().get() == Alliance.Red) {
+              robotRotation = robotRotation.plus(Rotation2d.fromDegrees(180));
+            }
+          }
 
           if (IS_FIELD) {
             robotDrive.runSwerve(
@@ -68,7 +78,7 @@ public class SwerveCommands {
                     linearVelocity.getX() * robotDrive.getMaxLinearSpeedMPS(),
                     linearVelocity.getY() * robotDrive.getMaxLinearSpeedMPS(),
                     theta * robotDrive.getMaxAngularSpeedMPS(),
-                    robotDrive.getRotation()));
+                    robotRotation));
           } else {
             robotDrive.runSwerve(
                 ChassisSpeeds.fromRobotRelativeSpeeds(
@@ -149,7 +159,7 @@ public class SwerveCommands {
               double thetaDesiredDegrees =
                   thetaFeedback.calculate(
                       robotDrive.getPoseEstimate().getRotation().getDegrees(),
-                      headingGoalSupplier.get().getDegrees() - 2.5);
+                      headingGoalSupplier.get().getDegrees());
 
               robotDrive.runSwerve(
                   new ChassisSpeeds(

@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotStates.IntakeStates;
+import java.util.HashMap;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -16,6 +17,7 @@ public class Intake extends SubsystemBase {
   public static enum IntakeSetpoint {
     IN(12.0),
     OUT(-12.0),
+    STOP(6.0),
     OFF(0.0);
 
     private double volts;
@@ -53,13 +55,12 @@ public class Intake extends SubsystemBase {
     }
   }
 
-  public Command mapToCommand(IntakeStates desiredState) {
-    return switch (desiredState) {
-      case INTAKE -> runIntake(IntakeSetpoint.IN);
-      case OUTTAKE -> runIntake(IntakeSetpoint.OUT);
-      case OFF -> runIntake(IntakeSetpoint.OFF);
-      default -> runIntake(IntakeSetpoint.OFF);
-    };
+  public HashMap<IntakeStates, Command> mapToCommand() {
+    HashMap<IntakeStates, Command> commandMap = new HashMap<>();
+    commandMap.put(IntakeStates.INTAKE, runIntake(IntakeSetpoint.IN));
+    commandMap.put(IntakeStates.OUTTAKE, runIntake(IntakeSetpoint.OUT));
+    commandMap.put(IntakeStates.OFF, stopIntake());
+    return commandMap;
   }
 
   public Command runIntake(IntakeSetpoint setpoint) {
@@ -70,7 +71,7 @@ public class Intake extends SubsystemBase {
     return Commands.runOnce(() -> setCurrentSetpoint(IntakeSetpoint.OFF), this);
   }
 
-  private void setCurrentSetpoint(IntakeSetpoint setpoint) {
+  public void setCurrentSetpoint(IntakeSetpoint setpoint) {
     currentSetpoint = setpoint;
   }
 

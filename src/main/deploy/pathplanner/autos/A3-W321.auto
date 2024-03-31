@@ -14,6 +14,30 @@
         {
           "type": "named",
           "data": {
+            "name": "SpeakerShot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeOn"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "A3-W3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StowPiece"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "Shoot"
           }
         },
@@ -26,31 +50,19 @@
         {
           "type": "path",
           "data": {
-            "pathName": "A3-W3"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Intake"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "Shoot"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
             "pathName": "W32"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "Intake"
+            "name": "StowPiece"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "DeployYoshi"
           }
         },
         {
@@ -68,7 +80,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake"
+            "name": "StowPiece"
           }
         },
         {
