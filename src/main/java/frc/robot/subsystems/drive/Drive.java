@@ -72,6 +72,7 @@ public class Drive extends SubsystemBase {
   private Module[] modules = new Module[4]; // FL FR BL BR
 
   private Pose2d currentPose = new Pose2d();
+  private Pose2d filteredPose = new Pose2d();
 
   // Used to compare pose estimator and odometry
   private SwerveDriveOdometry odometry =
@@ -82,8 +83,7 @@ public class Drive extends SubsystemBase {
 
   private PIDConstants translationPathplannerConstants = new PIDConstants(1.25, 0.0, 0.0);
   private PIDConstants rotationPathplannerConstants = new PIDConstants(1.25, 0.0, 0.0);
-
-  private Pose2d filteredPose = new Pose2d();
+  private boolean PProtationTargetOverride = false;
 
   private LinearFilter xFilter = LinearFilter.movingAverage(5);
   private LinearFilter yFilter = LinearFilter.movingAverage(5);
