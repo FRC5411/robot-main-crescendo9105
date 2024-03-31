@@ -206,14 +206,14 @@ public class Climb extends SubsystemBase {
     // }
 
     if (currentSetpoint != null) {
-      if (climbIOInputs.leftPosition.getDegrees() > 160.0 && currentSetpoint.leftVolts > 0.0) {
+      if (climbIOInputs.leftPosition.getDegrees() > 75.0 && currentSetpoint.leftVolts > 0.0) {
         climbIO.setLeftVolts(0.0);
       } else if (climbIOInputs.leftPosition.getDegrees() < -85.0
           && currentSetpoint.leftVolts < 0.0) {
         climbIO.setLeftVolts(0.0);
       }
 
-      if (climbIOInputs.rightPosition.getDegrees() > 160.0 && currentSetpoint.rightVolts > 0.0) {
+      if (climbIOInputs.rightPosition.getDegrees() > 75.0 && currentSetpoint.rightVolts > 0.0) {
         climbIO.setRightVolts(0.0);
       } else if (climbIOInputs.rightPosition.getDegrees() < -85.0
           && currentSetpoint.rightVolts < 0.0) {
