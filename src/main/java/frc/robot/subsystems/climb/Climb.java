@@ -52,8 +52,8 @@ public class Climb extends SubsystemBase {
   private ClimbIO climbIO;
   private ClimbIOInputsAutoLogged climbIOInputs = new ClimbIOInputsAutoLogged();
 
-  private PIDController leftClimbFeedback = new PIDController(0.0, 0.0, 0.0);
-  private PIDController rightClimbFeedback = new PIDController(0.0, 0.0, 0.0);
+  private PIDController leftClimbFeedback = new PIDController(0.1, 0.0, 0.0);
+  private PIDController rightClimbFeedback = new PIDController(0.1, 0.0, 0.0);
 
   private LoggedTunableNumber leftFeedbackP;
   private LoggedTunableNumber leftFeedbackI;
