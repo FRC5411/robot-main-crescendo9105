@@ -6,7 +6,6 @@ package frc.robot.commands;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -21,6 +20,8 @@ import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import frc.robot.Constants;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.utils.debugging.LoggedTunableNumber;
+import frc.robot.utils.math.LinearProfile;
+
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.Logger;
@@ -97,14 +98,14 @@ public class SwerveCommands {
       DoubleSupplier xGoalSupplier,
       DoubleSupplier yGoalSupplier,
       Supplier<Rotation2d> headingGoalSupplier) {
-    SlewRateLimiter xSpeedsLimiter = new SlewRateLimiter(5.0);
-    SlewRateLimiter ySpeedsLimiter = new SlewRateLimiter(5.0);
+    LinearProfile xSpeedsLimiter = new LinearProfile(15.0, 0.02);
+    LinearProfile ySpeedsLimiter = new LinearProfile(15.0, 0.02);
 
     // Degress per second
     ProfiledPIDController thetaFeedback =
         switch (Constants.currentMode) {
-          case REAL -> new ProfiledPIDController(3.0, 0.0, 0.0, new Constraints(300.0, 200.0));
-          case SIM -> new ProfiledPIDController(5.0, 0.0, 0.0, new Constraints(300.0, 200.0));
+          case REAL -> new ProfiledPIDController(3.0, 0.0, 0.0, new Constraints(1500.0, 3000.0));
+          case SIM -> new ProfiledPIDController(5.0, 0.0, 0.0, new Constraints(1500.0, 3000.0));
           default -> new ProfiledPIDController(0.0, 0.0, 0.0, new Constraints(0.0, 0.0));
         };
 
@@ -127,8 +128,8 @@ public class SwerveCommands {
     currentCommand =
         new FunctionalCommand(
             () -> {
-              xSpeedsLimiter.reset(robotDrive.getDesiredChassisSpeeds().vxMetersPerSecond);
-              ySpeedsLimiter.reset(robotDrive.getDesiredChassisSpeeds().vyMetersPerSecond);
+              xSpeedsLimiter.setGoal(xGoalSupplier.getAsDouble(), robotDrive.getChassisSpeeds().vxMetersPerSecond);
+              ySpeedsLimiter.setGoal(yGoalSupplier.getAsDouble(), robotDrive.getChassisSpeeds().vyMetersPerSecond);
 
               // Added minor offset to account for note curving
               Rotation2d headingGoal = headingGoalSupplier.get();
@@ -153,8 +154,8 @@ public class SwerveCommands {
               Logger.recordOutput("Drive/HeadingController/Output", 0.0);
             },
             () -> {
-              double xDesiredSpeedMPS = xSpeedsLimiter.calculate(xGoalSupplier.getAsDouble());
-              double yDesiredSpeedMPS = ySpeedsLimiter.calculate(yGoalSupplier.getAsDouble());
+              double xDesiredSpeedMPS = xSpeedsLimiter.calculateSetpoint();
+              double yDesiredSpeedMPS = ySpeedsLimiter.calculateSetpoint();
 
               double thetaDesiredDegrees =
                   thetaFeedback.calculate(

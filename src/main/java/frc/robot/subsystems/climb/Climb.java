@@ -13,42 +13,13 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Robot;
-import frc.robot.managers.RobotStates.ClimbStates;
 import frc.robot.subsystems.climb.ClimbVisualizer.ClimbSide;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.AutoLogOutput;
+import frc.robot.managers.RobotSetpoints.ClimbVoltSetpoints;
 
 public class Climb extends SubsystemBase {
-  public static enum ClimbVoltSetpoints {
-    BOTH_UP(12.0, 12.0),
-    BOTH_DOWN(-12.0, -12.0),
-    OFF(0.0, 0.0);
-
-    private double leftVolts;
-    private double rightVolts;
-
-    ClimbVoltSetpoints(double leftVolts, double rightVolts) {
-      this.leftVolts = leftVolts;
-      this.rightVolts = rightVolts;
-    }
-  }
-
-  public static enum ClimPosSetpoints {
-    AMP(Rotation2d.fromDegrees(110.0)),
-    IDLE(Rotation2d.fromDegrees(5.0));
-
-    private Rotation2d m_setpoint;
-
-    ClimPosSetpoints(Rotation2d setpoint) {
-      this.m_setpoint = setpoint;
-    }
-
-    private Rotation2d getRotation() {
-      return m_setpoint;
-    }
-  }
-
   private ClimbIO climbIO;
   private ClimbIOInputsAutoLogged climbIOInputs = new ClimbIOInputsAutoLogged();
 
@@ -119,23 +90,23 @@ public class Climb extends SubsystemBase {
 
     if (currentSetpoint != null) {
       if (climbIOInputs.leftPosition.getDegrees() > maxAngle.getDegrees() 
-        && currentSetpoint.leftVolts > 0.0) {
+        && currentSetpoint.getLeftVolts() > 0.0) {
         climbIO.setLeftVolts(0.0);
       } else if (climbIOInputs.leftPosition.getDegrees() < minAngle.getDegrees()
-          && currentSetpoint.leftVolts < 0.0) {
+          && currentSetpoint.getLeftVolts() < 0.0) {
         climbIO.setLeftVolts(0.0);
       } else {
-        climbIO.setLeftVolts(currentSetpoint.leftVolts);
+        climbIO.setLeftVolts(currentSetpoint.getLeftVolts());
       }
 
       if (climbIOInputs.rightPosition.getDegrees() > maxAngle.getDegrees() 
-        && currentSetpoint.rightVolts > 0.0) {
+        && currentSetpoint.getRightVolts() > 0.0) {
         climbIO.setRightVolts(0.0);
       } else if (climbIOInputs.rightPosition.getDegrees() < minAngle.getDegrees()
-          && currentSetpoint.rightVolts < 0.0) {
+          && currentSetpoint.getRightVolts() < 0.0) {
         climbIO.setRightVolts(0.0);
       } else {
-        climbIO.setRightVolts(currentSetpoint.rightVolts);
+        climbIO.setRightVolts(currentSetpoint.getRightVolts());
       }
     }
 
@@ -186,23 +157,6 @@ public class Climb extends SubsystemBase {
         rightClimbFeedback.setI(rightFeedbackI.get());
         rightClimbFeedback.setD(rightFeedbackD.get());
       }
-    }
-  }
-
-  public Command getClimbCommand(ClimbStates state) {
-    switch (state) {
-      case IDLE:
-        return setPositionSetpoint(ClimPosSetpoints.IDLE.getRotation());
-      case OFF:
-        return runVolts(ClimbVoltSetpoints.OFF);
-      case MOVE_BOTH_UP:
-        return runVolts(ClimbVoltSetpoints.BOTH_UP);
-      case MOVE_BOTH_DOWN:
-        return runVolts(ClimbVoltSetpoints.BOTH_DOWN);
-      case AMP:
-        return setPositionSetpoint(ClimPosSetpoints.AMP.getRotation());
-      default:
-        return runVolts(ClimbVoltSetpoints.OFF);
     }
   }
 

@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Robot;
-import frc.robot.subsystems.shooter.Shooter.AnglerSetpoints;
+import frc.robot.managers.RobotSetpoints.AnglerSetpoints;
 import frc.robot.subsystems.shooter.ShooterVisualizer;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 import frc.robot.utils.math.ScrewArmFeedforward;

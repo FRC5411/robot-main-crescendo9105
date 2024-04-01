@@ -5,11 +5,11 @@ import org.littletonrobotics.junction.Logger;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.shooter.Shooter.LauncherSetpoints;
+import frc.robot.managers.RobotSetpoints.LauncherSetpoints;
 import frc.robot.utils.debugging.SysIDCharacterization;
 import frc.robot.utils.math.LinearProfile;
 
-public class Launcher extends SubsystemBase{
+public class Launcher extends SubsystemBase {
     private LauncherIO launcherIO;
     private LauncherIOInputsAutoLogged launcherIOInputs = new LauncherIOInputsAutoLogged();
 
@@ -20,7 +20,6 @@ public class Launcher extends SubsystemBase{
 
     public Launcher(LauncherIO launcherIO) {
         this.launcherIO = launcherIO;
-
     }
 
     @Override

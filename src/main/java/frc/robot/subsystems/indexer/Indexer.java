@@ -9,30 +9,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.managers.RobotStates.IndexerStates;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import frc.robot.managers.RobotSetpoints.IndexerSetpoint;;
 
 public class Indexer extends SubsystemBase {
-  public static enum IndexerSetpoint {
-    IN(12.0),
-    OUT(-12.0),
-    OFF(0.0),
-    STOW(2.0),
-    AMP(7.0);
-
-    private double volts;
-
-    IndexerSetpoint(double volts) {
-      this.volts = volts;
-    }
-
-    public double getVolts() {
-      return this.volts;
-    }
-  }
-
   @AutoLogOutput(key = "Indexer/CurrentSetpoint")
   private IndexerSetpoint currentSetpoint = IndexerSetpoint.OFF;
 
@@ -55,23 +37,6 @@ public class Indexer extends SubsystemBase {
 
     if (currentSetpoint != null) {
       setVolts(currentSetpoint.getVolts());
-    }
-  }
-
-  public Command getIndexerCommand(IndexerStates state) {
-    switch(state) {
-      case INDEX:
-        return runIndexer(IndexerSetpoint.IN);
-      case OUTDEX:
-        return runIndexer(IndexerSetpoint.OUT);
-      case STOW:
-        return stowPiece();
-      case OFF:
-        return runIndexer(IndexerSetpoint.OFF);
-      case AMP:
-        return runIndexer(IndexerSetpoint.AMP);
-      default:
-        return runIndexer(IndexerSetpoint.OFF);
     }
   }
 

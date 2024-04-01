@@ -15,39 +15,15 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Robot;
-import frc.robot.managers.RobotStates.YoshiStates;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOInputsAutoLogged;
 import frc.robot.utils.debugging.LoggedTunableNumber;
+import frc.robot.managers.RobotSetpoints.YoshivatorSetpoints;
 
-import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Yoshivator extends SubsystemBase {
-  public static enum YoshivatorSetpoints {
-    IDLE(() -> Rotation2d.fromDegrees(100.0), () -> 0.0),
-    GROUND_INTAKE(() -> Rotation2d.fromDegrees(-33.5), () -> -12.0),
-    DEBUGGING(() -> Rotation2d.fromDegrees(new LoggedTunableNumber("e", 0.0).get()), () -> 0.0);
-
-    private Supplier<Rotation2d> pivotSetpointRotation;
-    private Supplier<Double> rollerSetpointVolts;
-
-    YoshivatorSetpoints(
-        Supplier<Rotation2d> pivotSetpointRotation, Supplier<Double> rollerSetpointVolts) {
-      this.pivotSetpointRotation = pivotSetpointRotation;
-      this.rollerSetpointVolts = rollerSetpointVolts;
-    }
-
-    public Supplier<Rotation2d> getPivotRotation() {
-      return this.pivotSetpointRotation;
-    }
-
-    public Supplier<Double> getRollerVolts() {
-      return this.rollerSetpointVolts;
-    }
-  }
-
   @AutoLogOutput(key = "Yoshivator/CurrentSetpoint")
   private YoshivatorSetpoints currentSetpoint = YoshivatorSetpoints.IDLE;
 
@@ -151,19 +127,6 @@ public class Yoshivator extends SubsystemBase {
 
       pivotFeedback.setConstraints(
           new TrapezoidProfile.Constraints(pivotFeedbackV.get(), pivotFeedbackA.get()));
-    }
-  }
-
-  public Command getYoshiCommand(YoshiStates state) {
-    switch(state) {
-      case GROUND_INTAKE:
-        return runYoshi(YoshivatorSetpoints.GROUND_INTAKE);
-      case IDLE:
-        return runYoshi(YoshivatorSetpoints.IDLE);
-      case OFF:
-        return offYoshi();
-      default:
-        return offYoshi();
     }
   }
 

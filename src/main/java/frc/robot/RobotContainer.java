@@ -17,13 +17,13 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.SwerveCommands;
-import frc.robot.managers.StateMachine;
+import frc.robot.managers.CommandDispatcher;
 import frc.robot.managers.TargetingSystem;
 import frc.robot.managers.VisionFuser;
-import frc.robot.managers.RobotStates.AnglerStates;
-import frc.robot.managers.RobotStates.IndexerStates;
-import frc.robot.managers.RobotStates.IntakeStates;
-import frc.robot.managers.RobotStates.LauncherStates;
+import frc.robot.managers.RobotDesiredStates.AnglerStates;
+import frc.robot.managers.RobotDesiredStates.IndexerStates;
+import frc.robot.managers.RobotDesiredStates.IntakeStates;
+import frc.robot.managers.RobotDesiredStates.LauncherStates;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
@@ -73,7 +73,7 @@ public class RobotContainer {
   private LEDSubsystem robotLEDs;
 
   private VisionFuser visionFuser;
-  private StateMachine robotStateMachine;
+  private CommandDispatcher dispatcher;
 
   private CommandXboxController pilotController = new CommandXboxController(0);
   private CommandXboxController copilotController = new CommandXboxController(1);
@@ -83,7 +83,7 @@ public class RobotContainer {
   public RobotContainer() {
     initializeSubsystems();
 
-    robotStateMachine = new StateMachine(robotShooter, robotIntake, robotIndexer, robotClimb, robotYoshi);
+    dispatcher = new CommandDispatcher(robotShooter, robotIntake, robotIndexer, robotClimb, robotYoshi);
 
     configureAutonomous();
 
@@ -97,10 +97,10 @@ public class RobotContainer {
       autoChooser.addDefaultOption(
           "ShootNoteException",
           new SequentialCommandGroup(
-              robotStateMachine.getShooterCommand(LauncherStates.SPEAKER_SHOT, AnglerStates.AIM),
+              dispatcher.getShooterCommand(LauncherStates.SPEAKER_SHOT, AnglerStates.AIM),
               new WaitCommand(1.0),
-              robotStateMachine.getIndexerCommand(IndexerStates.INDEX),
-              robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
+              dispatcher.getIndexerCommand(IndexerStates.INDEX),
+              dispatcher.getIntakeCommand(IntakeStates.OFF)));
     }
 
     configureTriggers();
@@ -257,8 +257,8 @@ public class RobotContainer {
             () ->
                 robotShooter.atAllSetpoints()
                     && (
-                      robotStateMachine.getAnglerState() == AnglerStates.AIM &&
-                      robotStateMachine.getLauncherState() == LauncherStates.SPEAKER_SHOT))
+                      dispatcher.getAnglerState() == AnglerStates.AIM &&
+                      dispatcher.getLauncherState() == LauncherStates.SPEAKER_SHOT))
         .onTrue(new InstantCommand(() -> robotLEDs.setReadyColor()))
         .onFalse(
             new InstantCommand(
@@ -293,18 +293,18 @@ public class RobotContainer {
 
       pilotController
           .leftBumper()
-          .whileTrue(robotStateMachine.intakeNote())
-          .onFalse(robotStateMachine.stopTakeNote());
+          .whileTrue(dispatcher.intakeNote())
+          .onFalse(dispatcher.stopTakeNote());
 
       pilotController
           .rightBumper()
-          .whileTrue(robotStateMachine.outtakeNote())
-          .onFalse(robotStateMachine.stopTakeNote());
+          .whileTrue(dispatcher.outtakeNote())
+          .onFalse(dispatcher.stopTakeNote());
 
       pilotController
           .leftTrigger()
-          .whileTrue(robotStateMachine.yoshiIntakeNote())
-          .onFalse(robotStateMachine.stopTakeNote());
+          .whileTrue(dispatcher.yoshiIntakeNote())
+          .onFalse(dispatcher.stopTakeNote());
 
       pilotController.y().onTrue(SwerveCommands.resetGyro(robotDrive));
 
@@ -321,53 +321,53 @@ public class RobotContainer {
       /* Copilot bindings */
       copilotController
           .povUp()
-          .whileTrue(robotStateMachine.moveAnglerUpManual())
-          .onFalse(robotStateMachine.shooterToIdle());
+          .whileTrue(dispatcher.moveAnglerUpManual())
+          .onFalse(dispatcher.shooterToIdle());
 
       copilotController
           .povDown()
-          .whileTrue(robotStateMachine.moveAnglerDownManual())
-          .onFalse(robotStateMachine.shooterToIdle());
+          .whileTrue(dispatcher.moveAnglerDownManual())
+          .onFalse(dispatcher.shooterToIdle());
 
       copilotController
           .povLeft()
-          .whileTrue(robotStateMachine.climbUp())
-          .whileFalse(robotStateMachine.stopClimb());
+          .whileTrue(dispatcher.climbUp())
+          .whileFalse(dispatcher.stopClimb());
 
       copilotController
           .povRight()
-          .whileTrue(robotStateMachine.climbDown())
-          .whileFalse(robotStateMachine.stopClimb());
+          .whileTrue(dispatcher.climbDown())
+          .whileFalse(dispatcher.stopClimb());
 
       copilotController
           .y()
-          .whileTrue(robotStateMachine.prepareNoteShot())
-          .onFalse(robotStateMachine.shooterToIdle());
+          .whileTrue(dispatcher.prepareNoteShot())
+          .onFalse(dispatcher.shooterToIdle());
 
       copilotController
           .b()
-          .whileTrue(robotStateMachine.revUp())
-          .whileFalse(robotStateMachine.shooterToIdle());
+          .whileTrue(dispatcher.revUp())
+          .whileFalse(dispatcher.shooterToIdle());
 
       copilotController
           .a()
-          .whileTrue(robotStateMachine.revAmp())  
-          .onFalse(robotStateMachine.shooterToIdle());
+          .whileTrue(dispatcher.revAmp())  
+          .onFalse(dispatcher.shooterToIdle());
 
       copilotController
           .x()
-          .whileTrue(robotStateMachine.scoreAmp())
-          .onFalse(robotStateMachine.shooterToIdle());
+          .whileTrue(dispatcher.scoreAmp())
+          .onFalse(dispatcher.shooterToIdle());
 
       copilotController
           .leftBumper()
-          .whileTrue(robotStateMachine.shootNote())
-          .onFalse(robotStateMachine.shooterToIdle());
+          .whileTrue(dispatcher.shootNote())
+          .onFalse(dispatcher.shooterToIdle());
 
       copilotController
           .rightBumper()
-          .whileTrue(robotStateMachine.feedShot())
-          .onFalse(robotStateMachine.shooterToIdle());
+          .whileTrue(dispatcher.feedShot())
+          .onFalse(dispatcher.shooterToIdle());
 
       copilotController
           .leftTrigger()

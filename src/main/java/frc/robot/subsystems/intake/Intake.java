@@ -8,29 +8,12 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.managers.RobotStates.IntakeStates;
 
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import frc.robot.managers.RobotSetpoints.IntakeSetpoint;;
 
 public class Intake extends SubsystemBase {
-  public static enum IntakeSetpoint {
-    IN(12.0),
-    OUT(-12.0),
-    STOP(6.0),
-    OFF(0.0);
-
-    private double volts;
-
-    IntakeSetpoint(double volts) {
-      this.volts = volts;
-    }
-
-    public double getVolts() {
-      return this.volts;
-    }
-  }
-
   @AutoLogOutput(key = "Intake/CurrentSetpoint")
   private IntakeSetpoint currentSetpoint = IntakeSetpoint.OFF;
 
@@ -52,19 +35,6 @@ public class Intake extends SubsystemBase {
 
     if (currentSetpoint != null) {
       setVolts(currentSetpoint.getVolts());
-    }
-  }
-
-  public Command getIntakeCommand(IntakeStates state) {
-    switch(state) {
-      case INTAKE:
-        return runIntake(IntakeSetpoint.IN);
-      case OUTTAKE:
-        return runIntake(IntakeSetpoint.OUT);
-      case OFF:
-        return stopIntake();
-      default:
-        return stopIntake();
     }
   }
 
