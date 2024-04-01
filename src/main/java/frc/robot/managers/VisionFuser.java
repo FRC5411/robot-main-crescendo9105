@@ -62,7 +62,7 @@ public class VisionFuser {
     final var inputsLeft = robotVision.getInputsLeft();
     final var inputsRight = robotVision.getInputsRight();
 
-    if (inputsLeft.hasTarget) {
+    if (inputsLeft.hasTarget && inputsLeft.hasSpeakerTarget) {
       robotDrive.addVisionMeasurement(
           inputsLeft.estimatedRobotPose,
           inputsLeft.latestTimestamp,
@@ -72,7 +72,7 @@ public class VisionFuser {
               inputsLeft.thetaStandardDeviation));
     }
 
-    if (inputsRight.hasTarget) {
+    if (inputsRight.hasTarget && inputsRight.hasSpeakerTarget) {
       robotDrive.addVisionMeasurement(
           inputsRight.estimatedRobotPose,
           inputsRight.latestTimestamp,

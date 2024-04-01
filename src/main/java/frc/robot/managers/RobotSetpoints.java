@@ -16,7 +16,7 @@ public class RobotSetpoints {
         INTAKE(() -> Rotation2d.fromDegrees(45.0)),
         IDLE(() -> Angler.getLastAnglerPosition()),
         PODIUM(() -> Rotation2d.fromDegrees(34.5)),
-        SPEAKER(() -> Rotation2d.fromDegrees(57)),
+        SPEAKER(() -> Rotation2d.fromDegrees(61)),
         AMP(() -> Rotation2d.fromDegrees(54.0)),
         FEEDER(() -> Rotation2d.fromDegrees(45.0)),
         DEBUGGING(() -> Rotation2d.fromDegrees(angleTunableNumber.get()));
@@ -65,7 +65,7 @@ public class RobotSetpoints {
 
     public static enum YoshivatorSetpoints {
         IDLE(() -> Rotation2d.fromDegrees(100.0), () -> 0.0),
-        GROUND_INTAKE(() -> Rotation2d.fromDegrees(-33.5), () -> -12.0),
+        GROUND_INTAKE(() -> Rotation2d.fromDegrees(-35.5), () -> -12.0),
         DEBUGGING(() -> Rotation2d.fromDegrees(new LoggedTunableNumber("e", 0.0).get()), () -> 0.0);
 
         private Supplier<Rotation2d> pivotSetpointRotation;

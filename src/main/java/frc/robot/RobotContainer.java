@@ -6,12 +6,16 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -24,6 +28,7 @@ import frc.robot.managers.RobotDesiredStates.AnglerStates;
 import frc.robot.managers.RobotDesiredStates.IndexerStates;
 import frc.robot.managers.RobotDesiredStates.IntakeStates;
 import frc.robot.managers.RobotDesiredStates.LauncherStates;
+import frc.robot.managers.RobotDesiredStates.YoshiStates;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
@@ -55,7 +60,10 @@ import frc.robot.subsystems.vision.VisionIO;
 import frc.robot.subsystems.vision.VisionIOPhoton;
 import frc.robot.subsystems.vision.VisionIOPhotonSim;
 import frc.robot.utils.commands.CommandUtils;
+
 import java.util.Optional;
+
+
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import frc.robot.subsystems.yoshivator.Yoshivator;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
@@ -237,18 +245,30 @@ public class RobotContainer {
     //                 robotStateMachine.getIntakeCommand(IntakeStates.INTAKE))));
 
     // NamedCommands.registerCommand(
-    //     "ShootIdle", robotStateMachine.getShooterCommand(ShooterStates.IDLE));
+        // "ShootIdle", robotStateMachine.getShooterCommand(ShooterStates.IDLE));
 
-    // NamedCommands.registerCommand(
-    //     "IntakeOn", robotStateMachine.getIntakeCommand(IntakeStates.INTAKE));
+    NamedCommands.registerCommand(
+        "IntakeOn", dispatcher.getIntakeCommand(IntakeStates.INTAKE));
 
-    // NamedCommands.registerCommand("SpeakerShot", new SequentialCommandGroup(
-    //   robotStateMachine.getShooterCommand(ShooterStates.SPEAKER).withTimeout(1.0),
-    //   robotStateMachine.getIndexerCommand(IndexerStates.INDEX)));
+    NamedCommands.registerCommand(
+        "IntakeOff", dispatcher.getIntakeCommand(IntakeStates.OFF));
 
-    // NamedCommands.registerCommand("DeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.GROUND_INTAKE));
+    NamedCommands.registerCommand("StowPiece", new ParallelCommandGroup(
+      dispatcher.getIndexerCommand(IndexerStates.STOW),
+      dispatcher.getAnglerCommand(AnglerStates.INTAKE)
+    ).withTimeout(0.5));
 
-    // NamedCommands.registerCommand("UnDeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.IDLE));
+    NamedCommands.registerCommand("SpeakerShot", 
+    dispatcher.getShooterCommand(LauncherStates.SPEAKER_SHOT, AnglerStates.SPEAKER));
+
+    NamedCommands.registerCommand("Shoot", new ParallelCommandGroup(
+      dispatcher.getShooterCommand(LauncherStates.SPEAKER_SHOT, AnglerStates.AIM),
+      new WaitCommand(0.25),
+      dispatcher.getIndexerCommand(IndexerStates.INDEX)));
+
+    NamedCommands.registerCommand("DeployYoshi", dispatcher.getYoshiCommand(YoshiStates.INTAKE));
+
+    NamedCommands.registerCommand("UnDeployYoshi", dispatcher.getYoshiCommand(YoshiStates.IDLE));
   }
 
   private void configureTriggers() {
@@ -317,17 +337,36 @@ public class RobotContainer {
                   () -> 0.0,
                   () -> TargetingSystem.getInstance().getOptimalLaunchHeading()))
           .onFalse(SwerveCommands.stopDrive(robotDrive));
+      
+      pilotController
+        .b()
+        .onTrue(new InstantCommand(() -> robotDrive.setPoses(new Pose2d(), new Pose2d())));
+
+      // pilotController
+      //     .x()
+      //     .whileTrue(new WheelRadiusCharacterization(robotDrive, Direction.CLOCKWISE))
+      //     .onFalse(SwerveCommands.stopDrive(robotDrive));
+
+      // pilotController
+      //     .b()
+      //     .whileTrue(new WheelRadiusCharacterization(robotDrive, Direction.COUNTER_CLOCKWISE))
+      //     .onFalse(SwerveCommands.stopDrive(robotDrive));
+    
+      pilotController
+        .povUp()
+        .onTrue(SwerveCommands.swerveDrive(robotDrive, () -> 0.3, () -> 0.0, () -> 0.0))
+        .onFalse(SwerveCommands.stopDrive(robotDrive));
 
       /* Copilot bindings */
       copilotController
           .povUp()
           .whileTrue(dispatcher.moveAnglerUpManual())
-          .onFalse(dispatcher.shooterToIdle());
+          .onFalse(dispatcher.stopShooting());
 
       copilotController
           .povDown()
           .whileTrue(dispatcher.moveAnglerDownManual())
-          .onFalse(dispatcher.shooterToIdle());
+          .onFalse(dispatcher.stopShooting());
 
       copilotController
           .povLeft()
@@ -342,32 +381,32 @@ public class RobotContainer {
       copilotController
           .y()
           .whileTrue(dispatcher.prepareNoteShot())
-          .onFalse(dispatcher.shooterToIdle());
+          .onFalse(dispatcher.stopShooting());
 
       copilotController
           .b()
           .whileTrue(dispatcher.revUp())
-          .whileFalse(dispatcher.shooterToIdle());
+          .whileFalse(dispatcher.stopShooting());
 
       copilotController
           .a()
           .whileTrue(dispatcher.revAmp())  
-          .onFalse(dispatcher.shooterToIdle());
+          .onFalse(dispatcher.stopShooting());
 
       copilotController
           .x()
           .whileTrue(dispatcher.scoreAmp())
-          .onFalse(dispatcher.shooterToIdle());
+          .onFalse(dispatcher.stopShooting());
 
       copilotController
           .leftBumper()
           .whileTrue(dispatcher.shootNote())
-          .onFalse(dispatcher.shooterToIdle());
+          .onFalse(dispatcher.stopShooting());
 
       copilotController
           .rightBumper()
           .whileTrue(dispatcher.feedShot())
-          .onFalse(dispatcher.shooterToIdle());
+          .onFalse(dispatcher.stopShooting());
 
       copilotController
           .leftTrigger()

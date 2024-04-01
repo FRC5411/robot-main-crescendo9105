@@ -188,7 +188,7 @@ public class CommandDispatcher {
                 return this.robotYoshi.offYoshi();
           }}, this.robotYoshi);
 
-    robotLauncher.setLauncherVelocityMPS(LauncherSetpoints.IDLE);
+    robotLauncher.setLauncherVelocityMPS(LauncherSetpoints.OFF);
     robotAngler.setAnglerPosition(AnglerSetpoints.IDLE);
     robotIntake.setCurrentSetpoint(IntakeSetpoint.OFF);
     robotIndexer.setCurrentSetpoint(IndexerSetpoint.OFF);

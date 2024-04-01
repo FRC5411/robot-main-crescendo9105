@@ -2,8 +2,8 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.73,
-      "y": 6.67
+      "x": 0.75,
+      "y": 6.75
     },
     "rotation": 60.0
   },
@@ -14,7 +14,7 @@
         {
           "type": "named",
           "data": {
-            "name": "SpeakerShoot"
+            "name": "SpeakerShot"
           }
         },
         {
@@ -38,25 +38,55 @@
         {
           "type": "named",
           "data": {
-            "name": "Index"
+            "name": "Shoot"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "A1-W1"
+            "pathName": "A1-C1"
           }
         },
         {
-          "type": "path",
+          "type": "named",
           "data": {
-            "pathName": "W1-C1"
+            "name": "StowPiece"
           }
         },
         {
           "type": "path",
           "data": {
             "pathName": "C1-US"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "TS-C2-2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StowPiece"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C2-KMS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
           }
         }
       ]

@@ -81,7 +81,7 @@ public class Drive extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(KINEMATICS, getRotation(), getModulePositions(), currentPose);
 
-  private PIDConstants translationPathplannerConstants = new PIDConstants(1.25, 0.0, 0.0);
+  private PIDConstants translationPathplannerConstants = new PIDConstants(6.0, 0.0, 0.0);
   private PIDConstants rotationPathplannerConstants = new PIDConstants(1.25, 0.0, 0.0);
   private boolean PProtationTargetOverride = false;
 
@@ -109,11 +109,11 @@ public class Drive extends SubsystemBase {
     // Configure PathPlanner
     AutoBuilder.configureHolonomic(
         () -> {
-          if(Constants.currentMode == Mode.REAL) {
-            return getPoseEstimate();
-          } else {
+          // if(Constants.currentMode == Mode.REAL) {
+          //   return getPoseEstimate();
+          // } else {
             return getOdometryPose();
-          }
+          // }
         },
         this::setPose,
         () -> KINEMATICS.toChassisSpeeds(getModuleStates()),
