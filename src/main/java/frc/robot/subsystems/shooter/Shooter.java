@@ -11,17 +11,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.managers.TargetingSystem;
 import frc.robot.managers.RobotStates.AnglerStates;
 import frc.robot.managers.RobotStates.LauncherStates;
-import frc.robot.managers.RobotStates.ShooterStates;
 import frc.robot.subsystems.shooter.angler.Angler;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.launcher.Launcher;
 import frc.robot.subsystems.shooter.launcher.LauncherIO;
 import frc.robot.utils.debugging.LoggedTunableNumber;
-import java.util.HashMap;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 
-/** Shooter subsystem */
 public class Shooter extends SubsystemBase {
   private static LoggedTunableNumber angleTunableNumber = new LoggedTunableNumber("Shooter/AngleDebuggingDegrees", 0.0);
    
@@ -93,52 +90,6 @@ public class Shooter extends SubsystemBase {
     anglerPosition = angler.getAnglerPosition();
   }
 
-  public HashMap<ShooterStates, Command> mapToCommand() {
-    HashMap<ShooterStates, Command> shooterCommandMap = new HashMap<>();
-    shooterCommandMap.put(ShooterStates.OFF, Commands.runOnce(() -> stopMotors(true, true), this));
-    shooterCommandMap.put(
-        ShooterStates.AIM,
-        setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT));
-    shooterCommandMap.put(
-        ShooterStates.INTAKE, setShooterStateWithEnd(AnglerSetpoints.INTAKE, LauncherSetpoints.OFF));
-    shooterCommandMap.put(
-        ShooterStates.CLIMB, setShooterStateWithEnd(AnglerSetpoints.CLIMB, LauncherSetpoints.OFF));
-    shooterCommandMap.put(
-        ShooterStates.EJECT, setShooterStateWithEnd(AnglerSetpoints.CLIMB, LauncherSetpoints.EJECT));
-    shooterCommandMap.put(ShooterStates.UP, angler.setAnglerManualVolts(5.0));
-    shooterCommandMap.put(ShooterStates.DOWN, angler.setAnglerManualVolts(-5.0));
-    shooterCommandMap.put(
-        ShooterStates.FIRE,
-        setShooterState(AnglerSetpoints.IDLE, LauncherSetpoints.SPEAKER_SHOT));
-    shooterCommandMap.put(
-        ShooterStates.IDLE,
-        Commands.runOnce(
-            () -> {
-              setMotors(null, LauncherSetpoints.OFF);
-              angler.setAnglerVolts(0.0);
-            },
-            this));
-    shooterCommandMap.put(
-        ShooterStates.PODIUM,
-        setShooterStateWithEnd(AnglerSetpoints.PODIUM, LauncherSetpoints.SPEAKER_SHOT));
-    shooterCommandMap.put(
-        ShooterStates.SPEAKER,
-        setShooterStateWithEnd(AnglerSetpoints.SPEAKER, LauncherSetpoints.SPEAKER_SHOT));
-    shooterCommandMap.put(
-        ShooterStates.FEEDER,
-        setShooterStateWithEnd(AnglerSetpoints.FEEDER, LauncherSetpoints.FEEDER));
-    shooterCommandMap.put(
-        ShooterStates.REV_AMP, setShooterState(AnglerSetpoints.AMP, LauncherSetpoints.AMP));
-
-    shooterCommandMap.put(
-      ShooterStates.SHOOT_AMP, Commands.runOnce(() -> {
-        setMotors(angler.getCurrentSetpoint(), null);
-        launcher.setTopLauncherVolts(0);
-      }, this));
-
-    return shooterCommandMap;
-  }
-
   public Command getAnglerCommand(AnglerStates anglerState) {
     switch(anglerState) {
       case OFF:
@@ -196,20 +147,9 @@ public class Shooter extends SubsystemBase {
     }
   }
 
-
-  public Command setShooterStateWithEnd(
-      AnglerSetpoints anglerState, LauncherSetpoints launcherState) {
-    return angler.setAnglerCommand(anglerState).alongWith(launcher.setVelocityMPS(launcherState));
-  }
-
-  public Command setShooterStateInstant(
-      AnglerSetpoints anglerState, LauncherSetpoints launcherState) {
-    return angler.setAnglerCommandInstant(anglerState).alongWith(launcher.setVelocityMPS(launcherState));
-  }
-
   public Command setShooterState(
       AnglerSetpoints anglerState, LauncherSetpoints launcherState) {
-    return angler.setAnglerCommandWithoutEnd(anglerState).alongWith(launcher.setVelocityMPS(launcherState));
+    return angler.setAnglerCommand(anglerState).alongWith(launcher.setVelocityMPS(launcherState));
   }
 
   public void setMotors(AnglerSetpoints anglerGoal, LauncherSetpoints launcherGoal) {
@@ -218,7 +158,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public void stopMotors(boolean stopLauncher, boolean stopAngler) {
-    if(stopLauncher)launcher.stopMotors();
+    if(stopLauncher) launcher.stopMotors();
     if(stopAngler) angler.stopMotors();
   }
 
