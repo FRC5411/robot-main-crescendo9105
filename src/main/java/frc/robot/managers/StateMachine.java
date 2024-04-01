@@ -1,14 +1,15 @@
-package frc.robot;
+package frc.robot.managers;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.RobotStates.ClimbStates;
-import frc.robot.RobotStates.IndexerStates;
-import frc.robot.RobotStates.IntakeStates;
-import frc.robot.RobotStates.ShooterStates;
+import frc.robot.managers.RobotStates.ClimbStates;
+import frc.robot.managers.RobotStates.IndexerStates;
+import frc.robot.managers.RobotStates.IntakeStates;
+import frc.robot.managers.RobotStates.ShooterStates;
+import frc.robot.managers.RobotStates.YoshiStates;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.Climb.ClimbVoltSetpoints;
 import frc.robot.subsystems.indexer.Indexer;
@@ -21,7 +22,6 @@ import frc.robot.subsystems.shooter.Shooter.LauncherSetpoints;
 import frc.robot.utils.commands.CommandUtils;
 import org.littletonrobotics.junction.AutoLogOutput;
 import frc.robot.subsystems.yoshivator.Yoshivator;
-import frc.robot.RobotStates.YoshiStates;
 import frc.robot.subsystems.yoshivator.Yoshivator.YoshivatorSetpoints;
 
 public class StateMachine {
@@ -75,7 +75,7 @@ public class StateMachine {
     robotShooter.setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.IDLE);
     robotIntake.setCurrentSetpoint(IntakeSetpoint.OFF);
     robotIndexer.setCurrentSetpoint(IndexerSetpoint.OFF);
-    robotClimb.setManualVolts(ClimbVoltSetpoints.OFF);
+    robotClimb.runVolts(ClimbVoltSetpoints.OFF);
     robotYoshi.setYoshiSetpoint(YoshivatorSetpoints.IDLE);
   }
 
@@ -117,7 +117,6 @@ public class StateMachine {
         getIntakeCommand(IntakeStates.INTAKE),
         getIndexerCommand(IndexerStates.STOW),
         getClimbCommand(ClimbStates.IDLE));
-        // getYoshiCommand(YoshiStates.GROUND_INTAKE));
   }
 
   public Command yoshiIntakeNote() {

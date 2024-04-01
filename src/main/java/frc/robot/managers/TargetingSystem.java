@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems.shooter;
+package frc.robot.managers;
 
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.*;
@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ScheduleCommand;
 import frc.robot.subsystems.drive.Drive;
+import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.vision.Vision;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
@@ -83,23 +84,23 @@ public class TargetingSystem {
   public void initializeLaunchMap() {
     if (DriverStation.getAlliance().isPresent()) {
       if (DriverStation.getAlliance().get() == Alliance.Red) {
-        for(int i = 0; i < ShooterConstants.redShotMap.length; i++) {
+        for(int i = 0; i < TargetingSystemConstants.redShotMap.length; i++) {
           launchMap.put(
-            ShooterConstants.redShotMap[i][0] + LAUNCH_MAP_OFFSET_M, 
-            ShooterConstants.redShotMap[i][1] + LAUNCH_MAP_OFFSET_DEGREES_RED);
+            TargetingSystemConstants.redShotMap[i][0] + LAUNCH_MAP_OFFSET_M, 
+            TargetingSystemConstants.redShotMap[i][1] + LAUNCH_MAP_OFFSET_DEGREES_RED);
         }
       } else {
-        for(int i = 0; i < ShooterConstants.blueShotMap.length; i++) {
+        for(int i = 0; i < TargetingSystemConstants.blueShotMap.length; i++) {
           launchMap.put(
-            ShooterConstants.blueShotMap[i][0] + LAUNCH_MAP_OFFSET_M, 
-            ShooterConstants.blueShotMap[i][1] + LAUNCH_MAP_OFFSET_DEGREES_BLUE);
+            TargetingSystemConstants.blueShotMap[i][0] + LAUNCH_MAP_OFFSET_M, 
+            TargetingSystemConstants.blueShotMap[i][1] + LAUNCH_MAP_OFFSET_DEGREES_BLUE);
         }
       }
     } else {
-      for(int i = 0; i < ShooterConstants.blueShotMap.length; i++) {
+      for(int i = 0; i < TargetingSystemConstants.blueShotMap.length; i++) {
         launchMap.put(
-          ShooterConstants.blueShotMap[i][0] + LAUNCH_MAP_OFFSET_M, 
-          ShooterConstants.blueShotMap[i][1] + LAUNCH_MAP_OFFSET_DEGREES_BLUE);
+          TargetingSystemConstants.blueShotMap[i][0] + LAUNCH_MAP_OFFSET_M, 
+          TargetingSystemConstants.blueShotMap[i][1] + LAUNCH_MAP_OFFSET_DEGREES_BLUE);
       }
     }
   }

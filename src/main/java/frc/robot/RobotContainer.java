@@ -18,10 +18,14 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.RobotStates.IndexerStates;
-import frc.robot.RobotStates.IntakeStates;
-import frc.robot.RobotStates.ShooterStates;
 import frc.robot.commands.SwerveCommands;
+import frc.robot.managers.StateMachine;
+import frc.robot.managers.TargetingSystem;
+import frc.robot.managers.VisionFuser;
+import frc.robot.managers.RobotStates.IndexerStates;
+import frc.robot.managers.RobotStates.IntakeStates;
+import frc.robot.managers.RobotStates.ShooterStates;
+import frc.robot.managers.RobotStates.YoshiStates;
 import frc.robot.subsystems.climb.Climb;
 import frc.robot.subsystems.climb.ClimbIO;
 import frc.robot.subsystems.climb.ClimbIOSim;
@@ -42,7 +46,6 @@ import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.intake.IntakeIOSparkMax;
 import frc.robot.subsystems.leds.LEDSubsystem;
 import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.TargetingSystem;
 import frc.robot.subsystems.shooter.angler.AnglerIO;
 import frc.robot.subsystems.shooter.angler.AnglerIOSim;
 import frc.robot.subsystems.shooter.angler.AnglerIOSparkMax;
@@ -60,7 +63,6 @@ import frc.robot.subsystems.yoshivator.Yoshivator;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIO;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSim;
 import frc.robot.subsystems.yoshivator.manipulator.ManipulatorIOSparkMax;
-import frc.robot.RobotStates.YoshiStates;
 
 public class RobotContainer {
   private Drive robotDrive;
@@ -216,14 +218,14 @@ public class RobotContainer {
         new ParallelCommandGroup(
                 robotStateMachine.getIndexerCommand(IndexerStates.STOW),
                 robotStateMachine.getIntakeCommand(IntakeStates.INTAKE),
-                robotStateMachine.getShooterCommand(ShooterStates.INTAKE_AUTON))
+                robotStateMachine.getShooterCommand(ShooterStates.INTAKE))
             .withTimeout(2.0));
 
     // Add intake off if yo
     NamedCommands.registerCommand(
         "Shoot",
         new SequentialCommandGroup(
-            robotStateMachine.getShooterCommand(ShooterStates.AIM_AUTON),
+            robotStateMachine.getShooterCommand(ShooterStates.AIM),
             new WaitCommand(1.3),
             robotStateMachine.getIndexerCommand(IndexerStates.INDEX)));
 

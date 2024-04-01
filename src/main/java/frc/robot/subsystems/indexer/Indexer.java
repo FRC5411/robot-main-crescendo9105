@@ -9,8 +9,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotStates.IndexerStates;
-import java.util.HashMap;
+import frc.robot.managers.RobotStates.IndexerStates;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -58,22 +58,25 @@ public class Indexer extends SubsystemBase {
     }
   }
 
-  public HashMap<IndexerStates, Command> mapToCommand() {
-    HashMap<IndexerStates, Command> commandMap = new HashMap<>();
-    commandMap.put(IndexerStates.INDEX, runIndexer(IndexerSetpoint.IN));
-    commandMap.put(IndexerStates.OUTDEX, runIndexer(IndexerSetpoint.OUT));
-    commandMap.put(IndexerStates.STOW, stowPiece());
-    commandMap.put(IndexerStates.OFF, stopIndexer());
-    commandMap.put(IndexerStates.AMP, runIndexer(IndexerSetpoint.AMP));
-    return commandMap;
+  public Command getIndexerCommand(IndexerStates state) {
+    switch(state) {
+      case INDEX:
+        return runIndexer(IndexerSetpoint.IN);
+      case OUTDEX:
+        return runIndexer(IndexerSetpoint.OUT);
+      case STOW:
+        return stowPiece();
+      case OFF:
+        return runIndexer(IndexerSetpoint.OFF);
+      case AMP:
+        return runIndexer(IndexerSetpoint.AMP);
+      default:
+        return runIndexer(IndexerSetpoint.OFF);
+    }
   }
 
   public Command runIndexer(IndexerSetpoint setpoint) {
     return Commands.runOnce(() -> setCurrentSetpoint(setpoint), this);
-  }
-
-  public Command stopIndexer() {
-    return Commands.runOnce(() -> setCurrentSetpoint(IndexerSetpoint.OFF), this);
   }
 
   public Command stowPiece() {
@@ -95,15 +98,11 @@ public class Indexer extends SubsystemBase {
     return indexerIOInputs.isBeamBroken;
   }
 
-  // Nulls current setpoints for manual control
   public void setVolts(double volts) {
-    setCurrentSetpoint(null);
     indexerIO.setVolts(volts);
   }
 
-  // Nulls current setpoint for manual control
   public void stopMotor() {
-    setCurrentSetpoint(null);
     indexerIO.setVolts(0.0);
   }
 

@@ -80,7 +80,7 @@ public class Launcher extends SubsystemBase{
     public Command characterizeFlywheel() {
         return SysIDCharacterization.runShooterSysIDTests(
             (volts) -> {
-            launcherSetpointMPS = null;
+                launcherSetpointMPS = null;
                 launcherIO.setTopVolts(volts);
                 launcherIO.setBottomVolts(volts);
         },

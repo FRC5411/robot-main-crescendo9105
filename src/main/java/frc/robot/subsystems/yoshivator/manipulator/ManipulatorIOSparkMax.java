@@ -14,12 +14,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
-/** Class to interact with the physical manipulator structure */
 public class ManipulatorIOSparkMax implements ManipulatorIO {
   private final double PIVOT_GEARING = (64.0 / 1.0) * (3.0 / 1.0);
   private final double FLYWHEEL_GEARING = 5.0 / 1.0;
 
-  // TODO Update as needed
   private CANSparkMax pivotMotor = new CANSparkMax(52, MotorType.kBrushless);
   private RelativeEncoder pivotRelativeEncoder = pivotMotor.getEncoder();
   private DutyCycleEncoder pivotAbsoluteEncoder = new DutyCycleEncoder(8);
@@ -32,7 +30,6 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
   private double pivotAppliedVolts = 0.0;
   private double flywheelAppliedVolts = 0.0;
 
-  /** Create a new hardware implementation of the manipulator */
   public ManipulatorIOSparkMax() {
     pivotMotor.clearFaults();
     pivotMotor.restoreFactoryDefaults();

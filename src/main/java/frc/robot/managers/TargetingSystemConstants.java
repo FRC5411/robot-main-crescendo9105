@@ -1,8 +1,8 @@
-package frc.robot.subsystems.shooter;
+package frc.robot.managers;
 
 import edu.wpi.first.math.util.Units;
 
-public class ShooterConstants {
+public class TargetingSystemConstants {
     public static double[][] blueShotMap = {
         {Units.inchesToMeters(37.0), 55.0},
         {Units.inchesToMeters(47.0), 53.0},

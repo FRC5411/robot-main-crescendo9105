@@ -8,7 +8,8 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotStates.IntakeStates;
+import frc.robot.managers.RobotStates.IntakeStates;
+
 import java.util.HashMap;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
@@ -55,12 +56,17 @@ public class Intake extends SubsystemBase {
     }
   }
 
-  public HashMap<IntakeStates, Command> mapToCommand() {
-    HashMap<IntakeStates, Command> commandMap = new HashMap<>();
-    commandMap.put(IntakeStates.INTAKE, runIntake(IntakeSetpoint.IN));
-    commandMap.put(IntakeStates.OUTTAKE, runIntake(IntakeSetpoint.OUT));
-    commandMap.put(IntakeStates.OFF, stopIntake());
-    return commandMap;
+  public Command getIntakeCommand(IntakeStates state) {
+    switch(state) {
+      case INTAKE:
+        return runIntake(IntakeSetpoint.IN);
+      case OUTTAKE:
+        return runIntake(IntakeSetpoint.OUT);
+      case OFF:
+        return stopIntake();
+      default:
+        return stopIntake();
+    }
   }
 
   public Command runIntake(IntakeSetpoint setpoint) {
@@ -75,12 +81,10 @@ public class Intake extends SubsystemBase {
     currentSetpoint = setpoint;
   }
 
-  // Nulls current setpoint for manual control
   public void setVolts(double volts) {
     intakeIO.setVolts(volts);
   }
 
-  // Nulls current setpoint for manual control
   public void stopMotor() {
     intakeIO.setVolts(0.0);
   }

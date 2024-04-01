@@ -13,10 +13,9 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Robot;
-import frc.robot.RobotStates.ClimbStates;
+import frc.robot.managers.RobotStates.ClimbStates;
 import frc.robot.subsystems.climb.ClimbVisualizer.ClimbSide;
 import frc.robot.utils.debugging.LoggedTunableNumber;
-import java.util.HashMap;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.AutoLogOutput;
 
@@ -190,16 +189,21 @@ public class Climb extends SubsystemBase {
     }
   }
 
-  public HashMap<ClimbStates, Command> mapToCommand() {
-    HashMap<ClimbStates, Command> commandMap = new HashMap<>();
-
-    commandMap.put(ClimbStates.IDLE, setPositionSetpoint(ClimPosSetpoints.IDLE.getRotation()));
-    commandMap.put(ClimbStates.OFF, setManualVolts(ClimbVoltSetpoints.OFF));
-    commandMap.put(ClimbStates.MOVE_BOTH_UP, setManualVolts(ClimbVoltSetpoints.BOTH_UP));
-    commandMap.put(ClimbStates.MOVE_BOTH_DOWN, setManualVolts(ClimbVoltSetpoints.BOTH_DOWN));
-    commandMap.put(ClimbStates.AMP, setPositionSetpoint(ClimPosSetpoints.AMP.getRotation()));
-
-    return commandMap;
+  public Command getClimbCommand(ClimbStates state) {
+    switch (state) {
+      case IDLE:
+        return setPositionSetpoint(ClimPosSetpoints.IDLE.getRotation());
+      case OFF:
+        return runVolts(ClimbVoltSetpoints.OFF);
+      case MOVE_BOTH_UP:
+        return runVolts(ClimbVoltSetpoints.BOTH_UP);
+      case MOVE_BOTH_DOWN:
+        return runVolts(ClimbVoltSetpoints.BOTH_DOWN);
+      case AMP:
+        return setPositionSetpoint(ClimPosSetpoints.AMP.getRotation());
+      default:
+        return runVolts(ClimbVoltSetpoints.OFF);
+    }
   }
 
   public Command setPositionSetpoint(Rotation2d pos) {
@@ -212,7 +216,7 @@ public class Climb extends SubsystemBase {
         this);
   }
 
-  public Command setManualVolts(ClimbVoltSetpoints setpoint) {
+  public Command runVolts(ClimbVoltSetpoints setpoint) {
     return Commands.runOnce(
         () -> {
           leftAngleSetpoint = null;

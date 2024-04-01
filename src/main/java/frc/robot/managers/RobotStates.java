@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.managers;
 
 public class RobotStates {
   public static enum IntakeStates {
@@ -29,8 +29,33 @@ public class RobotStates {
     OFF,
     IDLE,
     GROUND_AMP,
-    GROUND_INTAKE,
+    GROUND_INTAKE
+  }
+
+  public enum AnglerStates{
+    OFF,
+    AIM,
+    INTAKE,
+    CLIMB,
+    EJECT,
+    UP,
+    DOWN,
+    IDLE,
+    PODIUM,
+    SPEAKER,
+    FEEDER,
     AMP
+  }
+
+  public enum LauncherStates{
+    OFF,
+    SPEAKER_SHOT,
+    IDLE,
+    FEEDER,
+    REV_AMP,
+    SHOOT_AMP,
+    EJECT,
+    FULL_SPEED
   }
 
   public static enum ShooterStates {
@@ -48,7 +73,5 @@ public class RobotStates {
     FEEDER,
     REV_AMP,
     SHOOT_AMP,
-    AIM_AUTON,
-    INTAKE_AUTON
   }
 }
