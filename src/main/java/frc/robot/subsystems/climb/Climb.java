@@ -52,8 +52,6 @@ public class Climb extends SubsystemBase {
     }
   }
 
-  private double climbDirection = 1.0;
-
   private ClimbIO climbIO;
   private ClimbIOInputsAutoLogged climbIOInputs = new ClimbIOInputsAutoLogged();
 
