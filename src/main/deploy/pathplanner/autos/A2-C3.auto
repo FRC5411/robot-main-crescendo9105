@@ -2,10 +2,10 @@
   "version": 1.0,
   "startingPose": {
     "position": {
-      "x": 0.73,
-      "y": 6.67
+      "x": 1.34,
+      "y": 5.54
     },
-    "rotation": 60.0
+    "rotation": 0
   },
   "command": {
     "type": "sequential",
@@ -14,19 +14,25 @@
         {
           "type": "named",
           "data": {
-            "name": "StartUpRoutine"
-          }
-        },
-        {
-          "type": "path",
-          "data": {
-            "pathName": "A1-W1"
+            "name": "SpeakerShot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "StowPiece"
+            "name": "DeployYoshi"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeOn"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.75
           }
         },
         {
@@ -36,20 +42,26 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "Index"
+          }
+        },
+        {
           "type": "path",
           "data": {
-            "pathName": "W1-C"
+            "pathName": "A2-C3"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "ShootIdle"
+            "name": "StowPiece"
           }
         }
       ]
     }
   },
-  "folder": "TopAutos",
+  "folder": "CenterAutos",
   "choreoAuto": false
 }

@@ -89,6 +89,7 @@ public class RobotSetpoints {
     public static enum IntakeSetpoint {
         IN(12.0),
         OUT(-12.0),
+        AUTO_IN(6.0),
         STOP(6.0),
         OFF(0.0);
     

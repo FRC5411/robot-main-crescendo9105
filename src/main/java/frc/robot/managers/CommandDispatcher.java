@@ -136,6 +136,8 @@ public class CommandDispatcher {
               return this.robotIntake.runIntake(IntakeSetpoint.OUT);
             case OFF:
               return this.robotIntake.stopIntake();
+            case AUTO_INTAKE:
+              return this.robotIntake.runIntake(IntakeSetpoint.AUTO_IN);
             default:
               return this.robotIntake.stopIntake();
           }}, this.robotIntake);

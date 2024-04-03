@@ -253,17 +253,34 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "IntakeOff", dispatcher.getIntakeCommand(IntakeStates.OFF));
 
+    NamedCommands.registerCommand("Index", dispatcher.getIndexerCommand(IndexerStates.INDEX));
+
     NamedCommands.registerCommand("StowPiece", new ParallelCommandGroup(
+      dispatcher.getIntakeCommand(IntakeStates.INTAKE),
       dispatcher.getIndexerCommand(IndexerStates.STOW),
-      dispatcher.getAnglerCommand(AnglerStates.INTAKE)
-    ).withTimeout(0.5));
+      dispatcher.getShooterCommand(LauncherStates.OFF, AnglerStates.INTAKE)
+    ).withTimeout(2.0));
 
     NamedCommands.registerCommand("SpeakerShot", 
-    dispatcher.getShooterCommand(LauncherStates.SPEAKER_SHOT, AnglerStates.SPEAKER));
+      new SequentialCommandGroup(
+        dispatcher.getShooterCommand(LauncherStates.SPEAKER_SHOT, AnglerStates.SPEAKER),
+        new WaitCommand(0.75),
+        dispatcher.getIndexerCommand(IndexerStates.INDEX),
+        new WaitCommand(0.25),
+        dispatcher.getLauncherCommand(LauncherStates.OFF)));
 
-    NamedCommands.registerCommand("Shoot", new ParallelCommandGroup(
+    NamedCommands.registerCommand("StartUpRoutine", 
+      new SequentialCommandGroup(
+        dispatcher.getShooterCommand(LauncherStates.SPEAKER_SHOT, AnglerStates.SPEAKER),
+        new WaitCommand(0.75),
+        dispatcher.getIndexerCommand(IndexerStates.INDEX),
+        dispatcher.getYoshiCommand(YoshiStates.INTAKE),
+        new WaitCommand(0.25),
+        dispatcher.getIndexerCommand(IndexerStates.OFF)));
+
+    NamedCommands.registerCommand("Shoot", new SequentialCommandGroup(
       dispatcher.getShooterCommand(LauncherStates.SPEAKER_SHOT, AnglerStates.AIM),
-      new WaitCommand(0.25),
+      new WaitCommand(1.6),
       dispatcher.getIndexerCommand(IndexerStates.INDEX)));
 
     NamedCommands.registerCommand("DeployYoshi", dispatcher.getYoshiCommand(YoshiStates.INTAKE));

@@ -4,6 +4,7 @@ public class RobotDesiredStates {
   public static enum IntakeStates {
     OFF,
     INTAKE,
+    AUTO_INTAKE,
     OUTTAKE
   }
 

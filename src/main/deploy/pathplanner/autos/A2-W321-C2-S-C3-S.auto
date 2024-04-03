@@ -70,6 +70,54 @@
           "data": {
             "name": "Shoot"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "W1-C2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StowPiece"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C2-KMS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "KMS-C3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StowPiece"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C3-KMS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
         }
       ]
     }

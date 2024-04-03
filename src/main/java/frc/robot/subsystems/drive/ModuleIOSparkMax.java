@@ -24,8 +24,8 @@ import frc.robot.utils.debugging.LoggedTunableNumber;
 public class ModuleIOSparkMax implements ModuleIO {
   private final double DRIVE_GEAR_RATIO = 6.75 / 1.0;
   private final double AZIMUTH_GEAR_RATIO = 150.0 / 7.0;
-  private final double WHEEL_RADIUS_INCHES = 1.93;
-  private final double CIRCUMFRENCE_METERS = (2.0 * Math.PI * (WHEEL_RADIUS_INCHES * 2.54 / 100));
+  // private final double WHEEL_RADIUS_INCHES = 1.85;
+  private final double CIRCUMFRENCE_METERS = (2.0 * Math.PI * (5.08 / 100));
 
   private CANSparkMax driveMotor;
   private CANSparkMax azimuthMotor;

@@ -14,13 +14,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Shoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "DeployYoshi"
+            "name": "StartUpRoutine"
           }
         },
         {
@@ -32,19 +26,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake"
+            "name": "StowPiece"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Shoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "UnDeployYoshi"
           }
         },
         {
@@ -56,13 +44,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "ShootIdle"
+            "name": "StowPiece"
           }
         }
       ]
