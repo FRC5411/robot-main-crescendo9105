@@ -166,7 +166,7 @@ public class StateMachine {
 
   public Command shootNote() {
     return new ParallelCommandGroup(
-        getIndexerCommand(IndexerStates.INDEX), getShooterCommand(ShooterStates.FIRE));
+        getIndexerCommand(IndexerStates.INDEX));
   }
 
   public Command revUp() {

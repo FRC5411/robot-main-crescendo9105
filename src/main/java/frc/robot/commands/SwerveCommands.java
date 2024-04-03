@@ -85,7 +85,7 @@ public class SwerveCommands {
                     linearVelocity.getX() * robotDrive.getMaxLinearSpeedMPS(),
                     linearVelocity.getY() * robotDrive.getMaxLinearSpeedMPS(),
                     theta * robotDrive.getMaxAngularSpeedMPS(),
-                    robotDrive.getRotation()));
+                    robotDrive.getPoseEstimate().getRotation()));
           }
         },
         robotDrive);

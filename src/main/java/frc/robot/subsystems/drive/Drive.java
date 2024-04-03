@@ -123,7 +123,7 @@ public class Drive extends SubsystemBase {
             rotationPathplannerConstants,
             MAX_LINEAR_SPEED_MPS,
             DRIVEBASE_RADIUS_M,
-            new ReplanningConfig(true, true)),
+            new ReplanningConfig(true, false)),
         () ->
             DriverStation.getAlliance().isPresent()
                 && DriverStation.getAlliance().get() == Alliance.Red,
