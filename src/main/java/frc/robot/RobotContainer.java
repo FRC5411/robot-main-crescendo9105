@@ -423,13 +423,13 @@ public class RobotContainer {
           .whileTrue(robotStateMachine.feedShot())
           .onFalse(robotStateMachine.stopShooting());
 
-      copilotController
-        .leftTrigger()
-        .onTrue(TargetingSystem.getInstance().incrementOffset());
+      // copilotController
+      //   .leftTrigger()
+      //   .onTrue(TargetingSystem.getInstance().incrementOffset());
 
-      copilotController
-        .rightTrigger()
-        .onTrue(TargetingSystem.getInstance().decrementOffset());
+      // copilotController
+      //   .rightTrigger()
+      //   .onTrue(TargetingSystem.getInstance().decrementOffset());
     }
   }
 
