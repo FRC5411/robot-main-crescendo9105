@@ -8,13 +8,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Shoot"
+            "name": "SpeakerShot"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "DeployYoshi"
+            "name": "IntakeOn"
           }
         },
         {
@@ -26,19 +26,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake"
+            "name": "StowPiece"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Shoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "UnDeployYoshi"
           }
         },
         {

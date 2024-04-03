@@ -43,6 +43,11 @@ public class ScrewArmFeedforward {
     return output;
   }
 
+  public void updateUL(double kU, double kL) {
+    this.U = kU;
+    this.L = kL;
+  }
+
   /**
    * Update the U gain
    *

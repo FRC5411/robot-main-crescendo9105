@@ -8,28 +8,12 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.RobotStates.IntakeStates;
-import java.util.HashMap;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import frc.robot.managers.RobotSetpoints.IntakeSetpoint;;
 
 public class Intake extends SubsystemBase {
-  public static enum IntakeSetpoint {
-    IN(12.0),
-    OUT(-12.0),
-    OFF(0.0);
-
-    private double volts;
-
-    IntakeSetpoint(double volts) {
-      this.volts = volts;
-    }
-
-    public double getVolts() {
-      return this.volts;
-    }
-  }
-
   @AutoLogOutput(key = "Intake/CurrentSetpoint")
   private IntakeSetpoint currentSetpoint = IntakeSetpoint.OFF;
 
@@ -54,14 +38,6 @@ public class Intake extends SubsystemBase {
     }
   }
 
-  public HashMap<IntakeStates, Command> mapToCommand() {
-    HashMap<IntakeStates, Command> commandMap = new HashMap<>();
-    commandMap.put(IntakeStates.INTAKE, runIntake(IntakeSetpoint.IN));
-    commandMap.put(IntakeStates.OUTTAKE, runIntake(IntakeSetpoint.OUT));
-    commandMap.put(IntakeStates.OFF, stopIntake());
-    return commandMap;
-  }
-
   public Command runIntake(IntakeSetpoint setpoint) {
     return Commands.runOnce(() -> setCurrentSetpoint(setpoint), this);
   }
@@ -74,12 +50,10 @@ public class Intake extends SubsystemBase {
     currentSetpoint = setpoint;
   }
 
-  // Nulls current setpoint for manual control
   public void setVolts(double volts) {
     intakeIO.setVolts(volts);
   }
 
-  // Nulls current setpoint for manual control
   public void stopMotor() {
     intakeIO.setVolts(0.0);
   }

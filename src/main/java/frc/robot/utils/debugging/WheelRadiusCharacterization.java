@@ -99,7 +99,7 @@ public class WheelRadiusCharacterization extends Command {
     double[] doublePosition = new double[4];
 
     for (int i = 0; i < 4; i++) {
-      startWheelPositions[i] = positions[i].angle.getRadians();
+      doublePosition[i] = positions[i].angle.getRadians();
     }
 
     return doublePosition;

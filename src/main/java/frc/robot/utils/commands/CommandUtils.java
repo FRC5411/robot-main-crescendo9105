@@ -49,6 +49,7 @@ public class CommandUtils {
       } catch (Exception e) {
         System.out.println("Auto " + autoName + " failed to load");
         chooser.addOption("FAILEDTOLOAD: " + autoName, defaultOption);
+        e.printStackTrace();
       }
     }
 

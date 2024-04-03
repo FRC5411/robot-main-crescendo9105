@@ -19,15 +19,14 @@ public class GyroIOPigeon2 implements GyroIO {
   private Pigeon2 gyro = new Pigeon2(10);
 
   private StatusSignal<Double> yaw = gyro.getYaw();
-  private StatusSignal<Double> yawVelocity = gyro.getAngularVelocityZWorld();
+  private StatusSignal<Double> yawVelocity = gyro.getAngularVelocityXWorld();
 
   /** Create a new hardware implementation of the gyroscope */
   public GyroIOPigeon2(boolean phoenixDrive) {
     gyro.getConfigurator().apply(new Pigeon2Configuration());
     gyro.getConfigurator().setYaw(0.0);
 
-    yaw.setUpdateFrequency(50.0);
-    yawVelocity.setUpdateFrequency(50.0);
+    BaseStatusSignal.setUpdateFrequencyForAll(50.0, yaw, yawVelocity);
 
     gyro.optimizeBusUtilization();
   }

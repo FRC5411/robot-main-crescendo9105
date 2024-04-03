@@ -4,6 +4,7 @@
       "/AdvantageKit/RealOutputs/Climb/Visualizer/LEFT": "Mechanism2d",
       "/AdvantageKit/RealOutputs/Climb/Visualizer/RIGHT": "Mechanism2d",
       "/AdvantageKit/RealOutputs/Shooter/Visualizer/Angler": "Mechanism2d",
+      "/AdvantageKit/RealOutputs/Yoshivator/Visualizer/Pivot": "Mechanism2d",
       "/FMSInfo": "FMSInfo",
       "/SmartDashboard/Auto Choices": "String Chooser",
       "/SmartDashboard/Autonomous Selector": "String Chooser",
@@ -15,6 +16,12 @@
       "open": true
     },
     "photonvision@1": {
+      "open": true
+    },
+    "photonvision@2": {
+      "open": true
+    },
+    "photonvision@3": {
       "open": true
     },
     "visible": true

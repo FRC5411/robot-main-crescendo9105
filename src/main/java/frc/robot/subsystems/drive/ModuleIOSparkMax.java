@@ -5,6 +5,7 @@
 package frc.robot.subsystems.drive;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -19,11 +20,12 @@ import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 import frc.robot.utils.debugging.LoggedTunableNumber;
 
-/** Class to interact with the physical swerve module structure, SDS L2+ */
+/** Class to interact with the physical swerve module structure, SDS L2 */
 public class ModuleIOSparkMax implements ModuleIO {
   private final double DRIVE_GEAR_RATIO = 6.75 / 1.0;
   private final double AZIMUTH_GEAR_RATIO = 150.0 / 7.0;
-  private final double CIRCUMFRENCE_METERS = 2.0 * Math.PI * (5.08 / 100);
+  private final double WHEEL_RADIUS_INCHES = 1.93;
+  private final double CIRCUMFRENCE_METERS = (2.0 * Math.PI * (WHEEL_RADIUS_INCHES * 2.54 / 100));
 
   private CANSparkMax driveMotor;
   private CANSparkMax azimuthMotor;
@@ -57,6 +59,8 @@ public class ModuleIOSparkMax implements ModuleIO {
 
   private Rotation2d azimuthAngle = new Rotation2d();
   private Rotation2d azimuthAngleSetpoint = new Rotation2d();
+
+  private StatusSignal<Double> absolutePositionSignal;
 
   /** Create a new hardware implementation of a swerve module */
   public ModuleIOSparkMax(int module) {
@@ -112,7 +116,7 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveMotor.setInverted(false);
     azimuthMotor.setInverted(true);
 
-    driveMotor.setSmartCurrentLimit(50);
+    driveMotor.setSmartCurrentLimit(40);
     driveMotor.enableVoltageCompensation(12.0);
     azimuthMotor.setSmartCurrentLimit(30);
     azimuthMotor.enableVoltageCompensation(12.0);
@@ -152,8 +156,9 @@ public class ModuleIOSparkMax implements ModuleIO {
     driveMotor.burnFlash();
     azimuthMotor.burnFlash();
 
-    BaseStatusSignal.setUpdateFrequencyForAll(
-  50, angleEncoder.getAbsolutePosition());
+    absolutePositionSignal = angleEncoder.getAbsolutePosition();
+
+    BaseStatusSignal.setUpdateFrequencyForAll(50.0, absolutePositionSignal);
 
     angleEncoder.optimizeBusUtilization();
   }
@@ -168,7 +173,7 @@ public class ModuleIOSparkMax implements ModuleIO {
     inputs.driveTemperatureCelsius = new double[] {driveMotor.getMotorTemperature()};
 
     inputs.azimuthAbsolutePosition =
-        Rotation2d.fromRotations(angleEncoder.getAbsolutePosition().getValueAsDouble())
+        Rotation2d.fromRotations(absolutePositionSignal.getValueAsDouble())
             .minus(angleOffset);
     inputs.azimuthPosition =
         Rotation2d.fromRotations(azimuthEncoder.getPosition() / AZIMUTH_GEAR_RATIO);

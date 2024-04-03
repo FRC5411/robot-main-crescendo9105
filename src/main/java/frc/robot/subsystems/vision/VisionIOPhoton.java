@@ -79,7 +79,8 @@ public class VisionIOPhoton implements VisionIO {
 
       inputs.numberOfTargets = getApriltagCount(result);
 
-      inputs.hasSpeakerTarget = poseEstimator.getFieldTags().getTagPose(speakerTagID).isPresent();
+      inputs.hasSpeakerTarget = poseEstimator.getFieldTags().getTagPose(speakerTagID).isPresent() ||
+      poseEstimator.getFieldTags().getTagPose(speakerTagID + 1).isPresent();
 
       inputs.speakerTagPose =
           poseEstimator

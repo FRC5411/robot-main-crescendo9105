@@ -16,14 +16,14 @@ package frc.robot;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.shooter.TargetingSystem;
+import frc.robot.managers.TargetingSystem;
+
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
-import org.littletonrobotics.urcl.URCL;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -63,7 +63,7 @@ public class Robot extends LoggedRobot {
     switch (Constants.currentMode) {
       case REAL:
         // Running on a real robot, log to a USB stick ("/U/logs")
-        // Logger.addDataReceiver(new WPILOGWriter());
+        Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
         break;
 
@@ -92,7 +92,7 @@ public class Robot extends LoggedRobot {
     robotContainer.reset();
 
     DataLogManager.start();
-    URCL.start();
+    // URCL.start();
   }
 
   /** This function is called periodically during all modes. */
@@ -101,8 +101,7 @@ public class Robot extends LoggedRobot {
     CommandScheduler.getInstance().run();
 
     robotContainer.getVisionFuser().periodic();
-    TargetingSystem.getInstance().logMultiTagEnabled();
-    TargetingSystem.getInstance().logVision();
+    TargetingSystem.getInstance().logAllData();
   }
 
   /** This function is called once when autonomous is enabled. */

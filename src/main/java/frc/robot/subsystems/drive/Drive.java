@@ -47,7 +47,7 @@ public class Drive extends SubsystemBase {
   public static final double MAX_ANGULAR_SPEED_MPS = MAX_LINEAR_SPEED_MPS / DRIVEBASE_RADIUS_M;
   // Second argument is the max accel
   public static final ModuleLimits MODULE_LIMITS =
-      new ModuleLimits(MAX_LINEAR_SPEED_MPS, MAX_LINEAR_SPEED_MPS * 5, 7 * 2 * Math.PI);
+      new ModuleLimits(MAX_LINEAR_SPEED_MPS, MAX_LINEAR_SPEED_MPS * 5, 12 * 2 * Math.PI);
 
   private final Translation2d[] MODULE_TRANSLATIONS = getModuleTranslations();
   private final SwerveDriveKinematics KINEMATICS = getKinematics();
@@ -72,6 +72,7 @@ public class Drive extends SubsystemBase {
   private Module[] modules = new Module[4]; // FL FR BL BR
 
   private Pose2d currentPose = new Pose2d();
+  private Pose2d filteredPose = new Pose2d();
 
   // Used to compare pose estimator and odometry
   private SwerveDriveOdometry odometry =
@@ -80,17 +81,14 @@ public class Drive extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(KINEMATICS, getRotation(), getModulePositions(), currentPose);
 
-  private PIDConstants translationPathplannerConstants = new PIDConstants(1.25, 0.0, 0.0);
+  private PIDConstants translationPathplannerConstants = new PIDConstants(6.0, 0.0, 0.0);
   private PIDConstants rotationPathplannerConstants = new PIDConstants(1.25, 0.0, 0.0);
-
-  private Pose2d filteredPose = new Pose2d();
+  private boolean PProtationTargetOverride = false;
 
   private LinearFilter xFilter = LinearFilter.movingAverage(5);
   private LinearFilter yFilter = LinearFilter.movingAverage(5);
 
   private Field2d field = new Field2d();
-
-  private boolean PProtationTargetOverride = false;
 
   /** Creates a new swerve Drive. */
   public Drive(
@@ -110,7 +108,13 @@ public class Drive extends SubsystemBase {
 
     // Configure PathPlanner
     AutoBuilder.configureHolonomic(
-        () -> getPoseEstimate(),
+        () -> {
+          // if(Constants.currentMode == Mode.REAL) {
+          //   return getPoseEstimate();
+          // } else {
+            return getOdometryPose();
+          // }
+        },
         this::setPose,
         () -> KINEMATICS.toChassisSpeeds(getModuleStates()),
         this::runSwerve,
@@ -265,6 +269,9 @@ public class Drive extends SubsystemBase {
   /** Reset the gyro heading */
   public void resetGyro() {
     gyroIO.resetGyro();
+    setPoses(
+      new Pose2d(currentPose.getTranslation(), getRotation()),
+      new Pose2d(odometry.getPoseMeters().getTranslation(), getRotation()));
   }
 
   /** Set the pose of the robot */
@@ -275,6 +282,18 @@ public class Drive extends SubsystemBase {
     } else {
       poseEstimator.resetPosition(getRotation(), getModulePositions(), pose);
       odometry.resetPosition(getRotation(), getModulePositions(), pose);
+    }
+
+    currentPose = poseEstimator.getEstimatedPosition();
+  }
+
+  public void setPoses(Pose2d visionPose, Pose2d odometryPose) {
+    if (Constants.currentMode == Mode.SIM) {
+      poseEstimator.resetPosition(visionPose.getRotation(), getModulePositions(), visionPose);
+      odometry.resetPosition(odometryPose.getRotation(), getModulePositions(), odometryPose);
+    } else {
+      poseEstimator.resetPosition(getRotation(), getModulePositions(), visionPose);
+      odometry.resetPosition(getRotation(), getModulePositions(), odometryPose);
     }
 
     currentPose = poseEstimator.getEstimatedPosition();
