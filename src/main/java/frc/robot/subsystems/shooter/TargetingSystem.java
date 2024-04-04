@@ -35,7 +35,7 @@ public class TargetingSystem {
 
   private final double LAUNCH_MAP_OFFSET_DEGREES_RED = 1.5; //1.5; // 4.0; // 3.0;
 
-  private final double LAUNCH_MAP_OFFSET_DEG_AUTON_RED = -0.5;
+  private final double LAUNCH_MAP_OFFSET_DEG_AUTON_RED = -0.25;
 
   private double manualOffsetRotation = 0.0;
 

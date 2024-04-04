@@ -149,7 +149,7 @@ public class Yoshivator extends SubsystemBase {
     if (currentSetpoint != null) {
       Rotation2d goal = Rotation2d.fromDegrees(MathUtil.clamp(
         currentSetpoint.getPivotRotation().get().getDegrees(),
-        -33.5, 100));
+        -37.0, 100));
 
       double pivotFeedbackOutput =
           pivotFeedback.calculate(

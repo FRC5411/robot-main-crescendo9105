@@ -218,7 +218,7 @@ public class SwerveCommands {
 
   /** Returns a command to reset the gyro heading */
   public static Command resetGyro(Drive robotDrive) {
-    currentCommand = Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive);
+    currentCommand = Commands.runOnce(() -> robotDrive.resetGyro());
 
     return currentCommand;
   }
