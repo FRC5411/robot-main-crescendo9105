@@ -20,6 +20,12 @@
         {
           "type": "named",
           "data": {
+            "name": "DeployYoshi"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
             "name": "IntakeOn"
           }
         },
@@ -50,7 +56,7 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake"
+            "name": "StowPiece"
           }
         },
         {

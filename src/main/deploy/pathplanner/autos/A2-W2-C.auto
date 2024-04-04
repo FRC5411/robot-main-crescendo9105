@@ -18,6 +18,12 @@
           }
         },
         {
+          "type": "named",
+          "data": {
+            "name": "DeployYoshi"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "A2-W2"
@@ -39,12 +45,6 @@
           "type": "path",
           "data": {
             "pathName": "W2-C"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "ShootIdle"
           }
         }
       ]
