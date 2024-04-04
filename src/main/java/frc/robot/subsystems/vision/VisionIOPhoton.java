@@ -175,7 +175,7 @@ public class VisionIOPhoton implements VisionIO {
     if (numTags == 1 && avgDist > 3) {
       estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
     }
-    else if (avgDist > 4.25) {
+    else if (avgDist > 5.5) {
       estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
     }
     else estStdDevs = estStdDevs.times((1 + (avgDist * avgDist / 30)) / (double) numTags);
