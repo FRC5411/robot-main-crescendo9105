@@ -65,23 +65,24 @@ public class VisionIOPhoton implements VisionIO {
     inputs.isConnected = limelightCam.isConnected();
 
     inputs.hasTarget = result.hasTargets();
-    if (result.hasTargets()) {
-      PhotonTrackedTarget target = result.getBestTarget();
-      inputs.hasTargetDebounced = debouncer.calculate(inputs.hasTarget);
-      inputs.cameraToApriltag = target.getBestCameraToTarget();
-      inputs.robotToApriltag = target.getBestCameraToTarget().plus(cameraTransform);
-      inputs.aprilTagID = target.getFiducialId();
-      inputs.poseAmbiguity = target.getPoseAmbiguity();
-      inputs.yaw = target.getYaw();
-      inputs.pitch = target.getPitch();
-      inputs.area = target.getArea();
-      inputs.latencySeconds = result.getLatencyMillis() / 1000.0;
+    if(inputs.isConnected) {
+      if (result.hasTargets()) {
+        PhotonTrackedTarget target = result.getBestTarget();
+        inputs.hasTargetDebounced = debouncer.calculate(inputs.hasTarget);
+        inputs.cameraToApriltag = target.getBestCameraToTarget();
+        inputs.robotToApriltag = target.getBestCameraToTarget().plus(cameraTransform);
+        inputs.aprilTagID = target.getFiducialId();
+        inputs.poseAmbiguity = target.getPoseAmbiguity();
+        inputs.yaw = target.getYaw();
+        inputs.pitch = target.getPitch();
+        inputs.area = target.getArea();
+        inputs.latencySeconds = result.getLatencyMillis() / 1000.0;
 
-      inputs.numberOfTargets = getApriltagCount(result);
+        inputs.numberOfTargets = getApriltagCount(result);
 
-      inputs.hasSpeakerTarget = poseEstimator.getFieldTags().getTagPose(speakerTagID).isPresent();
+        inputs.hasSpeakerTarget = poseEstimator.getFieldTags().getTagPose(speakerTagID).isPresent();
 
-      inputs.speakerTagPose =
+        inputs.speakerTagPose =
           poseEstimator
               .getFieldTags()
               .getTagPose(speakerTagID)
@@ -89,24 +90,24 @@ public class VisionIOPhoton implements VisionIO {
               .plus(inputs.robotToApriltag)
               .toPose2d();
 
-      getSpeakerTagTransform(result, inputs);
-      Matrix<N3, N1> speakerStdDevs = singleTagStdDevs;
-      if (inputs.cameraToApriltag.getTranslation().getNorm() > 5 && inputs.hasSpeakerTarget) {
-        inputs.speakerXStdDev =
+        getSpeakerTagTransform(result, inputs);
+        Matrix<N3, N1> speakerStdDevs = singleTagStdDevs;
+        if (inputs.cameraToApriltag.getTranslation().getNorm() > 5 && inputs.hasSpeakerTarget) {
+          inputs.speakerXStdDev =
             speakerStdDevs.times(inputs.cameraToApriltag.getTranslation().getNorm()).get(0, 0);
-        inputs.speakerYStdDev =
+          inputs.speakerYStdDev =
             speakerStdDevs.times(inputs.cameraToApriltag.getTranslation().getNorm()).get(1, 0);
-        inputs.speakerThetaDev = Double.MAX_VALUE;
-      } else {
-        inputs.speakerXStdDev = Double.MAX_VALUE;
-        inputs.speakerYStdDev = Double.MAX_VALUE;
-        inputs.speakerThetaDev = Double.MAX_VALUE;
+          inputs.speakerThetaDev = Double.MAX_VALUE;
+        } else {
+          inputs.speakerXStdDev = Double.MAX_VALUE;
+          inputs.speakerYStdDev = Double.MAX_VALUE;
+          inputs.speakerThetaDev = Double.MAX_VALUE;
+        }
       }
-    }
 
-    inputs.latestTimestamp = result.getTimestampSeconds();
+      inputs.latestTimestamp = result.getTimestampSeconds();
 
-    estimatedRobotPose.ifPresent(
+      estimatedRobotPose.ifPresent(
         est -> {
           inputs.estimatedRobotPose =
               estimatedRobotPose
@@ -121,6 +122,7 @@ public class VisionIOPhoton implements VisionIO {
           inputs.yStandardDeviation = standardDevs.get(1, 0);
           inputs.thetaStandardDeviation = standardDevs.get(2, 0);
         });
+    }
   }
 
   @Override

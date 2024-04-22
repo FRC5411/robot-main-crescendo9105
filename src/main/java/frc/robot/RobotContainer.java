@@ -219,6 +219,11 @@ public class RobotContainer {
                 robotStateMachine.getShooterCommand(ShooterStates.INTAKE_AUTON))
             .withTimeout(2.0));
 
+    NamedCommands.registerCommand("StopIndexAndIntake",
+      new ParallelCommandGroup(
+        robotStateMachine.getIndexerCommand(IndexerStates.OFF),
+        robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
+
     // Add intake off if yo
     NamedCommands.registerCommand(
         "Shoot",
@@ -423,13 +428,13 @@ public class RobotContainer {
           .whileTrue(robotStateMachine.feedShot())
           .onFalse(robotStateMachine.stopShooting());
 
-      // copilotController
-      //   .leftTrigger()
-      //   .onTrue(TargetingSystem.getInstance().incrementOffset());
+      copilotController
+        .leftTrigger()
+        .onTrue(TargetingSystem.getInstance().incrementOffset());
 
-      // copilotController
-      //   .rightTrigger()
-      //   .onTrue(TargetingSystem.getInstance().decrementOffset());
+      copilotController
+        .rightTrigger()
+        .onTrue(TargetingSystem.getInstance().decrementOffset());
     }
   }
 

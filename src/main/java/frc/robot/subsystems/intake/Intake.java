@@ -18,6 +18,7 @@ public class Intake extends SubsystemBase {
     IN(12.0),
     OUT(-12.0),
     STOP(6.0),
+    AMP(7.0),
     OFF(0.0);
 
     private double volts;
@@ -60,6 +61,7 @@ public class Intake extends SubsystemBase {
     commandMap.put(IntakeStates.INTAKE, runIntake(IntakeSetpoint.IN));
     commandMap.put(IntakeStates.OUTTAKE, runIntake(IntakeSetpoint.OUT));
     commandMap.put(IntakeStates.OFF, stopIntake());
+    commandMap.put(IntakeStates.AMP, runIntake(IntakeSetpoint.AMP));
     return commandMap;
   }
 

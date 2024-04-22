@@ -166,7 +166,8 @@ public class StateMachine {
 
   public Command shootNote() {
     return new ParallelCommandGroup(
-        getIndexerCommand(IndexerStates.INDEX));
+        getIndexerCommand(IndexerStates.INDEX),
+        getIntakeCommand(IntakeStates.INTAKE));
   }
 
   public Command revUp() {
@@ -183,7 +184,7 @@ public class StateMachine {
 
   public Command stopShooting() {
     return new ParallelCommandGroup(
-        getIndexerCommand(IndexerStates.OFF), getShooterCommand(ShooterStates.IDLE));
+        getIndexerCommand(IndexerStates.OFF), getShooterCommand(ShooterStates.IDLE), getIntakeCommand(IntakeStates.OFF));
   }
 
   public Command moveAnglerUpManual() {
@@ -222,7 +223,8 @@ public class StateMachine {
   }
 
   public Command scoreAmp() {
-    return getShooterCommand(ShooterStates.SHOOT_AMP).andThen(getIndexerCommand(IndexerStates.AMP));
+    return getShooterCommand(ShooterStates.SHOOT_AMP).andThen(new ParallelCommandGroup(
+      getIndexerCommand(IndexerStates.AMP), getIntakeCommand(IntakeStates.AMP)));
   }
 
   @AutoLogOutput(key = "StateMachine/ShooterState")

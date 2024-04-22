@@ -4,7 +4,8 @@ public class RobotStates {
   public static enum IntakeStates {
     OFF,
     INTAKE,
-    OUTTAKE
+    OUTTAKE,
+    AMP
   }
 
   public static enum IndexerStates {

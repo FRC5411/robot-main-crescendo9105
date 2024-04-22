@@ -24,9 +24,15 @@
           }
         },
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.25
+          }
+        },
+        {
           "type": "named",
           "data": {
-            "name": "IntakeOn"
+            "name": "StopIndexAndIntake"
           }
         },
         {
@@ -51,6 +57,18 @@
           "type": "named",
           "data": {
             "name": "Shoot"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.25
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopIndexAndIntake"
           }
         },
         {
