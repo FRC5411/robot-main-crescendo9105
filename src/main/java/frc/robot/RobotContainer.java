@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.RobotStates.IndexerStates;
 import frc.robot.RobotStates.IntakeStates;
 import frc.robot.RobotStates.ShooterStates;
 import frc.robot.commands.SwerveCommands;
@@ -32,10 +31,9 @@ import frc.robot.subsystems.drive.GyroIOPigeon2;
 import frc.robot.subsystems.drive.ModuleIO;
 import frc.robot.subsystems.drive.ModuleIOSim;
 import frc.robot.subsystems.drive.ModuleIOSparkMax;
-import frc.robot.subsystems.indexer.Indexer;
-import frc.robot.subsystems.indexer.IndexerIO;
-import frc.robot.subsystems.indexer.IndexerIOSim;
-import frc.robot.subsystems.indexer.IndexerIOSparkMax;
+import frc.robot.subsystems.intake.IndexerIO;
+import frc.robot.subsystems.intake.IndexerIOSim;
+import frc.robot.subsystems.intake.IndexerIOSparkMax;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOSim;
@@ -67,7 +65,6 @@ public class RobotContainer {
   private Intake robotIntake;
   private Shooter robotShooter;
   private Climb robotClimb;
-  private Indexer robotIndexer;
   private Vision robotVision;
   private Yoshivator robotYoshi;
   private LEDSubsystem robotLEDs;
@@ -83,7 +80,7 @@ public class RobotContainer {
   public RobotContainer() {
     initializeSubsystems();
 
-    robotStateMachine = new StateMachine(robotShooter, robotIntake, robotIndexer, robotClimb, robotYoshi);
+    robotStateMachine = new StateMachine(robotShooter, robotIntake, robotClimb, robotYoshi);
 
     configureAutonomous();
 
@@ -99,7 +96,9 @@ public class RobotContainer {
           new SequentialCommandGroup(
               robotStateMachine.getShooterCommand(ShooterStates.AIM),
               new WaitCommand(1.0),
-              robotStateMachine.getIndexerCommand(IndexerStates.INDEX),
+              robotStateMachine.getIntakeCommand(IntakeStates.INTAKE),
+              new WaitCommand(2.5),
+              robotStateMachine.getShooterCommand(ShooterStates.IDLE),
               robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
     }
 
@@ -120,10 +119,9 @@ public class RobotContainer {
                 new ModuleIOSparkMax(2),
                 new ModuleIOSparkMax(3),
                 new GyroIOPigeon2(false));
-        robotIntake = new Intake(new IntakeIOSparkMax());
+        robotIntake = new Intake(new IntakeIOSparkMax(), new IndexerIOSparkMax());
         robotShooter = new Shooter(new AnglerIOSparkMax(), new LauncherIOTalonFX());
         robotClimb = new Climb(new ClimbIOSparkMax());
-        robotIndexer = new Indexer(new IndexerIOSparkMax());
         robotLEDs = new LEDSubsystem();
         robotYoshi = new Yoshivator(new ManipulatorIOSparkMax() {});
         robotVision =
@@ -155,10 +153,9 @@ public class RobotContainer {
                 new ModuleIOSim(2),
                 new ModuleIOSim(3),
                 new GyroIO() {});
-        robotIntake = new Intake(new IntakeIOSim());
+        robotIntake = new Intake(new IntakeIOSim(), new IndexerIOSim());
         robotShooter = new Shooter(new AnglerIOSim(), new LauncherIOSim());
         robotClimb = new Climb(new ClimbIOSim());
-        robotIndexer = new Indexer(new IndexerIOSim());
         robotLEDs = new LEDSubsystem();
         robotYoshi = new Yoshivator(new ManipulatorIOSim() {});
         robotVision =
@@ -192,10 +189,9 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new GyroIO() {});
-        robotIntake = new Intake(new IntakeIO() {});
+        robotIntake = new Intake(new IntakeIO() {}, new IndexerIO() {});
         robotShooter = new Shooter(new AnglerIO() {}, new LauncherIO() {});
         robotClimb = new Climb(new ClimbIO() {});
-        robotIndexer = new Indexer(new IndexerIO() {});
         robotLEDs = new LEDSubsystem();
         robotVision = new Vision(new VisionIO() {}, new VisionIO() {});
         robotYoshi = new Yoshivator(new ManipulatorIO() {});
@@ -214,23 +210,20 @@ public class RobotContainer {
     NamedCommands.registerCommand(
         "StowPiece",
         new ParallelCommandGroup(
-                robotStateMachine.getIndexerCommand(IndexerStates.STOW),
                 robotStateMachine.getIntakeCommand(IntakeStates.INTAKE),
-                robotStateMachine.getShooterCommand(ShooterStates.INTAKE_AUTON))
+                robotStateMachine.getShooterCommand(ShooterStates.INTAKE))
             .withTimeout(2.0));
 
     NamedCommands.registerCommand("StopIndexAndIntake",
       new ParallelCommandGroup(
-        robotStateMachine.getIndexerCommand(IndexerStates.OFF),
         robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
 
-    // Add intake off if yo
     NamedCommands.registerCommand(
         "Shoot",
         new SequentialCommandGroup(
-            robotStateMachine.getShooterCommand(ShooterStates.AIM_AUTON),
-            new WaitCommand(1.3),
-            robotStateMachine.getIndexerCommand(IndexerStates.INDEX)));
+            robotStateMachine.getShooterCommand(ShooterStates.AIM),
+            new WaitCommand(0.5),
+            robotStateMachine.getIntakeCommand(IntakeStates.INTAKE)));
 
     NamedCommands.registerCommand(
         "Eject",
@@ -238,7 +231,6 @@ public class RobotContainer {
             .andThen(
                 new SequentialCommandGroup( 
                     robotStateMachine.getShooterCommand(ShooterStates.EJECT),
-                    robotStateMachine.getIndexerCommand(IndexerStates.INDEX),
                     robotStateMachine.getIntakeCommand(IntakeStates.INTAKE))));
 
     NamedCommands.registerCommand(
@@ -249,9 +241,9 @@ public class RobotContainer {
 
     NamedCommands.registerCommand("SpeakerShot", new SequentialCommandGroup(
       robotStateMachine.getShooterCommand(ShooterStates.SPEAKER).withTimeout(1.0),
-      robotStateMachine.getIndexerCommand(IndexerStates.INDEX)));
+      robotStateMachine.getIntakeCommand(IntakeStates.INTAKE)));
 
-    NamedCommands.registerCommand("DeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.GROUND_INTAKE));
+    NamedCommands.registerCommand("DeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.INTAKE));
 
     NamedCommands.registerCommand("UnDeployYoshi", robotStateMachine.getYoshiCommand(YoshiStates.IDLE));
   }
@@ -266,11 +258,11 @@ public class RobotContainer {
         .onFalse(
             new InstantCommand(
                 () -> {
-                  if (robotIndexer.isBeamBroken()) robotLEDs.setHasPiece();
+                  if (robotIntake.isBeamBroken()) robotLEDs.setHasPiece();
                   else robotLEDs.setDefaultColor();
                 }));
 
-    new Trigger(() -> robotIndexer.isBeamBroken())
+    new Trigger(() -> robotIntake.isBeamBroken())
         .onTrue(new InstantCommand(() -> robotLEDs.setHasPiece()))
         .onFalse(new InstantCommand(() -> robotLEDs.setDefaultColor()));
   }

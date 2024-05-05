@@ -1,6 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.math.VecBuilder;
 import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.utils.debugging.LoggedTunableNumber;
@@ -49,13 +48,13 @@ public class VisionFuser {
     if (visionMultiStdDevX.hasChanged(hashCode())
         || visionMultiStdDevY.hasChanged(hashCode())
         || visionMultiStdDevTheta.hasChanged(hashCode())) {
-      robotVision.setMultiStdDevs(
+      robotVision.setMultiStdDevsCoeff(
           visionMultiStdDevX.get(), visionMultiStdDevY.get(), visionMultiStdDevTheta.get());
     }
     if (visionSingleStdDevX.hasChanged(hashCode())
         || visionSingleStdDevY.hasChanged(hashCode())
         || visionSingleStdDevTheta.hasChanged(hashCode())) {
-      robotVision.setSingleStdDevs(
+      robotVision.setSingleStdDevsCoeff(
           visionSingleStdDevX.get(), visionSingleStdDevY.get(), visionSingleStdDevTheta.get());
     }
 
@@ -66,20 +65,14 @@ public class VisionFuser {
       robotDrive.addVisionMeasurement(
           inputsLeft.estimatedRobotPose,
           inputsLeft.latestTimestamp,
-          VecBuilder.fill(
-              inputsLeft.xStandardDeviation,
-              inputsLeft.yStandardDeviation,
-              inputsLeft.thetaStandardDeviation));
+          robotVision.getLeftStdDevs());
     }
 
     if (inputsRight.hasTarget) {
       robotDrive.addVisionMeasurement(
           inputsRight.estimatedRobotPose,
           inputsRight.latestTimestamp,
-          VecBuilder.fill(
-              inputsRight.xStandardDeviation,
-              inputsRight.yStandardDeviation,
-              inputsRight.thetaStandardDeviation));
+          robotVision.getRightStdDevs());
     }
 
     Logger.recordOutput(

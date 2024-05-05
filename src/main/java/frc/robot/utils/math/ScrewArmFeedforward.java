@@ -61,6 +61,11 @@ public class ScrewArmFeedforward {
     this.L = kL;
   }
 
+  public void updateUL(double kU, double kL) {
+    updateU(kU);
+    updateL(kL);
+  }
+
   /**
    * Get the current upward gain
    *

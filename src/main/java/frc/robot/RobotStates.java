@@ -27,11 +27,8 @@ public class RobotStates {
   }
 
   public static enum YoshiStates {
-    OFF,
     IDLE,
-    GROUND_AMP,
-    GROUND_INTAKE,
-    AMP
+    INTAKE
   }
 
   public static enum ShooterStates {
@@ -48,8 +45,6 @@ public class RobotStates {
     SPEAKER,
     FEEDER,
     REV_AMP,
-    SHOOT_AMP,
-    AIM_AUTON,
-    INTAKE_AUTON
+    SHOOT_AMP
   }
 }

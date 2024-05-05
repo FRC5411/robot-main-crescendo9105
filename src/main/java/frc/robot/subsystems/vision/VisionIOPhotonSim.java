@@ -5,15 +5,11 @@
 package frc.robot.subsystems.vision;
 
 import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
 import java.util.List;
 import java.util.Optional;
@@ -32,8 +28,6 @@ public class VisionIOPhotonSim implements VisionIO {
   private PhotonCamera limelightCam;
   private PhotonPoseEstimator poseEstimator;
   private Transform3d cameraTransform;
-  private Matrix<N3, N1> singleTagStdDevs;
-  private Matrix<N3, N1> multiTagStdDevs;
   private Debouncer debouncer;
 
   private PhotonCameraSim limelightSim;
@@ -48,8 +42,6 @@ public class VisionIOPhotonSim implements VisionIO {
 
   public VisionIOPhotonSim(
       String name, Transform3d cameraTransform, double debouncerTime, Supplier<Pose2d> drivePose) {
-    singleTagStdDevs = VecBuilder.fill(0.0, 0.0, Double.MAX_VALUE);
-    multiTagStdDevs = VecBuilder.fill(0.1, 0.1, Double.MAX_VALUE);
     limelightCam = new PhotonCamera(name);
     PhotonCamera.setVersionCheckEnabled(false);
     this.cameraTransform = cameraTransform;
@@ -111,27 +103,6 @@ public class VisionIOPhotonSim implements VisionIO {
       inputs.numberOfTargets = getApriltagCount(result);
 
       inputs.hasSpeakerTarget = poseEstimator.getFieldTags().getTagPose(speakerTagID).isPresent();
-
-      inputs.speakerTagPose =
-          poseEstimator
-              .getFieldTags()
-              .getTagPose(speakerTagID)
-              .orElse(new Pose3d())
-              .plus(inputs.robotToApriltag)
-              .toPose2d();
-
-      Matrix<N3, N1> speakerStdDevs = singleTagStdDevs;
-      if (inputs.cameraToApriltag.getTranslation().getNorm() < 5 && inputs.hasSpeakerTarget) {
-        inputs.speakerXStdDev =
-            speakerStdDevs.times(inputs.cameraToApriltag.getTranslation().getNorm()).get(0, 0);
-        inputs.speakerYStdDev =
-            speakerStdDevs.times(inputs.cameraToApriltag.getTranslation().getNorm()).get(1, 0);
-        inputs.speakerThetaDev = Double.MAX_VALUE;
-      } else {
-        inputs.speakerXStdDev = Double.MAX_VALUE;
-        inputs.speakerYStdDev = Double.MAX_VALUE;
-        inputs.speakerThetaDev = Double.MAX_VALUE;
-      }
     }
 
     inputs.latestTimestamp = result.getTimestampSeconds();
@@ -140,70 +111,11 @@ public class VisionIOPhotonSim implements VisionIO {
         est -> {
           inputs.estimatedRobotPose = estimatedRobotPose.get().estimatedPose.toPose2d();
 
-          Matrix<N3, N1> standardDevs = getEstimationStdDevs(inputs.estimatedRobotPose, result);
-
-          inputs.xStandardDeviation = standardDevs.get(0, 0);
-          inputs.yStandardDeviation = standardDevs.get(1, 0);
-          inputs.thetaStandardDeviation = standardDevs.get(2, 0);
-
           visionSim.getDebugField().setRobotPose(inputs.estimatedRobotPose);
+
+          inputs.averageDistanceFromTagMeters = averageDistance(
+            inputs.estimatedRobotPose, result, inputs.numberOfTargets);
         });
-  }
-
-  @Override
-  public void setSingleStdDevs(double x, double y, double theta) {
-    singleTagStdDevs = VecBuilder.fill(x, y, theta);
-  }
-
-  @Override
-  public void setMultiStdDevs(double x, double y, double theta) {
-    multiTagStdDevs = VecBuilder.fill(x, y, theta);
-  }
-
-  @Override
-  public Matrix<N3, N1> getSingleStdDevsCoeff() {
-    return singleTagStdDevs;
-  }
-
-  @Override
-  public Matrix<N3, N1> getMultiStdDevsCoeff() {
-    return multiTagStdDevs;
-  }
-
-  private Matrix<N3, N1> getEstimationStdDevs(Pose2d estimatedPose, PhotonPipelineResult result) {
-    List<PhotonTrackedTarget> targets = result.getTargets();
-    Matrix<N3, N1> estStdDevs = singleTagStdDevs;
-
-    int numTags = 0;
-    double avgDist = 0;
-
-    for (PhotonTrackedTarget target : targets) {
-      Optional<Pose3d> tagPose = poseEstimator.getFieldTags().getTagPose(target.getFiducialId());
-
-      if (tagPose.isEmpty()) continue;
-      else if (target.getPoseAmbiguity() > 0.45) continue;
-
-      // Increase number of tags
-      numTags++;
-      avgDist +=
-          tagPose.get().toPose2d().getTranslation().getDistance(estimatedPose.getTranslation());
-    }
-
-    // No tags visible
-    if (numTags == 0) return estStdDevs;
-
-    // Calculate average distance
-    avgDist /= numTags;
-
-    // Decrease std devs if multiple targets are visible
-    if (numTags > 1) estStdDevs = multiTagStdDevs;
-
-    // Increase std devs based on (average) distance
-    if (numTags == 1 && avgDist > 4)
-      estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
-    else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
-
-    return estStdDevs;
   }
 
   private int getApriltagCount(PhotonPipelineResult result) {
@@ -220,5 +132,23 @@ public class VisionIOPhotonSim implements VisionIO {
     }
 
     return numTags;
+  }
+
+  private double averageDistance(Pose2d estimatedPose, PhotonPipelineResult result, int numTags) {
+    List<PhotonTrackedTarget> targets = result.getTargets();
+    double avgDist = 0;
+
+    for (PhotonTrackedTarget target : targets) {
+      Optional<Pose3d> tagPose = poseEstimator.getFieldTags().getTagPose(target.getFiducialId());
+
+      if (tagPose.isEmpty()) continue;
+
+      avgDist +=
+          tagPose.get().toPose2d().getTranslation().getDistance(estimatedPose.getTranslation());
+    }
+
+    avgDist /= numTags;
+
+    return avgDist;
   }
 }

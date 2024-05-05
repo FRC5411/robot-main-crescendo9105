@@ -12,23 +12,34 @@ import frc.robot.RobotStates.IntakeStates;
 import java.util.HashMap;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 
 public class Intake extends SubsystemBase {
   public static enum IntakeSetpoint {
     IN(12.0),
     OUT(-12.0),
-    STOP(6.0),
+    STOW(12.0, 2.0),
     AMP(7.0),
     OFF(0.0);
 
-    private double volts;
+    private double intakeVolts;
+    private double indexerVolts;
 
-    IntakeSetpoint(double volts) {
-      this.volts = volts;
+    IntakeSetpoint(double intakeVolts, double indexerVolts) {
+      this.intakeVolts = intakeVolts;
+      this.indexerVolts = indexerVolts;
     }
 
-    public double getVolts() {
-      return this.volts;
+    IntakeSetpoint(double volts) {
+      this(volts, volts);
+    }
+
+    public double getIntakeVolts() {
+      return this.intakeVolts;
+    }
+
+    public double getIndexerVolts() {
+      return this.indexerVolts;
     }
   }
 
@@ -37,9 +48,12 @@ public class Intake extends SubsystemBase {
 
   private IntakeIO intakeIO;
   private IntakeIOInputsAutoLogged intakeIOInputs = new IntakeIOInputsAutoLogged();
+  private IndexerIO indexerIO;
+  private IndexerIOInputsAutoLogged indexerIOInputs = new IndexerIOInputsAutoLogged();
 
-  public Intake(IntakeIO IntakeIO) {
-    this.intakeIO = IntakeIO;
+  public Intake(IntakeIO intakeIO, IndexerIO indexerIO) {
+    this.intakeIO = intakeIO;
+    this.indexerIO = indexerIO;
   }
 
   @Override
@@ -47,12 +61,15 @@ public class Intake extends SubsystemBase {
     intakeIO.updateInputs(intakeIOInputs);
     Logger.processInputs("Intake", intakeIOInputs);
 
-    if (DriverStation.isDisabled()) {
-      setVolts(0.0);
-    }
+    indexerIO.updateInputs(indexerIOInputs);
+    Logger.processInputs("Index", indexerIOInputs);
 
     if (currentSetpoint != null) {
-      setVolts(currentSetpoint.getVolts());
+      setVolts(currentSetpoint.getIntakeVolts(), currentSetpoint.getIndexerVolts());
+    }
+
+    if (DriverStation.isDisabled()) {
+      setVolts(0.0);
     }
   }
 
@@ -73,29 +90,53 @@ public class Intake extends SubsystemBase {
     return Commands.runOnce(() -> setCurrentSetpoint(IntakeSetpoint.OFF), this);
   }
 
+  public Command stowPiece() {
+    return new FunctionalCommand(
+        () -> setCurrentSetpoint(IntakeSetpoint.STOW),
+        () -> {},
+        (interrupted) -> {
+          setCurrentSetpoint(IntakeSetpoint.OFF);
+        },
+        () -> isBeamBroken(),
+        this);
+  }
+
   public void setCurrentSetpoint(IntakeSetpoint setpoint) {
     currentSetpoint = setpoint;
   }
 
-  // Nulls current setpoint for manual control
+  public void setVolts(double intakeV, double indexV) {
+    intakeIO.setVolts(intakeV);
+    indexerIO.setVolts(indexV);
+  }
+
   public void setVolts(double volts) {
-    intakeIO.setVolts(volts);
+    setVolts(volts, volts);
+  }
+
+  public void stopMotor() {
+    intakeIO.setVolts(0.0);
+    indexerIO.setVolts(0.0);
+  }
+
+  public boolean isBeamBroken() {
+    return indexerIOInputs.isBeamBroken;
   }
 
   // Nulls current setpoint for manual control
-  public void stopMotor() {
-    intakeIO.setVolts(0.0);
+  public void setManualVolts(double intakeV, double indexV) {
+    setCurrentSetpoint(null);
+    setVolts(intakeV, indexV);
   }
 
   // Nulls current setpoint for manual control
   public void setManualVolts(double volts) {
-    setCurrentSetpoint(null);
-    intakeIO.setVolts(volts);
+    setManualVolts(volts);
   }
 
   // Nulls current setpoint for manual control
   public void stopManualMotor() {
     setCurrentSetpoint(null);
-    intakeIO.setVolts(0.0);
+    stopMotor();
   }
 }

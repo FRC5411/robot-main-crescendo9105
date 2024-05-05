@@ -97,11 +97,11 @@ public class Shooter extends SubsystemBase {
         ShooterStates.AIM,
         setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT));
     shooterCommandMap.put(
-        ShooterStates.INTAKE, setShooterStateWithend(AnglerSetpoints.INTAKE, LauncherSetpoints.OFF));
+        ShooterStates.INTAKE, setShooterState(AnglerSetpoints.INTAKE, LauncherSetpoints.OFF));
     shooterCommandMap.put(
-        ShooterStates.CLIMB, setShooterStateWithend(AnglerSetpoints.CLIMB, LauncherSetpoints.OFF));
+        ShooterStates.CLIMB, setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.OFF));
     shooterCommandMap.put(
-        ShooterStates.EJECT, setShooterStateWithend(AnglerSetpoints.CLIMB, LauncherSetpoints.EJECT));
+        ShooterStates.EJECT, setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.EJECT));
     shooterCommandMap.put(ShooterStates.UP, setAnglerManual(5.0));
     shooterCommandMap.put(ShooterStates.DOWN, setAnglerManual(-5.0));
     shooterCommandMap.put(
@@ -117,13 +117,13 @@ public class Shooter extends SubsystemBase {
             this));
     shooterCommandMap.put(
         ShooterStates.PODIUM,
-        setShooterStateWithend(AnglerSetpoints.PODIUM, LauncherSetpoints.SPEAKER_SHOT));
+        setShooterState(AnglerSetpoints.PODIUM, LauncherSetpoints.SPEAKER_SHOT));
     shooterCommandMap.put(
         ShooterStates.SPEAKER,
-        setShooterStateWithend(AnglerSetpoints.SPEAKER, LauncherSetpoints.SPEAKER_SHOT));
+        setShooterState(AnglerSetpoints.SPEAKER, LauncherSetpoints.SPEAKER_SHOT));
     shooterCommandMap.put(
         ShooterStates.FEEDER,
-        setShooterStateWithend(AnglerSetpoints.FEEDER, LauncherSetpoints.FEEDER));
+        setShooterState(AnglerSetpoints.FEEDER, LauncherSetpoints.FEEDER));
     shooterCommandMap.put(
         ShooterStates.REV_AMP, setShooterState(AnglerSetpoints.AMP, LauncherSetpoints.AMP));
 
@@ -132,54 +132,36 @@ public class Shooter extends SubsystemBase {
         setMotors(angler.getCurrentSetpoint(), null);
         launcher.setTopLauncherVolts(0);
       }, this));
-    
-    shooterCommandMap.put(ShooterStates.AIM_AUTON, setShooterStateInstant(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT));
-
-    shooterCommandMap.put(ShooterStates.INTAKE_AUTON, setShooterStateInstant(AnglerSetpoints.INTAKE, LauncherSetpoints.OFF));
 
     return shooterCommandMap;
   }
 
-  public Command setShooterStateWithend(
-      AnglerSetpoints anglerState, LauncherSetpoints launcherState) {
-    return angler.setAnglerCommand(anglerState).alongWith(launcher.setVelocityMPS(launcherState));
-  }
-
-  public Command setShooterStateInstant(
-      AnglerSetpoints anglerState, LauncherSetpoints launcherState) {
-    return angler.setAnglerCommandInstant(anglerState).alongWith(launcher.setVelocityMPS(launcherState));
-  }
-
   public Command setShooterState(
       AnglerSetpoints anglerState, LauncherSetpoints launcherState) {
-    return angler.setAnglerCommandWithoutEnd(anglerState).alongWith(launcher.setVelocityMPS(launcherState));
+    return angler.setAnglerSetpointCommand(anglerState).alongWith(launcher.setVelocityMPS(launcherState));
   }
 
   public Command setAnglerManual(double volts) {
     return Commands.runOnce(
         () -> {
-          angler.setAnglerPosition(null);
+          angler.setAnglerSetpoint(null);
           angler.setAnglerVolts(volts);
         },
         this);
   }
 
   public void setMotors(AnglerSetpoints anglerGoal, LauncherSetpoints launcherGoal) {
-    angler.setAnglerPosition(anglerGoal);
+    angler.setAnglerSetpoint(anglerGoal);
     launcher.setLauncherVelocityMPS(launcherGoal);
   }
 
   public void stopMotors(boolean stopLauncher, boolean stopAngler) {
-    if(stopLauncher)launcher.stopMotors();
-    if(stopAngler) angler.stopMotors();
+    if(stopLauncher) launcher.stopMotors();
+    if(stopAngler) angler.stopMotor();
   }
 
   public boolean atAllSetpoints() {
-    return angler.atAnglerSetpoints() && launcher.atFlywheelSetpoints();
-  }
-
-  public Command characterizeFlywheel() {
-    return characterizeFlywheel();
+    return angler.atAnglerSetpoint() && launcher.atFlywheelSetpoints();
   }
 
   public Angler getAngler() {

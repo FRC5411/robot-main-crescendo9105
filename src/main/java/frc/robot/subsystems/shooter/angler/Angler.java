@@ -1,7 +1,5 @@
 package frc.robot.subsystems.shooter.angler;
 
-import java.util.function.DoubleSupplier;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -11,11 +9,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.FunctionalCommand;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Constants.Robot;
 import frc.robot.subsystems.shooter.Shooter.AnglerSetpoints;
 import frc.robot.subsystems.shooter.ShooterVisualizer;
 import frc.robot.utils.debugging.LoggedTunableNumber;
@@ -36,7 +32,8 @@ public class Angler extends SubsystemBase {
 
   // Default to real values
   private ProfiledPIDController anglerFeedback =
-      new ProfiledPIDController(0.49, 2.0, 0.018, new TrapezoidProfile.Constraints(1000.0, 1000.0));
+      new ProfiledPIDController(0.49, 2.0, 0.018, 
+      new TrapezoidProfile.Constraints(1000.0, 1000.0));
   private ScrewArmFeedforward anglerFeedforward = new ScrewArmFeedforward(0.2, 0.0);
 
   private LoggedTunableNumber anglerFeedbackP;
@@ -52,45 +49,28 @@ public class Angler extends SubsystemBase {
 
   private AnglerSetpoints anglerSetpoint = null;
 
-
   private boolean angleEncoderCalibrated = false;
   private Rotation2d angleOffset = new Rotation2d();
   private Rotation2d currentAngle = new Rotation2d();
 
   public Angler(AnglerIO anglerIO) {
-        this.anglerIO = anglerIO;
-        this.anglerIO = anglerIO;
-
-        if (Constants.currentRobot == Robot.SYNTH) {
-        switch (Constants.currentMode) {
-        case REAL:
-          anglerFeedback.setP(0.49);
-          anglerFeedback.setI(2.0);
-          anglerFeedback.setD(0.018);
-          anglerFeedback.setConstraints(new TrapezoidProfile.Constraints(1000.0, 1000.0));
-
-          anglerFeedforward.updateU(0.2);
-          anglerFeedforward.updateL(0.0);
-          break;
-        case SIM:
-          anglerFeedback.setP(0.1);
-          anglerFeedback.setI(0.0);
-          anglerFeedback.setD(0.5);
-          anglerFeedback.setConstraints(new TrapezoidProfile.Constraints(50.0, 50.0));
-
-          anglerFeedforward.updateU(0.0);
-          anglerFeedforward.updateL(0.0);
-          break;
-        default:
-          anglerFeedback.setP(0.0);
-          anglerFeedback.setI(0.0);
-          anglerFeedback.setD(0.0);
-          anglerFeedback.setConstraints(new TrapezoidProfile.Constraints(0.0, 0.0));
-
-          anglerFeedforward.updateU(0.0);
-          anglerFeedforward.updateL(0.0);
-          break;
-      }
+    this.anglerIO = anglerIO;
+    switch (Constants.currentMode) {
+      case REAL:
+        anglerFeedback.setPID(0.49, 2.0, 0.018);
+        anglerFeedback.setConstraints(new TrapezoidProfile.Constraints(1000.0, 1000.0));
+        anglerFeedforward.updateUL(0.2, 0.0);
+        break;
+      case SIM:
+        anglerFeedback.setPID(0.1, 0.0, 0.5);
+        anglerFeedback.setConstraints(new TrapezoidProfile.Constraints(50.0, 50.0));
+        anglerFeedforward.updateUL(0.0, 0.0);
+        break;
+      default:
+        anglerFeedback.setPID(0.0, 0.0, 0.0);
+        anglerFeedback.setConstraints(new TrapezoidProfile.Constraints(0.0, 0.0));
+        anglerFeedforward.updateUL(0.0, 0.0);
+        break;
     }
 
     anglerFeedbackP = new LoggedTunableNumber("Shooter/Angler/Feedback/P", anglerFeedback.getP());
@@ -108,7 +88,7 @@ public class Angler extends SubsystemBase {
         new LoggedTunableNumber("Shooter/Angler/Feedforward/L", anglerFeedforward.getL());
 
     resetAnglerFeedback();
-    anglerFeedback.setTolerance(0.1);
+    anglerFeedback.setTolerance(0.5);
     anglerFeedback.setIZone(20.0);
     anglerFeedback.setIntegratorRange(-0.5, 0.5);
   }
@@ -119,36 +99,10 @@ public class Angler extends SubsystemBase {
     Logger.processInputs("Shooter/Angler/Inputs", anglerIOInputs);
 
     if (DriverStation.isDisabled()) {
-      stopMotors();
+      stopMotor();
     }
 
-    if (!angleEncoderCalibrated) {
-      for (int i = 0; i < 100; i++) {
-        if (anglerIOInputs.anglerDutyCycleFrequency == 955) {
-          angleOffset =
-              Rotation2d.fromRadians(
-                      MathUtil.inputModulus(
-                          anglerIOInputs.anglerAbsolutePosition.getRadians(), 0, 2.0 * Math.PI))
-                  .minus(anglerIOInputs.anglerRelativePosition);
-          angleEncoderCalibrated = true;
-          break;
-        }
-        if (i == 99) {
-          angleOffset =
-              Rotation2d.fromRadians(
-                      MathUtil.inputModulus(
-                          anglerIOInputs.anglerAbsolutePosition.getRadians(), 0, 2.0 * Math.PI))
-                  .minus(anglerIOInputs.anglerRelativePosition);
-          angleEncoderCalibrated = true;
-          break;
-        }
-        anglerVisualizer =
-            new ShooterVisualizer(anglerIOInputs.anglerRelativePosition.plus(angleOffset));
-      }
-      currentAngle = anglerIOInputs.anglerRelativePosition.plus(angleOffset);
-
-      resetAnglerFeedback();
-    }
+    calibrateEncoderSequence();
 
     currentAngle = anglerIOInputs.anglerRelativePosition.plus(angleOffset);
 
@@ -165,6 +119,8 @@ public class Angler extends SubsystemBase {
       double anglerFeedforwardOutput = anglerFeedforward.calculate(currentAngle, angleSetpoint);
 
       double anglerCombinedOutput = (anglerFeedbackOutput + anglerFeedforwardOutput);
+
+      if(atAnglerSetpoint()) anglerCombinedOutput *= 0.0;
 
       anglerIO.setVolts(anglerCombinedOutput);
 
@@ -186,82 +142,33 @@ public class Angler extends SubsystemBase {
     || anglerFeedbackD.hasChanged(hashCode())
     || anglerFeedbackV.hasChanged(hashCode())
     || anglerFeedbackA.hasChanged(hashCode())) {
-    anglerFeedback.setP(anglerFeedbackP.get());
-    anglerFeedback.setI(anglerFeedbackI.get());
-    anglerFeedback.setD(anglerFeedbackD.get());
+      anglerFeedback.setPID(
+        anglerFeedbackP.get(), anglerFeedbackI.get(), anglerFeedbackD.get());
 
-    anglerFeedback.setConstraints(
+      anglerFeedback.setConstraints(
         new TrapezoidProfile.Constraints(anglerFeedbackV.get(), anglerFeedbackA.get()));
     }
     if (anglerFeedforwardU.hasChanged(hashCode()) || anglerFeedforwardL.hasChanged(hashCode())) {
-        anglerFeedforward.updateU(anglerFeedforwardU.get());
-        anglerFeedforward.updateL(anglerFeedforwardL.get());
+        anglerFeedforward.updateUL(anglerFeedforwardU.get(), anglerFeedforwardL.get());
     }
   }
 
-    public void setAnglerPosition(AnglerSetpoints position) {
-        anglerPosition = currentAngle;
-        anglerSetpoint = position;
+  public Command setAnglerSetpointCommand(AnglerSetpoints setpoint) {
+    return Commands.runOnce(() -> setAnglerSetpoint(setpoint));
+  }
 
-        if (anglerSetpoint != null) {
-            DoubleSupplier errorDegrees =
-            () -> Math.abs(anglerSetpoint.getAngle().get().minus(currentAngle).getDegrees());
-        Logger.recordOutput("Shooter/ErrorDegrees", errorDegrees.getAsDouble());
+  public void setAnglerSetpoint(AnglerSetpoints position) {
+    anglerPosition = currentAngle;
+    anglerSetpoint = position;
 
-        if ((anglerSetpoint != null && anglerSetpoint != AnglerSetpoints.IDLE) && errorDegrees.getAsDouble() > 2.0) {
-            resetAnglerFeedback();
-        }
+    if (anglerSetpoint != null) {
+      boolean outsideOffError = anglerFeedback.getPositionError() > 2.0;
+      boolean isSetpointResetable = (anglerSetpoint != null && anglerSetpoint != AnglerSetpoints.IDLE);
+
+      if (outsideOffError && isSetpointResetable) {
+        resetAnglerFeedback();
       }
     }
-
-    // TODO Remove, this is for debugging only
-  public Command setAnglerCommandWithoutEnd(AnglerSetpoints setpoint) {
-    return new FunctionalCommand(
-      () -> {
-        setAnglerPosition(setpoint);
-
-        DoubleSupplier errorDegrees = () -> Math.abs(anglerSetpoint.getAngle().get().minus(currentAngle).getDegrees());
-
-        if (anglerSetpoint != null && errorDegrees.getAsDouble() > 2.0) {
-          resetAnglerFeedback();
-        }
-      }, 
-      () -> {
-        if(isAnglerAtGoal()) {
-          anglerIO.setVolts(0.0);
-        }
-      }, 
-      (interrupted) -> {
-        anglerSetpoint = null;
-      },
-      () -> false, 
-      this);
-  }
-
-  // TODO Remove, this is for debugging only
-  public Command setAnglerCommand(AnglerSetpoints setpoint) {
-    return new FunctionalCommand(
-      () -> {
-        anglerSetpoint = setpoint;
-
-        DoubleSupplier errorDegrees = () -> Math.abs(anglerSetpoint.getAngle().get().minus(currentAngle).getDegrees());
-
-        if (anglerSetpoint != null && errorDegrees.getAsDouble() > 2.0) {
-          resetAnglerFeedback();
-        }
-      }, 
-      () -> {}, 
-      (interrupted) -> {
-        anglerSetpoint = null;
-      }, 
-      () -> isAnglerAtGoal(), 
-      this);
-  }
-
-  public Command setAnglerCommandInstant(AnglerSetpoints setpoint) {
-    return new InstantCommand(() -> {
-      setAnglerPosition(setpoint);
-    }, this);
   }
 
   public void resetAnglerFeedback() {
@@ -272,7 +179,7 @@ public class Angler extends SubsystemBase {
     anglerIO.setVolts(volts);
   }
 
-  public void stopMotors() {
+  public void stopMotor() {
       anglerSetpoint = null;
       anglerIO.setVolts(0.0);
   }
@@ -286,13 +193,8 @@ public class Angler extends SubsystemBase {
     return currentAngle;
   }
 
-  @AutoLogOutput(key = "Shooter/Angler/PositionDegrees")
-  public double getAnglerDegrees() {
-    return currentAngle.getDegrees();
-  }
-
-  @AutoLogOutput(key = "Shooter/Angler/AtAllSetpoints")
-  public boolean atAnglerSetpoints() {
+  @AutoLogOutput(key = "Shooter/Angler/AtSetpoint")
+  public boolean atAnglerSetpoint() {
     return getAnglerPositionError() < 0.4;
   }
 
@@ -324,5 +226,33 @@ public class Angler extends SubsystemBase {
   @AutoLogOutput(key = "Shooter/Angler/Feedback/AtGoal")
   public boolean isAnglerAtGoal() {
     return anglerFeedback.atGoal();
+  }
+
+  public void calibrateEncoderSequence() {
+    if (!angleEncoderCalibrated) {
+      for (int i = 0; i < 100; i++) {
+        if (anglerIOInputs.anglerDutyCycleFrequency == 955) {
+          reZeroEncoder();
+          break;
+        }
+        if (i == 99) {
+          reZeroEncoder();
+          break;
+        }
+      }
+      currentAngle = anglerIOInputs.anglerRelativePosition.plus(angleOffset);
+
+      anglerVisualizer = new ShooterVisualizer(currentAngle);
+
+      resetAnglerFeedback();
+    }
+  }
+
+  public void reZeroEncoder() {
+    angleOffset = Rotation2d.fromRadians(
+      MathUtil.inputModulus(
+        anglerIOInputs.anglerAbsolutePosition.getRadians(), 0, 2.0 * Math.PI))
+      .minus(anglerIOInputs.anglerRelativePosition);
+    angleEncoderCalibrated = true;
   }
 }

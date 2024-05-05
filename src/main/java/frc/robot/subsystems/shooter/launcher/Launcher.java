@@ -20,16 +20,14 @@ public class Launcher extends SubsystemBase{
 
     public Launcher(LauncherIO launcherIO) {
         this.launcherIO = launcherIO;
-
     }
 
     @Override
     public void periodic() {
         launcherIO.updateInputs(launcherIOInputs);
-        Logger.processInputs("Shooter/Launcher/Inputs", launcherIOInputs);
+        Logger.processInputs("Launcher", launcherIOInputs);
 
         if (launcherSetpointMPS != null) {
-            // System.out.println("HAHA");
             launcherIO.setTopVelocity(
                 topWheelProfile.calculateSetpoint(), topWheelProfile.getCurrentAcceleration());
             launcherIO.setBottomVelocity(
@@ -44,8 +42,12 @@ public class Launcher extends SubsystemBase{
     public void setLauncherVelocityMPS(LauncherSetpoints velocityMPS) {
         launcherSetpointMPS = velocityMPS;
         if(launcherSetpointMPS != null) {
-          topWheelProfile.setGoal(launcherSetpointMPS.getTopSpeedMPS().getAsDouble(), launcherIOInputs.topFlywheelVelocityMPS);
-          bottomWheelProfile.setGoal(launcherSetpointMPS.getBottomSpeedMPS().getAsDouble(), launcherIOInputs.bottomFlywheelVelocityMPS);
+            topWheelProfile.setGoal(
+                launcherSetpointMPS.getTopSpeedMPS().getAsDouble(), 
+                launcherIOInputs.topFlywheelVelocityMPS);
+          bottomWheelProfile.setGoal(
+            launcherSetpointMPS.getBottomSpeedMPS().getAsDouble(), 
+            launcherIOInputs.bottomFlywheelVelocityMPS);
         }
     }
 
