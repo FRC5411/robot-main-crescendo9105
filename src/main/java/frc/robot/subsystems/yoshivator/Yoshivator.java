@@ -56,7 +56,9 @@ public class Yoshivator extends SubsystemBase {
   private ManipulatorIO manipulatorIO;
   private ManipulatorIOInputsAutoLogged manipulatorIOInputs = new ManipulatorIOInputsAutoLogged();
 
-  private ProfiledPIDController pivotFeedback;
+  private ProfiledPIDController pivotFeedback = new ProfiledPIDController(
+    0.0, 0.0, 0.0, 
+    new TrapezoidProfile.Constraints(0.0, 0.0));
   private ArmFeedforward pivotFeedforward = new ArmFeedforward(0.0, 0.4, 0.0);
 
   private LoggedTunableNumber pivotFeedbackP;
