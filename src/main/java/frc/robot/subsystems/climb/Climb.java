@@ -20,8 +20,6 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import frc.robot.managers.RobotSetpoints.ClimbVoltSetpoints;
 
 public class Climb extends SubsystemBase {
-<<<<<<< HEAD
-=======
   public static enum ClimbVoltSetpoints {
     // LEFT(9.0, 0.0),
     // RIGHT(0.0, 9.0),
@@ -53,7 +51,6 @@ public class Climb extends SubsystemBase {
     }
   }
 
->>>>>>> a57434dd4aadf1dde92d3e1ce94934e3d87c44b0
   private ClimbIO climbIO;
   private ClimbIOInputsAutoLogged climbIOInputs = new ClimbIOInputsAutoLogged();
 

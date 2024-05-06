@@ -81,11 +81,7 @@ public class Drive extends SubsystemBase {
   private SwerveDrivePoseEstimator poseEstimator =
       new SwerveDrivePoseEstimator(KINEMATICS, getRotation(), getModulePositions(), currentPose);
 
-<<<<<<< HEAD
-  private PIDConstants translationPathplannerConstants = new PIDConstants(6.0, 0.0, 0.0);
-=======
   private PIDConstants translationPathplannerConstants = new PIDConstants(1.25, 0.0, 0.0);
->>>>>>> a57434dd4aadf1dde92d3e1ce94934e3d87c44b0
   private PIDConstants rotationPathplannerConstants = new PIDConstants(1.75, 0.0, 0.0);
   private boolean PProtationTargetOverride = false;
 
