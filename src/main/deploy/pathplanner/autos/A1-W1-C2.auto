@@ -14,7 +14,23 @@
         {
           "type": "named",
           "data": {
+<<<<<<< HEAD
             "name": "StartUpRoutine"
+=======
+            "name": "SpeakerShot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "DeployYoshi"
+>>>>>>> a57434dd4aadf1dde92d3e1ce94934e3d87c44b0
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeOn"
           }
         },
         {
@@ -45,6 +61,21 @@
           "type": "named",
           "data": {
             "name": "StowPiece"
+<<<<<<< HEAD
+=======
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C2-TS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+>>>>>>> a57434dd4aadf1dde92d3e1ce94934e3d87c44b0
           }
         }
       ]

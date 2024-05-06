@@ -20,6 +20,40 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import frc.robot.managers.RobotSetpoints.ClimbVoltSetpoints;
 
 public class Climb extends SubsystemBase {
+<<<<<<< HEAD
+=======
+  public static enum ClimbVoltSetpoints {
+    // LEFT(9.0, 0.0),
+    // RIGHT(0.0, 9.0),
+    BOTH_UP(12.0, 12.0),
+    BOTH_DOWN(-12.0, -12.0),
+    OFF(0.0, 0.0);
+
+    private double leftVolts;
+    private double rightVolts;
+
+    ClimbVoltSetpoints(double leftVolts, double rightVolts) {
+      this.leftVolts = leftVolts;
+      this.rightVolts = rightVolts;
+    }
+  }
+
+  public static enum ClimPosSetpoints {
+    AMP(Rotation2d.fromDegrees(110.0)),
+    IDLE(Rotation2d.fromDegrees(5.0));
+
+    private Rotation2d m_setpoint;
+
+    ClimPosSetpoints(Rotation2d setpoint) {
+      this.m_setpoint = setpoint;
+    }
+
+    private Rotation2d getRotation() {
+      return m_setpoint;
+    }
+  }
+
+>>>>>>> a57434dd4aadf1dde92d3e1ce94934e3d87c44b0
   private ClimbIO climbIO;
   private ClimbIOInputsAutoLogged climbIOInputs = new ClimbIOInputsAutoLogged();
 
