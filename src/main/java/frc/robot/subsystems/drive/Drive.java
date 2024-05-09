@@ -34,6 +34,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Constants.Mode;
 import frc.robot.utils.debugging.SysIDCharacterization;
+import frc.robot.utils.swerve.ModuleLimits;
+import frc.robot.utils.swerve.SwerveSetpoint;
+import frc.robot.utils.swerve.SwerveSetpointGenerator;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
@@ -230,7 +234,7 @@ public class Drive extends SubsystemBase {
         new Pose2d(
             speeds.vxMetersPerSecond * dt,
             speeds.vyMetersPerSecond * dt,
-            new Rotation2d(speeds.omegaRadiansPerSecond * dt * 3));
+            new Rotation2d(speeds.omegaRadiansPerSecond * dt * 3.0));
     var twist = new Pose2d().log(desiredDeltaPose);
 
     return new ChassisSpeeds((twist.dx / dt), (twist.dy / dt), (speeds.omegaRadiansPerSecond));

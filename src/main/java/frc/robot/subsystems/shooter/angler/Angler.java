@@ -143,13 +143,19 @@ public class Angler extends SubsystemBase {
     || anglerFeedbackV.hasChanged(hashCode())
     || anglerFeedbackA.hasChanged(hashCode())) {
       anglerFeedback.setPID(
-        anglerFeedbackP.get(), anglerFeedbackI.get(), anglerFeedbackD.get());
+        anglerFeedbackP.get(), 
+        anglerFeedbackI.get(), 
+        anglerFeedbackD.get());
 
       anglerFeedback.setConstraints(
-        new TrapezoidProfile.Constraints(anglerFeedbackV.get(), anglerFeedbackA.get()));
+        new TrapezoidProfile.Constraints(
+          anglerFeedbackV.get(), 
+          anglerFeedbackA.get()));
     }
     if (anglerFeedforwardU.hasChanged(hashCode()) || anglerFeedforwardL.hasChanged(hashCode())) {
-        anglerFeedforward.updateUL(anglerFeedforwardU.get(), anglerFeedforwardL.get());
+        anglerFeedforward.updateUL(
+          anglerFeedforwardU.get(), 
+          anglerFeedforwardL.get());
     }
   }
 
@@ -165,10 +171,17 @@ public class Angler extends SubsystemBase {
       boolean outsideOffError = anglerFeedback.getPositionError() > 2.0;
       boolean isSetpointResetable = (anglerSetpoint != null && anglerSetpoint != AnglerSetpoints.IDLE);
 
-      if (outsideOffError && isSetpointResetable) {
-        resetAnglerFeedback();
-      }
+      if (outsideOffError && isSetpointResetable) resetAnglerFeedback();
     }
+  }
+
+  public Command setVoltageManually(double volts) {
+    return Commands.runOnce(
+        () -> {
+          setAnglerSetpoint(null);
+          setAnglerVolts(volts);
+        },
+        this);
   }
 
   public void resetAnglerFeedback() {
@@ -180,8 +193,8 @@ public class Angler extends SubsystemBase {
   }
 
   public void stopMotor() {
-      anglerSetpoint = null;
-      anglerIO.setVolts(0.0);
+    anglerSetpoint = null;
+    anglerIO.setVolts(0.0);
   }
 
   public AnglerSetpoints getCurrentSetpoint() {

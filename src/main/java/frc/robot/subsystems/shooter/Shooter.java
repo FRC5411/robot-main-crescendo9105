@@ -92,38 +92,44 @@ public class Shooter extends SubsystemBase {
 
   public HashMap<ShooterStates, Command> mapToCommand() {
     HashMap<ShooterStates, Command> shooterCommandMap = new HashMap<>();
-    shooterCommandMap.put(ShooterStates.OFF, Commands.runOnce(() -> stopMotors(true, true), this));
     shooterCommandMap.put(
-        ShooterStates.AIM,
-        setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT));
+      ShooterStates.OFF, Commands.runOnce(() -> stopMotors(true, true), this));
+
     shooterCommandMap.put(
-        ShooterStates.INTAKE, setShooterState(AnglerSetpoints.INTAKE, LauncherSetpoints.OFF));
+      ShooterStates.AIM, setShooterState(AnglerSetpoints.AIM, LauncherSetpoints.SPEAKER_SHOT));
+
     shooterCommandMap.put(
-        ShooterStates.CLIMB, setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.OFF));
+      ShooterStates.INTAKE, setShooterState(AnglerSetpoints.INTAKE, LauncherSetpoints.OFF));
+
     shooterCommandMap.put(
-        ShooterStates.EJECT, setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.EJECT));
-    shooterCommandMap.put(ShooterStates.UP, setAnglerManual(5.0));
-    shooterCommandMap.put(ShooterStates.DOWN, setAnglerManual(-5.0));
+      ShooterStates.CLIMB, setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.OFF));
+
     shooterCommandMap.put(
-        ShooterStates.FIRE,
-        setShooterState(AnglerSetpoints.IDLE, LauncherSetpoints.SPEAKER_SHOT));
+      ShooterStates.EJECT, setShooterState(AnglerSetpoints.CLIMB, LauncherSetpoints.EJECT));
+
+    shooterCommandMap.put(ShooterStates.UP, angler.setVoltageManually(5.0));
+    shooterCommandMap.put(ShooterStates.DOWN, angler.setVoltageManually(-5.0));
+
     shooterCommandMap.put(
-        ShooterStates.IDLE,
-        Commands.runOnce(
-            () -> {
-              setMotors(null, LauncherSetpoints.OFF);
-              angler.setAnglerVolts(0.0);
-            },
-            this));
+      ShooterStates.FIRE, setShooterState(AnglerSetpoints.IDLE, LauncherSetpoints.SPEAKER_SHOT));
+
     shooterCommandMap.put(
-        ShooterStates.PODIUM,
-        setShooterState(AnglerSetpoints.PODIUM, LauncherSetpoints.SPEAKER_SHOT));
+      ShooterStates.IDLE,
+      Commands.runOnce(
+        () -> {
+          setMotors(null, LauncherSetpoints.OFF);
+          angler.setAnglerVolts(0.0);
+        }, this));
+
     shooterCommandMap.put(
-        ShooterStates.SPEAKER,
-        setShooterState(AnglerSetpoints.SPEAKER, LauncherSetpoints.SPEAKER_SHOT));
+      ShooterStates.PODIUM, setShooterState(AnglerSetpoints.PODIUM, LauncherSetpoints.SPEAKER_SHOT));
+
     shooterCommandMap.put(
-        ShooterStates.FEEDER,
-        setShooterState(AnglerSetpoints.FEEDER, LauncherSetpoints.FEEDER));
+        ShooterStates.SPEAKER, setShooterState(AnglerSetpoints.SPEAKER, LauncherSetpoints.SPEAKER_SHOT));
+
+    shooterCommandMap.put(
+        ShooterStates.FEEDER, setShooterState(AnglerSetpoints.FEEDER, LauncherSetpoints.FEEDER));
+        
     shooterCommandMap.put(
         ShooterStates.REV_AMP, setShooterState(AnglerSetpoints.AMP, LauncherSetpoints.AMP));
 
@@ -139,15 +145,6 @@ public class Shooter extends SubsystemBase {
   public Command setShooterState(
       AnglerSetpoints anglerState, LauncherSetpoints launcherState) {
     return angler.setAnglerSetpointCommand(anglerState).alongWith(launcher.setVelocityMPS(launcherState));
-  }
-
-  public Command setAnglerManual(double volts) {
-    return Commands.runOnce(
-        () -> {
-          angler.setAnglerSetpoint(null);
-          angler.setAnglerVolts(volts);
-        },
-        this);
   }
 
   public void setMotors(AnglerSetpoints anglerGoal, LauncherSetpoints launcherGoal) {
