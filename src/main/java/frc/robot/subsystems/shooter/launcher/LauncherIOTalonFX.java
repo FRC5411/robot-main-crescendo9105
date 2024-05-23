@@ -21,6 +21,7 @@ public class LauncherIOTalonFX implements LauncherIO {
   private final double GEARING = 1.0 / 1.0;
   private final double RADIUS_M = 6.35 / 100;
   private final double CIRCUMFRENCE_M = 2.0 * Math.PI * RADIUS_M;
+  private final double kUpdateFrequeny = 1000;
 
   private TalonFX topMotor = new TalonFX(43);
   private TalonFX bottomMotor = new TalonFX(44);
@@ -204,17 +205,23 @@ public class LauncherIOTalonFX implements LauncherIO {
   }
 
   @Override
-  public void setTopVelocity(double velocityMPS, double accelerationMPS) {
+  public void setTopVelocity(double velocityMPS, double accelerationMPSS) {
     topVelocityMPS = velocityMPS;
-    topMotor.setControl(topVelocityVoltage.withVelocity(topVelocityMPS / CIRCUMFRENCE_M));
-    // .withAcceleration(accelerationMPS / CIRCUMFRENCE_M));
+    topMotor.setControl(
+      topVelocityVoltage
+        .withVelocity(topVelocityMPS / CIRCUMFRENCE_M)
+        .withAcceleration(accelerationMPSS / CIRCUMFRENCE_M)
+        .withUpdateFreqHz(kUpdateFrequeny));
   }
 
   @Override
-  public void setBottomVelocity(double velocityMPS, double accelerationMPS) {
+  public void setBottomVelocity(double velocityMPS, double accelerationMPSS) {
     bottomVelocityMPS = velocityMPS;
-    bottomMotor.setControl(bottomVelocityVoltage.withVelocity(bottomVelocityMPS / CIRCUMFRENCE_M));
-    // .withAcceleration(accelerationMPS / CIRCUMFRENCE_M));
+    bottomMotor.setControl(
+      bottomVelocityVoltage
+        .withVelocity(bottomVelocityMPS / CIRCUMFRENCE_M)
+        .withAcceleration(accelerationMPSS / CIRCUMFRENCE_M)
+        .withUpdateFreqHz(accelerationMPSS));
   }
 
   /** Update the tunable numbers if they've changed */
