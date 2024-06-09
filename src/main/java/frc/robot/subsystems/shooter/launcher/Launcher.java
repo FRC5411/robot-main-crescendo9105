@@ -29,9 +29,11 @@ public class Launcher extends SubsystemBase{
 
         if (launcherSetpointMPS != null) {
             launcherIO.setTopVelocity(
-                topWheelProfile.calculateSetpoint(), topWheelProfile.getCurrentAcceleration());
+                topWheelProfile.calculateSetpoint(), 
+                topWheelProfile.getCurrentAcceleration());
             launcherIO.setBottomVelocity(
-                bottomWheelProfile.calculateSetpoint(), bottomWheelProfile.getCurrentAcceleration());
+                bottomWheelProfile.calculateSetpoint(), 
+                bottomWheelProfile.getCurrentAcceleration());
         }
     }
 
@@ -45,9 +47,9 @@ public class Launcher extends SubsystemBase{
             topWheelProfile.setGoal(
                 launcherSetpointMPS.getTopSpeedMPS().getAsDouble(), 
                 launcherIOInputs.topFlywheelVelocityMPS);
-          bottomWheelProfile.setGoal(
-            launcherSetpointMPS.getBottomSpeedMPS().getAsDouble(), 
-            launcherIOInputs.bottomFlywheelVelocityMPS);
+            bottomWheelProfile.setGoal(
+                launcherSetpointMPS.getBottomSpeedMPS().getAsDouble(), 
+                launcherIOInputs.bottomFlywheelVelocityMPS);
         }
     }
 
@@ -82,10 +84,9 @@ public class Launcher extends SubsystemBase{
     public Command characterizeFlywheel() {
         return SysIDCharacterization.runShooterSysIDTests(
             (volts) -> {
-            launcherSetpointMPS = null;
+                launcherSetpointMPS = null;
                 launcherIO.setTopVolts(volts);
                 launcherIO.setBottomVolts(volts);
-        },
-        this);
+        }, this);
   }
 }
