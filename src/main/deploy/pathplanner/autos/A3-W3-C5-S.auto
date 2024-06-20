@@ -1,0 +1,79 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 0.75,
+      "y": 4.4
+    },
+    "rotation": -60.0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "SpeakerShot"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeOn"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "DeployYoshi"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "A3-W3"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StowPiece"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "W3-C5"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StowPiece"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C5-BS"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "Shoot"
+          }
+        }
+      ]
+    }
+  },
+  "folder": "BottomAutos",
+  "choreoAuto": false
+}

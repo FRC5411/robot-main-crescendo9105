@@ -82,15 +82,13 @@ public class Drive extends SubsystemBase {
       new SwerveDrivePoseEstimator(KINEMATICS, getRotation(), getModulePositions(), currentPose);
 
   private PIDConstants translationPathplannerConstants = new PIDConstants(1.25, 0.0, 0.0);
-  private PIDConstants rotationPathplannerConstants = new PIDConstants(1.25, 0.0, 0.0);
+  private PIDConstants rotationPathplannerConstants = new PIDConstants(1.75, 0.0, 0.0);
   private boolean PProtationTargetOverride = false;
 
   private LinearFilter xFilter = LinearFilter.movingAverage(5);
   private LinearFilter yFilter = LinearFilter.movingAverage(5);
 
   private Field2d field = new Field2d();
-
-  private boolean PProtationTargetOverride = false;
 
   /** Creates a new swerve Drive. */
   public Drive(
@@ -125,7 +123,7 @@ public class Drive extends SubsystemBase {
             rotationPathplannerConstants,
             MAX_LINEAR_SPEED_MPS,
             DRIVEBASE_RADIUS_M,
-            new ReplanningConfig(true, true)),
+            new ReplanningConfig(true, false)),
         () ->
             DriverStation.getAlliance().isPresent()
                 && DriverStation.getAlliance().get() == Alliance.Red,

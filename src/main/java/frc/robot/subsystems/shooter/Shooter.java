@@ -28,9 +28,9 @@ public class Shooter extends SubsystemBase {
     INTAKE(() -> Rotation2d.fromDegrees(45.0)),
     IDLE(() -> Angler.getLastAnglerPosition()),
     PODIUM(() -> Rotation2d.fromDegrees(34.5)),
-    SPEAKER(() -> Rotation2d.fromDegrees(57)),
+    SPEAKER(() -> Rotation2d.fromDegrees(57.0)),
     AMP(() -> Rotation2d.fromDegrees(54.0)),
-    FEEDER(() -> Rotation2d.fromDegrees(45.0)),
+    FEEDER(() -> Rotation2d.fromDegrees(55.0)),
     DEBUGGING(() -> Rotation2d.fromDegrees(angleTunableNumber.get()));
 
     private Supplier<Rotation2d> angleSupplier;
@@ -49,7 +49,7 @@ public class Shooter extends SubsystemBase {
     IDLE(() -> 9.0, () -> 9.0),
     SPEAKER_SHOT(() -> 38.0, () -> 38.0),
     FULL_SPEED(() -> 42.0, () -> 42.0),
-    FEEDER(() -> 33.6, () -> 33.6),
+    FEEDER(() -> 23.0, () -> 23.0),
     // 12.5: 7 / 9
     // 12.65: 08
     // 12.58: 9 / 12

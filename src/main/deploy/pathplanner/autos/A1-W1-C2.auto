@@ -14,13 +14,19 @@
         {
           "type": "named",
           "data": {
-            "name": "Shoot"
+            "name": "SpeakerShot"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "DeployYoshi"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "IntakeOn"
           }
         },
         {
@@ -32,19 +38,13 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake"
+            "name": "StowPiece"
           }
         },
         {
           "type": "named",
           "data": {
             "name": "Shoot"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "UnDeployYoshi"
           }
         },
         {
@@ -56,13 +56,19 @@
         {
           "type": "named",
           "data": {
-            "name": "Intake"
+            "name": "StowPiece"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "C2-TS"
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "ShootIdle"
+            "name": "Shoot"
           }
         }
       ]

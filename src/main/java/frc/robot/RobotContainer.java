@@ -8,7 +8,6 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -219,6 +218,11 @@ public class RobotContainer {
                 robotStateMachine.getIntakeCommand(IntakeStates.INTAKE),
                 robotStateMachine.getShooterCommand(ShooterStates.INTAKE_AUTON))
             .withTimeout(2.0));
+
+    NamedCommands.registerCommand("StopIndexAndIntake",
+      new ParallelCommandGroup(
+        robotStateMachine.getIndexerCommand(IndexerStates.OFF),
+        robotStateMachine.getIntakeCommand(IntakeStates.OFF)));
 
     // Add intake off if yo
     NamedCommands.registerCommand(

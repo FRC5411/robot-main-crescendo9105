@@ -29,15 +29,15 @@ public class TargetingSystem {
 
   // Offset is robot drive width cut in half
   private final double LAUNCH_MAP_OFFSET_M = 0.0; //- Units.inchesToMeters(36.0 / 2.0);
-  private final double LAUNCH_MAP_OFFSET_DEGREES_BLUE = 1.5;// 1.5; // 3.0;
+  private final double LAUNCH_MAP_OFFSET_DEGREES_BLUE = 0.5;// 1.5; // 3.0;
 
   private final double LAUNCH_MAP_OFFSET_DEG_AUTON_BLUE = -0.25;
 
-  private final double LAUNCH_MAP_OFFSET_DEGREES_RED = 1.5; //1.5; // 4.0; // 3.0;
+  private final double LAUNCH_MAP_OFFSET_DEGREES_RED = 0.5; //1.5; // 4.0; // 3.0;
 
-  private final double LAUNCH_MAP_OFFSET_DEG_AUTON_RED = -0.5;
+  private final double LAUNCH_MAP_OFFSET_DEG_AUTON_RED = -0.25;
 
-  private double manualOffsetRotation = 0.0;
+  private double manualOffsetDegrees = 0.0;
 
   private Drive robotDrive;
   private Vision robotVision;
@@ -294,13 +294,13 @@ public class TargetingSystem {
 
   public Command incrementOffset() {
     return Commands.runOnce(() -> {
-      manualOffsetRotation += 0.5;
+      manualOffsetDegrees += 0.25;
     });
   }
 
   public Command decrementOffset() {
     return Commands.runOnce(() -> {
-      manualOffsetRotation -= 0.5;
+      manualOffsetDegrees -= 0.25;
     });
   }
 
@@ -326,6 +326,6 @@ public class TargetingSystem {
   }
 
   public double getManualOffset() {
-    return manualOffsetRotation;
+    return manualOffsetDegrees;
   }
 }

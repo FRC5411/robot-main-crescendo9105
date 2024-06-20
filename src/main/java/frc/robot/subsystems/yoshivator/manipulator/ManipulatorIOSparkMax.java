@@ -10,7 +10,7 @@ import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation2d; 
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
@@ -27,7 +27,7 @@ public class ManipulatorIOSparkMax implements ManipulatorIO {
   private CANSparkMax flywheelMotor = new CANSparkMax(53, MotorType.kBrushless);
   private RelativeEncoder flywheelEncoder = flywheelMotor.getEncoder();
 
-  private Rotation2d pivotAbsoluteOffset = Rotation2d.fromDegrees(114.0 - 80 + 9 + 30);
+  private Rotation2d pivotAbsoluteOffset = Rotation2d.fromDegrees(169.0 + 164 + 90);
 
   private double pivotAppliedVolts = 0.0;
   private double flywheelAppliedVolts = 0.0;

@@ -85,7 +85,7 @@ public class SwerveCommands {
                     linearVelocity.getX() * robotDrive.getMaxLinearSpeedMPS(),
                     linearVelocity.getY() * robotDrive.getMaxLinearSpeedMPS(),
                     theta * robotDrive.getMaxAngularSpeedMPS(),
-                    robotDrive.getRotation()));
+                    robotDrive.getPoseEstimate().getRotation()));
           }
         },
         robotDrive);
@@ -218,7 +218,7 @@ public class SwerveCommands {
 
   /** Returns a command to reset the gyro heading */
   public static Command resetGyro(Drive robotDrive) {
-    currentCommand = Commands.runOnce(() -> robotDrive.resetGyro(), robotDrive);
+    currentCommand = Commands.runOnce(() -> robotDrive.resetGyro());
 
     return currentCommand;
   }

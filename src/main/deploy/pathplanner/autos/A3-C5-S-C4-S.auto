@@ -24,6 +24,18 @@
           }
         },
         {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.25
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopIndexAndIntake"
+          }
+        },
+        {
           "type": "path",
           "data": {
             "pathName": "A3-C5"
@@ -45,6 +57,18 @@
           "type": "named",
           "data": {
             "name": "Shoot"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.25
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "StopIndexAndIntake"
           }
         },
         {
